@@ -3,12 +3,13 @@ ARG RUBY_VERSION=4.0.3
 
 FROM ruby:${RUBY_VERSION}-slim AS builder
 
+# libssl-dev lets bundler build the openssl gem when the lockfile pins a version this Ruby does not bundle.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && \
     apt-get update -qq && \
     apt-get install -y --no-install-recommends \
-      build-essential libpq-dev git libyaml-dev
+      build-essential libpq-dev git libyaml-dev libssl-dev
 
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./

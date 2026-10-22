@@ -110,6 +110,18 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
         expect(notifications.map(&:type)).to include("mention")
       end
 
+      it "passes the comment text to every notification it emits" do
+        create_account_with_profile(display_name: "Mentioned", username: "mentioned_user")
+        calls = []
+        allow_any_instance_of(Notifications::UseCases::Emit).to receive(:call) { |_emit, **kwargs| calls << kwargs }
+
+        use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "  よろしく @mentioned_user  ")
+
+        expect(calls.map { |c| [c[:type], c[:excerpt]] }).to contain_exactly(
+          ["comment", "よろしく @mentioned_user"], ["mention", "よろしく @mentioned_user"]
+        )
+      end
+
       it "normalizes content before saving mentions" do
         mentioned_id = create_account_with_profile(display_name: "Mentioned", username: "mentioned_user")
 

@@ -9,15 +9,12 @@ import type { NotificationPreferences } from "@/modules/notifications/types";
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
   pushEnabled: true,
-  post: true,
+  comment: true,
   like: true,
-  repost: true,
-  quote: true,
   reply: true,
   follow: true,
   mention: true,
   message: true,
-  oshi: true,
   footprintUnreadBadge: true,
   footprintsRecordMyVisits: true,
 };

@@ -16,7 +16,7 @@ const profile = (id: string, username: string, disabled = false) => ({ ...emptyP
 function tree(profiles: ReturnType<typeof profile>[], switchProfile = vi.fn()) {
   return createElement(
     AccountProfilesProvider,
-    { value: { profiles, switchProfile, refresh: async () => {}, append: async () => {} } },
+    { value: { profiles, loaded: true, switchProfile, refresh: async () => {}, append: async () => {} } },
     createElement(ProfileSwitcher)
   );
 }

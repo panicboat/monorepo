@@ -12,6 +12,9 @@ service NotificationService {
   rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
   rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (GetNotificationPreferencesResponse);
   rpc UpdateNotificationPreferences(UpdateNotificationPreferencesRequest) returns (UpdateNotificationPreferencesResponse);
+  rpc GetPushConfig(GetPushConfigRequest) returns (GetPushConfigResponse);
+  rpc RegisterPushSubscription(RegisterPushSubscriptionRequest) returns (RegisterPushSubscriptionResponse);
+  rpc UnregisterPushSubscription(UnregisterPushSubscriptionRequest) returns (UnregisterPushSubscriptionResponse);
 }
 
 enum NotificationType {
@@ -20,7 +23,7 @@ enum NotificationType {
   NOTIFICATION_TYPE_COMMENT = 2;
   NOTIFICATION_TYPE_REPLY = 3;
   NOTIFICATION_TYPE_FOLLOW_REQUEST = 4;
-  NOTIFICATION_TYPE_FOLLOW_APPROVED = 5;
+  NOTIFICATION_TYPE_FOLLOW = 5;
   NOTIFICATION_TYPE_MENTION = 6;
 }
 
@@ -65,16 +68,16 @@ message MarkAllReadResponse {
 }
 
 message NotificationPreferences {
+  reserved 4, 5, 10;
+  reserved "repost", "quote", "oshi";
+
   bool push_enabled = 1;
-  bool post = 2;
+  bool comment = 2;
   bool like = 3;
-  bool repost = 4;
-  bool quote = 5;
   bool reply = 6;
   bool follow = 7;
   bool mention = 8;
   bool message = 9;
-  bool oshi = 10;
   bool footprint_unread_badge = 11;
   bool footprints_record_my_visits = 12;
 }
@@ -92,3 +95,23 @@ message UpdateNotificationPreferencesRequest {
 message UpdateNotificationPreferencesResponse {
   NotificationPreferences preferences = 1;
 }
+
+message GetPushConfigRequest {}
+
+message GetPushConfigResponse {
+  string vapid_public_key = 1;
+}
+
+message RegisterPushSubscriptionRequest {
+  string endpoint = 1;
+  string p256dh = 2;
+  string auth = 3;
+}
+
+message RegisterPushSubscriptionResponse {}
+
+message UnregisterPushSubscriptionRequest {
+  string endpoint = 1;
+}
+
+message UnregisterPushSubscriptionResponse {}

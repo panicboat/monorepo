@@ -1,3 +1,9 @@
+# Replacing this key invalidates every browser's push subscription, so each device has to turn notifications on again.
+resource "tls_private_key" "vapid" {
+  algorithm   = "ECDSA"
+  ecdsa_curve = "P256"
+}
+
 locals {
   app_function_name  = "dystopia-${var.environment}"
   task_function_name = "dystopia-${var.environment}-task"
@@ -22,6 +28,8 @@ locals {
     BILLING_SUCCESS_URL       = "disabled"
     BILLING_CANCEL_URL        = "disabled"
     BILLING_PORTAL_RETURN_URL = "disabled"
+    VAPID_PRIVATE_KEY         = tls_private_key.vapid.private_key_pem
+    VAPID_SUBJECT             = "https://${var.domain_name}"
   }
 }
 

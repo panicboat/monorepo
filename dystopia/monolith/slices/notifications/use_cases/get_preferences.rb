@@ -5,15 +5,12 @@ module Notifications
     class GetPreferences
       DEFAULT_PREFERENCES = {
         push_enabled: true,
-        post: true,
+        comment: true,
         like: true,
-        repost: true,
-        quote: true,
         reply: true,
         follow: true,
         mention: true,
         message: true,
-        oshi: true,
         footprint_unread_badge: true,
         footprints_record_my_visits: true
       }.freeze

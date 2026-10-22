@@ -5,6 +5,7 @@ import type { ProfileView } from "@/modules/profile/types";
 
 export interface AccountProfiles {
   profiles: ProfileView[];
+  loaded: boolean;
   switchProfile: (profileId: string) => void;
   refresh: () => Promise<void>;
   append: (profile: ProfileView) => Promise<void>;
@@ -13,6 +14,7 @@ export interface AccountProfiles {
 // FALLBACK: Outside the shell there is no account list to offer, so consumers get an empty one that changes nothing.
 const AccountProfilesContext = createContext<AccountProfiles>({
   profiles: [],
+  loaded: false,
   switchProfile: () => {},
   refresh: async () => {},
   append: async () => {},

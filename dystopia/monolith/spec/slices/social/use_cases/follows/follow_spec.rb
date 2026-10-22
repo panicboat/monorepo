@@ -20,4 +20,53 @@ RSpec.describe "Social::UseCases::Follows::Follow", type: :database do
       expect(follow.call(follower_profile_id: follower, target_profile_id: target)).to eq(status: status)
     end
   end
+
+  describe "notifications" do
+    let(:notification_repo) { Notifications::Slice["repositories.notification_repository"] }
+    let(:approve) { Social::Slice["use_cases.follows.approve_follow_request"] }
+
+    def types_for(profile_id)
+      notification_repo.list(recipient_profile_id: profile_id).map(&:type)
+    end
+
+    it "tells a profile without approval that someone followed it" do
+      target = create_account_with_profile(role: 2, username: "open_target")
+
+      follow.call(follower_profile_id: follower, target_profile_id: target)
+
+      expect(types_for(target)).to eq(["follow"])
+    end
+
+    it "sends a request to a profile that approves followers, and nothing when it approves" do
+      target = create_account_with_profile(role: 2, username: "gated_target", follow_approval_required: true)
+
+      follow.call(follower_profile_id: follower, target_profile_id: target)
+      approve.call(target_profile_id: target, requester_profile_id: follower)
+
+      expect(types_for(target)).to eq(["follow_request"])
+      expect(types_for(follower)).to be_empty
+    end
+
+    def actor_counts_for(profile_id)
+      notification_repo.list(recipient_profile_id: profile_id).map { |notification| [notification.type, notification.actor_count] }
+    end
+
+    it "does not notify again when the profile is already followed" do
+      target = create_account_with_profile(role: 2, username: "followed_target")
+
+      follow.call(follower_profile_id: follower, target_profile_id: target)
+
+      expect(follow.call(follower_profile_id: follower, target_profile_id: target)).to eq(status: "approved")
+      expect(actor_counts_for(target)).to eq([["follow", 1]])
+    end
+
+    it "does not notify again when a follow request is already pending" do
+      target = create_account_with_profile(role: 2, username: "requested_target", follow_approval_required: true)
+
+      follow.call(follower_profile_id: follower, target_profile_id: target)
+
+      expect(follow.call(follower_profile_id: follower, target_profile_id: target)).to eq(status: "pending")
+      expect(actor_counts_for(target)).to eq([["follow_request", 1]])
+    end
+  end
 end

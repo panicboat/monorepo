@@ -12,7 +12,7 @@ export function describeNotificationAction(n: NotificationView): string {
       return `${others}あなたのコメントに返信しました`;
     case NotificationType.FOLLOW_REQUEST:
       return "フォロー申請が届きました";
-    case NotificationType.FOLLOW_APPROVED:
+    case NotificationType.FOLLOW:
       return "あなたをフォローしました";
     case NotificationType.MENTION:
       return `${others}あなたをメンションしました`;
@@ -32,7 +32,7 @@ export function notificationHref(n: NotificationView, ownUsername: string | null
       return n.targetPostId ? `/posts/${encodeURIComponent(n.targetPostId)}` : null;
     case NotificationType.FOLLOW_REQUEST:
       return ownUsername ? `/u/${encodeURIComponent(ownUsername)}/requests` : null;
-    case NotificationType.FOLLOW_APPROVED:
+    case NotificationType.FOLLOW:
       return n.latestActor?.username
         ? `/u/${encodeURIComponent(n.latestActor.username)}`
         : null;

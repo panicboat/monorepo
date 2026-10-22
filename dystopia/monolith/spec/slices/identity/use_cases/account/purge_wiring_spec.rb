@@ -101,6 +101,10 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
 
     db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (31 * 24 * 3600))
 
+    push_subscriptions = Notifications::Slice["repositories.push_subscription_repository"]
+    push_subscriptions.upsert(account_id: account_id, endpoint: "https://fcm.googleapis.com/fcm/send/purged", p256dh: "BKey", auth: "auth")
+    push_subscriptions.upsert(account_id: bystander_account_id, endpoint: "https://fcm.googleapis.com/fcm/send/kept", p256dh: "BKey", auth: "auth")
+
     result = Identity::Slice["use_cases.account.purge_deactivated_accounts"].call(now: Time.now)
 
     expect([result.purged, result.failed_account_ids]).to eq([1, []])
@@ -144,6 +148,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     ).to eq(1)
     expect(db[:schedule__schedules].where(profile_id: bystander).count).to eq(1)
     expect(db[:review__reviews].where(author_profile_id: bystander, target_profile_id: witness).count).to eq(1)
+    expect(db[:notifications__push_subscriptions].select_map(:endpoint)).to eq(["https://fcm.googleapis.com/fcm/send/kept"])
   end
 
   it "keeps the account and the profile whose slice purge failed, and finishes on the next run" do

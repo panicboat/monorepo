@@ -14,6 +14,7 @@ gem "gruf"
 gem "stripe"
 gem "aws-sdk-s3", "~> 1.233", ">= 1.233.2"
 gem "aws-sdk-cognitoidentityprovider", "~> 1.154"
+gem "web-push", "~> 3.1"
 
 gem "pg"
 

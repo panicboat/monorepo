@@ -20,6 +20,9 @@ module Notifications
       rpc :MarkAllRead, ::Notifications::V1::MarkAllReadRequest, ::Notifications::V1::MarkAllReadResponse
       rpc :GetNotificationPreferences, ::Notifications::V1::GetNotificationPreferencesRequest, ::Notifications::V1::GetNotificationPreferencesResponse
       rpc :UpdateNotificationPreferences, ::Notifications::V1::UpdateNotificationPreferencesRequest, ::Notifications::V1::UpdateNotificationPreferencesResponse
+      rpc :GetPushConfig, ::Notifications::V1::GetPushConfigRequest, ::Notifications::V1::GetPushConfigResponse
+      rpc :RegisterPushSubscription, ::Notifications::V1::RegisterPushSubscriptionRequest, ::Notifications::V1::RegisterPushSubscriptionResponse
+      rpc :UnregisterPushSubscription, ::Notifications::V1::UnregisterPushSubscriptionRequest, ::Notifications::V1::UnregisterPushSubscriptionResponse
 
       include Notifications::Deps[
         list_uc: "use_cases.list_notifications",
@@ -27,7 +30,10 @@ module Notifications
         mark_read_uc: "use_cases.mark_read",
         mark_all_read_uc: "use_cases.mark_all_read",
         get_preferences_uc: "use_cases.get_preferences",
-        update_preferences_uc: "use_cases.update_preferences"
+        update_preferences_uc: "use_cases.update_preferences",
+        register_push_subscription_uc: "use_cases.register_push_subscription",
+        unregister_push_subscription_uc: "use_cases.unregister_push_subscription",
+        web_push_sender: "adapters.web_push_sender"
       ]
 
       def list_notifications
@@ -91,15 +97,12 @@ module Notifications
         input = request.message.preferences
         attrs = {
           push_enabled: input.push_enabled,
-          post: input.post,
+          comment: input.comment,
           like: input.like,
-          repost: input.repost,
-          quote: input.quote,
           reply: input.reply,
           follow: input.follow,
           mention: input.mention,
           message: input.message,
-          oshi: input.oshi,
           footprint_unread_badge: input.footprint_unread_badge,
           footprints_record_my_visits: input.footprints_record_my_visits
         }
@@ -107,6 +110,26 @@ module Notifications
         ::Notifications::V1::UpdateNotificationPreferencesResponse.new(
           preferences: preferences_to_proto(prefs)
         )
+      end
+
+      def get_push_config
+        authenticate_account!
+        ::Notifications::V1::GetPushConfigResponse.new(vapid_public_key: web_push_sender.public_key.to_s)
+      end
+
+      def register_push_subscription
+        authenticate_account!
+        message = request.message
+        register_push_subscription_uc.call(account_id: current_account_id, endpoint: message.endpoint, p256dh: message.p256dh, auth: message.auth)
+        ::Notifications::V1::RegisterPushSubscriptionResponse.new
+      rescue ::Notifications::UseCases::RegisterPushSubscription::InvalidSubscriptionError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "この端末の通知を登録できませんでした")
+      end
+
+      def unregister_push_subscription
+        authenticate_account!
+        unregister_push_subscription_uc.call(account_id: current_account_id, endpoint: request.message.endpoint)
+        ::Notifications::V1::UnregisterPushSubscriptionResponse.new
       end
 
       private
@@ -118,15 +141,12 @@ module Notifications
       def preferences_to_proto(prefs)
         ::Notifications::V1::NotificationPreferences.new(
           push_enabled: prefs[:push_enabled],
-          post: prefs[:post],
+          comment: prefs[:comment],
           like: prefs[:like],
-          repost: prefs[:repost],
-          quote: prefs[:quote],
           reply: prefs[:reply],
           follow: prefs[:follow],
           mention: prefs[:mention],
           message: prefs[:message],
-          oshi: prefs[:oshi],
           footprint_unread_badge: prefs[:footprint_unread_badge],
           footprints_record_my_visits: prefs[:footprints_record_my_visits]
         )
@@ -138,7 +158,7 @@ module Notifications
         when "comment" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_COMMENT
         when "reply" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_REPLY
         when "follow_request" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_FOLLOW_REQUEST
-        when "follow_approved" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_FOLLOW_APPROVED
+        when "follow" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_FOLLOW
         when "mention" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_MENTION
         else ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_UNSPECIFIED
         end

@@ -122,7 +122,7 @@ RSpec.describe "Profile::UseCases::SaveProfile", type: :database do
     end
 
     def approvals
-      db[:notifications__notifications].where(type: "follow_approved").select_map([:recipient_profile_id, :actor_count])
+      db[:notifications__notifications].where(type: "follow").select_map([:recipient_profile_id, :actor_count])
     end
 
     it "persists follow_approval_required" do

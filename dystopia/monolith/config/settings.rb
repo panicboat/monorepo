@@ -9,5 +9,7 @@ module Monolith
     setting :billing_success_url, constructor: Types::String
     setting :billing_cancel_url, constructor: Types::String
     setting :billing_portal_return_url, constructor: Types::String
+    setting :vapid_private_key, default: nil, constructor: Types::String.optional
+    setting :vapid_subject, default: nil, constructor: Types::String.optional
   end
 end

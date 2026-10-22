@@ -30,6 +30,7 @@ import { resolveShellMode } from "./resolveShellMode";
 import { resolveShellLayout } from "./resolveShellLayout";
 import { usePostSheetStore } from "@/stores/postSheetStore";
 import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
+import { usePushResync } from "@/modules/notifications/hooks/usePushResync";
 import { cn } from "@/lib/utils";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
@@ -59,6 +60,7 @@ export function AppShell({ children }: AppShellProps) {
   const router = useRouter();
   const mainRef = useRef<HTMLElement>(null);
   useEnterAnimation(mainRef, pathname);
+  usePushResync(accountId);
 
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
   const isLandingRoute = pathname === "/";
@@ -88,9 +90,10 @@ export function AppShell({ children }: AppShellProps) {
     },
     [setActiveProfile, router, pathname]
   );
+  const profilesLoaded = session !== null;
   const accountProfiles = useMemo(
-    () => ({ profiles, switchProfile, refresh, append }),
-    [profiles, switchProfile, refresh, append]
+    () => ({ profiles, loaded: profilesLoaded, switchProfile, refresh, append }),
+    [profiles, profilesLoaded, switchProfile, refresh, append]
   );
 
   useEffect(() => {

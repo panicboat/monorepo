@@ -62,7 +62,8 @@ module Post
               type: "reply",
               target_resource_id: parent.id,
               actor_profile_id: author_profile_id,
-              target_post_id: post.id
+              target_post_id: post.id,
+              excerpt: normalized_content
             )
           else
             notifications_emit.call(
@@ -70,7 +71,8 @@ module Post
               type: "comment",
               target_resource_id: post.id,
               actor_profile_id: author_profile_id,
-              target_post_id: post.id
+              target_post_id: post.id,
+              excerpt: normalized_content
             )
           end
 
@@ -82,7 +84,8 @@ module Post
               type: "mention",
               target_resource_id: comment.id,
               actor_profile_id: author_profile_id,
-              target_post_id: post.id
+              target_post_id: post.id,
+              excerpt: normalized_content
             )
           end
 

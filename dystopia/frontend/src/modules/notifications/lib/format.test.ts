@@ -32,7 +32,7 @@ describe("describeNotificationAction", () => {
     [NotificationType.REPLY, "あなたのコメントに返信しました"],
     [NotificationType.MENTION, "あなたをメンションしました"],
     [NotificationType.FOLLOW_REQUEST, "フォロー申請が届きました"],
-    [NotificationType.FOLLOW_APPROVED, "あなたをフォローしました"],
+    [NotificationType.FOLLOW, "あなたをフォローしました"],
   ])("describes type %s without the actor's name", (type, expected) => {
     expect(describeNotificationAction(buildNotification({ type }))).toBe(expected);
   });
@@ -55,7 +55,7 @@ describe("describeNotificationAction", () => {
 
 describe("notificationHref", () => {
   it("routes a follow notification to the actor's profile", () => {
-    const n = buildNotification({ type: NotificationType.FOLLOW_APPROVED });
+    const n = buildNotification({ type: NotificationType.FOLLOW });
     expect(notificationHref(n, "yuna")).toBe("/u/hanako");
   });
 

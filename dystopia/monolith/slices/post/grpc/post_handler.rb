@@ -97,7 +97,8 @@ module Post
               type: "mention",
               target_resource_id: post.id,
               actor_profile_id: current_profile_id,
-              target_post_id: post.id
+              target_post_id: post.id,
+              excerpt: content
             )
           end
         end

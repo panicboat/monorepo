@@ -66,6 +66,15 @@ override_resource {
   }
 }
 
+mock_provider "tls" {}
+
+override_resource {
+  target = tls_private_key.vapid
+  values = {
+    private_key_pem = "test-vapid-pem"
+  }
+}
+
 variables {
   environment           = "production"
   aws_region            = "ap-northeast-1"
@@ -252,5 +261,23 @@ run "cloudfront_serves_the_domain" {
   assert {
     condition     = toset(keys(aws_route53_record.apex)) == toset(["A", "AAAA"])
     error_message = "The apex must have both A and AAAA alias records."
+  }
+}
+
+run "push_settings" {
+  command = plan
+
+  assert {
+    condition     = tls_private_key.vapid.algorithm == "ECDSA" && tls_private_key.vapid.ecdsa_curve == "P256"
+    error_message = "Web push requires an ECDSA P-256 VAPID key."
+  }
+
+  assert {
+    condition = alltrue([
+      for fn in [aws_lambda_function.app, aws_lambda_function.task] :
+      fn.environment[0].variables["VAPID_PRIVATE_KEY"] == "test-vapid-pem" &&
+      fn.environment[0].variables["VAPID_SUBJECT"] == "https://dystopia.city"
+    ])
+    error_message = "Both functions must receive the VAPID key and subject."
   }
 }
