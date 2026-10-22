@@ -13,6 +13,7 @@ function staysOnOrigin(value: string): boolean {
   try {
     return new URL(value, PARSE_BASE).origin === PARSE_BASE;
   } catch {
+    // SILENT: A destination the URL parser rejects is treated as outside the app.
     return false;
   }
 }
