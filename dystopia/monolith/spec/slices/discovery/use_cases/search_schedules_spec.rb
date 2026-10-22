@@ -17,8 +17,8 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
     create_account_with_profile(role: 2, username: "c#{SecureRandom.hex(8)}", **attrs)
   end
 
-  def schedule(profile, start_time: "20:00", date: work_date)
-    schedule_repo.upsert(profile_id: profile, work_date: date, start_time: start_time, end_time: "02:00")
+  def schedule(profile, start_time: "20:00", end_time: "02:00", date: work_date)
+    schedule_repo.upsert(profile_id: profile, work_date: date, start_time: start_time, end_time: end_time)
   end
 
   def announce(profile, row, content: "see you", **post_attrs)
@@ -111,16 +111,18 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
     expect(profile_ids(search(query: "@"))).to contain_exactly(suzu, cast_without_match)
   end
 
-  it "narrows by time band" do
+  it "narrows by the hours worked" do
     day = cast
+    late = cast
     night = cast
-    schedule(day, start_time: "12:00")
-    schedule(night, start_time: "23:00")
+    schedule(day, start_time: "12:00", end_time: "17:00")
+    schedule(late, start_time: "16:00", end_time: "22:00")
+    schedule(night, start_time: "23:00", end_time: "02:00")
 
-    expect(profile_ids(search(time_band: "day"))).to eq([day])
-    expect(profile_ids(search(time_band: "night"))).to eq([night])
-    expect(profile_ids(search(time_band: "evening"))).to be_empty
-    expect(profile_ids(search(time_band: ""))).to contain_exactly(day, night)
+    expect(profile_ids(search(time_band: "day"))).to contain_exactly(day, late)
+    expect(profile_ids(search(time_band: "evening"))).to eq([late])
+    expect(profile_ids(search(time_band: "night"))).to contain_exactly(late, night)
+    expect(profile_ids(search(time_band: ""))).to contain_exactly(day, late, night)
   end
 
   describe "note" do

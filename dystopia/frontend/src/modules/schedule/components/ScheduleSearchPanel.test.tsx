@@ -148,8 +148,8 @@ describe("ScheduleSearchPanel filters", () => {
     const select = container.querySelector("select") as HTMLSelectElement;
     expect(select.selectedOptions[0].textContent).toBe("全国");
     expect(Array.from(select.options)).toHaveLength(48);
-    expect(chipsIn("開始時間帯").map((b) => b.textContent)).toEqual(["すべて", "昼（〜17時）", "夜（18〜20時）", "深夜（21時〜）"]);
-    expect(chip("開始時間帯", "すべて").getAttribute("aria-pressed")).toBe("true");
+    expect(chipsIn("勤務時間帯").map((b) => b.textContent)).toEqual(["すべて", "昼（5〜18時）", "夜（18〜21時）", "深夜（21時〜翌5時）"]);
+    expect(chip("勤務時間帯", "すべて").getAttribute("aria-pressed")).toBe("true");
     const toggle = container.querySelector('[role="switch"]') as HTMLElement;
     expect(toggle.getAttribute("aria-label")).toBe("フォロー中だけを見る");
     expect(toggle.getAttribute("aria-checked")).toBe("false");
@@ -166,13 +166,13 @@ describe("ScheduleSearchPanel filters", () => {
     await chooseArea("大阪府");
     expect(lastFilters().prefecture).toBe("大阪府");
 
-    await click(chip("開始時間帯", "夜（18〜20時）"));
+    await click(chip("勤務時間帯", "夜（18〜21時）"));
     expect(lastFilters().timeBand).toBe("evening");
-    await click(chip("開始時間帯", "昼（〜17時）"));
+    await click(chip("勤務時間帯", "昼（5〜18時）"));
     expect(lastFilters().timeBand).toBe("day");
-    await click(chip("開始時間帯", "深夜（21時〜）"));
+    await click(chip("勤務時間帯", "深夜（21時〜翌5時）"));
     expect(lastFilters().timeBand).toBe("night");
-    await click(chip("開始時間帯", "すべて"));
+    await click(chip("勤務時間帯", "すべて"));
     expect(lastFilters().timeBand).toBe("");
 
     await click(container.querySelector('[role="switch"]')!);
@@ -189,7 +189,7 @@ describe("ScheduleSearchPanel filters", () => {
     expect(lastFilters()).toEqual({ date: "2026-10-25", prefecture: "東京都", timeBand: "night", followingOnly: true, query: "" });
     expect(chipsIn("出勤日")[2].getAttribute("aria-pressed")).toBe("true");
     expect((container.querySelector("select") as HTMLSelectElement).value).toBe("東京都");
-    expect(chip("開始時間帯", "深夜（21時〜）").getAttribute("aria-pressed")).toBe("true");
+    expect(chip("勤務時間帯", "深夜（21時〜翌5時）").getAttribute("aria-pressed")).toBe("true");
     expect(container.querySelector('[role="switch"]')!.getAttribute("aria-checked")).toBe("true");
   });
 
@@ -202,7 +202,7 @@ describe("ScheduleSearchPanel filters", () => {
     await chooseArea("大阪府");
     expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", timeBand: "", followingOnly: false });
 
-    await click(chip("開始時間帯", "夜（18〜20時）"));
+    await click(chip("勤務時間帯", "夜（18〜21時）"));
     expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", timeBand: "evening", followingOnly: false });
 
     await click(container.querySelector('[role="switch"]')!);
@@ -261,9 +261,9 @@ describe("ScheduleSearchPanel results", () => {
     expect(container.textContent).toContain(EMPTY_DAY);
     expect(container.textContent).not.toContain(NARROWED);
 
-    await click(chip("開始時間帯", "深夜（21時〜）"));
+    await click(chip("勤務時間帯", "深夜（21時〜翌5時）"));
     expect(container.textContent).toContain(NARROWED);
-    await click(chip("開始時間帯", "すべて"));
+    await click(chip("勤務時間帯", "すべて"));
     expect(container.textContent).toContain(EMPTY_DAY);
 
     await click(container.querySelector('[role="switch"]')!);
