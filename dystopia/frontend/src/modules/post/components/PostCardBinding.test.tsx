@@ -190,11 +190,11 @@ describe("PostCardBinding", () => {
     const schedule = { workDate: "2026-10-23", startTime: "20:00", endTime: "02:00" };
     const withIndustry = (industry: string) => ({ ...basePost.author!, industry });
 
-    it("shows the heading and the time of the linked schedule, linked to the author's profile", () => {
+    it("shows the heading and the time of the linked schedule, linked to the author's schedule tab", () => {
       const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, schedule }} />);
 
       expect(html).toContain("10/23（金） 20:00〜02:00");
-      expect(html).toMatch(/<a[^>]*href="\/u\/test_taro"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00/s);
+      expect(html).toMatch(/<a[^>]*href="\/u\/test_taro\?tab=schedule"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00/s);
     });
 
     it("shows no schedule card on a post without a schedule", () => {

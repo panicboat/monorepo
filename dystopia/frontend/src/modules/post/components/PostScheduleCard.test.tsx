@@ -51,10 +51,10 @@ describe("PostScheduleCard", () => {
     expect(render()).toContain("rounded-xl border border-border bg-surface p-3");
   });
 
-  it("links the whole card to the author's profile", () => {
+  it("links the whole card to the author's schedule tab", () => {
     const html = render();
 
-    expect(html).toMatch(/<a[^>]*href="\/u\/rin"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00(?:(?!<\/a>).)*<\/a>/s);
+    expect(html).toMatch(/<a[^>]*href="\/u\/rin\?tab=schedule"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00(?:(?!<\/a>).)*<\/a>/s);
   });
 
   it("renders no link when the author has no username", () => {

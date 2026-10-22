@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { usePublicProfile, useProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileSheet } from "@/modules/profile/components/EditProfileSheet";
@@ -13,12 +13,13 @@ import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authSt
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { CastReviewsTab } from "@/modules/review/components/CastReviewsTab";
 import { AuthorReviewsTab } from "@/modules/review/components/AuthorReviewsTab";
-import { ScheduleTab, WeeklyScheduleSummary } from "@/modules/schedule";
+import { ScheduleTab } from "@/modules/schedule";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 import { Button } from "@/components/ui/button";
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
+  const initialTab = useSearchParams()?.get("tab") ?? undefined;
   const username = typeof params.username === "string" ? params.username : "";
   const { profile, loading, error, mutate } = usePublicProfile(username || null);
   const viewerId = useAuthStore(selectActiveProfileId);
@@ -91,14 +92,7 @@ export default function PublicProfilePage() {
             ? [{ id: "reviews", label: "クチコミ", content: <AuthorReviewsTab authorProfileId={profile.id} /> }]
             : []
         }
-        renderAboveTabs={
-          role === "cast"
-            ? (tab, selectTab) =>
-                tab === "schedule" ? null : (
-                  <WeeklyScheduleSummary profileId={profile.id} onShowMore={() => selectTab("schedule")} />
-                )
-            : undefined
-        }
+        initialTab={initialTab}
       />
       {isOwnProfile && editing && (
         <EditProfileSheet

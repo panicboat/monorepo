@@ -29,11 +29,10 @@ export interface ProfileContentTabsProps {
   isOwnProfile?: boolean;
   leadingTabs?: ExtraTab[];
   extraTabs?: ExtraTab[];
-  renderAboveTabs?: (tab: string, selectTab: (id: string) => void) => ReactNode;
+  initialTab?: string;
 }
 
-export function ProfileContentTabs({ profileId, isOwnProfile = true, leadingTabs = [], extraTabs = [], renderAboveTabs }: ProfileContentTabsProps) {
-  const [tab, setTab] = useState<string>("posts");
+export function ProfileContentTabs({ profileId, isOwnProfile = true, leadingTabs = [], extraTabs = [], initialTab }: ProfileContentTabsProps) {
   const tabItems = isOwnProfile ? TAB_ITEMS : TAB_ITEMS.filter((item) => item.id !== "likes");
   const [postsItem, ...restItems] = tabItems as unknown as { id: string; label: string }[];
   const allItems = [
@@ -42,24 +41,23 @@ export function ProfileContentTabs({ profileId, isOwnProfile = true, leadingTabs
     ...restItems,
     ...extraTabs.map((t) => ({ id: t.id, label: t.label })),
   ];
+  // FALLBACK: An unknown or missing initial tab opens the posts tab.
+  const [tab, setTab] = useState<string>(() => (allItems.some((item) => item.id === initialTab) ? initialTab! : "posts"));
   const customTab = [...leadingTabs, ...extraTabs].find((t) => t.id === tab);
   const contentRef = useRef<HTMLDivElement>(null);
   useEnterAnimation(contentRef, tab);
 
   return (
-    <>
-      {renderAboveTabs?.(tab, setTab)}
-      <section className="mt-4">
-        <Tabs items={allItems} value={tab} onValueChange={setTab} />
-        <div ref={contentRef}>
-          {tab === "posts" && <AuthorPostsPane profileId={profileId} mediaOnly={false} />}
-          {tab === "replies" && <AuthorRepliesPane profileId={profileId} />}
-          {tab === "media" && <AuthorPostsPane profileId={profileId} mediaOnly={true} />}
-          {tab === "likes" && isOwnProfile && <AuthorLikesPane profileId={profileId} />}
-          {customTab?.content}
-        </div>
-      </section>
-    </>
+    <section className="mt-4">
+      <Tabs items={allItems} value={tab} onValueChange={setTab} />
+      <div ref={contentRef}>
+        {tab === "posts" && <AuthorPostsPane profileId={profileId} mediaOnly={false} />}
+        {tab === "replies" && <AuthorRepliesPane profileId={profileId} />}
+        {tab === "media" && <AuthorPostsPane profileId={profileId} mediaOnly={true} />}
+        {tab === "likes" && isOwnProfile && <AuthorLikesPane profileId={profileId} />}
+        {customTab?.content}
+      </div>
+    </section>
   );
 }
 

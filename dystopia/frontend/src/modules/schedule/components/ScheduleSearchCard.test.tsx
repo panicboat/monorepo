@@ -148,11 +148,13 @@ describe("ScheduleSearchCard", () => {
     expect(container.querySelectorAll("p")).toHaveLength(withoutNote + 1);
   });
 
-  it("links プロフィール → to the profile page", async () => {
+  it("links the avatar, the name and プロフィール → to the profile's schedule tab", async () => {
     await mount({ profile: { username: "suzu_21" } });
 
-    const link = Array.from(container.querySelectorAll("a")).find((a) => a.textContent === "プロフィール →");
-    expect(link?.getAttribute("href")).toBe("/u/suzu_21");
+    const hrefs = Array.from(container.querySelectorAll("a")).map((a) => a.getAttribute("href"));
+    expect(hrefs.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(hrefs)).toEqual(new Set(["/u/suzu_21?tab=schedule"]));
+    expect(Array.from(container.querySelectorAll("a")).some((a) => a.textContent === "プロフィール →")).toBe(true);
   });
 
   it("offers to follow the cast", async () => {
