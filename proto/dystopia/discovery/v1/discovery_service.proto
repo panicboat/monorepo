@@ -4,12 +4,14 @@ package discovery.v1;
 
 import "profile/v1/service.proto";
 import "post/v1/post_service.proto";
+import "schedule/v1/schedule_service.proto";
 
 service DiscoveryService {
   rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
   rpc SearchPosts(SearchPostsRequest) returns (SearchPostsResponse);
   rpc RankPosts(RankPostsRequest) returns (RankPostsResponse);
   rpc SuggestUsers(SuggestUsersRequest) returns (SuggestUsersResponse);
+  rpc SearchSchedules(SearchSchedulesRequest) returns (SearchSchedulesResponse);
 }
 
 enum RankPeriod {
@@ -63,6 +65,29 @@ message SuggestUsersRequest {
 
 message SuggestUsersResponse {
   repeated profile.v1.ProfileSummary profiles = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message SearchSchedulesRequest {
+  string work_date = 1;
+  string prefecture = 2;
+  string time_band = 3;
+  bool following_only = 4;
+  string query = 5;
+  int32 limit = 6;
+  string cursor = 7;
+}
+
+message ScheduleSearchResult {
+  schedule.v1.Schedule schedule = 1;
+  profile.v1.ProfileSummary profile = 2;
+  string prefecture = 3;
+  string note = 4;
+}
+
+message SearchSchedulesResponse {
+  repeated ScheduleSearchResult results = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }

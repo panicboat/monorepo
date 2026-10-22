@@ -128,6 +128,14 @@ module Profile
         visible_profiles.where(prefecture: prefecture).pluck(:id)
       end
 
+      def visible_cast_prefectures(prefecture: nil, query: nil)
+        scope = filter_by_role(visible_profiles, 2)
+        scope = scope.where(prefecture: prefecture) unless prefecture.to_s.empty?
+        scope = filter_by_name(scope, query) unless query.to_s.strip.empty?
+
+        scope.dataset.select_hash(:id, :prefecture).transform_values(&:to_s)
+      end
+
       def save_media(profile_id:, avatar_media_id: nil, cover_media_id: nil)
         attrs = {}
         attrs[:avatar_media_id] = avatar_media_id unless avatar_media_id.nil?
@@ -200,6 +208,11 @@ module Profile
         scope.where(
           account_id: profiles.dataset.db[:identity__accounts].where(role: role_filter).select(:id)
         )
+      end
+
+      def filter_by_name(scope, query)
+        pattern = "%#{profiles.dataset.escape_like(query.to_s.strip)}%"
+        scope.where(Sequel.|(Sequel.ilike(:username, pattern), Sequel.ilike(:display_name, pattern)))
       end
 
       def apply_cursor(scope, cursor)

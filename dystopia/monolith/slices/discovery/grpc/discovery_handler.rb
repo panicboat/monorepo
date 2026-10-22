@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "discovery/v1/discovery_service_services_pb"
+require "errors/validation_error"
 require_relative "handler"
 
 module Discovery
@@ -18,12 +19,14 @@ module Discovery
       rpc :SearchPosts, ::Discovery::V1::SearchPostsRequest, ::Discovery::V1::SearchPostsResponse
       rpc :RankPosts, ::Discovery::V1::RankPostsRequest, ::Discovery::V1::RankPostsResponse
       rpc :SuggestUsers, ::Discovery::V1::SuggestUsersRequest, ::Discovery::V1::SuggestUsersResponse
+      rpc :SearchSchedules, ::Discovery::V1::SearchSchedulesRequest, ::Discovery::V1::SearchSchedulesResponse
 
       include Discovery::Deps[
         search_users_uc: "use_cases.search_users",
         search_posts_uc: "use_cases.search_posts",
         rank_posts_uc: "use_cases.rank_posts",
-        suggest_users_uc: "use_cases.suggest_users"
+        suggest_users_uc: "use_cases.suggest_users",
+        search_schedules_uc: "use_cases.search_schedules"
       ]
 
       def search_users
@@ -80,6 +83,29 @@ module Discovery
         )
       end
 
+      def search_schedules
+        authenticate_user!
+        m = request.message
+
+        result = search_schedules_uc.call(
+          viewer_profile_id: current_profile_id,
+          work_date: m.work_date,
+          prefecture: m.prefecture,
+          time_band: m.time_band,
+          following_only: m.following_only,
+          query: m.query,
+          limit: m.limit.zero? ? 20 : m.limit,
+          cursor: m.cursor.empty? ? nil : m.cursor
+        )
+        ::Discovery::V1::SearchSchedulesResponse.new(
+          results: result[:results].map { |entry| present_schedule_result(entry) },
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      rescue Errors::ValidationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
+      end
+
       def rank_posts
         authenticate_user!
         limit = request.message.limit.zero? ? 20 : request.message.limit
@@ -104,6 +130,20 @@ module Discovery
       def present_profiles(profiles)
         summaries = summarize_profiles.call(profile_ids: profiles.compact.map(&:id))
         profiles.compact.filter_map { |profile| ::Profile::Presenters::ProfileSummaryPresenter.to_proto(summaries[profile.id.to_s]) }
+      end
+
+      def present_schedule_result(entry)
+        ::Discovery::V1::ScheduleSearchResult.new(
+          schedule: ::Schedule::V1::Schedule.new(
+            profile_id: entry.schedule[:profile_id].to_s,
+            work_date: entry.schedule[:work_date].to_s,
+            start_time: entry.schedule[:start_time],
+            end_time: entry.schedule[:end_time]
+          ),
+          profile: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(entry.summary),
+          prefecture: entry.prefecture,
+          note: entry.note
+        )
       end
 
       def summarize_profiles

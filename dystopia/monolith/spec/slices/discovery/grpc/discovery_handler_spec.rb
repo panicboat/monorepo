@@ -133,4 +133,81 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
 
     expect(found.map(&:avatar_url)).to eq(["https://cdn.example/a.png"])
   end
+
+  describe "search_schedules" do
+    let(:schedule_repo) { Schedule::Slice["repositories.schedule_repository"] }
+
+    def search_schedules(**attrs)
+      rpc(:search_schedules, Discovery::V1::SearchSchedulesRequest.new(work_date: "2026-10-22", **attrs))
+    end
+
+    def status_of
+      yield
+      nil
+    rescue GRPC::BadStatus => e
+      e.code
+    end
+
+    def schedule(profile, start_time: "20:00")
+      schedule_repo.upsert(profile_id: profile, work_date: "2026-10-22", start_time: start_time, end_time: "02:00")
+    end
+
+    it "returns the schedule, the profile summary, the prefecture and the note of each cast" do
+      db = Hanami.app["db.gateway"].connection
+      db[:profile__profiles].where(id: public_cast).update(prefecture: "東京都")
+      db[:profile__casts].insert(profile_id: public_cast, industry: "fuzoku")
+      row = schedule(public_cast, start_time: "16:00")
+      announcement = post_repo.create_post(author_profile_id: public_cast, content: "hello", visibility: "public", published_at: Time.now - 60, expires_at: Time.now + 3600)
+      schedule_repo.set_post_id(id: row[:id], post_id: announcement.id)
+      act_as(viewer)
+
+      result = search_schedules.results.first
+
+      expect(result).to be_a(Discovery::V1::ScheduleSearchResult)
+      expect(result.schedule).to eq(Schedule::V1::Schedule.new(profile_id: public_cast, work_date: "2026-10-22", start_time: "16:00", end_time: "02:00"))
+      expect(result.profile).to have_attributes(profile_id: public_cast, username: "discovery_public", role: 2, industry: "fuzoku")
+      expect(result.prefecture).to eq("東京都")
+      expect(result.note).to eq("hello")
+    end
+
+    it "shows private casts, hides the ones the acting profile is blocked with, and limits following_only to approved follows" do
+      schedule(public_cast)
+      schedule(private_cast)
+      act_as(viewer)
+
+      expect(search_schedules.results.map { |r| r.profile.profile_id }).to contain_exactly(public_cast, private_cast)
+
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_cast, status: "approved")
+      expect(search_schedules(following_only: true).results.map { |r| r.profile.profile_id }).to eq([private_cast])
+
+      block_repo.block(blocker_profile_id: public_cast, blocked_profile_id: viewer)
+      expect(search_schedules.results.map { |r| r.profile.profile_id }).to eq([private_cast])
+    end
+
+    it "pages by cursor, 20 at a time by default" do
+      Array.new(21) { |i| schedule(create_account_with_profile(role: 2, username: "paged_cast_#{i}"), start_time: format("%02d:00", i % 5 + 12)) }
+      act_as(viewer)
+
+      first = search_schedules
+      second = search_schedules(cursor: first.next_cursor)
+
+      expect(first.results.size).to eq(20)
+      expect(first.has_more).to be(true)
+      expect(second.results.size).to eq(1)
+      expect(second.has_more).to be(false)
+      expect(second.next_cursor).to eq("")
+    end
+
+    it "rejects a work date or time band that is not valid with INVALID_ARGUMENT" do
+      act_as(viewer)
+
+      expect(status_of { search_schedules(work_date: "2026-13-45") }).to eq(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+      expect(status_of { rpc(:search_schedules, Discovery::V1::SearchSchedulesRequest.new(work_date: "")) }).to eq(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+      expect(status_of { search_schedules(time_band: "noon") }).to eq(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+    end
+
+    it "requires an authenticated profile" do
+      expect(status_of { search_schedules }).to eq(GRPC::Core::StatusCodes::UNAUTHENTICATED)
+    end
+  end
 end
