@@ -7,7 +7,14 @@ self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
 
 function isAppPath(value) {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//");
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return false;
+  try {
+    // The URL parser reads a backslash as a slash and drops tabs and newlines, so the prefix checks alone let off-origin paths through.
+    return new URL(value, self.location.origin).origin === self.location.origin;
+  } catch {
+    // SILENT: A value the URL parser rejects is not an app path.
+    return false;
+  }
 }
 
 function readPayload(data) {

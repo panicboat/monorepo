@@ -132,6 +132,15 @@ describe("enablePush", () => {
     expect(browser.serviceWorker.register).not.toHaveBeenCalled();
     expect(auth.authFetch).not.toHaveBeenCalled();
   });
+
+  it("reports a dismissed prompt separately and registers nothing", async () => {
+    const browser = installBrowser({ permission: "default" });
+
+    expect(await enablePush("AQID_-8")).toBe("dismissed");
+
+    expect(browser.serviceWorker.register).not.toHaveBeenCalled();
+    expect(auth.authFetch).not.toHaveBeenCalled();
+  });
 });
 
 describe("disablePush", () => {

@@ -57,8 +57,9 @@ describe("service worker", () => {
     await dispatch(worker.listeners.push, { data: null });
     await dispatch(worker.listeners.push, { data: brokenData });
     await dispatch(worker.listeners.push, { data: pushData({ title: 1, url: "https://evil.example" }) });
+    await dispatch(worker.listeners.push, { data: pushData({ title: "りん", body: "あなたの投稿にいいねしました", url: "/\\evil.example/x" }) });
 
-    expect(worker.showNotification).toHaveBeenCalledTimes(3);
+    expect(worker.showNotification).toHaveBeenCalledTimes(4);
     for (const [title, options] of worker.showNotification.mock.calls) {
       expect(title).toBe("dystopia");
       expect(options).toEqual({ body: "新しいお知らせがあります", icon: "/pwa-icon/192", data: { url: "/notifications" } });
@@ -96,5 +97,16 @@ describe("service worker", () => {
     await dispatch(worker.listeners.notificationclick, click("//evil.example/x"));
 
     expect(worker.openWindow).toHaveBeenCalledWith(`${ORIGIN}/notifications`);
+  });
+
+  it("opens the notification list for a path the URL parser resolves to another origin", async () => {
+    const backslash = loadWorker();
+    const tab = loadWorker();
+
+    await dispatch(backslash.listeners.notificationclick, click("/\\evil.example/x"));
+    await dispatch(tab.listeners.notificationclick, click("/\t/evil.example/x"));
+
+    expect(backslash.openWindow).toHaveBeenCalledWith(`${ORIGIN}/notifications`);
+    expect(tab.openWindow).toHaveBeenCalledWith(`${ORIGIN}/notifications`);
   });
 });

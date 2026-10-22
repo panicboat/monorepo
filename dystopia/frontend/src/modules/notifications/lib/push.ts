@@ -63,10 +63,11 @@ function subscriptionBody(subscription: PushSubscription) {
   return { endpoint: json.endpoint ?? "", p256dh: json.keys?.p256dh ?? "", auth: json.keys?.auth ?? "" };
 }
 
-export async function enablePush(vapidPublicKey: string): Promise<"subscribed" | "denied"> {
+export async function enablePush(vapidPublicKey: string): Promise<"subscribed" | "denied" | "dismissed"> {
   // Ask first: Safari only shows the prompt while the tap that started this is still active.
   const permission = await Notification.requestPermission();
-  if (permission !== "granted") return "denied";
+  if (permission === "denied") return "denied";
+  if (permission !== "granted") return "dismissed";
 
   await navigator.serviceWorker.register(SERVICE_WORKER_URL, { scope: "/" });
   const registration = await navigator.serviceWorker.ready;
