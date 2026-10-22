@@ -3,7 +3,10 @@
 require "spec_helper"
 
 RSpec.describe Messaging::UseCases::SendMessage do
-  let(:use_case) { described_class.new(messaging_repo: messaging_repo, send_restriction: send_restriction, get_profile: get_profile) }
+  let(:use_case) do
+    described_class.new(messaging_repo: messaging_repo, send_restriction: send_restriction, get_profile: get_profile, send_push: send_push)
+  end
+  let(:send_push) { double(:send_push, call: nil) }
   let(:get_profile) { double(:get_profile, call: double(:profile)) }
   let(:messaging_repo)   { double(:messaging_repository) }
   let(:send_restriction) { double(:send_restriction) }
@@ -21,6 +24,7 @@ RSpec.describe Messaging::UseCases::SendMessage do
     expect {
       use_case.call(sender_profile_id: sender_profile_id, content: "hi", recipient_profile_id: recipient_profile_id)
     }.to raise_error(described_class::FollowRequiredError)
+    expect(send_push).not_to have_received(:call)
   end
 
   it "raises BlockedError when a block stands between the sender and the recipient" do
@@ -40,6 +44,9 @@ RSpec.describe Messaging::UseCases::SendMessage do
 
     result = use_case.call(sender_profile_id: sender_profile_id, content: "hi", recipient_profile_id: recipient_profile_id)
     expect(result[:message]).to eq(message)
+    expect(send_push).to have_received(:call).with(
+      recipient_profile_id: recipient_profile_id, kind: "message", actor_profile_id: sender_profile_id, thread_id: "thread-1", excerpt: "hi"
+    )
   end
 
   it "applies the restriction to the other participant when replying through a thread id" do

@@ -16,9 +16,10 @@ module Messaging
       EmptyContentError = Class.new(StandardError)
       RecipientUnresolvedError = Class.new(StandardError)
 
-      def initialize(get_profile: nil, **kwargs)
+      def initialize(get_profile: nil, send_push: nil, **kwargs)
         super(**kwargs)
         @get_profile = get_profile
+        @send_push = send_push
       end
 
       def call(sender_profile_id:, content:, thread_id: nil, recipient_profile_id: nil)
@@ -41,13 +42,22 @@ module Messaging
         profile_a, profile_b = [sender_profile_id.to_s, resolved_recipient_profile_id.to_s].minmax
         thread = messaging_repo.upsert_thread(profile_a: profile_a, profile_b: profile_b)
 
+        thread_id = thread[:id] || thread.id
         message = messaging_repo.insert_message(
-          thread_id: thread[:id] || thread.id,
+          thread_id: thread_id,
           sender_profile_id: sender_profile_id,
           content: content
         )
 
-        { message: message, thread_id: thread[:id] || thread.id }
+        send_push.call(
+          recipient_profile_id: resolved_recipient_profile_id,
+          kind: "message",
+          actor_profile_id: sender_profile_id,
+          thread_id: thread_id,
+          excerpt: content
+        )
+
+        { message: message, thread_id: thread_id }
       end
 
       private
@@ -76,6 +86,10 @@ module Messaging
 
       def get_profile
         @get_profile ||= Profile::Slice["use_cases.get_profile"]
+      end
+
+      def send_push
+        @send_push ||= Notifications::Slice["use_cases.send_push"]
       end
     end
   end

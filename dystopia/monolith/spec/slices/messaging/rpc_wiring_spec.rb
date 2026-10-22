@@ -207,7 +207,7 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
       expect(unread).to eq(1)
     end
 
-    it "stores preferences per profile and applies them when a notification is emitted" do
+    it "stores preferences per profile and still lists the notification of a kind turned off" do
       act_as(guest)
       current = rpc(Notifications::Grpc::NotificationHandler, :get_notification_preferences, Notifications::V1::GetNotificationPreferencesRequest.new).preferences
       expect(current.like).to be true
@@ -217,7 +217,7 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
 
       expect(updated.like).to be false
       expect(db[:notifications__preferences].select_map(:profile_id)).to eq([guest])
-      expect(emit.call(recipient_profile_id: guest, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: cast)).to be_nil
+      expect(emit.call(recipient_profile_id: guest, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: cast)).not_to be_nil
       expect(emit.call(recipient_profile_id: outsider, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: cast)).not_to be_nil
     end
   end

@@ -102,6 +102,15 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       expect(notifications.map(&:type)).to include("mention")
     end
 
+    it "passes the post text to the mention notification" do
+      calls = []
+      allow_any_instance_of(Notifications::UseCases::Emit).to receive(:call) { |_emit, **kwargs| calls << kwargs }
+
+      handler.save_post
+
+      expect(calls.map { |c| [c[:type], c[:excerpt]] }).to eq([["mention", "hi @mentioned_user"]])
+    end
+
     it "does not emit a mention notification on edit" do
       created = handler.save_post
 
