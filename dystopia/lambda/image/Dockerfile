@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
 FROM ruby:4.0.7-slim AS monolith-builder
-# libssl-dev builds the openssl gem the lockfile pins, which differs from the one bundled with this Ruby.
+# libssl-dev lets bundler build the openssl gem when the lockfile pins a version this Ruby does not bundle.
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends build-essential libpq-dev git libyaml-dev libssl-dev
 
