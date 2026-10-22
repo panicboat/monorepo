@@ -23,7 +23,9 @@ function isAppPath(value: string | null): value is string {
 }
 
 export function resolveNotificationOpen({ profileId, to, selectableProfileIds, activeProfileId }: NotificationOpenInput) {
-  const switchTo = profileId && profileId !== activeProfileId && selectableProfileIds.includes(profileId) ? profileId : null;
+  // FALLBACK: Opening the target as a profile other than the receiving one would leave its footprints and reads there.
+  if (!profileId || !selectableProfileIds.includes(profileId)) return { switchTo: null, destination: FALLBACK_DESTINATION };
+  const switchTo = profileId !== activeProfileId ? profileId : null;
   // FALLBACK: A destination outside the app opens the notification list instead.
   const destination = isAppPath(to) ? to : FALLBACK_DESTINATION;
   return { switchTo, destination };
