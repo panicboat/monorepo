@@ -11,6 +11,7 @@ import { usePostSheetStore } from "@/stores/postSheetStore";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
 import { selectActiveProfileId, useAuthStore } from "@/stores/authStore";
 import { PostText } from "@/modules/post/lib/post-text";
+import { PostScheduleCard } from "./PostScheduleCard";
 import { displayStateOf } from "@/modules/post/lib/display-window";
 import type { PostView } from "@/modules/post/lib/post-view";
 import { usePostLike } from "@/modules/post/hooks/usePostLike";
@@ -48,6 +49,8 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
   const authorHref = post.author?.username
     ? `/u/${encodeURIComponent(post.author.username)}`
     : undefined;
+
+  const announcementOnly = post.schedule !== null && post.content.trim() === "";
 
   const images = post.media
     .filter((m) => m.mediaType === "image")
@@ -130,7 +133,8 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
       time={postedAt && displayState !== "scheduled" ? formatTimeAgo(postedAt) : ""}
       statusMark={statusMark}
       isPrivate={post.visibility === "private"}
-      body={<PostText content={post.content} mentions={post.mentions} hashtags={post.hashtags} />}
+      body={announcementOnly ? undefined : <PostText content={post.content} mentions={post.mentions} hashtags={post.hashtags} />}
+      attachment={post.schedule && <PostScheduleCard schedule={post.schedule} author={post.author} />}
       images={images.length > 0 ? images : undefined}
       videos={videos.length > 0 ? videos : undefined}
       reactions={reactions}

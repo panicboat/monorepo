@@ -24,6 +24,7 @@ const parentPost = {
   hashtags: [],
   mentions: [],
   liked: false,
+  schedule: null,
 } as PostView;
 
 const comment: CommentView = {

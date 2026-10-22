@@ -4,3 +4,9 @@ export interface ScheduleView {
   startTime: string;
   endTime: string;
 }
+
+export interface ScheduleAnnouncement {
+  announce: boolean;
+  announceTime: string;
+  announceNote: string;
+}

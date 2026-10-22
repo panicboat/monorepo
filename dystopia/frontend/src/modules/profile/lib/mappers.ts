@@ -138,5 +138,6 @@ export function summaryToView(summary: ProfileSummary): ProfileSummaryView {
     avatarUrl: summary.avatarUrl,
     isPrivate: !!summary.isPrivate,
     role: ROLE_BY_NUMBER[summary.role] ?? null,
+    industry: summary.industry || "",
   };
 }

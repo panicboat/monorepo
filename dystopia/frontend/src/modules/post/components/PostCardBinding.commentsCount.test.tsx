@@ -51,6 +51,7 @@ const feedPost: PostView = {
   hashtags: [],
   mentions: [],
   liked: false,
+  schedule: null,
 };
 
 let serverCount: number;

@@ -92,10 +92,14 @@ describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
 describe("summaryToView", () => {
   it("maps every field and the role number", () => {
     const view = summaryToView(
-      create(ProfileSummarySchema, { profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "https://cdn.example/a.png", isPrivate: true, role: 2 })
+      create(ProfileSummarySchema, { profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "https://cdn.example/a.png", isPrivate: true, role: 2, industry: "デリヘル" })
     );
 
-    expect(view).toEqual({ profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "https://cdn.example/a.png", isPrivate: true, role: "cast" });
+    expect(view).toEqual({ profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "https://cdn.example/a.png", isPrivate: true, role: "cast", industry: "デリヘル" });
+  });
+
+  it("reads an absent industry as an empty string", () => {
+    expect(summaryToView(create(ProfileSummarySchema, { profileId: "p-3" })).industry).toBe("");
   });
 
   it("reads an unknown role as null", () => {

@@ -65,6 +65,16 @@ const click = async (element: HTMLElement) => {
     element.click();
   });
 };
+const announceSwitch = () => document.querySelector('button[role="switch"][aria-label="投稿でお知らせする"]') as HTMLButtonElement | null;
+const noteField = () => document.querySelector('textarea[aria-label="ひとこと"]') as HTMLTextAreaElement | null;
+const timeSelect = (part: "時" | "分") => document.querySelector(`select[aria-label="お知らせする時刻（${part}）"]`) as HTMLSelectElement | null;
+const setValue = async (element: HTMLTextAreaElement | HTMLSelectElement, value: string) => {
+  const prototype = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLSelectElement.prototype;
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(prototype, "value")!.set!.call(element, value);
+    element.dispatchEvent(new Event(element instanceof HTMLSelectElement ? "change" : "input", { bubbles: true }));
+  });
+};
 
 describe("ScheduleBulkSheet", () => {
   it("shows two weeks from today with each day's current plan", async () => {
@@ -141,13 +151,96 @@ describe("ScheduleBulkSheet", () => {
 
     await click(button("選択した日に反映")!);
 
+    const announcement = { announce: true, announceTime: "09:00", announceNote: "" };
     expect(mocks.save.mock.calls).toEqual([
-      ["2026-10-14", "18:00", "23:00"],
-      ["2026-10-15", "18:00", "23:00"],
+      ["2026-10-14", "18:00", "23:00", announcement],
+      ["2026-10-15", "18:00", "23:00", announcement],
     ]);
     expect(mocks.toast).toHaveBeenCalledWith("予定を更新しました");
     expect(onSaved).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("announces the shift by default at 09:00 with an empty note", async () => {
+    await mount();
+
+    expect(announceSwitch()!.getAttribute("aria-checked")).toBe("true");
+    expect(text()).toContain("投稿でお知らせする");
+    expect(timeSelect("時")!.value).toBe("09");
+    expect(timeSelect("分")!.value).toBe("00");
+    expect(noteField()!.value).toBe("");
+    expect(text()).toContain("お知らせする時刻");
+  });
+
+  it("saves the announcement time and the note with each day", async () => {
+    await mount();
+    await click(day("2026-10-14"));
+    await click(day("2026-10-15"));
+    await click(button("20:00〜02:00")!);
+    await setValue(timeSelect("時")!, "08");
+    await setValue(timeSelect("分")!, "30");
+    await setValue(noteField()!, "お待ちしてます！");
+
+    await click(button("選択した日に反映")!);
+
+    const announcement = { announce: true, announceTime: "08:30", announceNote: "お待ちしてます！" };
+    expect(mocks.save.mock.calls).toEqual([
+      ["2026-10-14", "20:00", "02:00", announcement],
+      ["2026-10-15", "20:00", "02:00", announcement],
+    ]);
+  });
+
+  it("waits for the announcement time while announcing", async () => {
+    await mount();
+    await click(day("2026-10-14"));
+    await click(button("18:00〜23:00")!);
+    expect(button("選択した日に反映")!.disabled).toBe(false);
+
+    await setValue(timeSelect("時")!, "");
+    expect(button("選択した日に反映")!.disabled).toBe(true);
+
+    await click(announceSwitch()!);
+    expect(button("選択した日に反映")!.disabled).toBe(false);
+  });
+
+  it("limits the note to 200 characters", async () => {
+    await mount();
+
+    expect(noteField()!.maxLength).toBe(200);
+  });
+
+  it("hides the time and the note and saves without an announcement while the switch is off", async () => {
+    await mount();
+    await setValue(noteField()!, "お待ちしてます！");
+    await click(announceSwitch()!);
+
+    expect(announceSwitch()!.getAttribute("aria-checked")).toBe("false");
+    expect(timeSelect("時")).toBeNull();
+    expect(noteField()).toBeNull();
+    expect(text()).not.toContain("お知らせする時刻");
+
+    await click(day("2026-10-14"));
+    await click(button("18:00〜23:00")!);
+    await click(button("選択した日に反映")!);
+
+    expect(mocks.save.mock.calls).toEqual([
+      ["2026-10-14", "18:00", "23:00", { announce: false, announceTime: "", announceNote: "" }],
+    ]);
+  });
+
+  it("offers the announcement only while adding plans and warns that clearing deletes the post", async () => {
+    await mount();
+    expect(text()).not.toContain("お知らせの投稿も消えます");
+
+    await click(button("予定を消す")!);
+
+    expect(announceSwitch()).toBeNull();
+    expect(noteField()).toBeNull();
+    expect(text()).toContain("お知らせの投稿も消えます");
+
+    await click(button("予定を入れる")!);
+    expect(announceSwitch()).not.toBeNull();
+    expect(text()).not.toContain("お知らせの投稿も消えます");
   });
 
   it("clears only the days that have a plan", async () => {

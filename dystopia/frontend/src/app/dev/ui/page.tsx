@@ -78,6 +78,7 @@ export default function DevUiPage() {
       hashtags: ["新作", "渋谷"],
       mentions: [],
       liked: false,
+      schedule: null,
     },
     {
       id: "mock-2",
@@ -101,6 +102,7 @@ export default function DevUiPage() {
       hashtags: [],
       mentions: [],
       liked: true,
+      schedule: null,
     },
   ];
 

@@ -47,6 +47,9 @@ export function mapPostToView(p: Post): PostView {
     hashtags: p.hashtags || [],
     mentions: (p.mentions || []).map(mapMentionToView),
     liked: p.liked || false,
+    schedule: p.schedule
+      ? { workDate: p.schedule.workDate, startTime: p.schedule.startTime, endTime: p.schedule.endTime }
+      : null,
   };
 }
 

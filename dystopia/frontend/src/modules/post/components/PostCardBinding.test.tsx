@@ -41,6 +41,7 @@ const basePost: PostView = {
   hashtags: [],
   mentions: [],
   liked: false,
+  schedule: null,
 };
 
 describe("PostCardBinding", () => {
@@ -182,6 +183,73 @@ describe("PostCardBinding", () => {
       root.unmount();
     });
     container.remove();
+  });
+
+  describe("shift card", () => {
+    const schedule = { workDate: "2026-10-23", startTime: "20:00", endTime: "02:00" };
+    const withIndustry = (industry: string) => ({ ...basePost.author!, industry });
+
+    it("shows the heading and the time of the linked schedule, linked to the author's profile", () => {
+      const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, schedule }} />);
+
+      expect(html).toContain("10/23（金） 20:00〜02:00");
+      expect(html).toMatch(/<a[^>]*href="\/u\/test_taro"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00/s);
+    });
+
+    it("shows no shift card on a post without a schedule", () => {
+      const html = renderToStaticMarkup(<PostCardBinding post={basePost} />);
+
+      expect(html).not.toContain("出勤");
+    });
+
+    it("leads the date with the industry icon of the author", () => {
+      const html = renderToStaticMarkup(
+        <PostCardBinding post={{ ...basePost, schedule, author: withIndustry("デリヘル") }} />
+      );
+
+      expect(html).toMatch(/<span role="img" aria-label="デリヘル"[^>]*>🚗<\/span>/);
+      expect(html.indexOf("🚗")).toBeLessThan(html.indexOf("10/23（金）"));
+    });
+
+    it("shows no icon when the industry is empty or not in the list", () => {
+      for (const industry of ["", "未知の業種"]) {
+        const html = renderToStaticMarkup(
+          <PostCardBinding post={{ ...basePost, schedule, author: withIndustry(industry) }} />
+        );
+
+        expect(html).not.toContain('role="img"');
+      }
+    });
+
+    it("renders no link to the profile when the author has no username", () => {
+      const html = renderToStaticMarkup(
+        <PostCardBinding post={{ ...basePost, schedule, author: { ...withIndustry("デリヘル"), username: "" } }} />
+      );
+
+      expect(html).not.toContain('<a href="/u/');
+      expect(html).toContain("10/23（金） 20:00〜02:00");
+    });
+
+    it("keeps the note above the card", () => {
+      const html = renderToStaticMarkup(
+        <PostCardBinding post={{ ...basePost, content: "お待ちしてます！", schedule }} />
+      );
+
+      expect(html.indexOf("お待ちしてます！")).toBeLessThan(html.indexOf("出勤"));
+    });
+
+    it("renders no empty paragraph for a note-less announcement", () => {
+      const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, content: "", schedule }} />);
+
+      expect(html).not.toMatch(/<p[^>]*>\s*<\/p>/);
+      expect(html).toContain("出勤");
+    });
+
+    it("shows the card in the post detail as well", () => {
+      const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, schedule }} inDetail />);
+
+      expect(html).toContain("10/23（金） 20:00〜02:00");
+    });
   });
 
   describe("display window marks", () => {

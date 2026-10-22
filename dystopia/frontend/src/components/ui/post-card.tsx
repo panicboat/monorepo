@@ -26,7 +26,8 @@ export interface PostCardProps {
   time: string;
   isPrivate?: boolean;
   statusMark?: string;
-  body: React.ReactNode;
+  body?: React.ReactNode;
+  attachment?: React.ReactNode;
   images?: PostCardImage[];
   videos?: PostCardVideo[];
   reactions?: React.ReactNode;
@@ -42,6 +43,7 @@ export function PostCard({
   isPrivate,
   statusMark,
   body,
+  attachment,
   images,
   videos,
   reactions,
@@ -88,13 +90,15 @@ export function PostCard({
               </span>
             )}
           </div>
-          {detailHref ? (
-            <Link href={detailHref} onClick={onDetailClick} className="block">
+          {body !== undefined &&
+            (detailHref ? (
+              <Link href={detailHref} onClick={onDetailClick} className="block">
+                <p className="mt-1 whitespace-pre-wrap text-text-primary">{body}</p>
+              </Link>
+            ) : (
               <p className="mt-1 whitespace-pre-wrap text-text-primary">{body}</p>
-            </Link>
-          ) : (
-            <p className="mt-1 whitespace-pre-wrap text-text-primary">{body}</p>
-          )}
+            ))}
+          {attachment}
           {videos?.map((video) => (
             // Load only the metadata: a feed of full video files would download every one before any is played.
             <video

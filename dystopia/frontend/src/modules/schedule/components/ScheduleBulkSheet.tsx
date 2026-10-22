@@ -3,13 +3,18 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
 import { useDeleteSchedule, useSaveSchedule, useSchedules } from "@/modules/schedule/hooks";
 import { buildDateRange, formatDayLabel, formatMonthDay } from "@/modules/schedule/lib/dates";
+import type { ScheduleAnnouncement } from "@/modules/schedule/types";
 import { useToastStore } from "@/stores/toastStore";
 import { TimeSelect } from "./TimeSelect";
 
 const DAYS = 14;
+const DEFAULT_ANNOUNCE_TIME = "09:00";
+const MAX_ANNOUNCE_NOTE_LENGTH = 200;
 const PRESETS = [
   ["20:00", "02:00"],
   ["18:00", "23:00"],
@@ -41,6 +46,9 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
   const [mode, setMode] = useState<Mode>("work");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
+  const [announce, setAnnounce] = useState(true);
+  const [announceTime, setAnnounceTime] = useState(DEFAULT_ANNOUNCE_TIME);
+  const [announceNote, setAnnounceNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState<string[]>([]);
 
@@ -49,7 +57,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
   const ready =
     !loading &&
     !error &&
-    (mode === "clear" ? hasPlanSelected : selected.size > 0 && start !== "" && end !== "");
+    (mode === "clear" ? hasPlanSelected : selected.size > 0 && start !== "" && end !== "" && (!announce || announceTime !== ""));
 
   const toggle = (dateKey: string) =>
     setSelected((current) => {
@@ -73,10 +81,13 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
     setSaving(true);
     setFailed([]);
     const failures: string[] = [];
+    const announcement: ScheduleAnnouncement = announce
+      ? { announce: true, announceTime, announceNote }
+      : { announce: false, announceTime: "", announceNote: "" };
     for (const dateKey of days.filter((key) => selected.has(key))) {
       if (mode === "clear" && !byDate.has(dateKey)) continue;
       try {
-        if (mode === "work") await saveSchedule(dateKey, start, end);
+        if (mode === "work") await saveSchedule(dateKey, start, end, announcement);
         else await deleteSchedule(dateKey);
       } catch {
         failures.push(dateKey);
@@ -177,8 +188,33 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
                   </button>
                 ))}
               </div>
+              <div className="flex flex-col gap-3 border-t border-divider pt-3">
+                <label className="flex items-center gap-2 text-sm text-text-primary">
+                  <Toggle checked={announce} onCheckedChange={setAnnounce} aria-label="投稿でお知らせする" />
+                  <span>投稿でお知らせする</span>
+                </label>
+                {announce && (
+                  <>
+                    <div className="flex items-center gap-3 text-sm text-text-secondary">
+                      <span className="shrink-0">お知らせする時刻</span>
+                      <TimeSelect label="お知らせする時刻" value={announceTime} onChange={setAnnounceTime} />
+                    </div>
+                    <label className="flex flex-col gap-1 text-sm text-text-secondary">
+                      ひとこと
+                      <Textarea
+                        aria-label="ひとこと"
+                        value={announceNote}
+                        maxLength={MAX_ANNOUNCE_NOTE_LENGTH}
+                        className="min-h-16"
+                        onChange={(e) => setAnnounceNote(e.target.value)}
+                      />
+                    </label>
+                  </>
+                )}
+              </div>
             </div>
           )}
+          {mode === "clear" && <p className="mt-3 text-sm text-text-secondary">お知らせの投稿も消えます</p>}
         </div>
 
         {failed.length > 0 && (

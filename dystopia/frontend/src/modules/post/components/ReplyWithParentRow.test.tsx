@@ -50,6 +50,7 @@ const parentPost: PostView = {
   hashtags: [],
   mentions: [],
   liked: false,
+  schedule: null,
 };
 
 describe("ReplyWithParentRow", () => {
@@ -78,6 +79,25 @@ describe("ReplyWithParentRow", () => {
     );
 
     expect(html).toContain('class="mt-1 line-clamp-2 text-sm text-text-primary"');
+  });
+
+  it("previews an announcement without a note as one shift line", () => {
+    const schedule = { workDate: "2026-10-23", startTime: "20:00", endTime: "02:00" };
+    const html = renderToStaticMarkup(
+      <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, content: "", schedule }} />
+    );
+
+    expect(html).toContain("出勤 10/23（金）20:00〜02:00");
+  });
+
+  it("previews the note of an announcement instead of the shift line", () => {
+    const schedule = { workDate: "2026-10-23", startTime: "20:00", endTime: "02:00" };
+    const html = renderToStaticMarkup(
+      <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, content: "お待ちしてます！", schedule }} />
+    );
+
+    expect(html).toContain("お待ちしてます！");
+    expect(html).not.toContain("出勤");
   });
 
   it("dates the parent post by its display start", () => {

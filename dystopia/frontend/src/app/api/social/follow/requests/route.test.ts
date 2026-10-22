@@ -22,7 +22,7 @@ describe("GET /api/social/follow/requests", () => {
     const body = await (await GET(req)).json();
 
     expect(body.requests).toEqual([
-      { profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: true, role: "guest" },
+      { profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: true, role: "guest", industry: "" },
     ]);
   });
 });

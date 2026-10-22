@@ -16,6 +16,9 @@ export async function POST(req: NextRequest) {
         workDate: body?.workDate || "",
         startTime: body?.startTime || "",
         endTime: body?.endTime || "",
+        announce: body?.announce === true,
+        announceTime: body?.announceTime || "",
+        announceNote: body?.announceNote || "",
       },
       { headers }
     );

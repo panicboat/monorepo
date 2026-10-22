@@ -25,6 +25,7 @@ const post: PostView = {
   hashtags: [],
   mentions: [],
   liked: false,
+  schedule: null,
 };
 
 const stopNavigation = (event: Event) => event.preventDefault();

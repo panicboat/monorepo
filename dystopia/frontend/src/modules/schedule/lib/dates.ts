@@ -14,6 +14,11 @@ export function formatDayLabel(dateKey: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAYS[d.getDay()]})`;
 }
 
+export function formatShiftDay(dateKey: string): string {
+  const d = new Date(`${dateKey}T00:00:00`);
+  return `${formatMonthDay(dateKey)}（${WEEKDAYS[d.getDay()]}）`;
+}
+
 export function buildDateRange(start: Date, days: number): string[] {
   return Array.from({ length: days }, (_, i) => toDateKey(new Date(start.getTime() + i * MS_PER_DAY)));
 }

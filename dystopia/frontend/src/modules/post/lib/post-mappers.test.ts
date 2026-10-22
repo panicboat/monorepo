@@ -3,6 +3,7 @@ import { buildSavePostRequest, mapPostToView } from "./post-mappers";
 import { create } from "@bufbuild/protobuf";
 import type { Post } from "@/stub/post/v1/post_service_pb";
 import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
+import { ScheduleSchema } from "@/stub/schedule/v1/schedule_service_pb";
 
 describe("mapPostToView mentions", () => {
   it("maps proto mentions into MentionView", () => {
@@ -57,6 +58,25 @@ describe("mapPostToView author", () => {
     const view = mapPostToView(base as unknown as Post);
 
     expect(view.author).toBeNull();
+  });
+});
+
+describe("mapPostToView schedule", () => {
+  const base = {
+    id: "p1", authorProfileId: "a1", content: "", media: [], createdAt: "",
+    likesCount: 0, commentsCount: 0, visibility: "public", hashtags: [], liked: false, mentions: [],
+  };
+
+  it("maps the linked schedule into its date and times", () => {
+    const schedule = create(ScheduleSchema, { profileId: "a1", workDate: "2026-10-24", startTime: "20:00", endTime: "02:00" });
+
+    const view = mapPostToView({ ...base, schedule } as unknown as Post);
+
+    expect(view.schedule).toEqual({ workDate: "2026-10-24", startTime: "20:00", endTime: "02:00" });
+  });
+
+  it("is null when the post has no linked schedule", () => {
+    expect(mapPostToView(base as unknown as Post).schedule).toBeNull();
   });
 });
 
