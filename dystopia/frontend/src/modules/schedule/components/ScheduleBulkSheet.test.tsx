@@ -283,7 +283,7 @@ describe("ScheduleBulkSheet", () => {
   });
 
   describe("checking the announcement time against the schedule end", () => {
-    const TOO_LATE = "お知らせの時刻は出勤の終了より前にしてください";
+    const TOO_LATE = "お知らせの時刻は予定の終了より前にしてください";
     const pickSchedule = async (startTime: string, endTime: string, announceAt: string) => {
       await click(day("2026-10-14"));
       await setTime("開始", startTime);
@@ -401,7 +401,7 @@ describe("ScheduleBulkSheet", () => {
   });
 
   describe("explaining a failed save", () => {
-    const TOO_EARLY = "お知らせの時刻は出勤の終了より前にしてください";
+    const TOO_EARLY = "お知らせの時刻は予定の終了より前にしてください";
     const TOO_LONG = "ひとことは200文字以内で入力してください";
     const rejectWith = (reasons: Record<string, AppError>) =>
       mocks.save.mockImplementation(async (workDate: string) => {

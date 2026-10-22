@@ -1,6 +1,6 @@
 export function GuestHeroArt() {
   return (
-    <div aria-label="フォローしたキャストの投稿と出勤予定をまとめて見る体験のイメージ" className="hero-art guest-hero-art">
+    <div aria-label="フォローしたキャストの投稿と予定をまとめて見る体験のイメージ" className="hero-art guest-hero-art">
       <div className="orbit" />
       <div className="moon guest-moon" />
       <div aria-hidden="true" className="city">
@@ -86,7 +86,7 @@ export function GuestHeroArt() {
         </div>
       </div>
       <div className="float-card schedule guest-float-schedule">
-        <div className="float-label">TONIGHT · 出勤予定</div>
+        <div className="float-label">TONIGHT · 予定</div>
         <div className="float-title">
           {"Rin · 10.11 SUN "}
           <span className="tiny-heart">●</span>
@@ -94,7 +94,7 @@ export function GuestHeroArt() {
         <div className="float-data">
           20:00 – 02:00
           <br />
-          出勤予定をプロフィールで確認
+          予定をプロフィールで確認
         </div>
         <div className="float-days">
           <span>11 日</span>
@@ -132,7 +132,7 @@ export function GuestValues() {
             その人を、もっと知ることから。
           </h2>
           <p>
-            出勤の情報だけでなく、何気ない日常や言葉も。
+            予定だけでなく、何気ない日常や言葉も。
             <br />
             会いに行く前の時間だって、あなたの楽しみになる。
           </p>
@@ -151,7 +151,7 @@ export function GuestValues() {
           <article className="value" data-num="02">
             <div aria-hidden="true" className="value-icon">☾</div>
             <h3>会う前の時間も、つながっている。</h3>
-            <p>今日のひと言も、次の出勤予定も。同じタイムラインとプロフィールから見つけられる。</p>
+            <p>今日のひと言も、次の予定も。同じタイムラインとプロフィールから見つけられる。</p>
           </article>
           <article className="value" data-num="03">
             <div aria-hidden="true" className="value-icon">♡</div>
@@ -226,7 +226,7 @@ export function GuestStories() {
           <div className="story-visual">
             <div className="schedule-ui guest-schedule-ui">
               <div className="bar">
-                <h4>Rin の出勤予定</h4>
+                <h4>Rin の予定</h4>
                 <small>プロフィールから ↗</small>
               </div>
               <div className="dates">
@@ -257,8 +257,8 @@ export function GuestStories() {
               <br />
               ひと目で分かる。
             </h3>
-            <p>フォローしたキャストのプロフィールで、出勤スケジュールを確認。あちこち探し回らず、会いに行きたい夜を考えられます。</p>
-            <p className="fine">※ 出勤予定は予約可能な時間を保証するものではありません。</p>
+            <p>フォローしたキャストのプロフィールで、予定を確認。あちこち探し回らず、会いに行きたい夜を考えられます。</p>
+            <p className="fine">※ 予定は予約可能な時間を保証するものではありません。</p>
           </div>
         </article>
         <article className="story-row">
@@ -272,7 +272,7 @@ export function GuestStories() {
                 </div>
                 <span className="chat-more">···</span>
               </div>
-              <div className="chat-bubble other">こんばんは。出勤予定、更新しました 🌙</div>
+              <div className="chat-bubble other">こんばんは。予定、更新しました 🌙</div>
               <div className="chat-bubble mine">ありがとう！今度の予定を相談したいです。</div>
               <div className="chat-input">
                 {"メッセージを入力… "}
@@ -287,7 +287,7 @@ export function GuestStories() {
               <br />
               言葉を交わせる。
             </h3>
-            <p>気になるキャストと、メッセージでつながる。出勤についての相談も、次に会う日の話も、相手のペースを大切にしながら。</p>
+            <p>気になるキャストと、メッセージでつながる。予定についての相談も、次に会う日の話も、相手のペースを大切にしながら。</p>
             <p className="fine">※ 画面は架空のイメージです。連絡できる相手や送受信の条件はサービスの設定によります。予約確定を表すものではありません。</p>
           </div>
         </article>

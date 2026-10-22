@@ -37,7 +37,7 @@ const result = create(ScheduleSearchResultSchema, {
   }),
   prefecture: "東京都",
   area: "新宿",
-  note: "久しぶりの出勤です",
+  note: "久しぶりにお店にいます",
 });
 
 describe("GET /api/discovery/schedules", () => {
@@ -94,7 +94,7 @@ describe("GET /api/discovery/schedules", () => {
           },
           prefecture: "東京都",
           area: "新宿",
-          note: "久しぶりの出勤です",
+          note: "久しぶりにお店にいます",
         },
       ],
       nextCursor: "next-1",
@@ -116,7 +116,7 @@ describe("GET /api/discovery/schedules", () => {
   });
 
   it("forwards an invalid date or band untouched and returns the server's INVALID_ARGUMENT as 400", async () => {
-    discovery.searchSchedules.mockRejectedValue(new ConnectError("出勤日の形式が正しくありません", Code.InvalidArgument));
+    discovery.searchSchedules.mockRejectedValue(new ConnectError("予定日の形式が正しくありません", Code.InvalidArgument));
 
     const res = await GET(search({ date: "10/22", timeBand: "dawn" }));
 
@@ -125,7 +125,7 @@ describe("GET /api/discovery/schedules", () => {
       expect.anything()
     );
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("出勤日の形式が正しくありません");
+    expect((await res.json()).error).toBe("予定日の形式が正しくありません");
   });
 
   it("requires a signed-in viewer", async () => {

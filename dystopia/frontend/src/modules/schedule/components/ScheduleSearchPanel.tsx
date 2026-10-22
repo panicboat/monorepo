@@ -43,7 +43,7 @@ export function ScheduleSearchPanel({ query, choices, onChoicesChange }: Schedul
 
   return (
     <div>
-      <FilterGroup title="出勤日">
+      <FilterGroup title="予定日">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4">
           {days.map((dateKey, index) => (
             <div key={dateKey} className="shrink-0 whitespace-nowrap">
@@ -117,14 +117,14 @@ export function ScheduleSearchPanel({ query, choices, onChoicesChange }: Schedul
         <Toggle checked={followingOnly} onCheckedChange={(checked) => onChoicesChange({ ...choices, followingOnly: checked })} aria-label="フォロー中だけを見る" />
       </label>
 
-      <h2 className="border-t border-divider px-4 pb-2 pt-4 text-base font-bold text-text-primary">{formatScheduleDay(date)}の出勤予定</h2>
+      <h2 className="border-t border-divider px-4 pb-2 pt-4 text-base font-bold text-text-primary">{formatScheduleDay(date)}の予定</h2>
       {results.length === 0 &&
         (loading ? (
           <p className="px-4 py-6 text-text-secondary">検索中…</p>
         ) : error ? (
           <p className="px-4 py-6 text-text-secondary">読み込みに失敗しました</p>
         ) : (
-          <p className="px-4 py-6 text-text-secondary">{narrowed ? "条件に合う出勤予定はありません" : "この日の出勤予定はまだありません"}</p>
+          <p className="px-4 py-6 text-text-secondary">{narrowed ? "条件に合う予定はありません" : "この日の予定はまだありません"}</p>
         ))}
       {results.map((result) => (
         <ScheduleSearchCard key={`${result.schedule.profileId}:${result.schedule.workDate}`} result={result} />
@@ -137,7 +137,7 @@ export function ScheduleSearchPanel({ query, choices, onChoicesChange }: Schedul
         </div>
       )}
       <p className="px-4 pb-4 pt-2 text-xs text-text-secondary">
-        キャストが公開した出勤予定です。予約の空きや受付可否を保証するものではありません。
+        キャストが公開した予定です。予約の空きや受付可否を保証するものではありません。
       </p>
     </div>
   );

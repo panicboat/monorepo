@@ -242,11 +242,11 @@ describe("SearchPage", () => {
       };
     }
 
-    it("adds a 出勤 tab after the user and post tabs", async () => {
+    it("adds a 予定 tab after the user and post tabs", async () => {
       navigation.query = null;
       const view = await open();
 
-      expect(view.tabLabels()).toEqual(["ユーザー", "投稿", "出勤"]);
+      expect(view.tabLabels()).toEqual(["ユーザー", "投稿", "予定"]);
       expect(view.panel()).toBeNull();
 
       await view.unmount();
@@ -256,7 +256,7 @@ describe("SearchPage", () => {
       navigation.tab = "schedules";
       const view = await open();
 
-      expect(view.selectedTab()).toBe("出勤");
+      expect(view.selectedTab()).toBe("予定");
       expect(view.panel()).not.toBeNull();
       expect(hookMocks.useSearchUsers).toHaveBeenLastCalledWith("", 0);
       expect(hookMocks.useSearchPosts).toHaveBeenLastCalledWith("");
@@ -280,7 +280,7 @@ describe("SearchPage", () => {
       const view = await open();
 
       expect(view.container.textContent).toContain("ユーザー名や投稿内容で検索できます");
-      await view.select("出勤");
+      await view.select("予定");
       expect(view.container.textContent).not.toContain("ユーザー名や投稿内容で検索できます");
       await view.select("ユーザー");
       expect(view.container.textContent).toContain("ユーザー名や投稿内容で検索できます");
@@ -293,7 +293,7 @@ describe("SearchPage", () => {
       const view = await open();
       await typeQuery(view.container.querySelector('input[aria-label="検索"]') as HTMLInputElement, "すず");
 
-      await view.select("出勤");
+      await view.select("予定");
 
       expect(view.panel()?.getAttribute("data-query")).toBe("すず");
       expect(hookMocks.useSearchUsers).toHaveBeenLastCalledWith("", 0);
@@ -332,7 +332,7 @@ describe("SearchPage", () => {
       const view = await open();
       expect(view.input().placeholder).toBe("ユーザーや投稿を検索");
 
-      await view.select("出勤");
+      await view.select("予定");
       expect(view.input().placeholder).toBe("名前で絞り込む");
       expect(view.input().getAttribute("aria-label")).toBe("検索");
 
@@ -352,7 +352,7 @@ describe("SearchPage", () => {
         const view = await open();
         expect(navigation.replace).not.toHaveBeenCalled();
 
-        await view.select("出勤");
+        await view.select("予定");
         expect(navigation.replace).toHaveBeenLastCalledWith("/search?tab=schedules", { scroll: false });
         await view.select("投稿");
         expect(navigation.replace).toHaveBeenLastCalledWith("/search?tab=posts", { scroll: false });
@@ -407,7 +407,7 @@ describe("SearchPage", () => {
         await view.select("ユーザー");
         expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({ tab: "users" });
 
-        await view.select("出勤");
+        await view.select("予定");
         expect(view.choices()).toEqual(chosen);
         expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({ tab: "schedules", date: tomorrow(), prefecture: "大阪府", timeBand: "day" });
 
@@ -447,7 +447,7 @@ describe("SearchPage", () => {
         navigation.extra = { date: tomorrow(), prefecture: "東京都", area: "新宿", industry: "ソープ", timeBand: "night", following: "1" };
         const view = await open();
 
-        expect(view.selectedTab()).toBe("出勤");
+        expect(view.selectedTab()).toBe("予定");
         expect(view.choices()).toEqual({ date: tomorrow(), prefecture: "東京都", area: "新宿", industry: "ソープ", timeBand: "night", followingOnly: true });
         expect(navigation.replace).not.toHaveBeenCalled();
 

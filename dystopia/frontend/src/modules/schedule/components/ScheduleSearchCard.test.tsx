@@ -101,10 +101,10 @@ describe("ScheduleSearchCard", () => {
   });
 
   it("puts the note above the schedule summary, as a post puts its text above the card", async () => {
-    await mount({ note: "久しぶりの出勤。" });
+    await mount({ note: "久しぶりにお店にいます。" });
 
     const text = container.textContent ?? "";
-    expect(text.indexOf("久しぶりの出勤。")).toBeLessThan(text.indexOf("出勤16:00"));
+    expect(text.indexOf("久しぶりにお店にいます。")).toBeLessThan(text.indexOf("予定16:00"));
   });
 
   it("shows no icon for an empty or unlisted industry", async () => {
@@ -158,9 +158,9 @@ describe("ScheduleSearchCard", () => {
     const withoutNote = container.querySelectorAll("p").length;
     await unmount();
 
-    await mount({ note: "久しぶりの出勤。よろしくお願いします。" });
+    await mount({ note: "久しぶりにお店にいます。よろしくお願いします。" });
 
-    expect(container.textContent).toContain("久しぶりの出勤。よろしくお願いします。");
+    expect(container.textContent).toContain("久しぶりにお店にいます。よろしくお願いします。");
     expect(container.querySelectorAll("p")).toHaveLength(withoutNote + 1);
   });
 

@@ -28,13 +28,13 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
   it "rejects an impossible work_date with the format message" do
     expect {
       uc.call(profile_id: profile_id, work_date: "2026-13-45", start_time: "20:00", end_time: "02:00")
-    }.to raise_error(Errors::ValidationError, "出勤日の形式が正しくありません")
+    }.to raise_error(Errors::ValidationError, "予定日の形式が正しくありません")
   end
 
   it "rejects an impossible work_date when announcing" do
     expect {
       uc.call(profile_id: profile_id, work_date: "2026-02-30", start_time: "20:00", end_time: "02:00", announce: true, announce_time: "09:00")
-    }.to raise_error(Errors::ValidationError, "出勤日の形式が正しくありません")
+    }.to raise_error(Errors::ValidationError, "予定日の形式が正しくありません")
   end
 
   describe "announcement" do
@@ -216,7 +216,7 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
 
     it "rejects an announcement time at or after the schedule end" do
       expect { save(start_time: "10:00", end_time: "18:00", announce_time: "18:00") }
-        .to raise_error(Errors::ValidationError, "お知らせの時刻は出勤の終了より前にしてください")
+        .to raise_error(Errors::ValidationError, "お知らせの時刻は予定の終了より前にしてください")
     end
 
     it "rejects a note longer than 200 characters" do

@@ -140,21 +140,21 @@ describe("PostCard", () => {
 
   it("renders the attachment under the body, outside the detail link", () => {
     const html = renderToStaticMarkup(
-      <PostCard {...baseProps} detailHref="/posts/post-1" attachment={<a href="/u/rin">出勤</a>} />
+      <PostCard {...baseProps} detailHref="/posts/post-1" attachment={<a href="/u/rin">予定</a>} />
     );
 
-    expect(html.indexOf("出勤")).toBeGreaterThan(html.indexOf("こんにちは"));
-    expect(html).toMatch(/<\/a><a href="\/u\/rin">出勤<\/a>/);
+    expect(html.indexOf("予定")).toBeGreaterThan(html.indexOf("こんにちは"));
+    expect(html).toMatch(/<\/a><a href="\/u\/rin">予定<\/a>/);
   });
 
   it("renders no body paragraph when the body is omitted", () => {
     const html = renderToStaticMarkup(
-      <PostCard {...baseProps} body={undefined} detailHref="/posts/post-1" attachment={<div>出勤</div>} />
+      <PostCard {...baseProps} body={undefined} detailHref="/posts/post-1" attachment={<div>予定</div>} />
     );
 
     expect(html).not.toMatch(/<p[^>]*><\/p>/);
     expect(html).not.toContain(`href="/posts/post-1"`);
-    expect(html).toContain("出勤");
+    expect(html).toContain("予定");
   });
 
   it("does not nest the image thumbnail inside the post detail link", async () => {

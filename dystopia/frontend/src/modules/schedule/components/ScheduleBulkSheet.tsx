@@ -217,7 +217,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
                         <span className="shrink-0">お知らせする時刻</span>
                         <TimeSelect label="お知らせする時刻" value={announceTime} onChange={setAnnounceTime} />
                       </div>
-                      {announceTooLate && <p className="text-sm text-error">お知らせの時刻は出勤の終了より前にしてください</p>}
+                      {announceTooLate && <p className="text-sm text-error">お知らせの時刻は予定の終了より前にしてください</p>}
                     </div>
                     <label className="flex flex-col gap-1 text-sm text-text-secondary">
                       ひとこと

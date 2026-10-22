@@ -89,7 +89,7 @@ RSpec.describe Schedule::Grpc::ScheduleHandler, type: :database do
       request = Schedule::V1::SaveScheduleRequest.new(work_date: "2099-10-24", start_time: "10:00", end_time: "18:00", announce: true, announce_time: "18:00")
 
       expect(invalid_argument_message { rpc(:save_schedule, request) })
-        .to eq([GRPC::Core::StatusCodes::INVALID_ARGUMENT, "お知らせの時刻は出勤の終了より前にしてください"])
+        .to eq([GRPC::Core::StatusCodes::INVALID_ARGUMENT, "お知らせの時刻は予定の終了より前にしてください"])
     end
 
     it "answers INVALID_ARGUMENT when the note exceeds 200 characters" do

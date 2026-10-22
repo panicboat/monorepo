@@ -89,7 +89,7 @@ describe("ReplyWithParentRow", () => {
       <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, content: "", schedule }} />
     );
 
-    expect(html).toContain("出勤 10/23（金）20:00〜02:00 翌日");
+    expect(html).toContain("予定 10/23（金）20:00〜02:00 翌日");
   });
 
   it("previews a start before 05:00 as the next day", () => {
@@ -98,7 +98,7 @@ describe("ReplyWithParentRow", () => {
       <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, content: "", schedule }} />
     );
 
-    expect(html).toContain("出勤 10/23（金）01:00〜05:00 翌日");
+    expect(html).toContain("予定 10/23（金）01:00〜05:00 翌日");
   });
 
   it("previews a schedule that ends on its work date without the next-day label", () => {
@@ -107,7 +107,7 @@ describe("ReplyWithParentRow", () => {
       <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, content: "", schedule }} />
     );
 
-    expect(html).toContain("出勤 10/23（金）10:00〜18:00");
+    expect(html).toContain("予定 10/23（金）10:00〜18:00");
     expect(html).not.toContain("翌日");
   });
 
@@ -118,7 +118,7 @@ describe("ReplyWithParentRow", () => {
     );
 
     expect(html).toContain("お待ちしてます！");
-    expect(html).not.toContain("出勤");
+    expect(html).not.toContain("予定");
   });
 
   it("dates the parent post by its display start", () => {

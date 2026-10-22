@@ -60,7 +60,7 @@ export default function DevUiPage() {
     {
       id: "mock-1",
       authorProfileId: "demo",
-      content: "新作のお洋服届きました！今日はこれで出勤します🌷",
+      content: "新作のお洋服届きました！今日はこれで行きます🌷",
       media: [],
       createdAt: "2026-06-08T11:55:00Z",
       publishedAt: "2026-06-08T11:55:00Z",

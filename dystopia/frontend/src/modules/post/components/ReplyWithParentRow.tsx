@@ -54,7 +54,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
           </div>
           <p className="mt-1 line-clamp-2 text-sm text-text-primary">
             {parentPost.schedule && parentPost.content.trim() === "" ? (
-              `出勤 ${formatScheduleDay(parentPost.schedule.workDate)}${parentPost.schedule.startTime}〜${parentPost.schedule.endTime}${
+              `予定 ${formatScheduleDay(parentPost.schedule.workDate)}${parentPost.schedule.startTime}〜${parentPost.schedule.endTime}${
                 crossesMidnight(parentPost.schedule.startTime, parentPost.schedule.endTime) ? " 翌日" : ""
               }`
             ) : (

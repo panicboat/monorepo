@@ -24,7 +24,7 @@ module Schedule
         if announce
           validate_format!(announce_time, TIME_FORMAT, "お知らせの時刻")
           window = announcement_window.call(work_date: work_date, start_time: start_time, end_time: end_time, announce_time: announce_time, now: now)
-          raise Errors::ValidationError, "お知らせの時刻は出勤の終了より前にしてください" unless window.announce_before_end?
+          raise Errors::ValidationError, "お知らせの時刻は予定の終了より前にしてください" unless window.announce_before_end?
           raise Errors::ValidationError, "ひとことは#{NOTE_MAX_LENGTH}文字以内で入力してください" if note.length > NOTE_MAX_LENGTH
         end
 
@@ -76,10 +76,10 @@ module Schedule
       end
 
       def validate_date!(value)
-        validate_format!(value, DATE_FORMAT, "出勤日")
+        validate_format!(value, DATE_FORMAT, "予定日")
         Date.iso8601(value)
       rescue Date::Error
-        raise Errors::ValidationError, "出勤日の形式が正しくありません"
+        raise Errors::ValidationError, "予定日の形式が正しくありません"
       end
 
       def validate_format!(value, format, label)

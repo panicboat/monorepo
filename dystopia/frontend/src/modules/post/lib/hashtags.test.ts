@@ -7,12 +7,12 @@ describe("extractHashtags", () => {
   });
 
   it("accepts the full-width sign", () => {
-    expect(extractHashtags("今日は ＃出勤")).toEqual(["出勤"]);
+    expect(extractHashtags("今日は ＃新宿")).toEqual(["新宿"]);
   });
 
   it("needs a break before the sign, in Japanese text too", () => {
-    expect(extractHashtags("今日は#出勤")).toEqual([]);
-    expect(extractHashtags("今日は。#出勤")).toEqual(["出勤"]);
+    expect(extractHashtags("今日は#新宿")).toEqual([]);
+    expect(extractHashtags("今日は。#新宿")).toEqual(["新宿"]);
   });
 
   it("keeps the first spelling of a tag repeated in another case", () => {

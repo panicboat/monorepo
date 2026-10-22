@@ -195,13 +195,13 @@ describe("PostCardBinding", () => {
 
       expect(html).toContain("20:00〜02:00");
       expect(html).toContain("10/23（金）");
-      expect(html).toMatch(/<a[^>]*href="\/u\/test_taro\?tab=schedule"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00/s);
+      expect(html).toMatch(/<a[^>]*href="\/u\/test_taro\?tab=schedule"[^>]*>(?:(?!<\/a>).)*予定(?:(?!<\/a>).)*20:00〜02:00/s);
     });
 
     it("shows no schedule card on a post without a schedule", () => {
       const html = renderToStaticMarkup(<PostCardBinding post={basePost} />);
 
-      expect(html).not.toContain("出勤");
+      expect(html).not.toContain("予定");
     });
 
     it("leads the date with the industry icon of the author", () => {
@@ -238,14 +238,14 @@ describe("PostCardBinding", () => {
         <PostCardBinding post={{ ...basePost, content: "お待ちしてます！", schedule }} />
       );
 
-      expect(html.indexOf("お待ちしてます！")).toBeLessThan(html.indexOf("出勤"));
+      expect(html.indexOf("お待ちしてます！")).toBeLessThan(html.indexOf("予定"));
     });
 
     it("renders no empty paragraph for a note-less announcement", () => {
       const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, content: "", schedule }} />);
 
       expect(html).not.toMatch(/<p[^>]*>\s*<\/p>/);
-      expect(html).toContain("出勤");
+      expect(html).toContain("予定");
     });
 
     it("shows the card in the post detail as well", () => {
