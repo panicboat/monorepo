@@ -83,6 +83,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   end
 
   it "ranks and searches posts for a viewer" do
+    [public_post, private_post].each { |post| like_repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7) }
     ranked = Discovery::Slice["use_cases.rank_posts"].call(period: "all", viewer_profile_id: viewer)
     found = Discovery::Slice["use_cases.search_posts"].call(query: "wiring", viewer_profile_id: viewer)
 

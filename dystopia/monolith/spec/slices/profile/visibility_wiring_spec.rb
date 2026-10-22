@@ -103,6 +103,7 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
     end
 
     it "has no posts anywhere a post is read" do
+      like_repo.profile_like(post_id: shown_post.id, profile_id: SecureRandom.uuid_v7)
       act_as(viewer)
 
       expect { rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: ghost_post.id)) }.to status(GRPC::Core::StatusCodes::NOT_FOUND)

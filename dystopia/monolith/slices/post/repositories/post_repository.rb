@@ -147,10 +147,10 @@ module Post
           return []
         end
 
-        likes_count_expr = Sequel.function(:coalesce, Sequel.function(:count, Sequel[:post__likes][:id]), 0)
+        likes_count_expr = Sequel.function(:count, Sequel[:post__likes][:id])
 
         scope = ds
-          .left_join(:post__likes, post_id: Sequel[:post__posts][:id])
+          .join(:post__likes, post_id: Sequel[:post__posts][:id])
           .group(Sequel[:post__posts][:id])
           .select(Sequel[:post__posts][:id], likes_count_expr.as(:likes_count))
 
