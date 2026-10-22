@@ -41,11 +41,11 @@ module Discovery
       private
 
       def parse_date(value)
-        raise Errors::ValidationError, "出勤日の形式が正しくありません" unless value.is_a?(String) && value.match?(DATE_FORMAT)
+        raise Errors::ValidationError, "予定日の形式が正しくありません" unless value.is_a?(String) && value.match?(DATE_FORMAT)
 
         Date.iso8601(value)
       rescue Date::Error
-        raise Errors::ValidationError, "出勤日の形式が正しくありません"
+        raise Errors::ValidationError, "予定日の形式が正しくありません"
       end
 
       def parse_cursor(cursor)

@@ -7,7 +7,7 @@ db = Seeds::Helper.db
 
 base_posts = {
   0 => [
-    { content: "[Yuna/Public/Public] 今日も元気に出勤中！✨ 皆さんのお越しをお待ちしています。", visibility: "public", hashtags: ["出勤", "渋谷"] },
+    { content: "[Yuna/Public/Public] 今日も元気にお仕事中！✨ 皆さんのお越しをお待ちしています。", visibility: "public", hashtags: ["渋谷"] },
     { content: "[Yuna/Public/Public] 新しいドレスを買いました👗 次回お会いできるのを楽しみにしています！", visibility: "public", hashtags: ["新衣装", "ファッション"] },
     { content: "[Yuna/Public/Private] フォロワー限定！来週のイベント情報お伝えします🎉", visibility: "private", hashtags: ["フォロワー限定", "イベント"] },
   ],
@@ -22,7 +22,7 @@ base_posts = {
     { content: "[Rin/Public/Private] フォロワーさん限定のオフショットです📸", visibility: "private", hashtags: ["オフショット", "限定"] },
   ],
   3 => [
-    { content: "[Yuna大阪/Public/Public] 今週は大阪に出勤します！梅田でお待ちしています✨", visibility: "public", hashtags: ["大阪", "出勤予定"] },
+    { content: "[Yuna大阪/Public/Public] 今週は大阪にいます！梅田でお待ちしています✨", visibility: "public", hashtags: ["大阪", "予定"] },
     { content: "[Yuna大阪/Public/Public] 大阪のおすすめランチを教えてください🍴", visibility: "public", hashtags: ["大阪", "日常"] },
     { content: "[Yuna大阪/Public/Private] 大阪のフォロワーさん限定のお知らせです🔒", visibility: "private", hashtags: ["フォロワー限定"] },
   ],
@@ -31,7 +31,7 @@ base_posts = {
 
 extra_posts = {
   0 => [
-    { content: "今日も一日頑張ろう✨", visibility: "public", hashtags: ["出勤予定"] },
+    { content: "今日も一日頑張ろう✨", visibility: "public", hashtags: [] },
     { content: "おはよう☀️ 今日も素敵な一日に！", visibility: "public", hashtags: ["日常"] },
     { content: "お仕事終わり！今日もありがとう💕", visibility: "public", hashtags: ["お礼"] },
     { content: "カフェでまったり☕", visibility: "public", hashtags: ["カフェ"] },
@@ -41,7 +41,7 @@ extra_posts = {
     { content: "今日来てくれた方ありがとう💗", visibility: "public", hashtags: ["お礼", "ありがとう"] },
     { content: "素敵な時間をありがとうございました", visibility: "public", hashtags: ["お礼"] },
     { content: "リピートしてくれて嬉しい🥰", visibility: "public", hashtags: ["お礼"] },
-    { content: "今日は渋谷に出勤です！", visibility: "public", hashtags: ["渋谷", "出勤予定"] },
+    { content: "今日は渋谷にいます！", visibility: "public", hashtags: ["渋谷", "予定"] },
     { content: "新しいプラン始めました♡", visibility: "public", hashtags: ["告知"] },
     { content: "フォロワー限定の特別情報🔒", visibility: "private", hashtags: ["フォロワー限定"] },
     { content: "メンバーだけに見せたいオフショット📸", visibility: "private", hashtags: ["限定", "オフショット"] },
@@ -54,7 +54,7 @@ extra_posts = {
     { content: "最近ハマってること🎵", visibility: "public", hashtags: ["日常"] },
     { content: "おすすめの映画見つけた🎬", visibility: "public", hashtags: ["日常"] },
     { content: "素敵なお客様でした。ありがとう！", visibility: "public", hashtags: ["お礼"] },
-    { content: "六本木で待ってます💕", visibility: "public", hashtags: ["六本木", "出勤予定"] },
+    { content: "六本木で待ってます💕", visibility: "public", hashtags: ["六本木", "予定"] },
     { content: "深夜も対応可能です🌃", visibility: "public", hashtags: ["告知"] },
     { content: "予約受付中です📱", visibility: "public", hashtags: ["予約受付中"] },
     { content: "メンバー限定のお知らせ📢", visibility: "private", hashtags: ["メンバー限定"] },
@@ -71,8 +71,8 @@ extra_posts = {
     { content: "今日の空がきれい🌅", visibility: "public", hashtags: ["日常"] },
     { content: "いつも応援ありがとう", visibility: "public", hashtags: ["ありがとう"] },
     { content: "フォローありがとうございます", visibility: "public", hashtags: ["ありがとう"] },
-    { content: "池袋でお待ちしています！", visibility: "public", hashtags: ["池袋", "出勤予定"] },
-    { content: "今週の出勤予定です📅", visibility: "public", hashtags: ["出勤予定"] },
+    { content: "池袋でお待ちしています！", visibility: "public", hashtags: ["池袋", "予定"] },
+    { content: "今週の予定です📅", visibility: "public", hashtags: ["予定"] },
     { content: "期間限定のイベント開催中🎉", visibility: "public", hashtags: ["イベント"] },
     { content: "初めての方歓迎です✨", visibility: "public", hashtags: ["告知"] },
     { content: "フォロワーさん限定の日記です📔", visibility: "private", hashtags: ["限定"] },

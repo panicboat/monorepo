@@ -29,7 +29,7 @@ const ROLE_CHIPS: Array<{ id: SearchUsersRoleFilter; label: string }> = [
 const TABS: TabItem[] = [
   { id: "users", label: "ユーザー" },
   { id: "posts", label: "投稿" },
-  { id: "schedules", label: "出勤" },
+  { id: "schedules", label: "予定" },
 ];
 
 const HASHTAG_QUERY = /^[#＃]/;

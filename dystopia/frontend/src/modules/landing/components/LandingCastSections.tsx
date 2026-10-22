@@ -1,6 +1,6 @@
 export function CastHeroArt() {
   return (
-    <div aria-label="SNSのタイムラインと出勤情報を組み合わせたサービスのイメージ" className="hero-art">
+    <div aria-label="SNSのタイムラインと予定を組み合わせたサービスのイメージ" className="hero-art">
       <div className="orbit" />
       <div className="moon" />
       <div aria-hidden="true" className="city">
@@ -85,7 +85,7 @@ export function CastHeroArt() {
         </div>
       </div>
       <div className="float-card schedule">
-        <div className="float-label">SHIFT · 出勤予定</div>
+        <div className="float-label">SCHEDULE · 予定</div>
         <div className="float-title">
           {"10.11 SUN "}
           <span className="tiny-heart">●</span>
@@ -214,7 +214,7 @@ export function CastStories() {
           <div className="story-visual">
             <div className="schedule-ui">
               <div className="bar">
-                <h4>今週の出勤予定</h4>
+                <h4>今週の予定</h4>
                 <small>プロフィールに表示 ↗</small>
               </div>
               <div className="dates">
@@ -245,8 +245,8 @@ export function CastStories() {
               <br />
               ちゃんと見つかる。
             </h3>
-            <p>日々の投稿からあなたを知った人が、プロフィールで出勤予定を確認できる。発信と仕事の情報を、離れた場所に置かなくていい。</p>
-            <p className="fine">※ 出勤予定の表示例です。空き枠確認や自動通知を表すものではありません。</p>
+            <p>日々の投稿からあなたを知った人が、プロフィールで予定を確認できる。発信と仕事の情報を、離れた場所に置かなくていい。</p>
+            <p className="fine">※ 予定の表示例です。空き枠確認や自動通知を表すものではありません。</p>
           </div>
         </article>
         <article className="story-row">

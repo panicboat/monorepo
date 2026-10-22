@@ -16,7 +16,7 @@ export function ScheduleSummary({ workDate, startTime, endTime, industry, href }
   const icon = industryIcon(industry);
   const content = (
     <>
-      <span className="block text-xs font-bold tracking-wide text-text-secondary">出勤</span>
+      <span className="block text-xs font-bold tracking-wide text-text-secondary">予定</span>
       <p className="mt-1 text-lg font-bold tabular-nums text-text-primary">
         {startTime}〜{endTime}
         {crossesMidnight(startTime, endTime) && <span className="ml-1 text-sm font-normal text-text-secondary">翌日</span>}

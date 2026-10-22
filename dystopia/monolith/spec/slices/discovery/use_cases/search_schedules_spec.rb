@@ -144,9 +144,9 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
   describe "note" do
     it "carries the content of a showing announcement" do
       suzu = cast
-      announce(suzu, schedule(suzu), content: "久しぶりの出勤")
+      announce(suzu, schedule(suzu), content: "久しぶりにお店にいます")
 
-      expect(search[:results].first.note).to eq("久しぶりの出勤")
+      expect(search[:results].first.note).to eq("久しぶりにお店にいます")
     end
 
     it "is empty when the schedule has no announcement" do

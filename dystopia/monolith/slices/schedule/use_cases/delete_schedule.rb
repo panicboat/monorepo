@@ -10,7 +10,7 @@ module Schedule
       DATE_FORMAT = /\A\d{4}-\d{2}-\d{2}\z/
 
       def call(profile_id:, work_date:)
-        validate_format!(work_date, "出勤日")
+        validate_format!(work_date, "予定日")
 
         schedule_repo.transaction do
           row = schedule_repo.find(profile_id: profile_id, work_date: work_date)

@@ -12,7 +12,7 @@ describe("ScheduleSummary", () => {
     const html = render();
 
     expect(html).toMatch(/<p class="[^"]*font-bold[^"]*">20:00〜02:00/);
-    expect(html.indexOf("出勤")).toBeLessThan(html.indexOf("20:00〜02:00"));
+    expect(html.indexOf("予定")).toBeLessThan(html.indexOf("20:00〜02:00"));
     expect(html.indexOf("20:00〜02:00")).toBeLessThan(html.indexOf("10/23（金）"));
   });
 
@@ -43,7 +43,7 @@ describe("ScheduleSummary", () => {
 
   it("links the whole frame when given a link, and renders no link otherwise", () => {
     expect(render({ href: "/u/rin?tab=schedule" })).toMatch(
-      /<a[^>]*href="\/u\/rin\?tab=schedule"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00(?:(?!<\/a>).)*10\/23（金）(?:(?!<\/a>).)*<\/a>/s
+      /<a[^>]*href="\/u\/rin\?tab=schedule"[^>]*>(?:(?!<\/a>).)*予定(?:(?!<\/a>).)*20:00〜02:00(?:(?!<\/a>).)*10\/23（金）(?:(?!<\/a>).)*<\/a>/s
     );
     expect(render()).not.toContain("<a");
   });

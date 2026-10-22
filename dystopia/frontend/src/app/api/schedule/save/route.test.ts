@@ -49,11 +49,11 @@ describe("POST /api/schedule/save", () => {
   });
 
   it("returns 400 with the monolith's validation message", async () => {
-    schedule.saveSchedule.mockRejectedValue(new ConnectError("お知らせの時刻は出勤の終了より前にしてください", Code.InvalidArgument));
+    schedule.saveSchedule.mockRejectedValue(new ConnectError("お知らせの時刻は予定の終了より前にしてください", Code.InvalidArgument));
 
     const res = await POST(save({ workDate: "2026-10-24", startTime: "06:00", endTime: "08:00", announce: true, announceTime: "09:00" }));
 
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("お知らせの時刻は出勤の終了より前にしてください");
+    expect((await res.json()).error).toBe("お知らせの時刻は予定の終了より前にしてください");
   });
 });
