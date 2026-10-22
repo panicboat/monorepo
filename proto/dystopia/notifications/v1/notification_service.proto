@@ -12,6 +12,9 @@ service NotificationService {
   rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
   rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (GetNotificationPreferencesResponse);
   rpc UpdateNotificationPreferences(UpdateNotificationPreferencesRequest) returns (UpdateNotificationPreferencesResponse);
+  rpc GetPushConfig(GetPushConfigRequest) returns (GetPushConfigResponse);
+  rpc RegisterPushSubscription(RegisterPushSubscriptionRequest) returns (RegisterPushSubscriptionResponse);
+  rpc UnregisterPushSubscription(UnregisterPushSubscriptionRequest) returns (UnregisterPushSubscriptionResponse);
 }
 
 enum NotificationType {
@@ -92,3 +95,23 @@ message UpdateNotificationPreferencesRequest {
 message UpdateNotificationPreferencesResponse {
   NotificationPreferences preferences = 1;
 }
+
+message GetPushConfigRequest {}
+
+message GetPushConfigResponse {
+  string vapid_public_key = 1;
+}
+
+message RegisterPushSubscriptionRequest {
+  string endpoint = 1;
+  string p256dh = 2;
+  string auth = 3;
+}
+
+message RegisterPushSubscriptionResponse {}
+
+message UnregisterPushSubscriptionRequest {
+  string endpoint = 1;
+}
+
+message UnregisterPushSubscriptionResponse {}

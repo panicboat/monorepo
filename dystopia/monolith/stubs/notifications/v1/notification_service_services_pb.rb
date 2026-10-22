@@ -21,6 +21,9 @@ module Notifications
         rpc :MarkAllRead, ::Notifications::V1::MarkAllReadRequest, ::Notifications::V1::MarkAllReadResponse
         rpc :GetNotificationPreferences, ::Notifications::V1::GetNotificationPreferencesRequest, ::Notifications::V1::GetNotificationPreferencesResponse
         rpc :UpdateNotificationPreferences, ::Notifications::V1::UpdateNotificationPreferencesRequest, ::Notifications::V1::UpdateNotificationPreferencesResponse
+        rpc :GetPushConfig, ::Notifications::V1::GetPushConfigRequest, ::Notifications::V1::GetPushConfigResponse
+        rpc :RegisterPushSubscription, ::Notifications::V1::RegisterPushSubscriptionRequest, ::Notifications::V1::RegisterPushSubscriptionResponse
+        rpc :UnregisterPushSubscription, ::Notifications::V1::UnregisterPushSubscriptionRequest, ::Notifications::V1::UnregisterPushSubscriptionResponse
       end
 
       Stub = Service.rpc_stub_class

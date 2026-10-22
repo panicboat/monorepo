@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file notifications/v1/notification_service.proto.
  */
 export const file_notifications_v1_notification_service: GenFile = /*@__PURE__*/
-  fileDesc("Citub3RpZmljYXRpb25zL3YxL25vdGlmaWNhdGlvbl9zZXJ2aWNlLnByb3RvEhBub3RpZmljYXRpb25zLnYxIqkCCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSMAoEdHlwZRgCIAEoDjIiLm5vdGlmaWNhdGlvbnMudjEuTm90aWZpY2F0aW9uVHlwZRIaChJ0YXJnZXRfcmVzb3VyY2VfaWQYAyABKAkSEwoLYWN0b3JfY291bnQYBCABKAUSMAoMbGF0ZXN0X2FjdG9yGAUgASgLMhoucHJvZmlsZS52MS5Qcm9maWxlU3VtbWFyeRIzCg9sYXRlc3RfZXZlbnRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEisKB3JlYWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhYKDnRhcmdldF9wb3N0X2lkGAggASgJIjkKGExpc3ROb3RpZmljYXRpb25zUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkijwEKGUxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USNQoNbm90aWZpY2F0aW9ucxgBIAMoCzIeLm5vdGlmaWNhdGlvbnMudjEuTm90aWZpY2F0aW9uEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEhQKDHVucmVhZF9jb3VudBgEIAEoBSIXChVHZXRVbnJlYWRDb3VudFJlcXVlc3QiJwoWR2V0VW5yZWFkQ291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBSIdCg9NYXJrUmVhZFJlcXVlc3QSCgoCaWQYASABKAkiEgoQTWFya1JlYWRSZXNwb25zZSIUChJNYXJrQWxsUmVhZFJlcXVlc3QiJwoTTWFya0FsbFJlYWRSZXNwb25zZRIQCghhZmZlY3RlZBgBIAEoBSL7AQoXTm90aWZpY2F0aW9uUHJlZmVyZW5jZXMSFAoMcHVzaF9lbmFibGVkGAEgASgIEg8KB2NvbW1lbnQYAiABKAgSDAoEbGlrZRgDIAEoCBINCgVyZXBseRgGIAEoCBIOCgZmb2xsb3cYByABKAgSDwoHbWVudGlvbhgIIAEoCBIPCgdtZXNzYWdlGAkgASgIEh4KFmZvb3RwcmludF91bnJlYWRfYmFkZ2UYCyABKAgSIwobZm9vdHByaW50c19yZWNvcmRfbXlfdmlzaXRzGAwgASgISgQIBBAFSgQIBRAGSgQIChALUgZyZXBvc3RSBXF1b3RlUgRvc2hpIiMKIUdldE5vdGlmaWNhdGlvblByZWZlcmVuY2VzUmVxdWVzdCJkCiJHZXROb3RpZmljYXRpb25QcmVmZXJlbmNlc1Jlc3BvbnNlEj4KC3ByZWZlcmVuY2VzGAEgASgLMikubm90aWZpY2F0aW9ucy52MS5Ob3RpZmljYXRpb25QcmVmZXJlbmNlcyJmCiRVcGRhdGVOb3RpZmljYXRpb25QcmVmZXJlbmNlc1JlcXVlc3QSPgoLcHJlZmVyZW5jZXMYASABKAsyKS5ub3RpZmljYXRpb25zLnYxLk5vdGlmaWNhdGlvblByZWZlcmVuY2VzImcKJVVwZGF0ZU5vdGlmaWNhdGlvblByZWZlcmVuY2VzUmVzcG9uc2USPgoLcHJlZmVyZW5jZXMYASABKAsyKS5ub3RpZmljYXRpb25zLnYxLk5vdGlmaWNhdGlvblByZWZlcmVuY2VzKvABChBOb3RpZmljYXRpb25UeXBlEiEKHU5PVElGSUNBVElPTl9UWVBFX1VOU1BFQ0lGSUVEEAASGgoWTk9USUZJQ0FUSU9OX1RZUEVfTElLRRABEh0KGU5PVElGSUNBVElPTl9UWVBFX0NPTU1FTlQQAhIbChdOT1RJRklDQVRJT05fVFlQRV9SRVBMWRADEiQKIE5PVElGSUNBVElPTl9UWVBFX0ZPTExPV19SRVFVRVNUEAQSHAoYTk9USUZJQ0FUSU9OX1RZUEVfRk9MTE9XEAUSHQoZTk9USUZJQ0FUSU9OX1RZUEVfTUVOVElPThAGMrQFChNOb3RpZmljYXRpb25TZXJ2aWNlEmwKEUxpc3ROb3RpZmljYXRpb25zEioubm90aWZpY2F0aW9ucy52MS5MaXN0Tm90aWZpY2F0aW9uc1JlcXVlc3QaKy5ub3RpZmljYXRpb25zLnYxLkxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USYwoOR2V0VW5yZWFkQ291bnQSJy5ub3RpZmljYXRpb25zLnYxLkdldFVucmVhZENvdW50UmVxdWVzdBooLm5vdGlmaWNhdGlvbnMudjEuR2V0VW5yZWFkQ291bnRSZXNwb25zZRJRCghNYXJrUmVhZBIhLm5vdGlmaWNhdGlvbnMudjEuTWFya1JlYWRSZXF1ZXN0GiIubm90aWZpY2F0aW9ucy52MS5NYXJrUmVhZFJlc3BvbnNlEloKC01hcmtBbGxSZWFkEiQubm90aWZpY2F0aW9ucy52MS5NYXJrQWxsUmVhZFJlcXVlc3QaJS5ub3RpZmljYXRpb25zLnYxLk1hcmtBbGxSZWFkUmVzcG9uc2UShwEKGkdldE5vdGlmaWNhdGlvblByZWZlcmVuY2VzEjMubm90aWZpY2F0aW9ucy52MS5HZXROb3RpZmljYXRpb25QcmVmZXJlbmNlc1JlcXVlc3QaNC5ub3RpZmljYXRpb25zLnYxLkdldE5vdGlmaWNhdGlvblByZWZlcmVuY2VzUmVzcG9uc2USkAEKHVVwZGF0ZU5vdGlmaWNhdGlvblByZWZlcmVuY2VzEjYubm90aWZpY2F0aW9ucy52MS5VcGRhdGVOb3RpZmljYXRpb25QcmVmZXJlbmNlc1JlcXVlc3QaNy5ub3RpZmljYXRpb25zLnYxLlVwZGF0ZU5vdGlmaWNhdGlvblByZWZlcmVuY2VzUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_profile_v1_service]);
+  fileDesc("Citub3RpZmljYXRpb25zL3YxL25vdGlmaWNhdGlvbl9zZXJ2aWNlLnByb3RvEhBub3RpZmljYXRpb25zLnYxIqkCCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSMAoEdHlwZRgCIAEoDjIiLm5vdGlmaWNhdGlvbnMudjEuTm90aWZpY2F0aW9uVHlwZRIaChJ0YXJnZXRfcmVzb3VyY2VfaWQYAyABKAkSEwoLYWN0b3JfY291bnQYBCABKAUSMAoMbGF0ZXN0X2FjdG9yGAUgASgLMhoucHJvZmlsZS52MS5Qcm9maWxlU3VtbWFyeRIzCg9sYXRlc3RfZXZlbnRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEisKB3JlYWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhYKDnRhcmdldF9wb3N0X2lkGAggASgJIjkKGExpc3ROb3RpZmljYXRpb25zUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkijwEKGUxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USNQoNbm90aWZpY2F0aW9ucxgBIAMoCzIeLm5vdGlmaWNhdGlvbnMudjEuTm90aWZpY2F0aW9uEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEhQKDHVucmVhZF9jb3VudBgEIAEoBSIXChVHZXRVbnJlYWRDb3VudFJlcXVlc3QiJwoWR2V0VW5yZWFkQ291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBSIdCg9NYXJrUmVhZFJlcXVlc3QSCgoCaWQYASABKAkiEgoQTWFya1JlYWRSZXNwb25zZSIUChJNYXJrQWxsUmVhZFJlcXVlc3QiJwoTTWFya0FsbFJlYWRSZXNwb25zZRIQCghhZmZlY3RlZBgBIAEoBSL7AQoXTm90aWZpY2F0aW9uUHJlZmVyZW5jZXMSFAoMcHVzaF9lbmFibGVkGAEgASgIEg8KB2NvbW1lbnQYAiABKAgSDAoEbGlrZRgDIAEoCBINCgVyZXBseRgGIAEoCBIOCgZmb2xsb3cYByABKAgSDwoHbWVudGlvbhgIIAEoCBIPCgdtZXNzYWdlGAkgASgIEh4KFmZvb3RwcmludF91bnJlYWRfYmFkZ2UYCyABKAgSIwobZm9vdHByaW50c19yZWNvcmRfbXlfdmlzaXRzGAwgASgISgQIBBAFSgQIBRAGSgQIChALUgZyZXBvc3RSBXF1b3RlUgRvc2hpIiMKIUdldE5vdGlmaWNhdGlvblByZWZlcmVuY2VzUmVxdWVzdCJkCiJHZXROb3RpZmljYXRpb25QcmVmZXJlbmNlc1Jlc3BvbnNlEj4KC3ByZWZlcmVuY2VzGAEgASgLMikubm90aWZpY2F0aW9ucy52MS5Ob3RpZmljYXRpb25QcmVmZXJlbmNlcyJmCiRVcGRhdGVOb3RpZmljYXRpb25QcmVmZXJlbmNlc1JlcXVlc3QSPgoLcHJlZmVyZW5jZXMYASABKAsyKS5ub3RpZmljYXRpb25zLnYxLk5vdGlmaWNhdGlvblByZWZlcmVuY2VzImcKJVVwZGF0ZU5vdGlmaWNhdGlvblByZWZlcmVuY2VzUmVzcG9uc2USPgoLcHJlZmVyZW5jZXMYASABKAsyKS5ub3RpZmljYXRpb25zLnYxLk5vdGlmaWNhdGlvblByZWZlcmVuY2VzIhYKFEdldFB1c2hDb25maWdSZXF1ZXN0IjEKFUdldFB1c2hDb25maWdSZXNwb25zZRIYChB2YXBpZF9wdWJsaWNfa2V5GAEgASgJIlEKH1JlZ2lzdGVyUHVzaFN1YnNjcmlwdGlvblJlcXVlc3QSEAoIZW5kcG9pbnQYASABKAkSDgoGcDI1NmRoGAIgASgJEgwKBGF1dGgYAyABKAkiIgogUmVnaXN0ZXJQdXNoU3Vic2NyaXB0aW9uUmVzcG9uc2UiNQohVW5yZWdpc3RlclB1c2hTdWJzY3JpcHRpb25SZXF1ZXN0EhAKCGVuZHBvaW50GAEgASgJIiQKIlVucmVnaXN0ZXJQdXNoU3Vic2NyaXB0aW9uUmVzcG9uc2Uq8AEKEE5vdGlmaWNhdGlvblR5cGUSIQodTk9USUZJQ0FUSU9OX1RZUEVfVU5TUEVDSUZJRUQQABIaChZOT1RJRklDQVRJT05fVFlQRV9MSUtFEAESHQoZTk9USUZJQ0FUSU9OX1RZUEVfQ09NTUVOVBACEhsKF05PVElGSUNBVElPTl9UWVBFX1JFUExZEAMSJAogTk9USUZJQ0FUSU9OX1RZUEVfRk9MTE9XX1JFUVVFU1QQBBIcChhOT1RJRklDQVRJT05fVFlQRV9GT0xMT1cQBRIdChlOT1RJRklDQVRJT05fVFlQRV9NRU5USU9OEAYypAgKE05vdGlmaWNhdGlvblNlcnZpY2USbAoRTGlzdE5vdGlmaWNhdGlvbnMSKi5ub3RpZmljYXRpb25zLnYxLkxpc3ROb3RpZmljYXRpb25zUmVxdWVzdBorLm5vdGlmaWNhdGlvbnMudjEuTGlzdE5vdGlmaWNhdGlvbnNSZXNwb25zZRJjCg5HZXRVbnJlYWRDb3VudBInLm5vdGlmaWNhdGlvbnMudjEuR2V0VW5yZWFkQ291bnRSZXF1ZXN0Gigubm90aWZpY2F0aW9ucy52MS5HZXRVbnJlYWRDb3VudFJlc3BvbnNlElEKCE1hcmtSZWFkEiEubm90aWZpY2F0aW9ucy52MS5NYXJrUmVhZFJlcXVlc3QaIi5ub3RpZmljYXRpb25zLnYxLk1hcmtSZWFkUmVzcG9uc2USWgoLTWFya0FsbFJlYWQSJC5ub3RpZmljYXRpb25zLnYxLk1hcmtBbGxSZWFkUmVxdWVzdBolLm5vdGlmaWNhdGlvbnMudjEuTWFya0FsbFJlYWRSZXNwb25zZRKHAQoaR2V0Tm90aWZpY2F0aW9uUHJlZmVyZW5jZXMSMy5ub3RpZmljYXRpb25zLnYxLkdldE5vdGlmaWNhdGlvblByZWZlcmVuY2VzUmVxdWVzdBo0Lm5vdGlmaWNhdGlvbnMudjEuR2V0Tm90aWZpY2F0aW9uUHJlZmVyZW5jZXNSZXNwb25zZRKQAQodVXBkYXRlTm90aWZpY2F0aW9uUHJlZmVyZW5jZXMSNi5ub3RpZmljYXRpb25zLnYxLlVwZGF0ZU5vdGlmaWNhdGlvblByZWZlcmVuY2VzUmVxdWVzdBo3Lm5vdGlmaWNhdGlvbnMudjEuVXBkYXRlTm90aWZpY2F0aW9uUHJlZmVyZW5jZXNSZXNwb25zZRJgCg1HZXRQdXNoQ29uZmlnEiYubm90aWZpY2F0aW9ucy52MS5HZXRQdXNoQ29uZmlnUmVxdWVzdBonLm5vdGlmaWNhdGlvbnMudjEuR2V0UHVzaENvbmZpZ1Jlc3BvbnNlEoEBChhSZWdpc3RlclB1c2hTdWJzY3JpcHRpb24SMS5ub3RpZmljYXRpb25zLnYxLlJlZ2lzdGVyUHVzaFN1YnNjcmlwdGlvblJlcXVlc3QaMi5ub3RpZmljYXRpb25zLnYxLlJlZ2lzdGVyUHVzaFN1YnNjcmlwdGlvblJlc3BvbnNlEocBChpVbnJlZ2lzdGVyUHVzaFN1YnNjcmlwdGlvbhIzLm5vdGlmaWNhdGlvbnMudjEuVW5yZWdpc3RlclB1c2hTdWJzY3JpcHRpb25SZXF1ZXN0GjQubm90aWZpY2F0aW9ucy52MS5VbnJlZ2lzdGVyUHVzaFN1YnNjcmlwdGlvblJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_profile_v1_service]);
 
 /**
  * @generated from message notifications.v1.Notification
@@ -334,6 +334,106 @@ export const UpdateNotificationPreferencesResponseSchema: GenMessage<UpdateNotif
   messageDesc(file_notifications_v1_notification_service, 13);
 
 /**
+ * @generated from message notifications.v1.GetPushConfigRequest
+ */
+export type GetPushConfigRequest = Message<"notifications.v1.GetPushConfigRequest"> & {
+};
+
+/**
+ * Describes the message notifications.v1.GetPushConfigRequest.
+ * Use `create(GetPushConfigRequestSchema)` to create a new message.
+ */
+export const GetPushConfigRequestSchema: GenMessage<GetPushConfigRequest> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 14);
+
+/**
+ * @generated from message notifications.v1.GetPushConfigResponse
+ */
+export type GetPushConfigResponse = Message<"notifications.v1.GetPushConfigResponse"> & {
+  /**
+   * @generated from field: string vapid_public_key = 1;
+   */
+  vapidPublicKey: string;
+};
+
+/**
+ * Describes the message notifications.v1.GetPushConfigResponse.
+ * Use `create(GetPushConfigResponseSchema)` to create a new message.
+ */
+export const GetPushConfigResponseSchema: GenMessage<GetPushConfigResponse> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 15);
+
+/**
+ * @generated from message notifications.v1.RegisterPushSubscriptionRequest
+ */
+export type RegisterPushSubscriptionRequest = Message<"notifications.v1.RegisterPushSubscriptionRequest"> & {
+  /**
+   * @generated from field: string endpoint = 1;
+   */
+  endpoint: string;
+
+  /**
+   * @generated from field: string p256dh = 2;
+   */
+  p256dh: string;
+
+  /**
+   * @generated from field: string auth = 3;
+   */
+  auth: string;
+};
+
+/**
+ * Describes the message notifications.v1.RegisterPushSubscriptionRequest.
+ * Use `create(RegisterPushSubscriptionRequestSchema)` to create a new message.
+ */
+export const RegisterPushSubscriptionRequestSchema: GenMessage<RegisterPushSubscriptionRequest> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 16);
+
+/**
+ * @generated from message notifications.v1.RegisterPushSubscriptionResponse
+ */
+export type RegisterPushSubscriptionResponse = Message<"notifications.v1.RegisterPushSubscriptionResponse"> & {
+};
+
+/**
+ * Describes the message notifications.v1.RegisterPushSubscriptionResponse.
+ * Use `create(RegisterPushSubscriptionResponseSchema)` to create a new message.
+ */
+export const RegisterPushSubscriptionResponseSchema: GenMessage<RegisterPushSubscriptionResponse> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 17);
+
+/**
+ * @generated from message notifications.v1.UnregisterPushSubscriptionRequest
+ */
+export type UnregisterPushSubscriptionRequest = Message<"notifications.v1.UnregisterPushSubscriptionRequest"> & {
+  /**
+   * @generated from field: string endpoint = 1;
+   */
+  endpoint: string;
+};
+
+/**
+ * Describes the message notifications.v1.UnregisterPushSubscriptionRequest.
+ * Use `create(UnregisterPushSubscriptionRequestSchema)` to create a new message.
+ */
+export const UnregisterPushSubscriptionRequestSchema: GenMessage<UnregisterPushSubscriptionRequest> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 18);
+
+/**
+ * @generated from message notifications.v1.UnregisterPushSubscriptionResponse
+ */
+export type UnregisterPushSubscriptionResponse = Message<"notifications.v1.UnregisterPushSubscriptionResponse"> & {
+};
+
+/**
+ * Describes the message notifications.v1.UnregisterPushSubscriptionResponse.
+ * Use `create(UnregisterPushSubscriptionResponseSchema)` to create a new message.
+ */
+export const UnregisterPushSubscriptionResponseSchema: GenMessage<UnregisterPushSubscriptionResponse> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 19);
+
+/**
  * @generated from enum notifications.v1.NotificationType
  */
 export enum NotificationType {
@@ -430,6 +530,30 @@ export const NotificationService: GenService<{
     methodKind: "unary";
     input: typeof UpdateNotificationPreferencesRequestSchema;
     output: typeof UpdateNotificationPreferencesResponseSchema;
+  },
+  /**
+   * @generated from rpc notifications.v1.NotificationService.GetPushConfig
+   */
+  getPushConfig: {
+    methodKind: "unary";
+    input: typeof GetPushConfigRequestSchema;
+    output: typeof GetPushConfigResponseSchema;
+  },
+  /**
+   * @generated from rpc notifications.v1.NotificationService.RegisterPushSubscription
+   */
+  registerPushSubscription: {
+    methodKind: "unary";
+    input: typeof RegisterPushSubscriptionRequestSchema;
+    output: typeof RegisterPushSubscriptionResponseSchema;
+  },
+  /**
+   * @generated from rpc notifications.v1.NotificationService.UnregisterPushSubscription
+   */
+  unregisterPushSubscription: {
+    methodKind: "unary";
+    input: typeof UnregisterPushSubscriptionRequestSchema;
+    output: typeof UnregisterPushSubscriptionResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_notifications_v1_notification_service, 0);

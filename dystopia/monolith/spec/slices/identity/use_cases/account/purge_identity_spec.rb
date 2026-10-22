@@ -5,10 +5,11 @@ require "cognito"
 
 RSpec.describe Identity::UseCases::Account::PurgeIdentity do
   let(:use_case) do
-    described_class.new(account_repo: account_repo, purge_profiles: purge_profiles)
+    described_class.new(account_repo: account_repo, purge_profiles: purge_profiles, purge_push_subscriptions: purge_push_subscriptions)
   end
   let(:account_repo) { double(:account_repository) }
   let(:purge_profiles) { double(:purge_profiles) }
+  let(:purge_push_subscriptions) { double(:purge_push_subscriptions) }
   let(:sub) { "sub-purge-1" }
   let(:cognito_adapter) { double(:cognito_adapter, admin_delete_user: true) }
 
@@ -16,13 +17,15 @@ RSpec.describe Identity::UseCases::Account::PurgeIdentity do
     Cognito.reset!
     Cognito.adapter = cognito_adapter
     allow(purge_profiles).to receive(:call)
+    allow(purge_push_subscriptions).to receive(:call)
     allow(account_repo).to receive(:delete).with(sub)
   end
 
   after { Cognito.reset! }
 
-  it "purges the account's profiles, then the Cognito user, then the account" do
+  it "purges the account's profiles and push subscriptions, then the Cognito user, then the account" do
     expect(purge_profiles).to receive(:call).with(account_id: sub).ordered
+    expect(purge_push_subscriptions).to receive(:call).with(account_id: sub).ordered
     expect(cognito_adapter).to receive(:admin_delete_user).with(sub: sub).ordered
     expect(account_repo).to receive(:delete).with(sub).ordered
 
