@@ -8,6 +8,7 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
   let(:post_repo) { Post::Slice["repositories.post_repository"] }
   let(:follow_repo) { Social::Slice["repositories.follow_repository"] }
   let(:block_repo) { Social::Slice["repositories.block_repository"] }
+  let(:like_repo) { Post::Slice["repositories.like_repository"] }
 
   let!(:viewer) { create_account_with_profile(username: "discovery_viewer") }
   let!(:other_guest) { create_account_with_profile(username: "discovery_other_guest") }
@@ -31,6 +32,11 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
 
   def searched_post_ids
     rpc(:search_posts, Discovery::V1::SearchPostsRequest.new(query: "discovery")).posts.map(&:id)
+  end
+
+  def liked(post)
+    like_repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7)
+    post
   end
 
   def ranked_post_ids
@@ -80,6 +86,7 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
   end
 
   it "searches and ranks posts as the acting profile is allowed to see them" do
+    [public_post, private_post].each { |post| liked(post) }
     act_as(viewer)
     expect(searched_post_ids).to eq([public_post.id])
     expect(ranked_post_ids).to eq([public_post.id])
@@ -94,7 +101,7 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
   end
 
   it "keeps followers-only posts out of search and ranking, even for an approved follower" do
-    post_repo.create_post(author_profile_id: public_cast, content: "discovery followers", visibility: "private")
+    [public_post, post_repo.create_post(author_profile_id: public_cast, content: "discovery followers", visibility: "private")].each { |post| liked(post) }
     follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_cast, status: "approved")
     act_as(viewer)
 
@@ -104,8 +111,9 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
 
   it "keeps scheduled and expired posts out of search and ranking" do
     now = Time.now
-    post_repo.create_post(author_profile_id: public_cast, content: "discovery scheduled", visibility: "public", published_at: now + 3600)
-    post_repo.create_post(author_profile_id: public_cast, content: "discovery expired", visibility: "public", published_at: now - 7200, expires_at: now - 3600)
+    liked(public_post)
+    liked(post_repo.create_post(author_profile_id: public_cast, content: "discovery scheduled", visibility: "public", published_at: now + 3600))
+    liked(post_repo.create_post(author_profile_id: public_cast, content: "discovery expired", visibility: "public", published_at: now - 7200, expires_at: now - 3600))
     act_as(public_cast)
 
     expect(searched_post_ids).to eq([public_post.id])

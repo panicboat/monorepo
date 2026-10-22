@@ -5,6 +5,7 @@ require "spec_helper"
 RSpec.describe "Post::Repositories::PostRepository", type: :database do
   let(:repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
   let(:cast_id) { SecureRandom.uuid_v7 }
+  let(:like_repo) { Post::Slice["repositories.like_repository"] }
 
   describe "#create_post" do
     it "creates a post and returns it" do
@@ -205,6 +206,28 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
   end
 
   describe "#top_by_likes" do
+    it "leaves out posts nobody has liked in every period" do
+      liked = repo.create_post(author_profile_id: cast_id, content: "liked", visibility: "public")
+      unliked = repo.create_post(author_profile_id: cast_id, content: "unliked", visibility: "public")
+      like_repo.profile_like(post_id: liked.id, profile_id: SecureRandom.uuid_v7)
+
+      %w[day week all].each do |period|
+        ranked = repo.top_by_likes(period: period).map(&:first)
+        expect(ranked).to include(liked.id)
+        expect(ranked).not_to include(unliked.id)
+      end
+    end
+
+    it "orders by likes and pages through them without gaps or repeats" do
+      posts = Array.new(3) { |i| repo.create_post(author_profile_id: cast_id, content: "p#{i}", visibility: "public") }
+      posts.each_with_index { |post, i| (i + 1).times { like_repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7) } }
+
+      first = repo.top_by_likes(period: "all", limit: 2)
+      second = repo.top_by_likes(period: "all", limit: 2, cursor: { created_at: first[1][1].to_s, id: first[1][0] })
+
+      expect(first.first(2).map(&:first) + second.map(&:first)).to eq(posts.reverse.map(&:id))
+    end
+
     it "does not raise an ambiguous column error for day and week periods" do
       repo.create_post(author_profile_id: cast_id, content: "ranked", visibility: "public")
 
@@ -234,7 +257,12 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     let!(:scheduled) { repo.create_post(author_profile_id: cast_id, content: "window scheduled #w", visibility: "public", published_at: now + 3600) }
     let!(:expired) { repo.create_post(author_profile_id: cast_id, content: "window expired #w", visibility: "public", published_at: now - 7200, expires_at: now - 3600) }
 
-    before { [live, scheduled, expired].each { |post| repo.save_hashtags(post_id: post.id, hashtags: ["w"]) } }
+    before do
+      [live, scheduled, expired].each do |post|
+        repo.save_hashtags(post_id: post.id, hashtags: ["w"])
+        like_repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7)
+      end
+    end
 
     it "keeps feeds, search, hashtags and ranking to live posts" do
       expect(repo.list_post_ids(viewer_profile_id: cast_id)).to eq([live.id])
@@ -251,6 +279,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     it "ranks by the display start for a period" do
       late = repo.create_post(author_profile_id: cast_id, content: "late", visibility: "public", published_at: now - 60, created_at: now - (10 * 86_400))
       early = repo.create_post(author_profile_id: cast_id, content: "early", visibility: "public", published_at: now - (3 * 86_400))
+      [late, early].each { |post| like_repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7) }
 
       day = repo.top_by_likes(period: "day").map(&:first)
 
