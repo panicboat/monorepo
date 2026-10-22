@@ -186,7 +186,7 @@ describe("PostCardBinding", () => {
     container.remove();
   });
 
-  describe("shift card", () => {
+  describe("schedule card", () => {
     const schedule = { workDate: "2026-10-23", startTime: "20:00", endTime: "02:00" };
     const withIndustry = (industry: string) => ({ ...basePost.author!, industry });
 
@@ -197,7 +197,7 @@ describe("PostCardBinding", () => {
       expect(html).toMatch(/<a[^>]*href="\/u\/test_taro"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00/s);
     });
 
-    it("shows no shift card on a post without a schedule", () => {
+    it("shows no schedule card on a post without a schedule", () => {
       const html = renderToStaticMarkup(<PostCardBinding post={basePost} />);
 
       expect(html).not.toContain("出勤");

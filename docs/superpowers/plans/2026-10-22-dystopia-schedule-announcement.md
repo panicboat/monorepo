@@ -1,4 +1,4 @@
-# Dystopia Shift Announcement Implementation Plan
+# Dystopia Schedule Announcement Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Hanami 2 + ROM-SQL + gruf（monolith）、buf protobuf、Next.js（frontend）、rspec、vitest。
 
-**Spec:** `docs/superpowers/specs/2026-10-22-dystopia-shift-announcement-design.md`
+**Spec:** `docs/superpowers/specs/2026-10-22-dystopia-schedule-announcement-design.md`
 
 ## Global Constraints
 
@@ -62,7 +62,7 @@
   - `find_by_post_ids` がつながった予定だけを返す
 - [ ] **Step 2: Run to verify they fail**
 - [ ] **Step 3: Implement** — migration（`alter_table :schedule__schedules { add_column :post_id, :uuid }` と `add_index :post_id, where: Sequel.~(post_id: nil)`。down は列を消す）、proto とスタブ、repository、`AnnouncementWindow`（入力: work_date, start_time, end_time, announce_time, now → `published_at`・`expires_at`・`ended?`）、`SaveSchedule` に `announce:, announce_time:, announce_note:` を足して上の表どおりに投稿を扱う、`DeleteSchedule`、handler の受け渡し
-- [ ] **Step 4: Run the schedule and post specs and the whole suite, then commit** — `feat(dystopia): announce a shift with a scheduled post`
+- [ ] **Step 4: Run the schedule and post specs and the whole suite, then commit** — `feat(dystopia): announce a schedule with a scheduled post`
 
 ### Task 2: Schedule on posts (backend)
 
@@ -107,7 +107,7 @@
   - 返信の親投稿のプレビュー: 本文が空で `schedule` があれば「出勤 10/24（金）20:00〜02:00」
 - [ ] **Step 2: Run to verify they fail**
 - [ ] **Step 3: Implement**
-- [ ] **Step 4: Run the full vitest and tsc, then commit** — `feat(dystopia): announce shifts from the schedule sheet and show them on posts`
+- [ ] **Step 4: Run the full vitest and tsc, then commit** — `feat(dystopia): announce schedules from the schedule sheet and show them on posts`
 
 ### Task 4: End-to-end check and the PR
 
@@ -117,4 +117,4 @@
   2. 今日の予定（お知らせ時刻が過去）を入れると、フォロワーのタイムラインに出勤カード付きで出る
   3. 時間を変えるとカードの時間が変わり、投稿は 1 件のまま。予定を消すと投稿も消える
   起動したプロセスは最後に止め、DB を消し、ポートが空いたことを確かめる
-- [ ] **Step 3: Push and open the PR** — `git push -u origin HEAD`、`gh pr create --draft --base feat/dystopia-timed-posts --title "feat(dystopia): announce shifts as scheduled posts" --body-file <scratchpad>/pr.md`、`gh stack submit --auto`。本文: Closes #1511、Why、What、Verification、末尾に `🤖 Generated with [Claude Code](https://claude.com/claude-code)` と空行と session URL
+- [ ] **Step 3: Push and open the PR** — `git push -u origin HEAD`、`gh pr create --draft --base feat/dystopia-timed-posts --title "feat(dystopia): announce schedules with scheduled posts" --body-file <scratchpad>/pr.md`、`gh stack submit --auto`。本文: Closes #1511、Why、What、Verification、末尾に `🤖 Generated with [Claude Code](https://claude.com/claude-code)` と空行と session URL

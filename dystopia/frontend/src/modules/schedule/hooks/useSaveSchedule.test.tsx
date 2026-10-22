@@ -12,7 +12,7 @@ vi.mock("@/lib/auth/fetch", () => ({ authFetch: mocks.authFetch }));
 const { useSaveSchedule } = await import("./useSaveSchedule");
 
 describe("useSaveSchedule", () => {
-  it("posts the shift together with the announcement", async () => {
+  it("posts the schedule together with the announcement", async () => {
     mocks.authFetch.mockResolvedValue(undefined);
     let save!: ReturnType<typeof useSaveSchedule>;
     function Probe() {

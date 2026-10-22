@@ -14,7 +14,7 @@ export function formatDayLabel(dateKey: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAYS[d.getDay()]})`;
 }
 
-export function formatShiftDay(dateKey: string): string {
+export function formatScheduleDay(dateKey: string): string {
   const d = new Date(`${dateKey}T00:00:00`);
   return `${formatMonthDay(dateKey)}（${WEEKDAYS[d.getDay()]}）`;
 }

@@ -1,4 +1,4 @@
-# Dystopia shift announcement design
+# Dystopia schedule announcement design
 
 ## Context
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { PostScheduleView } from "@/modules/post/lib/post-view";
 import { industryIcon } from "@/modules/profile/lib/constants";
 import type { ProfileSummaryView } from "@/modules/profile/types";
-import { formatShiftDay } from "@/modules/schedule/lib/dates";
+import { formatScheduleDay } from "@/modules/schedule/lib/dates";
 
 export interface PostScheduleCardProps {
   schedule: PostScheduleView;
@@ -14,7 +14,7 @@ const FRAME = "mt-2 block rounded-xl border border-border bg-surface p-3";
 export function PostScheduleCard({ schedule, author }: PostScheduleCardProps) {
   const industry = author?.industry ?? "";
   const icon = industryIcon(industry);
-  const line = `${formatShiftDay(schedule.workDate)} ${schedule.startTime}〜${schedule.endTime}`;
+  const line = `${formatScheduleDay(schedule.workDate)} ${schedule.startTime}〜${schedule.endTime}`;
   const content = (
     <>
       <span className="block text-xs font-bold tracking-wide text-text-secondary">出勤</span>

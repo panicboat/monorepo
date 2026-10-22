@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toDateKey, formatDayLabel, formatShiftDay, buildDateRange, formatMonthDay } from "./dates";
+import { toDateKey, formatDayLabel, formatScheduleDay, buildDateRange, formatMonthDay } from "./dates";
 
 describe("toDateKey", () => {
   it("formats a local date as YYYY-MM-DD", () => {
@@ -17,10 +17,10 @@ describe("formatDayLabel", () => {
   });
 });
 
-describe("formatShiftDay", () => {
+describe("formatScheduleDay", () => {
   it("formats a date key with the weekday in full-width parentheses", () => {
-    expect(formatShiftDay("2026-10-24")).toBe("10/24（土）");
-    expect(formatShiftDay("2026-01-05")).toBe("1/5（月）");
+    expect(formatScheduleDay("2026-10-24")).toBe("10/24（土）");
+    expect(formatScheduleDay("2026-01-05")).toBe("1/5（月）");
   });
 });
 

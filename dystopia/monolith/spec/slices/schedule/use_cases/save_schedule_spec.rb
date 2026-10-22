@@ -61,7 +61,7 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
       Hanami.app["db.gateway"].connection[:post__posts].where(author_profile_id: profile_id).count
     end
 
-    it "creates a public scheduled post with the note, the announcement time and the shift end" do
+    it "creates a public scheduled post with the note, the announcement time and the schedule end" do
       row = save
 
       post = post_of(row)
@@ -72,7 +72,7 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
       expect(post.expires_at).to eq(jst(2026, 10, 25, 2, 0))
     end
 
-    it "ends a same-day shift on that day" do
+    it "ends a same-day schedule on that day" do
       row = save(start_time: "10:00", end_time: "18:00")
 
       expect(post_of(row).expires_at).to eq(jst(2026, 10, 24, 18, 0))
@@ -90,7 +90,7 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
       expect(post_of(row).published_at).to eq(current)
     end
 
-    it "does not create a post for a day whose shift has already ended" do
+    it "does not create a post for a day whose schedule has already ended" do
       row = save(work_date: "2026-10-24", now: jst(2026, 10, 25, 2, 0))
 
       expect(row[:post_id]).to be_nil
@@ -142,7 +142,7 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
       expect(post_count).to eq(1)
     end
 
-    it "rewrites at 01:00 on the day after a shift that ends at 02:00" do
+    it "rewrites at 01:00 on the day after a schedule that ends at 02:00" do
       first = save(work_date: "2026-10-24")
       row = save(work_date: "2026-10-24", end_time: "03:00", now: jst(2026, 10, 25, 1, 0))
 
@@ -151,7 +151,7 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
       expect(post_of(row).expires_at).to eq(jst(2026, 10, 25, 3, 0))
     end
 
-    it "deletes the post and clears post_id when the shortened shift ends before the post began showing" do
+    it "deletes the post and clears post_id when the shortened schedule ends before the post began showing" do
       first = save
       row = save(start_time: "08:00", end_time: "09:00", announce_time: "08:30", now: jst(2026, 10, 24, 21, 0))
 
@@ -192,7 +192,7 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
       expect(post_count).to eq(3)
     end
 
-    it "rejects an announcement time at or after the shift end" do
+    it "rejects an announcement time at or after the schedule end" do
       expect { save(start_time: "10:00", end_time: "18:00", announce_time: "18:00") }
         .to raise_error(Errors::ValidationError, "お知らせの時刻は出勤の終了より前にしてください")
     end

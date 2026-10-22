@@ -9,7 +9,7 @@ import { usePostSheetStore } from "@/stores/postSheetStore";
 import type { CommentView } from "@/modules/post/lib/comment-view";
 import { PostText } from "@/modules/post/lib/post-text";
 import type { PostView } from "@/modules/post/lib/post-view";
-import { formatShiftDay } from "@/modules/schedule/lib/dates";
+import { formatScheduleDay } from "@/modules/schedule/lib/dates";
 
 export interface ReplyWithParentRowProps {
   comment: CommentView;
@@ -54,7 +54,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
           </div>
           <p className="mt-1 line-clamp-2 text-sm text-text-primary">
             {parentPost.schedule && parentPost.content.trim() === "" ? (
-              `出勤 ${formatShiftDay(parentPost.schedule.workDate)}${parentPost.schedule.startTime}〜${parentPost.schedule.endTime}`
+              `出勤 ${formatScheduleDay(parentPost.schedule.workDate)}${parentPost.schedule.startTime}〜${parentPost.schedule.endTime}`
             ) : (
               <PostText content={parentPost.content} mentions={parentPost.mentions} hashtags={parentPost.hashtags} />
             )}

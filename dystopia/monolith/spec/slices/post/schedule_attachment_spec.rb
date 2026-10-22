@@ -9,8 +9,8 @@ RSpec.describe "Post schedule attachment", type: :database do
   let(:schedule_repo) { Schedule::Slice["repositories.schedule_repository"] }
   let(:list_posts_by_ids) { Post::Slice["use_cases.posts.list_posts_by_ids"] }
   let(:db) { Hanami.app["db.gateway"].connection }
-  let(:author) { create_account_with_profile(role: 2, username: "shift_author") }
-  let(:viewer) { create_account_with_profile(username: "shift_viewer") }
+  let(:author) { create_account_with_profile(role: 2, username: "schedule_author") }
+  let(:viewer) { create_account_with_profile(username: "schedule_viewer") }
 
   def announce(content: "see you", work_date: "2026-10-24", start_time: "20:00", end_time: "02:00", profile_id: author)
     post = post_repo.create_post(author_profile_id: profile_id, content: content, visibility: "public")
