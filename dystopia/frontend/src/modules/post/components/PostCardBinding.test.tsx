@@ -34,6 +34,7 @@ const basePost: PostView = {
     avatarUrl: "",
     isPrivate: false,
     role: null,
+    industry: "",
   },
   likesCount: 0,
   commentsCount: 0,

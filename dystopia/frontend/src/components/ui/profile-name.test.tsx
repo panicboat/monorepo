@@ -4,7 +4,7 @@ import type { ProfileSummaryView } from "@/modules/profile/types";
 import { ProfileName, profileDisplayName } from "./profile-name";
 
 const profile = (overrides: Partial<ProfileSummaryView> = {}): ProfileSummaryView => ({
-  profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: false, role: "cast", ...overrides,
+  profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: false, role: "cast", industry: "", ...overrides,
 });
 
 describe("ProfileName", () => {

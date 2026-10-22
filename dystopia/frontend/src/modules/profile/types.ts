@@ -79,5 +79,5 @@ export interface ProfileSummaryView {
   avatarUrl: string;
   isPrivate: boolean;
   role: Role | null;
-  industry?: string;
+  industry: string;
 }

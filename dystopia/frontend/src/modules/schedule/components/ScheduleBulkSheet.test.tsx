@@ -2,6 +2,7 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { AppError } from "@/lib/errors";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -274,6 +275,71 @@ describe("ScheduleBulkSheet", () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(mocks.refresh).toHaveBeenCalled();
     expect(onSaved).toHaveBeenCalled();
+  });
+
+  describe("explaining a failed save", () => {
+    const TOO_EARLY = "お知らせの時刻は出勤の終了より前にしてください";
+    const TOO_LONG = "ひとことは200文字以内で入力してください";
+    const rejectWith = (reasons: Record<string, AppError>) =>
+      mocks.save.mockImplementation(async (workDate: string) => {
+        if (reasons[workDate]) throw reasons[workDate];
+      });
+    const selectBoth = async () => {
+      await click(day("2026-10-24"));
+      await click(day("2026-10-25"));
+      await click(button("18:00〜23:00")!);
+    };
+
+    it("shows the validation message once after the failed days", async () => {
+      const error = new AppError("VALIDATION", TOO_EARLY, 400);
+      rejectWith({ "2026-10-24": error, "2026-10-25": error });
+      await mount();
+      await selectBoth();
+
+      await click(button("選択した日に反映")!);
+
+      expect(text()).toContain(`保存できなかった日があります: 10/24, 10/25（${TOO_EARLY}）`);
+      expect(text().split(TOO_EARLY)).toHaveLength(2);
+    });
+
+    it("lists each distinct message", async () => {
+      rejectWith({
+        "2026-10-24": new AppError("VALIDATION", TOO_EARLY, 400),
+        "2026-10-25": new AppError("VALIDATION", TOO_LONG, 400),
+      });
+      await mount();
+      await selectBoth();
+
+      await click(button("選択した日に反映")!);
+
+      expect(text()).toContain(`保存できなかった日があります: 10/24, 10/25（${TOO_EARLY}、${TOO_LONG}）`);
+    });
+
+    it("gives no reason for a failure that is not a validation error", async () => {
+      rejectWith({ "2026-10-24": new AppError("SERVER", "予期しないエラーが発生しました", 500) });
+      await mount();
+      await selectBoth();
+
+      await click(button("選択した日に反映")!);
+
+      expect(text()).toContain("保存できなかった日があります: 10/24");
+      expect(text()).not.toContain("予期しないエラーが発生しました");
+      expect(text()).not.toContain("（");
+    });
+
+    it("replaces the reason when the retry fails differently", async () => {
+      rejectWith({ "2026-10-24": new AppError("VALIDATION", TOO_EARLY, 400) });
+      await mount();
+      await selectBoth();
+      await click(button("選択した日に反映")!);
+      expect(text()).toContain(TOO_EARLY);
+
+      rejectWith({ "2026-10-24": new AppError("VALIDATION", TOO_LONG, 400) });
+      await click(button("選択した日に反映")!);
+
+      expect(text()).toContain(`保存できなかった日があります: 10/24（${TOO_LONG}）`);
+      expect(text()).not.toContain(TOO_EARLY);
+    });
   });
 
   it("does not apply while the plans are loading or failed to load", async () => {

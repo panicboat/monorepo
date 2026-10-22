@@ -23,7 +23,7 @@ vi.mock("../hooks/useFollowRequests", () => ({
 const { FollowRequestsList } = await import("./FollowRequestsList");
 
 const requester = (id: string): ProfileSummaryView => ({
-  profileId: id, username: id, displayName: id, avatarUrl: "", isPrivate: false, role: "guest",
+  profileId: id, username: id, displayName: id, avatarUrl: "", isPrivate: false, role: "guest", industry: "",
 });
 
 async function mount() {

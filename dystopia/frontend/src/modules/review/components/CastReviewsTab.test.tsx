@@ -34,7 +34,7 @@ vi.mock("@/components/compose/ComposeToSheet", () => ({
 
 const { CastReviewsTab } = await import("./CastReviewsTab");
 
-const cast: ProfileSummaryView = { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" };
+const cast: ProfileSummaryView = { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast", industry: "" };
 
 const render = async (target: ProfileSummaryView = cast) => {
   const container = document.createElement("div");

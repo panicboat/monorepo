@@ -15,6 +15,7 @@ const profile = (username: string, role: "cast" | "guest"): ProfileSummaryView =
   avatarUrl: "",
   isPrivate: false,
   role,
+  industry: "",
 });
 
 const mocks = vi.hoisted(() => ({

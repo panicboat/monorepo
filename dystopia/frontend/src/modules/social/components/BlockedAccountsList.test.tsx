@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({ isPrivate: false }));
 
 vi.mock("../hooks/useBlockedList", () => ({
   useBlockedList: () => ({
-    profiles: [{ profileId: "p-9", username: "blocked_one", displayName: "ブロック中", avatarUrl: "", isPrivate: mocks.isPrivate, role: "guest" }],
+    profiles: [{ profileId: "p-9", username: "blocked_one", displayName: "ブロック中", avatarUrl: "", isPrivate: mocks.isPrivate, role: "guest", industry: "" }],
     loading: false,
     error: undefined,
   }),

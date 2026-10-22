@@ -17,7 +17,7 @@ const parentPost = {
   createdAt: new Date().toISOString(),
   publishedAt: new Date().toISOString(),
   expiresAt: "",
-  author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "", isPrivate: false, role: null },
+  author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "", isPrivate: false, role: null, industry: "" },
   likesCount: 0,
   commentsCount: 1,
   visibility: "public",
@@ -34,7 +34,7 @@ const comment: CommentView = {
   authorProfileId: "replier-1",
   content: "返信",
   createdAt: new Date().toISOString(),
-  author: { profileId: "replier-1", displayName: "返信者", avatarUrl: "", username: "replier", isPrivate: false, role: null },
+  author: { profileId: "replier-1", displayName: "返信者", avatarUrl: "", username: "replier", isPrivate: false, role: null, industry: "" },
   repliesCount: 0,
   mentions: [],
 };

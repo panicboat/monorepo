@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
+import { AppError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { useDeleteSchedule, useSaveSchedule, useSchedules } from "@/modules/schedule/hooks";
 import { buildDateRange, formatDayLabel, formatMonthDay } from "@/modules/schedule/lib/dates";
@@ -51,6 +52,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
   const [announceNote, setAnnounceNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState<string[]>([]);
+  const [failureReasons, setFailureReasons] = useState<string[]>([]);
 
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
   const hasPlanSelected = [...selected].some((dateKey) => byDate.has(dateKey));
@@ -80,7 +82,9 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
   const apply = async () => {
     setSaving(true);
     setFailed([]);
+    setFailureReasons([]);
     const failures: string[] = [];
+    const reasons = new Set<string>();
     const announcement: ScheduleAnnouncement = announce
       ? { announce: true, announceTime, announceNote }
       : { announce: false, announceTime: "", announceNote: "" };
@@ -89,8 +93,9 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
       try {
         if (mode === "work") await saveSchedule(dateKey, start, end, announcement);
         else await deleteSchedule(dateKey);
-      } catch {
+      } catch (e) {
         failures.push(dateKey);
+        if (e instanceof AppError && e.code === "VALIDATION") reasons.add(e.message);
       }
     }
     setSaving(false);
@@ -102,6 +107,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
       return;
     }
     setFailed(failures);
+    setFailureReasons([...reasons]);
     setSelected(new Set(failures));
   };
 
@@ -219,7 +225,8 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
 
         {failed.length > 0 && (
           <p className="text-sm text-error" role="alert">
-            保存できなかった日があります: {failed.map(formatMonthDay).join(", ")}
+            {`保存できなかった日があります: ${failed.map(formatMonthDay).join(", ")}`}
+            {failureReasons.length > 0 && `（${failureReasons.join("、")}）`}
           </p>
         )}
         <div className="sticky bottom-0 -mx-4 -mb-8 flex items-center justify-between gap-3 border-t border-divider bg-bg-elevated px-4 py-3 md:-mx-5 md:px-5">

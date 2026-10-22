@@ -9,7 +9,7 @@ const { ThreadRow } = await import("./page");
 
 const thread: ThreadView = {
   id: "t-1",
-  counterpart: { profileId: "cast-1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast" },
+  counterpart: { profileId: "cast-1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
   lastMessage: null,
   unreadCount: 0,
   lastMessageAt: "",

@@ -11,7 +11,7 @@ vi.mock("../hooks/useReviewMutations", () => ({ useReviewMutations: () => ({ cre
 const { ReviewCreateForm } = await import("./ReviewCreateForm");
 const { emptyReviewEvent } = await import("./ReviewEventForm");
 
-const target = { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" as const };
+const target = { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" as const, industry: "" };
 
 function Harness({ onCreated }: { onCreated: () => void }) {
   const [event, setEvent] = useState(() => emptyReviewEvent());

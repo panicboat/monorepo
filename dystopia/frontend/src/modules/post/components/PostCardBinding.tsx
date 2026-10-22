@@ -50,7 +50,7 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
     ? `/u/${encodeURIComponent(post.author.username)}`
     : undefined;
 
-  const announcementOnly = post.schedule !== null && post.content.trim() === "";
+  const announcementOnly = !!post.schedule && post.content.trim() === "";
 
   const images = post.media
     .filter((m) => m.mediaType === "image")

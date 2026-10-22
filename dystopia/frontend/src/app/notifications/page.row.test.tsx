@@ -12,7 +12,7 @@ const notification: NotificationView = {
   type: NotificationType.LIKE,
   targetResourceId: "post-1",
   actorCount: 1,
-  latestActor: { profileId: "a1", username: "hanako", displayName: "花子", avatarUrl: "", isPrivate: false, role: "guest" },
+  latestActor: { profileId: "a1", username: "hanako", displayName: "花子", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
   latestEventAt: "2026-01-01T00:00:00.000Z",
   readAt: null,
   targetPostId: null,
