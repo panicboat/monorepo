@@ -13,7 +13,7 @@ module Notifications
         "comment" => :comment,
         "reply" => :reply,
         "follow_request" => :follow,
-        "follow_approved" => :follow,
+        "follow" => :follow,
         "mention" => :mention
       }.freeze
 

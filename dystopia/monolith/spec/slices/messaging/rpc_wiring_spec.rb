@@ -176,7 +176,7 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
 
     it "lists a recipient's notifications with the latest actor and marks them read" do
       first = emit.call(recipient_profile_id: guest, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: cast)
-      emit.call(recipient_profile_id: guest, type: "follow_approved", target_resource_id: cast, actor_profile_id: cast)
+      emit.call(recipient_profile_id: guest, type: "follow", target_resource_id: cast, actor_profile_id: cast)
       emit.call(recipient_profile_id: outsider, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: cast)
       expect(db[:notifications__notifications].where(id: first[:id]).select_map([:recipient_profile_id, :latest_actor_profile_id])).to eq([[guest, cast]])
 

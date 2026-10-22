@@ -19,7 +19,7 @@ module Social
 
           result = follow_repo.follow(follower_profile_id: follower_profile_id, followee_profile_id: target_profile_id, status: status)
 
-          notification_type = result[:status] == "approved" ? "follow_approved" : "follow_request"
+          notification_type = result[:status] == "approved" ? "follow" : "follow_request"
           notifications_emit.call(
             recipient_profile_id: target_profile_id,
             type: notification_type,
