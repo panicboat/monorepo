@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file karte/v1/service.proto.
  */
 export const file_karte_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChZrYXJ0ZS92MS9zZXJ2aWNlLnByb3RvEghrYXJ0ZS52MSJ4Cg9LYXJ0ZUV2ZW50SW5wdXQSIwoFc3RhZ2UYASABKA4yFC5rYXJ0ZS52MS5LYXJ0ZVN0YWdlEg8KB291dGNvbWUYAiABKAkSDAoEdGFncxgDIAMoCRIMCgRub3RlGAQgASgJEhMKC29jY3VycmVkX29uGAUgASgJIt8BCgpLYXJ0ZUV2ZW50EgoKAmlkGAEgASgJEiMKBXN0YWdlGAIgASgOMhQua2FydGUudjEuS2FydGVTdGFnZRIPCgdvdXRjb21lGAMgASgJEgwKBHRhZ3MYBCADKAkSDAoEbm90ZRgFIAEoCRITCgtvY2N1cnJlZF9vbhgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLqBAoFS2FydGUSCgoCaWQYASABKAkSGQoRYXV0aG9yX3Byb2ZpbGVfaWQYAiABKAkSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYBSABKAkSDwoHaXNfbWluZRgIIAEoCBIOCgZyYXRpbmcYCSABKAUSJQoGc3RhdHVzGAogASgOMhUua2FydGUudjEuS2FydGVTdGF0dXMSJAoGZXZlbnRzGAsgAygLMhQua2FydGUudjEuS2FydGVFdmVudBIuCgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCgljbG9zZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKEGxhc3RfYWN0aXZpdHlfYXQYDyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEioKBmF1dGhvchgSIAEoCzIaLnByb2ZpbGUudjEuUHJvZmlsZVN1bW1hcnkSKgoGdGFyZ2V0GBMgASgLMhoucHJvZmlsZS52MS5Qcm9maWxlU3VtbWFyeUoECAMQBEoECAQQBUoECAYQB0oECAcQCEoECBAQEUoECBEQElIPYXV0aG9yX3VzZXJuYW1lUhFhdXRob3JfYXZhdGFyX3VybFIPdGFyZ2V0X3VzZXJuYW1lUhF0YXJnZXRfYXZhdGFyX3VybFITYXV0aG9yX2Rpc3BsYXlfbmFtZVITdGFyZ2V0X2Rpc3BsYXlfbmFtZSJWChJSZWxpYWJpbGl0eVN1bW1hcnkSFgoOYXZlcmFnZV9yYXRpbmcYASABKAESEwoLcmF0ZXJfY291bnQYAiABKAUSEwoLa2FydGVfY291bnQYAyABKAUiaQoSQ3JlYXRlS2FydGVSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJEg4KBnJhdGluZxgCIAEoBRIoCgVldmVudBgDIAEoCzIZLmthcnRlLnYxLkthcnRlRXZlbnRJbnB1dCI1ChNDcmVhdGVLYXJ0ZVJlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiIwoPR2V0S2FydGVSZXF1ZXN0EhAKCGthcnRlX2lkGAEgASgJIjIKEEdldEthcnRlUmVzcG9uc2USHgoFa2FydGUYASABKAsyDy5rYXJ0ZS52MS5LYXJ0ZSI8ChhVcGRhdGVLYXJ0ZVJhdGluZ1JlcXVlc3QSEAoIa2FydGVfaWQYASABKAkSDgoGcmF0aW5nGAIgASgFIjsKGVVwZGF0ZUthcnRlUmF0aW5nUmVzcG9uc2USHgoFa2FydGUYASABKAsyDy5rYXJ0ZS52MS5LYXJ0ZSImChJEZWxldGVLYXJ0ZVJlcXVlc3QSEAoIa2FydGVfaWQYASABKAkiFQoTRGVsZXRlS2FydGVSZXNwb25zZSIlChFDbG9zZUthcnRlUmVxdWVzdBIQCghrYXJ0ZV9pZBgBIAEoCSI0ChJDbG9zZUthcnRlUmVzcG9uc2USHgoFa2FydGUYASABKAsyDy5rYXJ0ZS52MS5LYXJ0ZSImChJSZW9wZW5LYXJ0ZVJlcXVlc3QSEAoIa2FydGVfaWQYASABKAkiNQoTUmVvcGVuS2FydGVSZXNwb25zZRIeCgVrYXJ0ZRgBIAEoCzIPLmthcnRlLnYxLkthcnRlIlIKFEFkZEthcnRlRXZlbnRSZXF1ZXN0EhAKCGthcnRlX2lkGAEgASgJEigKBWV2ZW50GAIgASgLMhkua2FydGUudjEuS2FydGVFdmVudElucHV0IjcKFUFkZEthcnRlRXZlbnRSZXNwb25zZRIeCgVrYXJ0ZRgBIAEoCzIPLmthcnRlLnYxLkthcnRlIlUKF1VwZGF0ZUthcnRlRXZlbnRSZXF1ZXN0EhAKCGV2ZW50X2lkGAEgASgJEigKBWV2ZW50GAIgASgLMhkua2FydGUudjEuS2FydGVFdmVudElucHV0IjoKGFVwZGF0ZUthcnRlRXZlbnRSZXNwb25zZRIeCgVrYXJ0ZRgBIAEoCzIPLmthcnRlLnYxLkthcnRlIisKF0RlbGV0ZUthcnRlRXZlbnRSZXF1ZXN0EhAKCGV2ZW50X2lkGAEgASgJIjoKGERlbGV0ZUthcnRlRXZlbnRSZXNwb25zZRIeCgVrYXJ0ZRgBIAEoCzIPLmthcnRlLnYxLkthcnRlIlUKGUxpc3RLYXJ0ZXNCeVRhcmdldFJlcXVlc3QSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJIpcBChpMaXN0S2FydGVzQnlUYXJnZXRSZXNwb25zZRIfCgZrYXJ0ZXMYASADKAsyDy5rYXJ0ZS52MS5LYXJ0ZRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCBIxCgtyZWxpYWJpbGl0eRgEIAEoCzIcLmthcnRlLnYxLlJlbGlhYmlsaXR5U3VtbWFyeSI0ChNMaXN0TXlLYXJ0ZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJMCgtLYXJ0ZUNvdW50cxITCgt0b3RhbF9jb3VudBgBIAEoBRISCgpvcGVuX2NvdW50GAIgASgFEhQKDGNsb3NlZF9jb3VudBgDIAEoBSKFAQoUTGlzdE15S2FydGVzUmVzcG9uc2USHwoGa2FydGVzGAEgAygLMg8ua2FydGUudjEuS2FydGUSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgSJQoGY291bnRzGAQgASgLMhUua2FydGUudjEuS2FydGVDb3VudHMiOAoXTGlzdFJlY2VudEthcnRlc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJImIKGExpc3RSZWNlbnRLYXJ0ZXNSZXNwb25zZRIfCgZrYXJ0ZXMYASADKAsyDy5rYXJ0ZS52MS5LYXJ0ZRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCpbCgtLYXJ0ZVN0YXR1cxIcChhLQVJURV9TVEFUVVNfVU5TUEVDSUZJRUQQABIVChFLQVJURV9TVEFUVVNfT1BFThABEhcKE0tBUlRFX1NUQVRVU19DTE9TRUQQAip6CgpLYXJ0ZVN0YWdlEhsKF0tBUlRFX1NUQUdFX1VOU1BFQ0lGSUVEEAASGwoXS0FSVEVfU1RBR0VfUkVTRVJWQVRJT04QARIXChNLQVJURV9TVEFHRV9TRVJWSUNFEAISGQoVS0FSVEVfU1RBR0VfQUZURVJDQVJFEAMy7wcKDEthcnRlU2VydmljZRJKCgtDcmVhdGVLYXJ0ZRIcLmthcnRlLnYxLkNyZWF0ZUthcnRlUmVxdWVzdBodLmthcnRlLnYxLkNyZWF0ZUthcnRlUmVzcG9uc2USQQoIR2V0S2FydGUSGS5rYXJ0ZS52MS5HZXRLYXJ0ZVJlcXVlc3QaGi5rYXJ0ZS52MS5HZXRLYXJ0ZVJlc3BvbnNlElwKEVVwZGF0ZUthcnRlUmF0aW5nEiIua2FydGUudjEuVXBkYXRlS2FydGVSYXRpbmdSZXF1ZXN0GiMua2FydGUudjEuVXBkYXRlS2FydGVSYXRpbmdSZXNwb25zZRJKCgtEZWxldGVLYXJ0ZRIcLmthcnRlLnYxLkRlbGV0ZUthcnRlUmVxdWVzdBodLmthcnRlLnYxLkRlbGV0ZUthcnRlUmVzcG9uc2USRwoKQ2xvc2VLYXJ0ZRIbLmthcnRlLnYxLkNsb3NlS2FydGVSZXF1ZXN0Ghwua2FydGUudjEuQ2xvc2VLYXJ0ZVJlc3BvbnNlEkoKC1Jlb3BlbkthcnRlEhwua2FydGUudjEuUmVvcGVuS2FydGVSZXF1ZXN0Gh0ua2FydGUudjEuUmVvcGVuS2FydGVSZXNwb25zZRJQCg1BZGRLYXJ0ZUV2ZW50Eh4ua2FydGUudjEuQWRkS2FydGVFdmVudFJlcXVlc3QaHy5rYXJ0ZS52MS5BZGRLYXJ0ZUV2ZW50UmVzcG9uc2USWQoQVXBkYXRlS2FydGVFdmVudBIhLmthcnRlLnYxLlVwZGF0ZUthcnRlRXZlbnRSZXF1ZXN0GiIua2FydGUudjEuVXBkYXRlS2FydGVFdmVudFJlc3BvbnNlElkKEERlbGV0ZUthcnRlRXZlbnQSIS5rYXJ0ZS52MS5EZWxldGVLYXJ0ZUV2ZW50UmVxdWVzdBoiLmthcnRlLnYxLkRlbGV0ZUthcnRlRXZlbnRSZXNwb25zZRJfChJMaXN0S2FydGVzQnlUYXJnZXQSIy5rYXJ0ZS52MS5MaXN0S2FydGVzQnlUYXJnZXRSZXF1ZXN0GiQua2FydGUudjEuTGlzdEthcnRlc0J5VGFyZ2V0UmVzcG9uc2USTQoMTGlzdE15S2FydGVzEh0ua2FydGUudjEuTGlzdE15S2FydGVzUmVxdWVzdBoeLmthcnRlLnYxLkxpc3RNeUthcnRlc1Jlc3BvbnNlElkKEExpc3RSZWNlbnRLYXJ0ZXMSIS5rYXJ0ZS52MS5MaXN0UmVjZW50S2FydGVzUmVxdWVzdBoiLmthcnRlLnYxLkxpc3RSZWNlbnRLYXJ0ZXNSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_profile_v1_service]);
+  fileDesc("ChZrYXJ0ZS92MS9zZXJ2aWNlLnByb3RvEghrYXJ0ZS52MSJ4Cg9LYXJ0ZUV2ZW50SW5wdXQSIwoFc3RhZ2UYASABKA4yFC5rYXJ0ZS52MS5LYXJ0ZVN0YWdlEg8KB291dGNvbWUYAiABKAkSDAoEdGFncxgDIAMoCRIMCgRub3RlGAQgASgJEhMKC29jY3VycmVkX29uGAUgASgJIt8BCgpLYXJ0ZUV2ZW50EgoKAmlkGAEgASgJEiMKBXN0YWdlGAIgASgOMhQua2FydGUudjEuS2FydGVTdGFnZRIPCgdvdXRjb21lGAMgASgJEgwKBHRhZ3MYBCADKAkSDAoEbm90ZRgFIAEoCRITCgtvY2N1cnJlZF9vbhgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKgBAoFS2FydGUSCgoCaWQYASABKAkSGQoRYXV0aG9yX3Byb2ZpbGVfaWQYAiABKAkSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYBSABKAkSDwoHaXNfbWluZRgIIAEoCBIOCgZyYXRpbmcYCSABKAUSJAoGZXZlbnRzGAsgAygLMhQua2FydGUudjEuS2FydGVFdmVudBIuCgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBI0ChBsYXN0X2FjdGl2aXR5X2F0GA8gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIqCgZhdXRob3IYEiABKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EioKBnRhcmdldBgTIAEoCzIaLnByb2ZpbGUudjEuUHJvZmlsZVN1bW1hcnlKBAgDEARKBAgEEAVKBAgGEAdKBAgHEAhKBAgKEAtKBAgOEA9KBAgQEBFKBAgREBJSD2F1dGhvcl91c2VybmFtZVIRYXV0aG9yX2F2YXRhcl91cmxSD3RhcmdldF91c2VybmFtZVIRdGFyZ2V0X2F2YXRhcl91cmxSE2F1dGhvcl9kaXNwbGF5X25hbWVSE3RhcmdldF9kaXNwbGF5X25hbWUiVgoSUmVsaWFiaWxpdHlTdW1tYXJ5EhYKDmF2ZXJhZ2VfcmF0aW5nGAEgASgBEhMKC3JhdGVyX2NvdW50GAIgASgFEhMKC2thcnRlX2NvdW50GAMgASgFImkKEkNyZWF0ZUthcnRlUmVxdWVzdBIZChF0YXJnZXRfcHJvZmlsZV9pZBgBIAEoCRIOCgZyYXRpbmcYAiABKAUSKAoFZXZlbnQYAyABKAsyGS5rYXJ0ZS52MS5LYXJ0ZUV2ZW50SW5wdXQiNQoTQ3JlYXRlS2FydGVSZXNwb25zZRIeCgVrYXJ0ZRgBIAEoCzIPLmthcnRlLnYxLkthcnRlIiMKD0dldEthcnRlUmVxdWVzdBIQCghrYXJ0ZV9pZBgBIAEoCSIyChBHZXRLYXJ0ZVJlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiPAoYVXBkYXRlS2FydGVSYXRpbmdSZXF1ZXN0EhAKCGthcnRlX2lkGAEgASgJEg4KBnJhdGluZxgCIAEoBSI7ChlVcGRhdGVLYXJ0ZVJhdGluZ1Jlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiJgoSRGVsZXRlS2FydGVSZXF1ZXN0EhAKCGthcnRlX2lkGAEgASgJIhUKE0RlbGV0ZUthcnRlUmVzcG9uc2UiUgoUQWRkS2FydGVFdmVudFJlcXVlc3QSEAoIa2FydGVfaWQYASABKAkSKAoFZXZlbnQYAiABKAsyGS5rYXJ0ZS52MS5LYXJ0ZUV2ZW50SW5wdXQiNwoVQWRkS2FydGVFdmVudFJlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiVQoXVXBkYXRlS2FydGVFdmVudFJlcXVlc3QSEAoIZXZlbnRfaWQYASABKAkSKAoFZXZlbnQYAiABKAsyGS5rYXJ0ZS52MS5LYXJ0ZUV2ZW50SW5wdXQiOgoYVXBkYXRlS2FydGVFdmVudFJlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiKwoXRGVsZXRlS2FydGVFdmVudFJlcXVlc3QSEAoIZXZlbnRfaWQYASABKAkiOgoYRGVsZXRlS2FydGVFdmVudFJlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiVQoZTGlzdEthcnRlc0J5VGFyZ2V0UmVxdWVzdBIZChF0YXJnZXRfcHJvZmlsZV9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkilwEKGkxpc3RLYXJ0ZXNCeVRhcmdldFJlc3BvbnNlEh8KBmthcnRlcxgBIAMoCzIPLmthcnRlLnYxLkthcnRlEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEjEKC3JlbGlhYmlsaXR5GAQgASgLMhwua2FydGUudjEuUmVsaWFiaWxpdHlTdW1tYXJ5IjQKE0xpc3RNeUthcnRlc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlkKC0thcnRlQ291bnRzEhMKC3RvdGFsX2NvdW50GAEgASgFEhUKDXVucmF0ZWRfY291bnQYAiABKAVKBAgDEARSCm9wZW5fY291bnRSDGNsb3NlZF9jb3VudCKFAQoUTGlzdE15S2FydGVzUmVzcG9uc2USHwoGa2FydGVzGAEgAygLMg8ua2FydGUudjEuS2FydGUSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgSJQoGY291bnRzGAQgASgLMhUua2FydGUudjEuS2FydGVDb3VudHMiOAoXTGlzdFJlY2VudEthcnRlc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJImIKGExpc3RSZWNlbnRLYXJ0ZXNSZXNwb25zZRIfCgZrYXJ0ZXMYASADKAsyDy5rYXJ0ZS52MS5LYXJ0ZRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCp6CgpLYXJ0ZVN0YWdlEhsKF0tBUlRFX1NUQUdFX1VOU1BFQ0lGSUVEEAASGwoXS0FSVEVfU1RBR0VfUkVTRVJWQVRJT04QARIXChNLQVJURV9TVEFHRV9TRVJWSUNFEAISGQoVS0FSVEVfU1RBR0VfQUZURVJDQVJFEAMy2gYKDEthcnRlU2VydmljZRJKCgtDcmVhdGVLYXJ0ZRIcLmthcnRlLnYxLkNyZWF0ZUthcnRlUmVxdWVzdBodLmthcnRlLnYxLkNyZWF0ZUthcnRlUmVzcG9uc2USQQoIR2V0S2FydGUSGS5rYXJ0ZS52MS5HZXRLYXJ0ZVJlcXVlc3QaGi5rYXJ0ZS52MS5HZXRLYXJ0ZVJlc3BvbnNlElwKEVVwZGF0ZUthcnRlUmF0aW5nEiIua2FydGUudjEuVXBkYXRlS2FydGVSYXRpbmdSZXF1ZXN0GiMua2FydGUudjEuVXBkYXRlS2FydGVSYXRpbmdSZXNwb25zZRJKCgtEZWxldGVLYXJ0ZRIcLmthcnRlLnYxLkRlbGV0ZUthcnRlUmVxdWVzdBodLmthcnRlLnYxLkRlbGV0ZUthcnRlUmVzcG9uc2USUAoNQWRkS2FydGVFdmVudBIeLmthcnRlLnYxLkFkZEthcnRlRXZlbnRSZXF1ZXN0Gh8ua2FydGUudjEuQWRkS2FydGVFdmVudFJlc3BvbnNlElkKEFVwZGF0ZUthcnRlRXZlbnQSIS5rYXJ0ZS52MS5VcGRhdGVLYXJ0ZUV2ZW50UmVxdWVzdBoiLmthcnRlLnYxLlVwZGF0ZUthcnRlRXZlbnRSZXNwb25zZRJZChBEZWxldGVLYXJ0ZUV2ZW50EiEua2FydGUudjEuRGVsZXRlS2FydGVFdmVudFJlcXVlc3QaIi5rYXJ0ZS52MS5EZWxldGVLYXJ0ZUV2ZW50UmVzcG9uc2USXwoSTGlzdEthcnRlc0J5VGFyZ2V0EiMua2FydGUudjEuTGlzdEthcnRlc0J5VGFyZ2V0UmVxdWVzdBokLmthcnRlLnYxLkxpc3RLYXJ0ZXNCeVRhcmdldFJlc3BvbnNlEk0KDExpc3RNeUthcnRlcxIdLmthcnRlLnYxLkxpc3RNeUthcnRlc1JlcXVlc3QaHi5rYXJ0ZS52MS5MaXN0TXlLYXJ0ZXNSZXNwb25zZRJZChBMaXN0UmVjZW50S2FydGVzEiEua2FydGUudjEuTGlzdFJlY2VudEthcnRlc1JlcXVlc3QaIi5rYXJ0ZS52MS5MaXN0UmVjZW50S2FydGVzUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_profile_v1_service]);
 
 /**
  * @generated from message karte.v1.KarteEventInput
@@ -135,11 +135,6 @@ export type Karte = Message<"karte.v1.Karte"> & {
   rating: number;
 
   /**
-   * @generated from field: karte.v1.KarteStatus status = 10;
-   */
-  status: KarteStatus;
-
-  /**
    * @generated from field: repeated karte.v1.KarteEvent events = 11;
    */
   events: KarteEvent[];
@@ -153,11 +148,6 @@ export type Karte = Message<"karte.v1.Karte"> & {
    * @generated from field: google.protobuf.Timestamp updated_at = 13;
    */
   updatedAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp closed_at = 14;
-   */
-  closedAt?: Timestamp | undefined;
 
   /**
    * @generated from field: google.protobuf.Timestamp last_activity_at = 15;
@@ -357,74 +347,6 @@ export const DeleteKarteResponseSchema: GenMessage<DeleteKarteResponse> = /*@__P
   messageDesc(file_karte_v1_service, 11);
 
 /**
- * @generated from message karte.v1.CloseKarteRequest
- */
-export type CloseKarteRequest = Message<"karte.v1.CloseKarteRequest"> & {
-  /**
-   * @generated from field: string karte_id = 1;
-   */
-  karteId: string;
-};
-
-/**
- * Describes the message karte.v1.CloseKarteRequest.
- * Use `create(CloseKarteRequestSchema)` to create a new message.
- */
-export const CloseKarteRequestSchema: GenMessage<CloseKarteRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 12);
-
-/**
- * @generated from message karte.v1.CloseKarteResponse
- */
-export type CloseKarteResponse = Message<"karte.v1.CloseKarteResponse"> & {
-  /**
-   * @generated from field: karte.v1.Karte karte = 1;
-   */
-  karte?: Karte | undefined;
-};
-
-/**
- * Describes the message karte.v1.CloseKarteResponse.
- * Use `create(CloseKarteResponseSchema)` to create a new message.
- */
-export const CloseKarteResponseSchema: GenMessage<CloseKarteResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 13);
-
-/**
- * @generated from message karte.v1.ReopenKarteRequest
- */
-export type ReopenKarteRequest = Message<"karte.v1.ReopenKarteRequest"> & {
-  /**
-   * @generated from field: string karte_id = 1;
-   */
-  karteId: string;
-};
-
-/**
- * Describes the message karte.v1.ReopenKarteRequest.
- * Use `create(ReopenKarteRequestSchema)` to create a new message.
- */
-export const ReopenKarteRequestSchema: GenMessage<ReopenKarteRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 14);
-
-/**
- * @generated from message karte.v1.ReopenKarteResponse
- */
-export type ReopenKarteResponse = Message<"karte.v1.ReopenKarteResponse"> & {
-  /**
-   * @generated from field: karte.v1.Karte karte = 1;
-   */
-  karte?: Karte | undefined;
-};
-
-/**
- * Describes the message karte.v1.ReopenKarteResponse.
- * Use `create(ReopenKarteResponseSchema)` to create a new message.
- */
-export const ReopenKarteResponseSchema: GenMessage<ReopenKarteResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 15);
-
-/**
  * @generated from message karte.v1.AddKarteEventRequest
  */
 export type AddKarteEventRequest = Message<"karte.v1.AddKarteEventRequest"> & {
@@ -444,7 +366,7 @@ export type AddKarteEventRequest = Message<"karte.v1.AddKarteEventRequest"> & {
  * Use `create(AddKarteEventRequestSchema)` to create a new message.
  */
 export const AddKarteEventRequestSchema: GenMessage<AddKarteEventRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 16);
+  messageDesc(file_karte_v1_service, 12);
 
 /**
  * @generated from message karte.v1.AddKarteEventResponse
@@ -461,7 +383,7 @@ export type AddKarteEventResponse = Message<"karte.v1.AddKarteEventResponse"> & 
  * Use `create(AddKarteEventResponseSchema)` to create a new message.
  */
 export const AddKarteEventResponseSchema: GenMessage<AddKarteEventResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 17);
+  messageDesc(file_karte_v1_service, 13);
 
 /**
  * @generated from message karte.v1.UpdateKarteEventRequest
@@ -483,7 +405,7 @@ export type UpdateKarteEventRequest = Message<"karte.v1.UpdateKarteEventRequest"
  * Use `create(UpdateKarteEventRequestSchema)` to create a new message.
  */
 export const UpdateKarteEventRequestSchema: GenMessage<UpdateKarteEventRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 18);
+  messageDesc(file_karte_v1_service, 14);
 
 /**
  * @generated from message karte.v1.UpdateKarteEventResponse
@@ -500,7 +422,7 @@ export type UpdateKarteEventResponse = Message<"karte.v1.UpdateKarteEventRespons
  * Use `create(UpdateKarteEventResponseSchema)` to create a new message.
  */
 export const UpdateKarteEventResponseSchema: GenMessage<UpdateKarteEventResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 19);
+  messageDesc(file_karte_v1_service, 15);
 
 /**
  * @generated from message karte.v1.DeleteKarteEventRequest
@@ -517,7 +439,7 @@ export type DeleteKarteEventRequest = Message<"karte.v1.DeleteKarteEventRequest"
  * Use `create(DeleteKarteEventRequestSchema)` to create a new message.
  */
 export const DeleteKarteEventRequestSchema: GenMessage<DeleteKarteEventRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 20);
+  messageDesc(file_karte_v1_service, 16);
 
 /**
  * @generated from message karte.v1.DeleteKarteEventResponse
@@ -534,7 +456,7 @@ export type DeleteKarteEventResponse = Message<"karte.v1.DeleteKarteEventRespons
  * Use `create(DeleteKarteEventResponseSchema)` to create a new message.
  */
 export const DeleteKarteEventResponseSchema: GenMessage<DeleteKarteEventResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 21);
+  messageDesc(file_karte_v1_service, 17);
 
 /**
  * @generated from message karte.v1.ListKartesByTargetRequest
@@ -561,7 +483,7 @@ export type ListKartesByTargetRequest = Message<"karte.v1.ListKartesByTargetRequ
  * Use `create(ListKartesByTargetRequestSchema)` to create a new message.
  */
 export const ListKartesByTargetRequestSchema: GenMessage<ListKartesByTargetRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 22);
+  messageDesc(file_karte_v1_service, 18);
 
 /**
  * @generated from message karte.v1.ListKartesByTargetResponse
@@ -593,7 +515,7 @@ export type ListKartesByTargetResponse = Message<"karte.v1.ListKartesByTargetRes
  * Use `create(ListKartesByTargetResponseSchema)` to create a new message.
  */
 export const ListKartesByTargetResponseSchema: GenMessage<ListKartesByTargetResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 23);
+  messageDesc(file_karte_v1_service, 19);
 
 /**
  * @generated from message karte.v1.ListMyKartesRequest
@@ -615,7 +537,7 @@ export type ListMyKartesRequest = Message<"karte.v1.ListMyKartesRequest"> & {
  * Use `create(ListMyKartesRequestSchema)` to create a new message.
  */
 export const ListMyKartesRequestSchema: GenMessage<ListMyKartesRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 24);
+  messageDesc(file_karte_v1_service, 20);
 
 /**
  * @generated from message karte.v1.KarteCounts
@@ -627,14 +549,9 @@ export type KarteCounts = Message<"karte.v1.KarteCounts"> & {
   totalCount: number;
 
   /**
-   * @generated from field: int32 open_count = 2;
+   * @generated from field: int32 unrated_count = 2;
    */
-  openCount: number;
-
-  /**
-   * @generated from field: int32 closed_count = 3;
-   */
-  closedCount: number;
+  unratedCount: number;
 };
 
 /**
@@ -642,7 +559,7 @@ export type KarteCounts = Message<"karte.v1.KarteCounts"> & {
  * Use `create(KarteCountsSchema)` to create a new message.
  */
 export const KarteCountsSchema: GenMessage<KarteCounts> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 25);
+  messageDesc(file_karte_v1_service, 21);
 
 /**
  * @generated from message karte.v1.ListMyKartesResponse
@@ -674,7 +591,7 @@ export type ListMyKartesResponse = Message<"karte.v1.ListMyKartesResponse"> & {
  * Use `create(ListMyKartesResponseSchema)` to create a new message.
  */
 export const ListMyKartesResponseSchema: GenMessage<ListMyKartesResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 26);
+  messageDesc(file_karte_v1_service, 22);
 
 /**
  * @generated from message karte.v1.ListRecentKartesRequest
@@ -696,7 +613,7 @@ export type ListRecentKartesRequest = Message<"karte.v1.ListRecentKartesRequest"
  * Use `create(ListRecentKartesRequestSchema)` to create a new message.
  */
 export const ListRecentKartesRequestSchema: GenMessage<ListRecentKartesRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 27);
+  messageDesc(file_karte_v1_service, 23);
 
 /**
  * @generated from message karte.v1.ListRecentKartesResponse
@@ -723,33 +640,7 @@ export type ListRecentKartesResponse = Message<"karte.v1.ListRecentKartesRespons
  * Use `create(ListRecentKartesResponseSchema)` to create a new message.
  */
 export const ListRecentKartesResponseSchema: GenMessage<ListRecentKartesResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 28);
-
-/**
- * @generated from enum karte.v1.KarteStatus
- */
-export enum KarteStatus {
-  /**
-   * @generated from enum value: KARTE_STATUS_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: KARTE_STATUS_OPEN = 1;
-   */
-  OPEN = 1,
-
-  /**
-   * @generated from enum value: KARTE_STATUS_CLOSED = 2;
-   */
-  CLOSED = 2,
-}
-
-/**
- * Describes the enum karte.v1.KarteStatus.
- */
-export const KarteStatusSchema: GenEnum<KarteStatus> = /*@__PURE__*/
-  enumDesc(file_karte_v1_service, 0);
+  messageDesc(file_karte_v1_service, 24);
 
 /**
  * @generated from enum karte.v1.KarteStage
@@ -780,7 +671,7 @@ export enum KarteStage {
  * Describes the enum karte.v1.KarteStage.
  */
 export const KarteStageSchema: GenEnum<KarteStage> = /*@__PURE__*/
-  enumDesc(file_karte_v1_service, 1);
+  enumDesc(file_karte_v1_service, 0);
 
 /**
  * @generated from service karte.v1.KarteService
@@ -817,22 +708,6 @@ export const KarteService: GenService<{
     methodKind: "unary";
     input: typeof DeleteKarteRequestSchema;
     output: typeof DeleteKarteResponseSchema;
-  },
-  /**
-   * @generated from rpc karte.v1.KarteService.CloseKarte
-   */
-  closeKarte: {
-    methodKind: "unary";
-    input: typeof CloseKarteRequestSchema;
-    output: typeof CloseKarteResponseSchema;
-  },
-  /**
-   * @generated from rpc karte.v1.KarteService.ReopenKarte
-   */
-  reopenKarte: {
-    methodKind: "unary";
-    input: typeof ReopenKarteRequestSchema;
-    output: typeof ReopenKarteResponseSchema;
   },
   /**
    * @generated from rpc karte.v1.KarteService.AddKarteEvent

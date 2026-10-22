@@ -25,14 +25,12 @@ const karte = (overrides: Partial<Karte> = {}): Karte => ({
   target: { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" },
   isMine: true,
   rating: null,
-  status: "open",
   events: [
     event("e-1"),
     event("e-2", { stage: "service", outcome: "ended_early", tags: ["late", "payment_trouble", "excessive_request"], note: "30分で帰った", occurredOn: "2026-10-14" }),
   ],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
-  closedAt: null,
   lastActivityAt: new Date().toISOString(),
   ...overrides,
 });
@@ -46,7 +44,7 @@ async function mount(props: { karte: Karte; variant: "feed" | "guest" | "mine"; 
 }
 
 describe("KarteCard", () => {
-  it("summarizes the karte with its latest event, state and two tags", async () => {
+  it("summarizes the karte with its latest event and two tags", async () => {
     const text = (await mount({ karte: karte(), variant: "feed" })).textContent;
 
     expect(text).toContain("KARTE / キャストからゲストへ");
@@ -54,19 +52,19 @@ describe("KarteCard", () => {
     expect(text).toContain("はなこ");
     expect(text).toContain("@hanako");
     expect(text).toContain("未評価");
+    expect(text).not.toContain("記録中");
     expect(text).toContain("10/14 · 接客 · 途中終了 — 30分で帰った");
-    expect(text).toContain("記録中");
     expect(text).toContain("遅刻あり");
     expect(text).toContain("支払いトラブルあり");
     expect(text).not.toContain("合意条件を超える要求あり");
   });
 
-  it("shows the rating and the closed state", async () => {
-    const text = (await mount({ karte: karte({ rating: 4, status: "closed", closedAt: new Date().toISOString() }), variant: "feed" })).textContent;
+  it("shows the rating and no state mark", async () => {
+    const container = await mount({ karte: karte({ rating: 4 }), variant: "feed" });
 
-    expect(text).toContain("★ 4.0");
-    expect(text).toContain("完了");
-    expect(text).not.toContain("記録中");
+    expect(container.textContent).toContain("★ 4.0");
+    expect(container.querySelector("article p")?.textContent).toBe("KARTE / キャストからゲストへ");
+    expect(container.textContent).not.toContain("記録中");
   });
 
   it("leaves the dash out when the latest event has no note", async () => {
@@ -74,6 +72,18 @@ describe("KarteCard", () => {
 
     expect(text).toContain("10/1 · 予約・問い合わせ · 予約成立");
     expect(text).not.toContain(" — ");
+  });
+
+  it("renders no tag row when the latest event has no tags", async () => {
+    const container = await mount({ karte: karte({ events: [event("e-1")] }), variant: "feed" });
+
+    expect(container.querySelector("button .flex-wrap")).toBeNull();
+  });
+
+  it("renders the tag row when the latest event has tags", async () => {
+    const container = await mount({ karte: karte(), variant: "feed" });
+
+    expect(container.querySelector("button .flex-wrap")).not.toBeNull();
   });
 
   it("opens the karte from its summary", async () => {

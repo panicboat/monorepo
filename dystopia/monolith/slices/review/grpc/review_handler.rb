@@ -19,8 +19,6 @@ module Review
       rpc :GetReview,           ::Review::V1::GetReviewRequest,           ::Review::V1::GetReviewResponse
       rpc :UpdateReviewRating,  ::Review::V1::UpdateReviewRatingRequest,  ::Review::V1::UpdateReviewRatingResponse
       rpc :DeleteReview,        ::Review::V1::DeleteReviewRequest,        ::Review::V1::DeleteReviewResponse
-      rpc :CloseReview,         ::Review::V1::CloseReviewRequest,         ::Review::V1::CloseReviewResponse
-      rpc :ReopenReview,        ::Review::V1::ReopenReviewRequest,        ::Review::V1::ReopenReviewResponse
       rpc :AddReviewEvent,      ::Review::V1::AddReviewEventRequest,      ::Review::V1::AddReviewEventResponse
       rpc :UpdateReviewEvent,   ::Review::V1::UpdateReviewEventRequest,   ::Review::V1::UpdateReviewEventResponse
       rpc :DeleteReviewEvent,   ::Review::V1::DeleteReviewEventRequest,   ::Review::V1::DeleteReviewEventResponse
@@ -35,15 +33,12 @@ module Review
         "aftercare" => :REVIEW_STAGE_AFTERCARE
       }.freeze
       STAGE_FROM_PROTO = STAGE_TO_PROTO.invert.freeze
-      STATUS_TO_PROTO = { "open" => :REVIEW_STATUS_OPEN, "closed" => :REVIEW_STATUS_CLOSED }.freeze
 
       include Review::Deps[
         create_review_uc: "use_cases.create_review",
         get_review_uc: "use_cases.get_review",
         update_review_rating_uc: "use_cases.update_review_rating",
         delete_review_uc: "use_cases.delete_review",
-        close_review_uc: "use_cases.close_review",
-        reopen_review_uc: "use_cases.reopen_review",
         add_review_event_uc: "use_cases.add_review_event",
         update_review_event_uc: "use_cases.update_review_event",
         delete_review_event_uc: "use_cases.delete_review_event",
@@ -89,18 +84,6 @@ module Review
         authenticate_user!
         wrap_errors { delete_review_uc.call(viewer_account_id: current_account_id, review_id: request.message.review_id) }
         ::Review::V1::DeleteReviewResponse.new
-      end
-
-      def close_review
-        authenticate_user!
-        review = wrap_errors { close_review_uc.call(viewer_account_id: current_account_id, review_id: request.message.review_id) }
-        ::Review::V1::CloseReviewResponse.new(review: review_to_proto(review))
-      end
-
-      def reopen_review
-        authenticate_user!
-        review = wrap_errors { reopen_review_uc.call(viewer_account_id: current_account_id, review_id: request.message.review_id) }
-        ::Review::V1::ReopenReviewResponse.new(review: review_to_proto(review))
       end
 
       def add_review_event
@@ -166,7 +149,7 @@ module Review
         counts = result[:counts]
         ::Review::V1::ListMyReviewsResponse.new(
           **page_to_proto(result),
-          counts: ::Review::V1::ReviewCounts.new(total_count: counts[:total], open_count: counts[:open], closed_count: counts[:closed])
+          counts: ::Review::V1::ReviewCounts.new(total_count: counts[:total], unrated_count: counts[:unrated])
         )
       end
 
@@ -230,11 +213,9 @@ module Review
           target: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(review[:target]),
           is_mine: review[:is_mine],
           rating: review[:rating] || 0,
-          status: STATUS_TO_PROTO.fetch(review[:status]),
           events: review[:events].map { |event| event_to_proto(event) },
           created_at: timestamp(review[:created_at]),
           updated_at: timestamp(review[:updated_at]),
-          closed_at: timestamp(review[:closed_at]),
           last_activity_at: timestamp(review[:last_activity_at])
         )
       end

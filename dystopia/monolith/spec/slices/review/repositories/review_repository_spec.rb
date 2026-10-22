@@ -10,36 +10,44 @@ RSpec.describe Review::Repositories::ReviewRepository, type: :database do
   let(:guest_account) { create_account(role: 1) }
   let(:guest) { create_account_with_profile(account_id: guest_account, username: "guest_one") }
 
-  def write(author_profile: guest, author_account: guest_account, target: cast, rating: nil, status: "open")
-    review = repo.create(author_account_id: author_account, author_profile_id: author_profile, target_profile_id: target, rating: rating, occurred_on: Date.new(2026, 10, 1))
-    repo.close(review.id) if status == "closed"
-    repo.find(review.id)
+  def write(author_profile: guest, author_account: guest_account, target: cast, rating: nil)
+    repo.create(author_account_id: author_account, author_profile_id: author_profile, target_profile_id: target, rating: rating, occurred_on: Date.new(2026, 10, 1))
   end
 
   it "computes the summary per author profile so one prolific profile weighs as much as another" do
     other_account = create_account(role: 1)
     other = create_account_with_profile(account_id: other_account, username: "guest_two")
-    3.times { write(rating: 5, status: "closed") }
-    write(author_profile: other, author_account: other_account, rating: 1, status: "closed")
-    write(rating: 1)
+    3.times { write(rating: 5) }
+    write(author_profile: other, author_account: other_account, rating: 1)
+    write(rating: nil)
 
     expect(repo.rating_summary(target_profile_id: cast)).to eq(average_rating: 3.0, rater_count: 2, review_count: 4)
   end
 
-  it "reports no summary without closed reviews" do
+  it "leaves unrated reviews out of the summary, including one whose rating was removed" do
     write(rating: 4)
+    write
+    removed = write(rating: 1)
+    repo.update_rating(removed.id, nil)
+
+    expect(repo.rating_summary(target_profile_id: cast)).to eq(average_rating: 4.0, rater_count: 1, review_count: 1)
+  end
+
+  it "reports no summary without rated reviews" do
+    write(rating: nil)
 
     expect(repo.rating_summary(target_profile_id: cast)).to eq(average_rating: 0.0, rater_count: 0, review_count: 0)
   end
 
-  it "lists by author profile and reads the statuses by account across profiles" do
+  it "lists by author profile and reads the parties and ratings by account across profiles" do
     second = create_account_with_profile(account_id: guest_account, username: "guest_alt")
     mine = write
-    write(author_profile: second, rating: 2, status: "closed")
+    write(author_profile: second, rating: 2)
 
     expect(repo.list_by_author_profile(author_profile_id: guest, limit: 20).map(&:id)).to eq([mine.id])
     expect(repo.list_by_account(author_account_id: guest_account, limit: 20).length).to eq(2)
-    expect(repo.parties_and_statuses_by_account(author_account_id: guest_account).map(&:status).sort).to eq(%w[closed open])
+    rows = repo.parties_and_ratings_by_account(author_account_id: guest_account)
+    expect(rows.map { |row| [row.author_profile_id, row.target_profile_id, row.rating] }).to contain_exactly([guest, cast, nil], [second, cast, 2])
   end
 
   it "deletes the reviews a profile wrote or received" do

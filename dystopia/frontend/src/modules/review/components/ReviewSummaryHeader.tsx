@@ -17,7 +17,7 @@ export function ReviewSummaryHeader({ summary }: { summary: RatingSummary }) {
       <div className="text-sm">
         <p className="font-bold text-text-primary">利用の満足度（参考評価）</p>
         <p className="text-text-secondary">
-          {summary.raterCount}人が評価 · {summary.reviewCount}件の完了済みクチコミ
+          {summary.raterCount}人が評価 · {summary.reviewCount}件の評価済みクチコミ
         </p>
       </div>
     </section>

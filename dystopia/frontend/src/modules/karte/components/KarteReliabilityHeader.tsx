@@ -17,7 +17,7 @@ export function KarteReliabilityHeader({ reliability }: { reliability: Reliabili
       <div className="text-sm">
         <p className="font-bold text-text-primary">予約・接客の信頼性（参考評価）</p>
         <p className="text-text-secondary">
-          {reliability.raterCount}人が評価 · {reliability.karteCount}件の完了済みカルテ
+          {reliability.raterCount}人が評価 · {reliability.karteCount}件の評価済みカルテ
         </p>
       </div>
     </section>

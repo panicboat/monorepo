@@ -19,8 +19,6 @@ module Review
         rpc :GetReview, ::Review::V1::GetReviewRequest, ::Review::V1::GetReviewResponse
         rpc :UpdateReviewRating, ::Review::V1::UpdateReviewRatingRequest, ::Review::V1::UpdateReviewRatingResponse
         rpc :DeleteReview, ::Review::V1::DeleteReviewRequest, ::Review::V1::DeleteReviewResponse
-        rpc :CloseReview, ::Review::V1::CloseReviewRequest, ::Review::V1::CloseReviewResponse
-        rpc :ReopenReview, ::Review::V1::ReopenReviewRequest, ::Review::V1::ReopenReviewResponse
         rpc :AddReviewEvent, ::Review::V1::AddReviewEventRequest, ::Review::V1::AddReviewEventResponse
         rpc :UpdateReviewEvent, ::Review::V1::UpdateReviewEventRequest, ::Review::V1::UpdateReviewEventResponse
         rpc :DeleteReviewEvent, ::Review::V1::DeleteReviewEventRequest, ::Review::V1::DeleteReviewEventResponse

@@ -19,8 +19,6 @@ module Karte
         rpc :GetKarte, ::Karte::V1::GetKarteRequest, ::Karte::V1::GetKarteResponse
         rpc :UpdateKarteRating, ::Karte::V1::UpdateKarteRatingRequest, ::Karte::V1::UpdateKarteRatingResponse
         rpc :DeleteKarte, ::Karte::V1::DeleteKarteRequest, ::Karte::V1::DeleteKarteResponse
-        rpc :CloseKarte, ::Karte::V1::CloseKarteRequest, ::Karte::V1::CloseKarteResponse
-        rpc :ReopenKarte, ::Karte::V1::ReopenKarteRequest, ::Karte::V1::ReopenKarteResponse
         rpc :AddKarteEvent, ::Karte::V1::AddKarteEventRequest, ::Karte::V1::AddKarteEventResponse
         rpc :UpdateKarteEvent, ::Karte::V1::UpdateKarteEventRequest, ::Karte::V1::UpdateKarteEventResponse
         rpc :DeleteKarteEvent, ::Karte::V1::DeleteKarteEventRequest, ::Karte::V1::DeleteKarteEventResponse

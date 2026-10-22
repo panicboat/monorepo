@@ -9,7 +9,7 @@ module Karte
         page_kartes: "use_cases.page_kartes"
       ]
 
-      NO_COUNTS = { total: 0, open: 0, closed: 0 }.freeze
+      NO_COUNTS = { total: 0, unrated: 0 }.freeze
 
       def call(viewer_account_id:, limit:, cursor:)
         raise Errors::Forbidden, "Cast only" unless authorize_cast.call(viewer_account_id: viewer_account_id)

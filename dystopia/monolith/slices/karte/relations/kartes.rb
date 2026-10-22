@@ -9,8 +9,6 @@ module Karte
         attribute :author_profile_id, Types::String
         attribute :target_profile_id, Types::String
         attribute :rating, Types::Integer.optional
-        attribute :status, Types::String
-        attribute :closed_at, Types::Time.optional
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
         attribute :last_activity_at, Types::Time

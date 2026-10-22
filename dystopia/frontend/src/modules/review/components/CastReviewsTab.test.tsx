@@ -57,7 +57,7 @@ describe("CastReviewsTab", () => {
     const container = await render();
 
     expect(container.textContent).toContain("4.0");
-    expect(container.textContent).toContain("1人が評価 · 2件の完了済みクチコミ");
+    expect(container.textContent).toContain("1人が評価 · 2件の評価済みクチコミ");
     expect(container.textContent).toContain("list:cast:クチコミはまだありません");
     expect(container.textContent).not.toContain("compose:");
 

@@ -41,8 +41,6 @@ export function useKarteMutations() {
     (karteId: string, rating: number | null) => send(`${karteUrl(karteId)}/rating`, "PATCH", { rating }),
     [send]
   );
-  const close = useCallback((karteId: string) => send(`${karteUrl(karteId)}/close`, "POST"), [send]);
-  const reopen = useCallback((karteId: string) => send(`${karteUrl(karteId)}/reopen`, "POST"), [send]);
   const addEvent = useCallback(
     (karteId: string, event: KarteEventInput) => send(`${karteUrl(karteId)}/events`, "POST", { event }),
     [send]
@@ -62,5 +60,5 @@ export function useKarteMutations() {
     [run]
   );
 
-  return { create, updateRating, close, reopen, addEvent, updateEvent, removeEvent, remove, loading, error };
+  return { create, updateRating, addEvent, updateEvent, removeEvent, remove, loading, error };
 }

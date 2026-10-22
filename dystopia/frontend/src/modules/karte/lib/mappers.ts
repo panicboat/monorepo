@@ -1,6 +1,5 @@
 import {
   KarteStage as KarteStageMessage,
-  KarteStatus as KarteStatusMessage,
   type Karte as KarteMessage,
   type KarteCounts as KarteCountsMessage,
   type KarteEvent as KarteEventMessage,
@@ -48,11 +47,9 @@ export function mapKarteToView(karte: KarteMessage): Karte {
     target: karte.target ? summaryToView(karte.target) : null,
     isMine: !!karte.isMine,
     rating: karte.rating === 0 ? null : karte.rating,
-    status: karte.status === KarteStatusMessage.CLOSED ? "closed" : "open",
     events: karte.events.map(mapKarteEventToView),
     createdAt: toIsoString(karte.createdAt),
     updatedAt: toIsoString(karte.updatedAt),
-    closedAt: karte.closedAt ? toIsoString(karte.closedAt) : null,
     lastActivityAt: toIsoString(karte.lastActivityAt),
   };
 }
@@ -77,5 +74,5 @@ export function eventInputToMessage(input: KarteEventInput) {
 }
 
 export function mapCountsToView(counts: KarteCountsMessage | undefined): KarteCounts {
-  return { total: counts?.totalCount ?? 0, open: counts?.openCount ?? 0, closed: counts?.closedCount ?? 0 };
+  return { total: counts?.totalCount ?? 0, unrated: counts?.unratedCount ?? 0 };
 }

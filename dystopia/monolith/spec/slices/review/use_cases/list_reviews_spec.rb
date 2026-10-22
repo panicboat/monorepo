@@ -14,9 +14,8 @@ RSpec.describe "Review list use cases", type: :database do
   let(:cast) { create_account_with_profile(account_id: cast_account, username: "cast_one") }
   let(:event_input) { { stage: "service", outcome: "satisfied", tags: [], note: "", occurred_on: "2026-10-01" } }
 
-  def write(account: guest_account, profile: guest, target: cast, rating: nil, close: false, at: Time.now)
+  def write(account: guest_account, profile: guest, target: cast, rating: nil, at: Time.now)
     review = uc(:create_review).call(viewer_account_id: account, viewer_profile_id: profile, target_profile_id: target, rating: rating, event: event_input)
-    uc(:close_review).call(viewer_account_id: account, review_id: review[:id]) if close
     db[:review__reviews].where(id: review[:id]).update(created_at: at, last_activity_at: at)
     review
   end
@@ -25,15 +24,15 @@ RSpec.describe "Review list use cases", type: :database do
     uc(:list_reviews_by_target).call(viewer_account_id: viewer_account, viewer_profile_id: viewer, target_profile_id: cast, limit: limit, cursor: cursor)
   end
 
-  it "lists a cast's reviews, open ones included, with the summary of the closed ones" do
+  it "lists a cast's reviews, unrated ones included, with the summary of the rated ones" do
     now = Time.now
-    first = write(rating: 5, close: true, at: now - 30)
-    second = write(account: other_guest_account, profile: other_guest, rating: 3, close: true, at: now - 20)
-    open_one = write(at: now - 10)
+    first = write(rating: 5, at: now - 30)
+    second = write(account: other_guest_account, profile: other_guest, rating: 3, at: now - 20)
+    unrated_one = write(at: now - 10)
 
     result = by_target
 
-    expect(result[:reviews].map { |r| r[:id] }).to eq([open_one[:id], second[:id], first[:id]])
+    expect(result[:reviews].map { |r| r[:id] }).to eq([unrated_one[:id], second[:id], first[:id]])
     expect(result[:summary]).to eq(average_rating: 4.0, rater_count: 2, review_count: 2)
   end
 
@@ -49,7 +48,7 @@ RSpec.describe "Review list use cases", type: :database do
   end
 
   it "hides the reviews of a blocked author from the viewer but keeps the summary the same" do
-    write(rating: 4, close: true)
+    write(rating: 4)
     viewer_account = create_account(role: 1)
     viewer = create_account_with_profile(account_id: viewer_account, username: "viewer")
     Social::Slice["repositories.block_repository"].block(blocker_profile_id: viewer, blocked_profile_id: guest)
@@ -125,7 +124,7 @@ RSpec.describe "Review list use cases", type: :database do
   end
 
   it "leaves a review about a disabled cast out of the viewer's own counts as well as the list" do
-    write(rating: 4, close: true)
+    write(rating: 4)
     disabled_cast = create_account_with_profile(account_id: create_account(role: 2), username: "disabled_cast")
     write(target: disabled_cast)
     db[:profile__profiles].where(id: disabled_cast).update(disabled_at: Time.now)
@@ -133,20 +132,35 @@ RSpec.describe "Review list use cases", type: :database do
     result = uc(:list_my_reviews).call(viewer_account_id: guest_account, limit: 20, cursor: nil)
 
     expect(result[:reviews].length).to eq(1)
-    expect(result[:counts]).to eq(total: 1, open: 0, closed: 1)
+    expect(result[:counts]).to eq(total: 1, unrated: 0)
+  end
+
+  it "counts neither a rated nor an unrated review about a cast that is no longer visible" do
+    write(rating: 4)
+    write(at: Time.now - 10)
+    disabled_cast = create_account_with_profile(account_id: create_account(role: 2), username: "disabled_cast")
+    deactivated_cast_account = create_account(role: 2)
+    deactivated_cast = create_account_with_profile(account_id: deactivated_cast_account, username: "deactivated_cast")
+    [disabled_cast, deactivated_cast].each { |target| [3, nil].each { |rating| write(target: target, rating: rating) } }
+    db[:profile__profiles].where(id: disabled_cast).update(disabled_at: Time.now)
+    db[:identity__accounts].where(id: deactivated_cast_account).update(deactivated_at: Time.now)
+
+    result = uc(:list_my_reviews).call(viewer_account_id: guest_account, limit: 20, cursor: nil)
+
+    expect(result[:counts]).to eq(total: 2, unrated: 1)
   end
 
   it "lists and counts the viewer's own reviews across the account's profiles" do
     second = create_account_with_profile(account_id: guest_account, username: "guest_alt")
     write(at: Time.now - 20)
-    write(profile: second, rating: 3, close: true, at: Time.now - 10)
+    write(profile: second, rating: 3, at: Time.now - 10)
     write(account: other_guest_account, profile: other_guest)
 
     first = uc(:list_my_reviews).call(viewer_account_id: guest_account, limit: 1, cursor: nil)
     rest = uc(:list_my_reviews).call(viewer_account_id: guest_account, limit: 1, cursor: first[:next_cursor])
 
-    expect(first[:counts]).to eq(total: 2, open: 1, closed: 1)
-    expect(rest[:counts]).to eq(total: 0, open: 0, closed: 0)
+    expect(first[:counts]).to eq(total: 2, unrated: 1)
+    expect(rest[:counts]).to eq(total: 0, unrated: 0)
     expect { uc(:list_my_reviews).call(viewer_account_id: cast_account, limit: 20, cursor: nil) }.to raise_error(Review::Errors::Forbidden)
   end
 

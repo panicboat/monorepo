@@ -14,7 +14,6 @@ module Review
           author_profile_id: author_profile_id,
           target_profile_id: target_profile_id,
           rating: rating,
-          status: "open",
           last_occurred_on: occurred_on
         }
         review_records.command(:create).call(attrs)
@@ -26,14 +25,6 @@ module Review
 
       def update_rating(id, rating)
         update(id, rating: rating)
-      end
-
-      def close(id)
-        update(id, status: "closed", closed_at: Time.now, last_activity_at: Time.now)
-      end
-
-      def reopen(id)
-        update(id, status: "open", closed_at: nil, last_activity_at: Time.now)
       end
 
       def record_activity(id)
@@ -87,14 +78,14 @@ module Review
         end
       end
 
-      def parties_and_statuses_by_account(author_account_id:)
-        review_records.where(author_account_id: author_account_id).select(:author_profile_id, :target_profile_id, :status).to_a
+      def parties_and_ratings_by_account(author_account_id:)
+        review_records.where(author_account_id: author_account_id).select(:author_profile_id, :target_profile_id, :rating).to_a
       end
 
       def rating_summary(target_profile_id:)
         # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with aggregates.
         per_profile = review_records.dataset.unordered
-          .where(target_profile_id: target_profile_id, status: "closed")
+          .where(target_profile_id: target_profile_id).exclude(rating: nil)
           .group(:author_profile_id)
           .select(Sequel.function(:avg, :rating).as(:profile_average), Sequel.function(:count, :id).as(:review_count))
         row = review_records.dataset.db.from(per_profile.as(:per_profile)).select(

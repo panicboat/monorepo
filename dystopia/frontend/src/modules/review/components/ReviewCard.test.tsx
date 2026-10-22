@@ -25,14 +25,12 @@ const review = (overrides: Partial<Review> = {}): Review => ({
   target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" },
   isMine: true,
   rating: null,
-  status: "open",
   events: [
     event("e-1"),
     event("e-2", { stage: "service", outcome: "ended_early", tags: ["late", "not_as_pictured", "unagreed_charge"], note: "30分で帰った", occurredOn: "2026-10-14" }),
   ],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
-  closedAt: null,
   lastActivityAt: new Date().toISOString(),
   ...overrides,
 });
@@ -46,7 +44,7 @@ async function mount(props: { review: Review; variant: "feed" | "cast" | "mine";
 }
 
 describe("ReviewCard", () => {
-  it("summarizes the review with its latest event, state and two tags", async () => {
+  it("summarizes the review with its latest event and two tags", async () => {
     const text = (await mount({ review: review(), variant: "feed" })).textContent;
 
     expect(text).toContain("クチコミ / ゲストからキャストへ");
@@ -55,18 +53,18 @@ describe("ReviewCard", () => {
     expect(text).toContain("@hanako");
     expect(text).toContain("未評価");
     expect(text).toContain("10/14 · 利用 · 途中で終了 — 30分で帰った");
-    expect(text).toContain("記録中");
+    expect(text).not.toContain("記録中");
     expect(text).toContain("遅刻あり");
     expect(text).toContain("写真・プロフィールと違う");
     expect(text).not.toContain("合意していない料金・要求あり");
   });
 
-  it("shows the rating and the closed state", async () => {
-    const text = (await mount({ review: review({ rating: 4, status: "closed", closedAt: new Date().toISOString() }), variant: "feed" })).textContent;
+  it("shows the rating and no state mark", async () => {
+    const container = await mount({ review: review({ rating: 4 }), variant: "feed" });
 
-    expect(text).toContain("★ 4.0");
-    expect(text).toContain("完了");
-    expect(text).not.toContain("記録中");
+    expect(container.textContent).toContain("★ 4.0");
+    expect(container.querySelector("article p")?.textContent).toBe("クチコミ / ゲストからキャストへ");
+    expect(container.textContent).not.toContain("記録中");
   });
 
   it("leaves the dash out when the latest event has no note", async () => {
@@ -74,6 +72,18 @@ describe("ReviewCard", () => {
 
     expect(text).toContain("10/1 · 予約・問い合わせ · 予約成立");
     expect(text).not.toContain(" — ");
+  });
+
+  it("renders no tag row when the latest event has no tags", async () => {
+    const container = await mount({ review: review({ events: [event("e-1")] }), variant: "feed" });
+
+    expect(container.querySelector("button .flex-wrap")).toBeNull();
+  });
+
+  it("renders the tag row when the latest event has tags", async () => {
+    const container = await mount({ review: review(), variant: "feed" });
+
+    expect(container.querySelector("button .flex-wrap")).not.toBeNull();
   });
 
   it("opens the review from its summary", async () => {

@@ -134,7 +134,7 @@ describe("ReviewEventForm", () => {
 
     const onSubmit = vi.fn();
     const container = await mount(emptyReviewEvent("2026-10-16"), true, onSubmit);
-    expect(container.textContent).toContain("3.0 が標準。評価はクチコミ全体につき 1 つです。星は完了するときに必要です");
+    expect(container.textContent).toContain("3.0 が標準。評価はクチコミ全体につき 1 つです");
     expect(container.querySelector('button[aria-pressed="true"][aria-label$="つ星"]')).toBeNull();
 
     await act(async () => (container.querySelector('button[aria-label="4つ星"]') as HTMLButtonElement).click());

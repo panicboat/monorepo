@@ -13,8 +13,6 @@ const mocks = vi.hoisted(() => ({
   toast: vi.fn(),
   mutations: {
     updateRating: vi.fn(),
-    close: vi.fn(),
-    reopen: vi.fn(),
     addEvent: vi.fn(),
     updateEvent: vi.fn(),
     removeEvent: vi.fn(),
@@ -23,7 +21,19 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
-vi.mock("../hooks/useKarte", () => ({ useKarte: () => ({ karte: mocks.current, gone: mocks.gone, error: undefined, refresh: vi.fn(), apply: mocks.apply }) }));
+vi.mock("../hooks/useKarte", async () => {
+  const { useState } = await import("react");
+  return {
+    useKarte: () => {
+      const [karte, setKarte] = useState(mocks.current);
+      const apply = (next: Karte) => {
+        mocks.apply(next);
+        setKarte(next);
+      };
+      return { karte, gone: mocks.gone, error: undefined, refresh: vi.fn(), apply };
+    },
+  };
+});
 vi.mock("../hooks/useKarteMutations", () => ({ useKarteMutations: () => ({ ...mocks.mutations, loading: false, error: null }) }));
 vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) => selector({ show: mocks.toast }),
@@ -43,11 +53,9 @@ const karte = (overrides: Partial<Karte> = {}): Karte => ({
   target: { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" },
   isMine: true,
   rating: null,
-  status: "open",
   events: [event("e-1"), event("e-2", { stage: "service", outcome: "ended_early", tags: [], note: "30分で帰った", occurredOn: "2026-10-14" })],
   createdAt: "",
   updatedAt: "",
-  closedAt: null,
   lastActivityAt: "",
   ...overrides,
 });
@@ -92,27 +100,50 @@ afterEach(async () => {
 });
 
 describe("KarteDetailSheet", () => {
-  it("shows the karte's state, author and every event in order", async () => {
+  it("shows the karte's author and every event in order under a plain heading", async () => {
     await mount(karte());
 
     expect(text()).toContain("カルテの詳細");
-    expect(text()).toContain("KARTE / 記録中");
+    expect(document.querySelector("p.tracking-wide")?.textContent).toBe("KARTE");
+    expect(text()).not.toContain("記録中");
     expect(text()).toContain("@hanako · 記録者 ゆな");
-    expect(text()).toContain("記録中のため平均評価には含まれません");
     expect(text()).toContain("予約から接客後までの記録");
     expect(text().indexOf("予約成立")).toBeLessThan(text().indexOf("途中終了"));
     expect(text()).toContain("30分で帰った");
     expect(text()).toContain("連絡が円滑");
   });
 
-  it("gives the author of an open karte the rating, event edits, appending and closing", async () => {
+  it("explains that a star makes the karte count toward the average", async () => {
     await mount(karte());
+    expect(text()).toContain("星を付けると平均評価に反映されます");
+
+    await act(async () => root.unmount());
+    document.body.innerHTML = "";
+    await mount(karte({ rating: 4 }));
+    expect(text()).toContain("平均評価に反映されています");
+    expect(text()).not.toContain("星を付けると");
+  });
+
+  it("switches the explanation once a star is chosen on an unrated karte", async () => {
+    mocks.mutations.updateRating.mockResolvedValue(karte({ rating: 4 }));
+    await mount(karte());
+    expect(text()).toContain("星を付けると平均評価に反映されます");
+
+    await click("4つ星");
+
+    expect(mocks.apply).toHaveBeenCalledWith(expect.objectContaining({ rating: 4 }));
+    expect(text()).toContain("平均評価に反映されています");
+    expect(text()).not.toContain("星を付けると");
+  });
+
+  it("gives the author the rating, event edits, appending and deleting with no completing or reopening", async () => {
+    await mount(karte({ rating: 4 }));
 
     expect(button("4つ星")).toBeDefined();
     expect(button("＋ 段階を追記する")).toBeDefined();
     expect(Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "編集")).toHaveLength(2);
-    expect(button("完了する")!.disabled).toBe(true);
-    expect(text()).toContain("完了するには星を選んでください");
+    expect(button("完了する")).toBeUndefined();
+    expect(button("再オープン")).toBeUndefined();
     expect(button("このカルテを削除")).toBeDefined();
   });
 
@@ -122,19 +153,7 @@ describe("KarteDetailSheet", () => {
     expect(button("4つ星")).toBeUndefined();
     expect(button("編集")).toBeUndefined();
     expect(button("＋ 段階を追記する")).toBeUndefined();
-    expect(button("完了する")).toBeUndefined();
     expect(button("このカルテを削除")).toBeUndefined();
-  });
-
-  it("gives the author of a closed karte reopening and deleting only", async () => {
-    await mount(karte({ status: "closed", rating: 4, closedAt: "2026-10-15T00:00:00Z" }));
-
-    expect(text()).toContain("KARTE / 完了");
-    expect(text()).toContain("完了済みの評価は平均に反映されます");
-    expect(button("再オープン")).toBeDefined();
-    expect(button("編集")).toBeUndefined();
-    expect(button("4つ星")).toBeUndefined();
-    expect(button("このカルテを削除")).toBeDefined();
   });
 
   it("saves a rating from the stars", async () => {
@@ -143,28 +162,6 @@ describe("KarteDetailSheet", () => {
     await click("4つ星");
 
     expect(mocks.mutations.updateRating).toHaveBeenCalledWith("k-1", 4);
-  });
-
-  it("closes a rated karte in place and confirms it", async () => {
-    const closed = karte({ rating: 4, status: "closed", closedAt: "2026-10-16T00:00:00Z" });
-    mocks.mutations.close.mockResolvedValue(closed);
-    await mount(karte({ rating: 4 }));
-
-    await click("完了する");
-
-    expect(mocks.mutations.close).toHaveBeenCalledWith("k-1");
-    expect(mocks.apply).toHaveBeenCalledWith(closed);
-    expect(mocks.toast).toHaveBeenCalledWith("カルテを完了しました。平均評価へ反映します");
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it("reopens a closed karte and confirms it", async () => {
-    await mount(karte({ status: "closed", rating: 4, closedAt: "2026-10-15T00:00:00Z" }));
-
-    await click("再オープン");
-
-    expect(mocks.mutations.reopen).toHaveBeenCalledWith("k-1");
-    expect(mocks.toast).toHaveBeenCalledWith("カルテを再オープンしました。集計から一時除外します");
   });
 
   it("appends a stage in a step of the sheet and comes back", async () => {

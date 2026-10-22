@@ -34,7 +34,10 @@ vi.mock("@/modules/karte/components/KarteCreateForm", () => ({
   },
 }));
 vi.mock("@/modules/review/components/ReviewCreateForm", () => ({
-  ReviewCreateForm: ({ target: chosen }: { target: ProfileSummaryView }) => <div>review-form:{chosen.profileId}</div>,
+  ReviewCreateForm: ({ target: chosen, onCreated }: { target: ProfileSummaryView; onCreated: () => void }) => {
+    mocks.created = onCreated;
+    return <div>review-form:{chosen.profileId}</div>;
+  },
 }));
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (state: { role: string }) => unknown) => selector({ role: "cast" }),
@@ -199,7 +202,21 @@ describe("ComposeToSheet", () => {
       mocks.created?.();
     });
 
-    expect(mocks.toast.mock.calls).toEqual([["記録中のカルテを作成しました"]]);
+    expect(mocks.toast.mock.calls).toEqual([["カルテを作成しました"]]);
+    expect(view.onClose).toHaveBeenCalledTimes(1);
+    expect(view.onSaved).toHaveBeenCalledTimes(1);
+    await view.unmount();
+  });
+
+  it("confirms a saved review entry and closes", async () => {
+    const view = await mount("review");
+    await pick();
+
+    await act(async () => {
+      mocks.created?.();
+    });
+
+    expect(mocks.toast.mock.calls).toEqual([["クチコミを作成しました"]]);
     expect(view.onClose).toHaveBeenCalledTimes(1);
     expect(view.onSaved).toHaveBeenCalledTimes(1);
     await view.unmount();

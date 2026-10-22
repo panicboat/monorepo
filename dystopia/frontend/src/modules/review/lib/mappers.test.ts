@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
 import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
-import { ReviewCountsSchema, ReviewEventSchema, ReviewSchema, ReviewStage, ReviewStatus, RatingSummarySchema } from "@/stub/review/v1/service_pb";
+import { ReviewCountsSchema, ReviewEventSchema, ReviewSchema, ReviewStage, RatingSummarySchema } from "@/stub/review/v1/service_pb";
 import { eventInputToMessage, mapCountsToView, mapReviewToView, mapSummaryToView } from "./mappers";
 
 describe("mapReviewToView", () => {
@@ -15,8 +15,6 @@ describe("mapReviewToView", () => {
         target: create(ProfileSummarySchema, { profileId: "target", username: "cast_hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: 1 }),
         isMine: true,
         rating: 4,
-        status: ReviewStatus.CLOSED,
-        closedAt: { seconds: BigInt(1_700_000_000), nanos: 0 },
         events: [
           create(ReviewEventSchema, { id: "e-1", stage: ReviewStage.AFTERCARE, outcome: "trouble_occurred", tags: ["excessive_contact"], note: "頻繁", occurredOn: "2026-10-01" }),
         ],
@@ -29,18 +27,16 @@ describe("mapReviewToView", () => {
       target: { profileId: "target", username: "cast_hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" },
       isMine: true,
       rating: 4,
-      status: "closed",
-      closedAt: new Date(1_700_000_000 * 1000).toISOString(),
       events: [{ id: "e-1", stage: "aftercare", outcome: "trouble_occurred", tags: ["excessive_contact"], note: "頻繁", occurredOn: "2026-10-01" }],
     });
   });
 
-  it("reads rating 0 as unrated and a missing close time as null", () => {
-    const view = mapReviewToView(create(ReviewSchema, { id: "k-1", rating: 0, status: ReviewStatus.OPEN }));
+  it("reads rating 0 as unrated and carries no status", () => {
+    const view = mapReviewToView(create(ReviewSchema, { id: "k-1", rating: 0 }));
 
     expect(view.rating).toBeNull();
-    expect(view.status).toBe("open");
-    expect(view.closedAt).toBeNull();
+    expect(view).not.toHaveProperty("status");
+    expect(view).not.toHaveProperty("closedAt");
     expect(view.author).toBeNull();
     expect(view.target).toBeNull();
     expect(view.events).toEqual([]);
@@ -67,7 +63,7 @@ describe("mapReviewToView", () => {
 });
 
 describe("mapSummaryToView", () => {
-  it("passes the average through when closed reviews exist", () => {
+  it("passes the average through when rated reviews exist", () => {
     expect(mapSummaryToView(create(RatingSummarySchema, { averageRating: 3.8, raterCount: 8, reviewCount: 12 }))).toEqual({
       averageRating: 3.8,
       raterCount: 8,
@@ -75,7 +71,7 @@ describe("mapSummaryToView", () => {
     });
   });
 
-  it("reports no average without closed reviews", () => {
+  it("reports no average without rated reviews", () => {
     expect(mapSummaryToView(create(RatingSummarySchema, {}))).toEqual({ averageRating: null, raterCount: 0, reviewCount: 0 });
     expect(mapSummaryToView(undefined)).toEqual({ averageRating: null, raterCount: 0, reviewCount: 0 });
   });
@@ -95,7 +91,7 @@ describe("eventInputToMessage", () => {
 
 describe("mapCountsToView", () => {
   it("maps the counts and reads missing counts as zero", () => {
-    expect(mapCountsToView(create(ReviewCountsSchema, { totalCount: 3, openCount: 2, closedCount: 1 }))).toEqual({ total: 3, open: 2, closed: 1 });
-    expect(mapCountsToView(undefined)).toEqual({ total: 0, open: 0, closed: 0 });
+    expect(mapCountsToView(create(ReviewCountsSchema, { totalCount: 3, unratedCount: 2 }))).toEqual({ total: 3, unrated: 2 });
+    expect(mapCountsToView(undefined)).toEqual({ total: 0, unrated: 0 });
   });
 });

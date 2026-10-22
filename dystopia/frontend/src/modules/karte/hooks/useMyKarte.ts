@@ -7,7 +7,7 @@ import { useKarteRevalidation } from "../lib/revalidate";
 import { uniqueKartes } from "../lib/uniqueKartes";
 import type { KarteCounts, MyKartePage } from "../types";
 
-const NO_COUNTS: KarteCounts = { total: 0, open: 0, closed: 0 };
+const NO_COUNTS: KarteCounts = { total: 0, unrated: 0 };
 
 export function useMyKarte() {
   const profileId = useAuthStore((s) => s.activeProfileId);

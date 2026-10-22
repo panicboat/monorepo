@@ -1,7 +1,6 @@
 import type { ProfileSummaryView } from "@/modules/profile/types";
 
 export type KarteStage = "reservation" | "service" | "aftercare";
-export type KarteStatus = "open" | "closed";
 
 export interface KarteEvent {
   id: string;
@@ -22,11 +21,9 @@ export interface Karte {
   target: ProfileSummaryView | null;
   isMine: boolean;
   rating: number | null;
-  status: KarteStatus;
   events: KarteEvent[];
   createdAt: string;
   updatedAt: string;
-  closedAt: string | null;
   lastActivityAt: string;
 }
 
@@ -56,8 +53,7 @@ export interface KartesByTargetPage extends KartePage {
 
 export interface KarteCounts {
   total: number;
-  open: number;
-  closed: number;
+  unrated: number;
 }
 
 export interface MyKartePage extends KartePage {

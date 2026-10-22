@@ -41,8 +41,6 @@ export function useReviewMutations() {
     (reviewId: string, rating: number | null) => send(`${reviewUrl(reviewId)}/rating`, "PATCH", { rating }),
     [send]
   );
-  const close = useCallback((reviewId: string) => send(`${reviewUrl(reviewId)}/close`, "POST"), [send]);
-  const reopen = useCallback((reviewId: string) => send(`${reviewUrl(reviewId)}/reopen`, "POST"), [send]);
   const addEvent = useCallback(
     (reviewId: string, event: ReviewEventInput) => send(`${reviewUrl(reviewId)}/events`, "POST", { event }),
     [send]
@@ -62,5 +60,5 @@ export function useReviewMutations() {
     [run]
   );
 
-  return { create, updateRating, close, reopen, addEvent, updateEvent, removeEvent, remove, loading, error };
+  return { create, updateRating, addEvent, updateEvent, removeEvent, remove, loading, error };
 }

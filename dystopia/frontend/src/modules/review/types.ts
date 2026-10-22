@@ -1,7 +1,6 @@
 import type { ProfileSummaryView } from "@/modules/profile/types";
 
 export type ReviewStage = "reservation" | "service" | "aftercare";
-export type ReviewStatus = "open" | "closed";
 
 export interface ReviewEvent {
   id: string;
@@ -22,11 +21,9 @@ export interface Review {
   target: ProfileSummaryView | null;
   isMine: boolean;
   rating: number | null;
-  status: ReviewStatus;
   events: ReviewEvent[];
   createdAt: string;
   updatedAt: string;
-  closedAt: string | null;
   lastActivityAt: string;
 }
 
@@ -56,8 +53,7 @@ export interface ReviewsByTargetPage extends ReviewPage {
 
 export interface ReviewCounts {
   total: number;
-  open: number;
-  closed: number;
+  unrated: number;
 }
 
 export interface MyReviewPage extends ReviewPage {
