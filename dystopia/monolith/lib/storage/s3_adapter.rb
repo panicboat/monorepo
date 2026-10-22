@@ -5,7 +5,8 @@ require_relative "adapter"
 module Storage
   class S3Adapter < Adapter
     UPLOAD_URL_EXPIRES_IN = 300
-    DOWNLOAD_URL_EXPIRES_IN = 3600
+    DOWNLOAD_URL_EXPIRES_IN = 7200
+    SIGNING_WINDOW = 3600
 
     def initialize(client: nil, bucket: ENV.fetch("MEDIA_BUCKET_NAME"), region: ENV.fetch("MEDIA_BUCKET_REGION", "ap-northeast-1"))
       require "aws-sdk-s3"
@@ -18,10 +19,12 @@ module Storage
       @presigner.presigned_url(:put_object, bucket: @bucket, key: key, content_type: content_type, expires_in: UPLOAD_URL_EXPIRES_IN)
     end
 
-    def download_url(key:)
+    # Sign at the start of the hour so the URL stays the same for an hour and browsers can cache the media.
+    def download_url(key:, now: Time.now)
       return "" if key.to_s.empty?
 
-      @presigner.presigned_url(:get_object, bucket: @bucket, key: key, expires_in: DOWNLOAD_URL_EXPIRES_IN)
+      signed_at = Time.at(now.to_i - (now.to_i % SIGNING_WINDOW)).utc
+      @presigner.presigned_url(:get_object, bucket: @bucket, key: key, expires_in: DOWNLOAD_URL_EXPIRES_IN, time: signed_at)
     end
 
     def delete(key:)
