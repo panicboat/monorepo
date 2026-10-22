@@ -1,0 +1,201 @@
+# Dystopia web push design
+
+## Context
+
+#1495 は、アプリを開いていなくても端末に通知が届くことを求めている。今の通知はアプリ内の一覧（`/notifications`）とバッジだけで、service worker・購読・VAPID 鍵・送信処理のいずれも無い。
+
+今の構成で前提になる事実は次のとおり。
+
+- PWA の manifest はある（`frontend/src/app/manifest.ts`、#1286 は完了）。iOS は、ホーム画面に追加した PWA でだけ Web Push を受け取れる
+- アプリ内通知は全て `Notifications::UseCases::Emit` を通って作られる。種類はいいね・コメント・リプライ・メンション・フォロー申請・フォロー成立の 6 つ
+- DM（`Messaging::UseCases::SendMessage`）は `Emit` を通らず、未読バッジだけが付く
+- 通知設定（`notifications.preferences`）はプロフィールごと。`push_enabled` はどこからも参照されず、種類ごとの設定はアプリ内通知を作るかどうかを切り替えている。リポスト・引用・推し！は対応する機能が無く、`post` は実際にはコメント通知を止めている
+- アプリにログアウトの操作は無い。セッションを終えるのはアカウント削除（`deactivate`）だけ
+- 本番は Lambda 同居構成で、外向き通信は IPv6 の egress-only internet gateway だけ。主な配信サーバー（`fcm.googleapis.com`・`web.push.apple.com`・`updates.push.services.mozilla.com`・`*.notify.windows.com`）は全て AAAA レコードを持つ
+- Lambda は応答を返すと実行環境が止まるため、応答の後に裏で送る処理は当てにできない
+- CloudFront は `/_next/static/*` だけをキャッシュする。`/sw.js` はキャッシュされない
+
+### Decisions taken before this spec
+
+| 論点 | 決定 | 理由 |
+|---|---|---|
+| 送る出来事 | アプリ内通知の 6 種類と DM | ユーザーの判断。DM はアプリ内の一覧には載せず、端末にだけ送る |
+| 種類ごとの設定 | 端末への送信だけを止める。アプリ内の一覧には常に全て載る | ユーザーの判断。一覧を起きたことの記録として欠かさない |
+| 複数プロフィール | 購読はアカウントと端末の組で持ち、アカウントの全プロフィール宛ての通知を送る。プロフィールごとの「端末に送る」（`push_enabled`）で止められる | ユーザーの判断 |
+| 表示内容 | 誰が何をしたかに加えて、コメント・リプライ・メンション・DM の本文まで出す | ユーザーの判断 |
+| 送信の時機 | 操作の処理の中で配信サーバーへ直接送る | ユーザーの判断。キューは #1640 で足す |
+| 送信ライブラリ | `web-push` gem | 暗号化（RFC 8291）と VAPID 署名を自前で書かない |
+
+## Goals
+
+- 設定画面で「この端末で受け取る」を有効にした端末に、アカウントの全プロフィール宛ての通知と DM が届く
+- 通知をタップすると、宛先のプロフィールに切り替わって対象の画面が開く
+- 設定画面の項目が全て実際の動きと一致する
+
+## Non-goals
+
+- キューと再送（#1640）
+- アプリのアイコンに出す未読数（Badging API）
+- 端末の一覧や、他の端末の購読を消す画面
+- フォロー申請の承認を伝える通知の文言（`follow_approved` は承認時にも「あなたをフォローしました」になる）。端末への通知も今のアプリ内通知と同じ文言を使う
+
+## Rules
+
+### Who receives what
+
+宛先プロフィール P への出来事 E について、次を全て満たすときに、P のアカウントの全ての購読へ送る。
+
+1. P の `push_enabled` が ON
+2. E の種類に対応する設定が ON（下表）
+3. アプリ内通知の場合は、`Emit` の既存の条件（自分自身でない・ブロックされていない）を満たす。DM の場合は、送信が成功している
+
+| 出来事 | 設定 |
+|---|---|
+| いいね | `like` |
+| コメント | `comment` |
+| リプライ | `reply` |
+| メンション | `mention` |
+| フォロー申請・フォロー成立 | `follow` |
+| DM | `message` |
+
+アプリ内通知は、種類ごとの設定や `push_enabled` に関係なく常に作る。
+
+### Content
+
+| 出来事 | 題名 | 本文 |
+|---|---|---|
+| いいね | 送った人の表示名 | あなたの投稿にいいねしました |
+| コメント | 送った人の表示名 | あなたの投稿にコメントしました：（本文） |
+| リプライ | 送った人の表示名 | あなたのコメントに返信しました：（本文） |
+| メンション | 送った人の表示名 | あなたをメンションしました：（本文） |
+| フォロー申請 | 送った人の表示名 | フォロー申請が届きました |
+| フォロー成立 | 送った人の表示名 | あなたをフォローしました |
+| DM | 送った人の表示名 | （メッセージ本文） |
+
+- 動作の文言はアプリ内通知（`frontend/src/modules/notifications/lib/format.ts`）と揃える。端末への通知は 1 件ずつ送るので「ほか N 人も」は付けない
+- 本文は 100 文字で切り、切ったときは末尾に「…」を付ける。本文が空（画像だけのコメントなど）のときは「：（本文）」を付けない
+- 宛先のアカウントに表示中のプロフィールが 2 つ以上あるときは、題名を「送った人 → 宛先のプロフィール」にする（例: 「りん → ゆな」）
+- メンションの本文は、投稿でのメンションなら投稿の本文、コメントでのメンションならコメントの本文
+
+### Destination
+
+| 出来事 | 開く画面 |
+|---|---|
+| いいね | `/posts/<post_id>` |
+| コメント・リプライ・メンション | `/posts/<target_post_id>` |
+| フォロー申請 | `/u/<宛先の username>/requests` |
+| フォロー成立 | `/u/<送った人の username>` |
+| DM | `/messages/<thread_id>` |
+
+開く URL には `profile=<宛先のプロフィール ID>` を付ける。アプリはこの値を読み、自分のアカウントのプロフィールなら表示中のプロフィールをそれに切り替え、URL から `profile` を消す。自分のプロフィールでなければ切り替えずに消す。
+
+### Delivery
+
+- 送信の窓口は `Notifications::UseCases::SendPush` 1 つにする。#1640 ではここをキューへの積み込みに差し替える
+- 宛先アカウントの購読ごとに並列で送り、全ての結果を待ってから戻る。1 件あたりの待ち時間は接続・読み取りともに最大 3 秒
+- TTL は 1 日。urgency は DM だけ `high`、他は `normal`
+- 配信サーバーが 404 または 410 を返したら、その購読を消す
+- それ以外の失敗と時間切れはログに残して握りつぶす（`// SILENT:`）。送信の失敗で元の操作を失敗させない
+- VAPID 鍵が設定されていない環境では何も送らない（`// FALLBACK:`）
+
+### Device subscription
+
+- 「この端末で受け取る」は端末ごとの状態で、ブラウザに購読があるかどうかをそのまま表す
+- 有効にする: 通知の許可を求め、VAPID 公開鍵で `PushManager.subscribe` し、購読を monolith に登録する
+- 無効にする: monolith から購読を消し、ブラウザの購読を解除する
+- アプリを開いたとき、ブラウザに購読があれば monolith に登録し直す。同じ endpoint は 1 行だけ持ち、登録したアカウントに持ち主を付け替える。同じブラウザで別のアカウントにサインインした場合と、ブラウザが endpoint を更新した場合をこれで扱う
+- 設定画面は、受け取れない理由を出し分ける
+
+| 状態 | 表示 |
+|---|---|
+| ブラウザが Web Push に対応していない | この端末では受け取れません |
+| iOS で、ホーム画面に追加した PWA として開いていない | ホーム画面に追加すると受け取れます |
+| 通知の許可を拒否済み | ブラウザの設定で通知を許可してください |
+| サーバーに VAPID 鍵が無い | この環境では受け取れません |
+
+- アカウント削除では、そのアカウントの購読を全て消す
+
+### Settings screen
+
+| 区分 | 項目 |
+|---|---|
+| この端末 | この端末で受け取る |
+| このプロフィール | 端末に通知を送る（`push_enabled`） |
+| このプロフィールの種類ごと | いいね・コメント・リプライ・メンション・フォロー・メッセージ |
+| その他 | 足跡の未読バッジ・足跡を残す（今のまま） |
+
+種類ごとの項目は、`push_enabled` が OFF のとき操作できない。
+
+## Architecture
+
+### Data
+
+`notifications.push_subscriptions`
+
+| 列 | 型 | 制約 |
+|---|---|---|
+| `id` | uuid | 主キー（uuid v7） |
+| `account_id` | text | NOT NULL、索引 |
+| `endpoint` | text | NOT NULL、一意 |
+| `p256dh` | text | NOT NULL |
+| `auth` | text | NOT NULL |
+| `created_at` / `updated_at` | timestamptz | NOT NULL |
+
+`notifications.preferences` は次のとおり作り直す。
+
+- `repost`・`quote`・`oshi` を消す
+- `post` を `comment` に改名する
+- 残りの列（`push_enabled`・`like`・`reply`・`follow`・`mention`・`message`・`footprint_unread_badge`・`footprints_record_my_visits`）はそのまま
+
+### Proto (`notifications.v1`)
+
+- `NotificationPreferences` から `repost`・`quote`・`oshi` を消して番号を `reserved` にし、`post` を `comment` に改名する
+- `NotificationService` に次の RPC を足す
+
+| RPC | 入力 | 出力 |
+|---|---|---|
+| `GetPushConfig` | なし | `vapid_public_key`（base64url、鍵が無ければ空） |
+| `RegisterPushSubscription` | `endpoint`・`p256dh`・`auth` | なし |
+| `UnregisterPushSubscription` | `endpoint` | なし |
+
+登録と解除は、表示中のプロフィールではなくアカウント（`Current.account_id`）に対して行う。
+
+### Monolith
+
+- `Notifications::Repositories::PushSubscriptionRepository`: endpoint での upsert、endpoint での削除、アカウントでの一覧と削除
+- `Notifications::Adapters::WebPushSender`: `web-push` gem を包み、送信結果を「送れた・購読が無効・その他の失敗」に分けて返す
+- `Notifications::UseCases::SendPush`: Rules の判定・本文の作成・並列送信・無効な購読の削除
+- `Notifications::UseCases::Emit`: 種類ごとの設定でアプリ内通知を止めるのをやめる。アプリ内通知を作った後に `SendPush` を呼ぶ
+- `Messaging::UseCases::SendMessage`: メッセージを保存した後に `SendPush` を呼ぶ
+- アカウント削除（`Identity::UseCases::Account::PurgeIdentity`）で購読を全て消す
+- 設定に `VAPID_PRIVATE_KEY`（PEM）と `VAPID_SUBJECT` を足す。どちらも任意で、無ければ送信しない。公開鍵は秘密鍵から計算する
+
+### Frontend
+
+- `public/sw.js`: `push` で通知を出し、`notificationclick` で既に開いているウィンドウを前に出して移動するか、新しく開く
+- BFF の route を 3 つ足す（設定の取得・購読の登録・購読の解除）
+- 設定画面を Settings screen のとおりに作り直す
+- `profile` 付きの URL を開いたときの切り替えを AppShell で行う
+- アプリを開いたときの購読の登録し直しを AppShell で行う
+
+### Infrastructure (`dystopia/lambda`)
+
+- VAPID 秘密鍵は `tls_private_key`（ECDSA P-256）で作り、`VAPID_PRIVATE_KEY` として app 用と task 用の両方の関数に渡す。`VAPID_SUBJECT` は `https://dystopia.city`
+- この resource は入力を持たないので通常は作り直されない。作り直すと全ての端末の購読が無効になり、端末ごとに有効にし直す必要がある
+- `prevent_destroy` は付けない。付けると Lambda 構成を消して元に戻す操作が止まる
+- `dystopia/infrastructure` と kubernetes のマニフェストは変えない。EKS に戻すときに `VAPID_PRIVATE_KEY` と `VAPID_SUBJECT` を足す
+
+## Testing
+
+| 対象 | 確認すること |
+|---|---|
+| `SendPush`（rspec） | Who receives what の条件、題名と本文（宛先を添える場合・100 文字で切る場合・本文が空の場合）、開く URL、404/410 で購読が消えること、時間切れでも例外を出さないこと、鍵が無いと送らないこと |
+| `Emit`（rspec） | 種類の設定が OFF でもアプリ内通知が作られ、端末には送られないこと |
+| `SendMessage`（rspec） | 送信の後に DM の通知を送ること |
+| 購読の repository と RPC（rspec） | 同じ endpoint を別のアカウントが登録すると持ち主が替わること、解除、アカウント削除で消えること |
+| 設定（rspec・vitest） | 消した項目と改名した項目が proto・BFF・画面で揃っていること |
+| 設定画面（vitest） | 受け取れない理由の出し分け、有効にする・無効にする操作 |
+| `sw.js`（vitest） | 通知の表示内容、タップでの移動先 |
+| AppShell（vitest） | `profile` での切り替えと URL からの削除、購読の登録し直し |
+| 実機（ローカル） | 鍵を作り、Chrome で購読して通知が届き、タップで対象の画面が開くこと |
+| 実機（本番） | デプロイ後、iOS の PWA と Android またはデスクトップの Chrome に届くこと。Lambda から配信サーバーへの IPv6 接続はここで初めて確かめる |
