@@ -97,7 +97,7 @@ export function KarteEventForm({ guest, value, onChange, rating, submitLabel, su
         <Textarea
           value={value.note}
           maxLength={MAX_NOTE_LENGTH}
-          placeholder="具体的な出来事や補足を記録してください"
+          placeholder="本名・電話番号・勤務先などの個人情報は記載禁止です。マナーや清潔感、会話の雰囲気などを記入してください"
           onChange={(e) => onChange({ ...value, note: e.target.value })}
         />
       </label>

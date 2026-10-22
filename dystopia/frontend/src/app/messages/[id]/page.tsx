@@ -61,6 +61,9 @@ export default function ChatPage() {
             </h1>
           </div>
         )}
+        <p role="note" className="mt-2 text-xs text-text-secondary">
+          当DMでの直接の金銭交渉・店舗を介さない直接取引（裏引き）は固く禁じます。違反が確認された場合、アカウントを凍結することがあります。
+        </p>
       </header>
 
       <div className="flex-1 overflow-y-auto pt-2">

@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { RoleSelector } from "@/modules/identity/components/RoleSelector";
 import { PasswordRequirements } from "@/modules/identity/components/PasswordRequirements";
+import { AgeConfirmModal } from "@/modules/identity/components/AgeConfirmModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -33,9 +34,11 @@ function SignupForm({ initialRole }: { initialRole: 1 | 2 }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ageConfirmed) return;
     setError(null);
     setSubmitting(true);
     try {
@@ -66,6 +69,7 @@ function SignupForm({ initialRole }: { initialRole: 1 | 2 }) {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg px-4">
+      <AgeConfirmModal open={!ageConfirmed} onConfirm={() => setAgeConfirmed(true)} />
       <div className="w-full max-w-sm">
         <h1 className="mb-8 text-center text-2xl font-bold text-text-primary">
           新規登録

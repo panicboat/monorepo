@@ -97,7 +97,7 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
         <Textarea
           value={value.note}
           maxLength={MAX_NOTE_LENGTH}
-          placeholder="具体的な出来事や補足を記録してください"
+          placeholder="店舗規約や法律に反する行為（裏引き・本番等）の記載は禁止です。写真とのギャップや接客の雰囲気などを記入してください"
           onChange={(e) => onChange({ ...value, note: e.target.value })}
         />
       </label>

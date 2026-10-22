@@ -49,6 +49,14 @@ async function setValue(element: HTMLTextAreaElement | HTMLSelectElement, value:
 }
 
 describe("ReviewEventForm", () => {
+  it("asks for the gap from the photos and the service in the note and forbids illegal acts", async () => {
+    const container = await mount(emptyReviewEvent());
+
+    expect(container.querySelector("textarea")?.getAttribute("placeholder")).toBe(
+      "店舗規約や法律に反する行為（裏引き・本番等）の記載は禁止です。写真とのギャップや接客の雰囲気などを記入してください"
+    );
+  });
+
   it("shows which profile the review is recorded as above the inputs", async () => {
     const container = await mount(emptyReviewEvent());
 
