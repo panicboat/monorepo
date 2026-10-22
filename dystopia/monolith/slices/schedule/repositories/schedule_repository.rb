@@ -4,8 +4,17 @@ module Schedule
   module Repositories
     class ScheduleRepository < Schedule::DB::Repo
       DAY_START = "05:00"
-      EVENING_START = "18:00"
-      NIGHT_START = "21:00"
+      # Bands are [from, to) in minutes from the work date's midnight; the business day runs 05:00 to 05:00.
+      TIME_BANDS = {
+        "day" => [5 * 60, 18 * 60],
+        "evening" => [18 * 60, 21 * 60],
+        "night" => [21 * 60, 29 * 60]
+      }.freeze
+      START_MINUTES = "(CAST(substr(start_time, 1, 2) AS integer) * 60 + CAST(substr(start_time, 4, 2) AS integer))"
+      END_MINUTES = "(CAST(substr(end_time, 1, 2) AS integer) * 60 + CAST(substr(end_time, 4, 2) AS integer))"
+      BUSINESS_DAY_SHIFT = "(CASE WHEN start_time < '#{DAY_START}' THEN 1440 ELSE 0 END)"
+      WORK_START = "(#{START_MINUTES} + #{BUSINESS_DAY_SHIFT})"
+      WORK_END = "(#{END_MINUTES} + #{BUSINESS_DAY_SHIFT} + (CASE WHEN end_time <= start_time THEN 1440 ELSE 0 END))"
 
       def list(profile_id:, from_date:, to_date:)
         schedule_records
@@ -76,15 +85,10 @@ module Schedule
       end
 
       def filter_by_time_band(scope, time_band)
-        start_time = Sequel[:start_time]
+        return scope if time_band.nil? || time_band == ""
 
-        case time_band
-        when nil, "" then scope
-        when "day" then scope.where((start_time >= DAY_START) & (start_time < EVENING_START))
-        when "evening" then scope.where((start_time >= EVENING_START) & (start_time < NIGHT_START))
-        when "night" then scope.where((start_time >= NIGHT_START) | (start_time < DAY_START))
-        else raise ArgumentError, "unknown time band: #{time_band.inspect}"
-        end
+        from, to = TIME_BANDS.fetch(time_band) { raise ArgumentError, "unknown time band: #{time_band.inspect}" }
+        scope.where(Sequel.lit("#{WORK_START} < ? AND #{WORK_END} > ?", to, from))
       end
 
       def after_cursor(scope, cursor)

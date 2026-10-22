@@ -120,8 +120,8 @@ RSpec.describe "Schedule::Repositories::ScheduleRepository", type: :database do
   describe "#search" do
     let(:work_date) { Date.new(2026, 10, 22) }
 
-    def add(start_time, date: "2026-10-22", profile: SecureRandom.uuid_v7)
-      repo.upsert(profile_id: profile, work_date: date, start_time: start_time, end_time: "23:00")
+    def add(start_time, end_time = "23:00", date: "2026-10-22", profile: SecureRandom.uuid_v7)
+      repo.upsert(profile_id: profile, work_date: date, start_time: start_time, end_time: end_time)
       profile
     end
 
@@ -174,16 +174,23 @@ RSpec.describe "Schedule::Repositories::ScheduleRepository", type: :database do
     end
 
     {
-      "day" => { "04:59" => false, "05:00" => true, "17:59" => true, "18:00" => false, "20:59" => false, "21:00" => false },
-      "evening" => { "17:59" => false, "18:00" => true, "20:59" => true, "21:00" => false },
-      "night" => { "00:00" => true, "04:59" => true, "05:00" => false, "20:59" => false, "21:00" => true, "23:59" => true }
-    }.each do |band, boundaries|
-      it "keeps a #{band} start only on the #{band} side of every boundary" do
-        profiles = boundaries.keys.to_h { |start_time| [start_time, add(start_time)] }
+      %w[16:00 22:00] => %w[day evening night],
+      %w[20:00 02:00] => %w[evening night],
+      %w[18:00 20:59] => %w[evening],
+      %w[12:00 18:00] => %w[day],
+      %w[17:59 18:01] => %w[day evening],
+      %w[20:59 21:00] => %w[evening],
+      %w[21:00 23:00] => %w[night],
+      %w[05:00 10:00] => %w[day],
+      %w[01:00 05:00] => %w[night],
+      %w[04:00 06:00] => %w[night]
+    }.each do |(start_time, end_time), bands|
+      it "finds #{start_time}〜#{end_time} in the #{bands.join(", ")} bands only" do
+        profile = add(start_time, end_time)
 
-        found = search(profile_ids: profiles.values, time_band: band).map { |row| row[:start_time] }
+        found = %w[day evening night].select { |band| search(profile_ids: [profile], time_band: band).any? }
 
-        expect(found).to match_array(boundaries.select { |_, included| included }.keys)
+        expect(found).to eq(bands)
       end
     end
 

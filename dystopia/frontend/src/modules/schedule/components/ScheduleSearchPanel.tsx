@@ -62,7 +62,7 @@ export function ScheduleSearchPanel({ query, choices, onChoicesChange }: Schedul
           ))}
         </Select>
       </FilterGroup>
-      <FilterGroup title="開始時間帯">
+      <FilterGroup title="勤務時間帯">
         <div className="flex flex-wrap gap-2">
           {TIME_BANDS.map((band) => (
             <ToggleChip key={band.id} pressed={band.id === timeBand} onClick={() => onChoicesChange({ ...choices, timeBand: band.id })}>

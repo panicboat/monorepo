@@ -9,9 +9,9 @@ const DAYS = 14;
 
 export const TIME_BANDS: Array<{ id: ScheduleTimeBand; label: string }> = [
   { id: "", label: "すべて" },
-  { id: "day", label: "昼（〜17時）" },
-  { id: "evening", label: "夜（18〜20時）" },
-  { id: "night", label: "深夜（21時〜）" },
+  { id: "day", label: "昼（5〜18時）" },
+  { id: "evening", label: "夜（18〜21時）" },
+  { id: "night", label: "深夜（21時〜翌5時）" },
 ];
 
 // Noon keeps every key on its own date when the device zone changes its UTC offset inside the range.
