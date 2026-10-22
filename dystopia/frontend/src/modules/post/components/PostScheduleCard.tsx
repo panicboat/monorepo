@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { PostScheduleView } from "@/modules/post/lib/post-view";
 import { industryIcon } from "@/modules/profile/lib/constants";
 import type { ProfileSummaryView } from "@/modules/profile/types";
-import { formatScheduleDay } from "@/modules/schedule/lib/dates";
+import { crossesMidnight, formatScheduleDay } from "@/modules/schedule/lib/dates";
 
 export interface PostScheduleCardProps {
   schedule: PostScheduleView;
@@ -24,7 +24,10 @@ export function PostScheduleCard({ schedule, author }: PostScheduleCardProps) {
             {icon}
           </span>
         )}
-        <span>{line}</span>
+        <span>
+          {line}
+          {crossesMidnight(schedule.startTime, schedule.endTime) && <span className="ml-1 text-xs text-text-muted">翌日</span>}
+        </span>
       </span>
     </>
   );

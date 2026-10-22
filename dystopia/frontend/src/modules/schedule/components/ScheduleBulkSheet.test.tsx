@@ -293,7 +293,7 @@ describe("ScheduleBulkSheet", () => {
 
     it("blocks a same-day schedule announced after its end", async () => {
       await mount();
-      await pickSchedule("03:00", "08:00", "09:00");
+      await pickSchedule("10:00", "15:00", "16:00");
 
       expect(button("選択した日に反映")!.disabled).toBe(true);
       expect(text()).toContain(TOO_LATE);
@@ -301,7 +301,7 @@ describe("ScheduleBulkSheet", () => {
 
     it("blocks a same-day schedule announced at its end", async () => {
       await mount();
-      await pickSchedule("03:00", "08:00", "08:00");
+      await pickSchedule("10:00", "15:00", "15:00");
 
       expect(button("選択した日に反映")!.disabled).toBe(true);
       expect(text()).toContain(TOO_LATE);
@@ -309,10 +309,18 @@ describe("ScheduleBulkSheet", () => {
 
     it("allows a same-day schedule announced before its end", async () => {
       await mount();
-      await pickSchedule("03:00", "08:00", "07:00");
+      await pickSchedule("10:00", "15:00", "14:00");
 
       expect(button("選択した日に反映")!.disabled).toBe(false);
       expect(text()).not.toContain(TOO_LATE);
+    });
+
+    it("treats a schedule starting at 05:00 as same-day", async () => {
+      await mount();
+      await pickSchedule("05:00", "08:00", "09:00");
+
+      expect(button("選択した日に反映")!.disabled).toBe(true);
+      expect(text()).toContain(TOO_LATE);
     });
 
     it("allows any announcement time on the work date for an overnight schedule", async () => {
@@ -323,9 +331,25 @@ describe("ScheduleBulkSheet", () => {
       expect(text()).not.toContain(TOO_LATE);
     });
 
-    it("does not check the time while the switch is off", async () => {
+    it("allows any announcement time on the work date for a schedule starting before 05:00", async () => {
+      await mount();
+      await pickSchedule("01:00", "05:00", "09:00");
+
+      expect(button("選択した日に反映")!.disabled).toBe(false);
+      expect(text()).not.toContain(TOO_LATE);
+    });
+
+    it("counts 03:00〜08:00 as next-day, so 09:00 on the work date is allowed", async () => {
       await mount();
       await pickSchedule("03:00", "08:00", "09:00");
+
+      expect(button("選択した日に反映")!.disabled).toBe(false);
+      expect(text()).not.toContain(TOO_LATE);
+    });
+
+    it("does not check the time while the switch is off", async () => {
+      await mount();
+      await pickSchedule("10:00", "15:00", "16:00");
       await click(announceSwitch()!);
 
       expect(button("選択した日に反映")!.disabled).toBe(false);
@@ -334,12 +358,12 @@ describe("ScheduleBulkSheet", () => {
 
     it("saves once the time is moved before the end", async () => {
       await mount();
-      await pickSchedule("03:00", "08:00", "09:00");
-      await setTime("お知らせする時刻", "07:00");
+      await pickSchedule("10:00", "15:00", "16:00");
+      await setTime("お知らせする時刻", "14:00");
 
       await click(button("選択した日に反映")!);
 
-      expect(mocks.save.mock.calls).toEqual([["2026-10-14", "03:00", "08:00", { announce: true, announceTime: "07:00", announceNote: "" }]]);
+      expect(mocks.save.mock.calls).toEqual([["2026-10-14", "10:00", "15:00", { announce: true, announceTime: "14:00", announceNote: "" }]]);
     });
   });
 

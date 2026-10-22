@@ -8,7 +8,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { AppError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { useDeleteSchedule, useSaveSchedule, useSchedules } from "@/modules/schedule/hooks";
-import { buildDateRange, formatDayLabel, formatMonthDay } from "@/modules/schedule/lib/dates";
+import { buildDateRange, crossesMidnight, formatDayLabel, formatMonthDay } from "@/modules/schedule/lib/dates";
 import type { ScheduleAnnouncement } from "@/modules/schedule/types";
 import { useToastStore } from "@/stores/toastStore";
 import { TimeSelect } from "./TimeSelect";
@@ -24,8 +24,8 @@ const PRESETS = [
 
 type Mode = "work" | "clear";
 
-// An end at or before the start runs past midnight, so any announcement time on the work date precedes it.
-const announcesAfterEnd = (start: string, end: string, announceTime: string) => end > start && announceTime >= end;
+// A schedule that crosses midnight ends after the work date, so any announcement time on the work date precedes it.
+const announcesAfterEnd = (start: string, end: string, announceTime: string) => !crossesMidnight(start, end) && announceTime >= end;
 
 const chipClass = (selected: boolean) =>
   cn(

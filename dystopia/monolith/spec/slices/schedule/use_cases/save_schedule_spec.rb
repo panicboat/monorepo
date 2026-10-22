@@ -78,6 +78,28 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
       expect(post_of(row).expires_at).to eq(jst(2026, 10, 24, 18, 0))
     end
 
+    it "ends a schedule that starts before 05:00 on the night of its work date" do
+      row = save(start_time: "01:00", end_time: "05:00")
+
+      post = post_of(row)
+      expect(post.published_at).to eq(jst(2026, 10, 24, 9, 0))
+      expect(post.expires_at).to eq(jst(2026, 10, 25, 5, 0))
+    end
+
+    it "keeps the post of a schedule that starts before 05:00 until its night ends" do
+      row = save(start_time: "01:00", end_time: "05:00", now: jst(2026, 10, 24, 23, 0))
+
+      expect(row[:post_id]).not_to be_nil
+      expect(post_count).to eq(1)
+    end
+
+    it "does not create a post once the night of a schedule that starts before 05:00 has ended" do
+      row = save(start_time: "01:00", end_time: "05:00", now: jst(2026, 10, 25, 5, 0))
+
+      expect(row[:post_id]).to be_nil
+      expect(post_count).to eq(0)
+    end
+
     it "strips surrounding whitespace from the note and allows an empty one" do
       expect(post_of(save(announce_note: "  こんばんは \n")).content).to eq("こんばんは")
       expect(post_of(save(work_date: "2026-10-25", announce_note: "")).content).to eq("")

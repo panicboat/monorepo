@@ -1,5 +1,6 @@
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 const MS_PER_DAY = 86_400_000;
+const BUSINESS_DAY_START = "05:00";
 
 function pad2(n: number): string {
   return n < 10 ? `0${n}` : `${n}`;
@@ -26,4 +27,8 @@ export function buildDateRange(start: Date, days: number): string[] {
 export function formatMonthDay(dateKey: string): string {
   const [, month, day] = dateKey.split("-");
   return `${Number(month)}/${Number(day)}`;
+}
+
+export function crossesMidnight(startTime: string, endTime: string): boolean {
+  return startTime < BUSINESS_DAY_START || endTime <= startTime;
 }

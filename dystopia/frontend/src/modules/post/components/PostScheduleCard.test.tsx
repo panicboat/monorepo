@@ -14,8 +14,10 @@ const author: ProfileSummaryView = {
   industry: "デリヘル",
 };
 
-const render = (props: { author?: ProfileSummaryView | null } = {}) =>
-  renderToStaticMarkup(<PostScheduleCard schedule={schedule} author={props.author === undefined ? author : props.author} />);
+const render = (props: { author?: ProfileSummaryView | null; schedule?: typeof schedule } = {}) =>
+  renderToStaticMarkup(
+    <PostScheduleCard schedule={props.schedule ?? schedule} author={props.author === undefined ? author : props.author} />
+  );
 
 describe("PostScheduleCard", () => {
   it("shows the heading and the date with the start and end", () => {
@@ -23,6 +25,26 @@ describe("PostScheduleCard", () => {
 
     expect(html).toContain("出勤");
     expect(html).toContain("10/23（金） 20:00〜02:00");
+  });
+
+  it("marks a schedule that runs past midnight with a muted next-day label after the time", () => {
+    const html = render();
+
+    expect(html).toMatch(/20:00〜02:00<span class="[^"]*text-text-muted[^"]*">翌日<\/span>/);
+  });
+
+  it("marks a schedule that starts before 05:00 as the next day", () => {
+    const html = render({ schedule: { workDate: "2026-10-23", startTime: "01:00", endTime: "05:00" } });
+
+    expect(html).toContain("01:00〜05:00");
+    expect(html).toContain("翌日");
+  });
+
+  it("shows no next-day label for a schedule that ends on its work date", () => {
+    const html = render({ schedule: { workDate: "2026-10-23", startTime: "10:00", endTime: "18:00" } });
+
+    expect(html).toContain("10/23（金） 10:00〜18:00");
+    expect(html).not.toContain("翌日");
   });
 
   it("uses the frame of the review card", () => {

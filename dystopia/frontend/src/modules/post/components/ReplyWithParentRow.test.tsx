@@ -89,7 +89,26 @@ describe("ReplyWithParentRow", () => {
       <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, content: "", schedule }} />
     );
 
-    expect(html).toContain("出勤 10/23（金）20:00〜02:00");
+    expect(html).toContain("出勤 10/23（金）20:00〜02:00 翌日");
+  });
+
+  it("previews a start before 05:00 as the next day", () => {
+    const schedule = { workDate: "2026-10-23", startTime: "01:00", endTime: "05:00" };
+    const html = renderToStaticMarkup(
+      <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, content: "", schedule }} />
+    );
+
+    expect(html).toContain("出勤 10/23（金）01:00〜05:00 翌日");
+  });
+
+  it("previews a schedule that ends on its work date without the next-day label", () => {
+    const schedule = { workDate: "2026-10-23", startTime: "10:00", endTime: "18:00" };
+    const html = renderToStaticMarkup(
+      <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, content: "", schedule }} />
+    );
+
+    expect(html).toContain("出勤 10/23（金）10:00〜18:00");
+    expect(html).not.toContain("翌日");
   });
 
   it("previews the note of an announcement instead of the schedule line", () => {
