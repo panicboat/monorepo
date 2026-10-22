@@ -11,7 +11,13 @@ const hookMocks = vi.hoisted(() => ({
   useSearchPosts: vi.fn(),
 }));
 
-const navigation = vi.hoisted(() => ({ query: null as string | null, tab: null as string | null }));
+const navigation = vi.hoisted(() => ({
+  query: null as string | null,
+  tab: null as string | null,
+  extra: {} as Record<string, string>,
+  replace: vi.fn(),
+}));
+const panel = vi.hoisted(() => ({ next: null as unknown }));
 const enterKeys = vi.hoisted(() => [] as string[]);
 
 vi.mock("@/lib/motion/useEnterAnimation", () => ({
@@ -22,12 +28,14 @@ vi.mock("@/lib/motion/useEnterAnimation", () => ({
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => {
-    if (navigation.query === null && navigation.tab === null) return null;
+    if (navigation.query === null && navigation.tab === null && Object.keys(navigation.extra).length === 0) return null;
     const params = new URLSearchParams();
     if (navigation.query !== null) params.set("q", navigation.query);
     if (navigation.tab !== null) params.set("tab", navigation.tab);
+    for (const [key, value] of Object.entries(navigation.extra)) params.set(key, value);
     return params;
   },
+  useRouter: () => ({ replace: navigation.replace }),
 }));
 
 vi.mock("@/modules/discovery", () => ({
@@ -44,10 +52,17 @@ vi.mock("@/modules/post/components/PostCardBinding", () => ({
 }));
 
 vi.mock("@/modules/schedule/components/ScheduleSearchPanel", () => ({
-  ScheduleSearchPanel: ({ query }: { query: string }) => <div data-panel="schedules" data-query={query} />,
+  ScheduleSearchPanel: ({ query, choices, onChoicesChange }: { query: string; choices: unknown; onChoicesChange: (next: unknown) => void }) => (
+    <div data-panel="schedules" data-query={query} data-choices={JSON.stringify(choices)}>
+      <button type="button" data-choose onClick={() => onChoicesChange(panel.next)}>
+        choose
+      </button>
+    </div>
+  ),
 }));
 
 const { default: SearchPage } = await import("./page");
+const { defaultSearchChoices, searchDays } = await import("@/modules/schedule/lib/searchChoices");
 
 function flush() {
   return act(async () => {
@@ -183,6 +198,7 @@ describe("SearchPage", () => {
     async function open() {
       hookMocks.useSearchUsers.mockReset().mockReturnValue(empty);
       hookMocks.useSearchPosts.mockReset().mockReturnValue(empty);
+      navigation.replace.mockReset();
       const container = document.createElement("div");
       document.body.appendChild(container);
       const root = createRoot(container);
@@ -192,7 +208,20 @@ describe("SearchPage", () => {
       const tabs = () => Array.from(container.querySelectorAll('[role="tab"]'));
       return {
         container,
+        rerender: () =>
+          act(async () => {
+            root.render(<SearchPage />);
+          }),
         panel: () => container.querySelector('[data-panel="schedules"]'),
+        choices: () => JSON.parse(container.querySelector('[data-panel="schedules"]')!.getAttribute("data-choices")!),
+        choose: (next: unknown) => {
+          panel.next = next;
+          return act(async () => {
+            (container.querySelector("[data-choose]") as HTMLElement).click();
+          });
+        },
+        input: () => container.querySelector('input[aria-label="検索"]') as HTMLInputElement,
+        lastUrl: () => new URL(navigation.replace.mock.lastCall![0] as string, "http://localhost"),
         selectedTab: () => tabs().find((t) => t.getAttribute("aria-selected") === "true")?.textContent,
         tabLabels: () => tabs().map((t) => t.textContent),
         select: (label: string) =>
@@ -204,6 +233,7 @@ describe("SearchPage", () => {
           container.remove();
           navigation.query = null;
           navigation.tab = null;
+          navigation.extra = {};
         },
       };
     }
@@ -291,6 +321,130 @@ describe("SearchPage", () => {
       expect(view.selectedTab()).toBe("ユーザー");
 
       await view.unmount();
+    });
+
+    it("asks for a name on the schedules tab and keeps the other placeholder elsewhere", async () => {
+      navigation.query = null;
+      const view = await open();
+      expect(view.input().placeholder).toBe("ユーザーや投稿を検索");
+
+      await view.select("出勤");
+      expect(view.input().placeholder).toBe("名前で絞り込む");
+      expect(view.input().getAttribute("aria-label")).toBe("検索");
+
+      await view.select("投稿");
+      expect(view.input().placeholder).toBe("ユーザーや投稿を検索");
+      await view.select("ユーザー");
+      expect(view.input().placeholder).toBe("ユーザーや投稿を検索");
+
+      await view.unmount();
+    });
+
+    describe("URL state", () => {
+      const tomorrow = () => searchDays()[1];
+
+      it("writes the tab with router.replace each time it is switched, without scrolling", async () => {
+        navigation.query = null;
+        const view = await open();
+        expect(navigation.replace).not.toHaveBeenCalled();
+
+        await view.select("出勤");
+        expect(navigation.replace).toHaveBeenLastCalledWith("/search?tab=schedules", { scroll: false });
+        await view.select("投稿");
+        expect(navigation.replace).toHaveBeenLastCalledWith("/search?tab=posts", { scroll: false });
+        await view.select("ユーザー");
+        expect(navigation.replace).toHaveBeenLastCalledWith("/search?tab=users", { scroll: false });
+        expect(navigation.replace).toHaveBeenCalledTimes(3);
+
+        await view.unmount();
+      });
+
+      it("keeps the q of the URL when it writes the tab", async () => {
+        navigation.query = "#新作";
+        const view = await open();
+
+        await view.select("ユーザー");
+
+        expect(view.lastUrl().searchParams.get("q")).toBe("#新作");
+        expect(view.lastUrl().searchParams.get("tab")).toBe("users");
+
+        await view.unmount();
+      });
+
+      it("writes the date, area, start band and following switch while on the schedules tab", async () => {
+        navigation.tab = "schedules";
+        const view = await open();
+
+        await view.choose({ date: tomorrow(), prefecture: "東京都", timeBand: "night", followingOnly: true });
+
+        expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({
+          tab: "schedules",
+          date: tomorrow(),
+          prefecture: "東京都",
+          timeBand: "night",
+          following: "1",
+        });
+        expect(navigation.replace).toHaveBeenLastCalledWith(expect.any(String), { scroll: false });
+
+        await view.choose(defaultSearchChoices());
+        expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({ tab: "schedules" });
+
+        await view.unmount();
+      });
+
+      it("drops the filters from the URL on the other tabs and brings them back with the schedules tab", async () => {
+        navigation.tab = "schedules";
+        const view = await open();
+        const chosen = { date: tomorrow(), prefecture: "大阪府", timeBand: "day", followingOnly: false };
+        await view.choose(chosen);
+
+        await view.select("ユーザー");
+        expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({ tab: "users" });
+
+        await view.select("出勤");
+        expect(view.choices()).toEqual(chosen);
+        expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({ tab: "schedules", date: tomorrow(), prefecture: "大阪府", timeBand: "day" });
+
+        await view.unmount();
+      });
+
+      it("restores the filters written in the URL", async () => {
+        navigation.tab = "schedules";
+        navigation.extra = { date: tomorrow(), prefecture: "東京都", timeBand: "night", following: "1" };
+        const view = await open();
+
+        expect(view.selectedTab()).toBe("出勤");
+        expect(view.choices()).toEqual({ date: tomorrow(), prefecture: "東京都", timeBand: "night", followingOnly: true });
+        expect(navigation.replace).not.toHaveBeenCalled();
+
+        await view.unmount();
+      });
+
+      it("falls back to today, every area and every start band for values that do not fit", async () => {
+        navigation.tab = "schedules";
+        navigation.extra = { date: "2020-01-01", prefecture: "Narnia", timeBand: "noon", following: "yes" };
+        const view = await open();
+
+        expect(view.choices()).toEqual(defaultSearchChoices());
+
+        await view.unmount();
+      });
+
+      it("keeps what was typed when only the tab in the URL changes, and starts over when the q changes", async () => {
+        navigation.query = null;
+        const view = await open();
+        await typeQuery(view.input(), "すず");
+
+        navigation.tab = "schedules";
+        await view.rerender();
+        expect(view.input().value).toBe("すず");
+
+        navigation.query = "#新作";
+        await view.rerender();
+        expect(view.input().value).toBe("#新作");
+
+        await view.unmount();
+      });
     });
   });
 });

@@ -2,7 +2,7 @@
 
 import { Suspense, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { ProfileName } from "@/components/ui/profile-name";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { ScheduleSearchPanel } from "@/modules/schedule/components/ScheduleSearchPanel";
+import { parseSearchChoices, writeSearchChoices, type ScheduleSearchChoices } from "@/modules/schedule/lib/searchChoices";
 import { FollowButton } from "@/modules/social";
 import { useSearchUsers, useSearchPosts } from "@/modules/discovery";
 import type { SearchUsersRoleFilter } from "@/modules/discovery/hooks/useSearchUsers";
@@ -44,8 +45,8 @@ function SearchFromUrl() {
   const params = useSearchParams();
   const urlQuery = params?.get("q") ?? "";
   const urlTab = params?.get("tab") ?? "";
-  // Remount per URL query and tab: a tag opened from the results must replace what was typed, not be ignored.
-  return <SearchView key={`${urlTab}:${urlQuery}`} initialQuery={urlQuery} initialTab={urlTab} />;
+  // Remount per URL query only: a tag opened from the results must replace what was typed, but the tab and filters this page writes must not.
+  return <SearchView key={urlQuery} initialQuery={urlQuery} initialTab={urlTab} initialChoices={parseSearchChoices(params)} />;
 }
 
 function initialTabFor(urlTab: string, query: string): string {
@@ -53,10 +54,36 @@ function initialTabFor(urlTab: string, query: string): string {
   return HASHTAG_QUERY.test(query) ? "posts" : "users";
 }
 
-function SearchView({ initialQuery, initialTab }: { initialQuery: string; initialTab: string }) {
+interface SearchViewProps {
+  initialQuery: string;
+  initialTab: string;
+  initialChoices: ScheduleSearchChoices;
+}
+
+function SearchView({ initialQuery, initialTab, initialChoices }: SearchViewProps) {
+  const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [tab, setTab] = useState(initialTabFor(initialTab, initialQuery));
   const [roleFilter, setRoleFilter] = useState<SearchUsersRoleFilter>(0);
+  const [choices, setChoices] = useState(initialChoices);
+
+  function replaceUrl(nextTab: string, nextChoices: ScheduleSearchChoices) {
+    const next = new URLSearchParams();
+    if (initialQuery !== "") next.set("q", initialQuery);
+    next.set("tab", nextTab);
+    if (nextTab === "schedules") writeSearchChoices(next, nextChoices);
+    router.replace(`/search?${next}`, { scroll: false });
+  }
+
+  function selectTab(nextTab: string) {
+    setTab(nextTab);
+    replaceUrl(nextTab, choices);
+  }
+
+  function changeChoices(nextChoices: ScheduleSearchChoices) {
+    setChoices(nextChoices);
+    replaceUrl("schedules", nextChoices);
+  }
 
   const users = useSearchUsers(tab === "users" ? query : "", roleFilter);
   const posts = useSearchPosts(tab === "posts" ? query : "");
@@ -76,7 +103,7 @@ function SearchView({ initialQuery, initialTab }: { initialQuery: string; initia
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ユーザーや投稿を検索"
+            placeholder={tab === "schedules" ? "名前で絞り込む" : "ユーザーや投稿を検索"}
             aria-label="検索"
             className="pr-9"
           />
@@ -92,7 +119,7 @@ function SearchView({ initialQuery, initialTab }: { initialQuery: string; initia
           )}
         </div>
       </div>
-      <Tabs items={TABS} value={tab} onValueChange={setTab} />
+      <Tabs items={TABS} value={tab} onValueChange={selectTab} />
       <div ref={resultsRef}>
 
       {tab === "users" && (
@@ -165,7 +192,7 @@ function SearchView({ initialQuery, initialTab }: { initialQuery: string; initia
         </>
       )}
 
-      {tab === "schedules" && <ScheduleSearchPanel query={query} />}
+      {tab === "schedules" && <ScheduleSearchPanel query={query} choices={choices} onChoicesChange={changeChoices} />}
 
       {tab === "posts" && trimmed.length > 0 && (
         <>

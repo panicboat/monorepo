@@ -13,6 +13,7 @@ module Discovery
       TIME_BANDS = ["", "day", "evening", "night"].freeze
       CURSOR_START_TIME = /\A\d{2}:\d{2}\z/
       CURSOR_PROFILE_ID = /\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/
+      LEADING_AT = /\A[@＠]+/
 
       Result = Data.define(:schedule, :summary, :prefecture, :note)
 
@@ -21,7 +22,7 @@ module Discovery
         raise Errors::ValidationError, "開始時間帯が正しくありません" unless TIME_BANDS.include?(time_band)
 
         limit = normalize_limit(limit)
-        prefectures = profile_repo.visible_cast_prefectures(prefecture: prefecture, query: query)
+        prefectures = profile_repo.visible_cast_prefectures(prefecture: prefecture, query: query.to_s.strip.sub(LEADING_AT, ""))
         rows = schedule_repo.search(
           work_date: date,
           time_band: time_band,

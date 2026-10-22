@@ -1,15 +1,17 @@
 // @vitest-environment happy-dom
-import { act, createElement } from "react";
+import { act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ScheduleSearchResultView } from "@/modules/schedule/types";
 import { toDateKey } from "@/modules/schedule/lib/dates";
+import { defaultSearchChoices, type ScheduleSearchChoices } from "@/modules/schedule/lib/searchChoices";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mocks = vi.hoisted(() => ({
   useSearchSchedules: vi.fn(),
   loadMore: vi.fn(),
+  onChoicesChange: vi.fn(),
   state: {} as Record<string, unknown>,
 }));
 
@@ -33,7 +35,19 @@ let container: HTMLElement;
 let unmount: () => Promise<void>;
 const originalTz = process.env.TZ;
 
-async function mount(query = "") {
+function Harness({ query, initial }: { query: string; initial: ScheduleSearchChoices }) {
+  const [choices, setChoices] = useState(initial);
+  return createElement(ScheduleSearchPanel, {
+    query,
+    choices,
+    onChoicesChange: (next: ScheduleSearchChoices) => {
+      mocks.onChoicesChange(next);
+      setChoices(next);
+    },
+  });
+}
+
+async function mount(query = "", choices: Partial<ScheduleSearchChoices> = {}) {
   container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -42,7 +56,7 @@ async function mount(query = "") {
     container.remove();
   };
   await act(async () => {
-    root.render(createElement(ScheduleSearchPanel, { query }));
+    root.render(createElement(Harness, { query, initial: { ...defaultSearchChoices(), ...choices } }));
   });
 }
 
@@ -75,6 +89,7 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-22T20:00:00Z"));
   mocks.loadMore.mockReset();
+  mocks.onChoicesChange.mockReset();
   mocks.state = { results: [], hasMore: false, loading: false, error: undefined, loadMore: mocks.loadMore };
   mocks.useSearchSchedules.mockReset().mockImplementation(() => mocks.state);
 });
@@ -168,6 +183,33 @@ describe("ScheduleSearchPanel filters", () => {
     expect(lastFilters().prefecture).toBe("");
   });
 
+  it("starts from the choices it is given", async () => {
+    await mount("", { date: "2026-10-25", prefecture: "東京都", timeBand: "night", followingOnly: true });
+
+    expect(lastFilters()).toEqual({ date: "2026-10-25", prefecture: "東京都", timeBand: "night", followingOnly: true, query: "" });
+    expect(chipsIn("出勤日")[2].getAttribute("aria-pressed")).toBe("true");
+    expect((container.querySelector("select") as HTMLSelectElement).value).toBe("東京都");
+    expect(chip("開始時間帯", "深夜（21時〜）").getAttribute("aria-pressed")).toBe("true");
+    expect(container.querySelector('[role="switch"]')!.getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("reports the whole set of choices each time one changes", async () => {
+    await mount();
+
+    await click(chipsIn("出勤日")[1]);
+    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "", timeBand: "", followingOnly: false });
+
+    await chooseArea("大阪府");
+    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", timeBand: "", followingOnly: false });
+
+    await click(chip("開始時間帯", "夜（18〜20時）"));
+    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", timeBand: "evening", followingOnly: false });
+
+    await click(container.querySelector('[role="switch"]')!);
+    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", timeBand: "evening", followingOnly: true });
+    expect(mocks.onChoicesChange).toHaveBeenCalledTimes(4);
+  });
+
   it("passes the search box text as the name filter, empty text included", async () => {
     await mount("すず");
 
@@ -205,6 +247,56 @@ describe("ScheduleSearchPanel results", () => {
 
     expect(container.textContent).toContain("この日の出勤予定はまだありません");
     expect(container.querySelector("h2")?.textContent).toBe("10/23（金）の出勤予定");
+  });
+
+  it("says no schedule matches when an empty list is narrowed by the area, the start band, the following switch or a name", async () => {
+    const NARROWED = "条件に合う出勤予定はありません";
+    const EMPTY_DAY = "この日の出勤予定はまだありません";
+
+    await mount();
+    await chooseArea("大阪府");
+    expect(container.textContent).toContain(NARROWED);
+    expect(container.textContent).not.toContain(EMPTY_DAY);
+    await chooseArea("");
+    expect(container.textContent).toContain(EMPTY_DAY);
+    expect(container.textContent).not.toContain(NARROWED);
+
+    await click(chip("開始時間帯", "深夜（21時〜）"));
+    expect(container.textContent).toContain(NARROWED);
+    await click(chip("開始時間帯", "すべて"));
+    expect(container.textContent).toContain(EMPTY_DAY);
+
+    await click(container.querySelector('[role="switch"]')!);
+    expect(container.textContent).toContain(NARROWED);
+    await click(container.querySelector('[role="switch"]')!);
+    expect(container.textContent).toContain(EMPTY_DAY);
+    await unmount();
+
+    await mount("すず");
+    expect(container.textContent).toContain(NARROWED);
+    expect(container.textContent).not.toContain(EMPTY_DAY);
+  });
+
+  it("keeps the plain empty text when only the date is changed or the name is blank", async () => {
+    await mount("  ");
+
+    await click(chipsIn("出勤日")[3]);
+
+    expect(container.textContent).toContain("この日の出勤予定はまだありません");
+    expect(container.textContent).not.toContain("条件に合う出勤予定はありません");
+  });
+
+  it("shows neither empty text while loading or after an error, narrowed or not", async () => {
+    mocks.state = { ...mocks.state, loading: true };
+    await mount("すず");
+    expect(container.textContent).not.toContain("条件に合う出勤予定はありません");
+    expect(container.textContent).toContain("検索中…");
+    await unmount();
+
+    mocks.state = { ...mocks.state, loading: false, error: new Error("boom") };
+    await mount("すず");
+    expect(container.textContent).not.toContain("条件に合う出勤予定はありません");
+    expect(container.textContent).toContain("読み込みに失敗しました");
   });
 
   it("does not say the list is empty while it is loading, and says it could not load on an error", async () => {

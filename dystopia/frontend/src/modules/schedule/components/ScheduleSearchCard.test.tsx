@@ -113,6 +113,16 @@ describe("ScheduleSearchCard", () => {
     expect(container.textContent).not.toContain("東京都");
   });
 
+  it("adds 翌日 when the start is before 05:00, because it belongs to the night of its work date", async () => {
+    await mount({ schedule: { startTime: "01:00", endTime: "05:00" } });
+    expect(container.textContent).toContain("01:00〜05:00");
+    expect(container.textContent).toContain("翌日");
+    await unmount();
+
+    await mount({ schedule: { startTime: "05:00", endTime: "12:00" } });
+    expect(container.textContent).not.toContain("翌日");
+  });
+
   it("adds 翌日 when the end is at or before the start, and not otherwise", async () => {
     await mount({ schedule: { startTime: "20:00", endTime: "02:00" } });
     expect(container.textContent).toContain("20:00〜02:00");

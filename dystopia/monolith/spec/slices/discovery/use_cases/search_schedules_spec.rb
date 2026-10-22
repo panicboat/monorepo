@@ -100,6 +100,17 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
     expect(profile_ids(search(prefecture: "東京都", query: "suzu"))).to eq([tokyo])
   end
 
+  it "ignores a leading @ in the name, as the card shows the username" do
+    suzu = cast(display_name: "Sora", username: "suzu_21")
+    cast_without_match = cast(display_name: "Mei")
+    [suzu, cast_without_match].each { |profile| schedule(profile) }
+
+    expect(profile_ids(search(query: "@suzu"))).to eq([suzu])
+    expect(profile_ids(search(query: "＠suzu"))).to eq([suzu])
+    expect(profile_ids(search(query: "  @suzu_21 "))).to eq([suzu])
+    expect(profile_ids(search(query: "@"))).to contain_exactly(suzu, cast_without_match)
+  end
+
   it "narrows by time band" do
     day = cast
     night = cast

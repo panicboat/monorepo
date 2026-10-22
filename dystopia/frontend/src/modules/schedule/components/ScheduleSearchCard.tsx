@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { ProfileName } from "@/components/ui/profile-name";
 import { industryIcon } from "@/modules/profile/lib/constants";
 import { FollowButton } from "@/modules/social/components/FollowButton";
-import { formatScheduleDay } from "@/modules/schedule/lib/dates";
+import { crossesMidnight, formatScheduleDay } from "@/modules/schedule/lib/dates";
 import type { ScheduleSearchResultView } from "@/modules/schedule/types";
 
 export function ScheduleSearchCard({ result }: { result: ScheduleSearchResultView }) {
   const { schedule, profile, prefecture, note } = result;
   const href = `/u/${encodeURIComponent(profile.username)}`;
   const icon = industryIcon(profile.industry);
-  const endsNextDay = schedule.endTime <= schedule.startTime;
+  const endsNextDay = crossesMidnight(schedule.startTime, schedule.endTime);
 
   return (
     <div className="border-b border-border px-4 py-3">

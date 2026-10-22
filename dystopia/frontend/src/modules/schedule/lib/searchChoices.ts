@@ -1,0 +1,45 @@
+import type { ScheduleSearchFilters, ScheduleTimeBand } from "@/modules/discovery/types";
+import { todayInJapan } from "@/lib/utils/japan-date";
+import { PREFECTURES } from "@/modules/profile/lib/constants";
+import { buildDateRange } from "./dates";
+
+export type ScheduleSearchChoices = Omit<ScheduleSearchFilters, "query">;
+
+const DAYS = 14;
+
+export const TIME_BANDS: Array<{ id: ScheduleTimeBand; label: string }> = [
+  { id: "", label: "すべて" },
+  { id: "day", label: "昼（〜17時）" },
+  { id: "evening", label: "夜（18〜20時）" },
+  { id: "night", label: "深夜（21時〜）" },
+];
+
+// Noon keeps every key on its own date when the device zone changes its UTC offset inside the range.
+export const searchDays = () => buildDateRange(new Date(`${todayInJapan()}T12:00:00`), DAYS);
+
+export function defaultSearchChoices(): ScheduleSearchChoices {
+  return { date: searchDays()[0], prefecture: "", timeBand: "", followingOnly: false };
+}
+
+export function parseSearchChoices(params: Pick<URLSearchParams, "get"> | null): ScheduleSearchChoices {
+  const defaults = defaultSearchChoices();
+  const date = params?.get("date") ?? "";
+  const prefecture = params?.get("prefecture") ?? "";
+  const timeBand = TIME_BANDS.find((band) => band.id === params?.get("timeBand"))?.id;
+
+  // FALLBACK: A date outside the search range, an unknown area or an unknown start band falls back to the default.
+  return {
+    date: searchDays().includes(date) ? date : defaults.date,
+    prefecture: PREFECTURES.some((p) => p === prefecture) ? prefecture : defaults.prefecture,
+    timeBand: timeBand ?? defaults.timeBand,
+    followingOnly: params?.get("following") === "1",
+  };
+}
+
+export function writeSearchChoices(params: URLSearchParams, choices: ScheduleSearchChoices): void {
+  const defaults = defaultSearchChoices();
+  if (choices.date !== defaults.date) params.set("date", choices.date);
+  if (choices.prefecture !== defaults.prefecture) params.set("prefecture", choices.prefecture);
+  if (choices.timeBand !== defaults.timeBand) params.set("timeBand", choices.timeBand);
+  if (choices.followingOnly) params.set("following", "1");
+}
