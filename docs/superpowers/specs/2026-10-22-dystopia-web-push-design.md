@@ -95,7 +95,9 @@
 | フォロー | `/u/<送った人の username>` |
 | DM | `/messages/<thread_id>` |
 
-開く URL には `profile=<宛先のプロフィール ID>` を付ける。アプリはこの値を読み、自分のアカウントのプロフィールなら表示中のプロフィールをそれに切り替え、URL から `profile` を消す。自分のプロフィールでなければ切り替えずに消す。
+通知が開くのは `/notifications/open?profile=<宛先のプロフィール ID>&to=<上表の画面>` にする。この画面は、`profile` が自分のアカウントの選べるプロフィールで、表示中と違えば切り替え、その後 `to` の画面へ置き換えで移る。`profile` が自分のものでなければ切り替えずに移る。`to` が `/` で始まらない、または `//` で始まるときは `/notifications` へ移る（他のサイトへ飛ばさない）。
+
+対象の画面を直接開かずにこの画面を挟むのは、切り替える前のプロフィールで対象の画面を一度でも描くと、足跡や既読がそのプロフィールで付くためである。
 
 ### Delivery
 
@@ -110,6 +112,8 @@
 
 - 「この端末で受け取る」は端末ごとの状態で、ブラウザに購読があるかどうかをそのまま表す
 - 有効にする: 通知の許可を求め、VAPID 公開鍵で `PushManager.subscribe` し、購読を monolith に登録する
+- monolith は、endpoint が https で、ホストが次のいずれかのときだけ登録する。任意の URL へサーバーから POST させないためである: `fcm.googleapis.com`、`web.push.apple.com` と `*.push.apple.com`、`updates.push.services.mozilla.com` と `*.push.services.mozilla.com`、`*.notify.windows.com`
+- 解除は、そのアカウントが持つ購読だけを消す
 - 無効にする: monolith から購読を消し、ブラウザの購読を解除する
 - アプリを開いたとき、ブラウザに購読があれば monolith に登録し直す。同じ endpoint は 1 行だけ持ち、登録したアカウントに持ち主を付け替える。同じブラウザで別のアカウントにサインインした場合と、ブラウザが endpoint を更新した場合をこれで扱う
 - 設定画面は、受け取れない理由を出し分ける
@@ -176,7 +180,7 @@
 - `Notifications::Repositories::PushSubscriptionRepository`: endpoint での upsert、endpoint での削除、アカウントでの一覧と削除
 - `Notifications::Adapters::WebPushSender`: `web-push` gem を包み、送信結果を「送れた・購読が無効・その他の失敗」に分けて返す
 - `Notifications::UseCases::SendPush`: Rules の判定・本文の作成・並列送信・無効な購読の削除
-- `Notifications::UseCases::Emit`: 種類ごとの設定でアプリ内通知を止めるのをやめる。アプリ内通知を作った後に `SendPush` を呼ぶ
+- `Notifications::UseCases::Emit`: 種類ごとの設定でアプリ内通知を止めるのをやめる。アプリ内通知を作った後に `SendPush` を呼ぶ。本文は呼び出し側が `excerpt:` で渡す（コメント・リプライはコメントの本文、メンションは投稿かコメントの本文）
 - `Messaging::UseCases::SendMessage`: メッセージを保存した後に `SendPush` を呼ぶ
 - `Social::UseCases::Follows::Follow`: 承認不要のフォローで `follow` を送る。`ApproveFollowRequest` は通知を作らない
 - アカウント削除（`Identity::UseCases::Account::PurgeIdentity`）で購読を全て消す
@@ -188,7 +192,7 @@
 - BFF の route を 3 つ足す（設定の取得・購読の登録・購読の解除）
 - 設定画面を Settings screen のとおりに作り直す
 - アプリ内通知の文言と移動先（`modules/notifications/lib/format.ts`）を `FOLLOW` に合わせる
-- `profile` 付きの URL を開いたときの切り替えを AppShell で行う
+- `/notifications/open` の画面で、プロフィールの切り替えと移動を行う
 - アプリを開いたときの購読の登録し直しを AppShell で行う
 
 ### Infrastructure (`dystopia/lambda`)
@@ -210,6 +214,8 @@
 | 設定（rspec・vitest） | 消した項目と改名した項目が proto・BFF・画面で揃っていること |
 | 設定画面（vitest） | 受け取れない理由の出し分け、有効にする・無効にする操作 |
 | `sw.js`（vitest） | 通知の表示内容、タップでの移動先 |
-| AppShell（vitest） | `profile` での切り替えと URL からの削除、購読の登録し直し |
+| `/notifications/open`（vitest） | 自分のプロフィールへの切り替え、他人のプロフィールや不正な `to` の扱い |
+| AppShell（vitest） | アプリを開いたときの購読の登録し直し |
+| 購読の登録（rspec） | 許可していないホスト・http・空の鍵を拒むこと |
 | 実機（ローカル） | 鍵を作り、Chrome で購読して通知が届き、タップで対象の画面が開くこと |
 | 実機（本番） | デプロイ後、iOS の PWA と Android またはデスクトップの Chrome に届くこと。Lambda から配信サーバーへの IPv6 接続はここで初めて確かめる |
