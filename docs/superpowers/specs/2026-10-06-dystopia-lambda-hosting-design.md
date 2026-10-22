@@ -188,11 +188,13 @@ dystopia/
 | `COGNITO_REGION` / `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` | Terraform のリソースから |
 | `MEDIA_BUCKET_NAME` / `MEDIA_BUCKET_REGION` | Terraform のリソースから |
 | `STRIPE_*` / `BILLING_*` | `disabled`（monolith の起動に値が必須のため） |
+| `VAPID_PRIVATE_KEY` | `tls_private_key`（ECDSA P-256）の PEM。作り直すと全端末の Web Push 購読が無効になる |
+| `VAPID_SUBJECT` | `https://dystopia.city` |
 | `OTEL_SDK_DISABLED` | `true` |
 
 readiness check を gRPC のポートに向けるのは、起動が遅い側（Ruby、約 3.9 秒）の完了を待つためである。Next.js は約 1.3 秒で先に待ち受ける。
 
-task 用関数は `DATABASE_URL`、`STRIPE_*` / `BILLING_*`、`MEDIA_BUCKET_*`、`COGNITO_*` をアプリ用と同じ値で持つ（`hanami db migrate` がアプリの設定を読み込むため）。Lambda Web Adapter の設定はアプリ用と異なり、次の値にする。
+task 用関数は `DATABASE_URL`、`STRIPE_*` / `BILLING_*`、`VAPID_*`、`MEDIA_BUCKET_*`、`COGNITO_*` をアプリ用と同じ値で持つ（`hanami db migrate` がアプリの設定を読み込むため）。Lambda Web Adapter の設定はアプリ用と異なり、次の値にする。
 
 | 変数 | 値 |
 |---|---|
