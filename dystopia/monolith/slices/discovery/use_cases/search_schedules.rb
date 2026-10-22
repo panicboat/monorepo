@@ -49,6 +49,7 @@ module Discovery
 
       def parse_cursor(cursor)
         decoded = decode_cursor(cursor, keys: [:start_time, :profile_id])
+        # FALLBACK: Start from the first page when the cursor is not a schedule cursor.
         decoded if decoded && decoded[:start_time].to_s.match?(CURSOR_START_TIME) && decoded[:profile_id].to_s.match?(CURSOR_PROFILE_ID)
       end
 
