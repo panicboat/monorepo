@@ -152,7 +152,7 @@ describe("PublicProfilePage karte tab visibility", () => {
 });
 
 describe("PublicProfilePage tabs", () => {
-  it("leads a cast profile with shifts and reviews and shows the weekly summary", () => {
+  it("leads a cast profile with schedules and reviews and shows the weekly summary", () => {
     mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
     mocks.viewerRole = "guest";
 

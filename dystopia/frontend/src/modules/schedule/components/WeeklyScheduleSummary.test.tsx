@@ -33,7 +33,7 @@ async function mount(onShowMore = vi.fn()) {
 }
 
 describe("WeeklyScheduleSummary", () => {
-  it("lists this week's shifts in date order and shows more on request", async () => {
+  it("lists this week's schedules in date order and shows more on request", async () => {
     mocks.schedules = [
       { profileId: "p-1", workDate: "2026-10-15", startTime: "19:00", endTime: "01:00" },
       { profileId: "p-1", workDate: "2026-10-13", startTime: "20:00", endTime: "02:00" },
@@ -49,7 +49,7 @@ describe("WeeklyScheduleSummary", () => {
     expect(onShowMore).toHaveBeenCalled();
   });
 
-  it("says when there is no shift this week", async () => {
+  it("says when there is no schedule this week", async () => {
     mocks.schedules = [];
     const { container } = await mount();
 

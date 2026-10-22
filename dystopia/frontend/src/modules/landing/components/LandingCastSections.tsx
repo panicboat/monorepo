@@ -84,7 +84,7 @@ export function CastHeroArt() {
           </div>
         </div>
       </div>
-      <div className="float-card shift">
+      <div className="float-card schedule">
         <div className="float-label">SHIFT · 出勤予定</div>
         <div className="float-title">
           {"10.11 SUN "}
@@ -212,7 +212,7 @@ export function CastStories() {
         </article>
         <article className="story-row reverse">
           <div className="story-visual">
-            <div className="shift-ui">
+            <div className="schedule-ui">
               <div className="bar">
                 <h4>今週の出勤予定</h4>
                 <small>プロフィールに表示 ↗</small>
@@ -235,7 +235,7 @@ export function CastStories() {
                   <small>未登録</small>
                 </div>
               </div>
-              <div className="shift-msg">✦ 「今夜いるよ」を、投稿とプロフィールで。</div>
+              <div className="schedule-msg">✦ 「今夜いるよ」を、投稿とプロフィールで。</div>
             </div>
           </div>
           <div className="story-copy">
