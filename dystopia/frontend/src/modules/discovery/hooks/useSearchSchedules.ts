@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
@@ -17,6 +17,8 @@ export function useSearchSchedules({ date, prefecture, timeBand, followingOnly, 
     return () => clearTimeout(t);
   }, [query]);
 
+  const name = debounced.trim();
+
   const getKey = (pageIndex: number, prev: PaginatedSchedulesResponse | null): string | null => {
     if (!profileId) return null;
     if (prev && !prev.hasMore) return null;
@@ -24,7 +26,6 @@ export function useSearchSchedules({ date, prefecture, timeBand, followingOnly, 
     if (prefecture) params.set("prefecture", prefecture);
     if (timeBand) params.set("timeBand", timeBand);
     if (followingOnly) params.set("followingOnly", "true");
-    const name = debounced.trim();
     if (name) params.set("q", name);
     if (pageIndex > 0) params.set("cursor", prev?.nextCursor || "");
     return `/api/discovery/schedules?${params}`;
@@ -32,6 +33,15 @@ export function useSearchSchedules({ date, prefecture, timeBand, followingOnly, 
 
   const { data, error, size, setSize, isLoading, isValidating } =
     useSWRInfinite<PaginatedSchedulesResponse>(getKey, fetcher, { revalidateOnFocus: false });
+
+  const filterKey = JSON.stringify([date, prefecture, timeBand, followingOnly, name]);
+  const lastFilterKey = useRef(filterKey);
+  // swr/infinite keeps the page count per key, so a filter set seen before would come back with its old pages.
+  useLayoutEffect(() => {
+    if (lastFilterKey.current === filterKey) return;
+    lastFilterKey.current = filterKey;
+    if (size > 1) setSize(1);
+  }, [filterKey, size, setSize]);
 
   const pages = data || [];
   const results = pages.flatMap((p) => p.results || []);

@@ -137,6 +137,26 @@ describe("useSearchSchedules", () => {
     expect(current.results.map((r) => r.profile.profileId)).toEqual(["cast-1", "cast-2", "cast-3"]);
   });
 
+  it("shows only the first page again when the filters return to a set that was loaded further", async () => {
+    await show(BASE);
+    await act(async () => current.loadMore());
+    expect(current.results).toHaveLength(3);
+    await show({ ...BASE, timeBand: "night" });
+    const before = requested().length;
+
+    await show(BASE);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(current.results.map((r) => r.profile.profileId)).toEqual(["cast-1", "cast-2"]);
+    expect(current.hasMore).toBe(true);
+    expect(requested().slice(before).map(params).filter((query) => query.cursor)).toEqual([]);
+
+    await act(async () => current.loadMore());
+    expect(current.results.map((r) => r.profile.profileId)).toEqual(["cast-1", "cast-2", "cast-3"]);
+  });
+
   it("waits for typing to pause before it requests a new name", async () => {
     vi.useFakeTimers();
     await show(BASE);
