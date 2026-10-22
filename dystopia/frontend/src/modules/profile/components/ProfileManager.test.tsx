@@ -37,7 +37,7 @@ async function mount() {
   document.body.appendChild(container);
   const root = createRoot(container);
   await act(async () => {
-    root.render(createElement(AccountProfilesProvider, { value: { profiles, switchProfile, refresh, append } }, createElement(ProfileManager)));
+    root.render(createElement(AccountProfilesProvider, { value: { profiles, loaded: true, switchProfile, refresh, append } }, createElement(ProfileManager)));
   });
   return {
     container,
@@ -280,7 +280,7 @@ describe("ProfileManager", () => {
     const root = createRoot(container);
     await act(async () => {
       root.render(
-        createElement(AccountProfilesProvider, { value: { profiles: [], switchProfile, refresh, append } }, createElement(ProfileManager))
+        createElement(AccountProfilesProvider, { value: { profiles: [], loaded: false, switchProfile, refresh, append } }, createElement(ProfileManager))
       );
     });
 

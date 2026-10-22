@@ -19,7 +19,7 @@ export default function NotificationOpenPage() {
 function NotificationOpen() {
   const params = useSearchParams();
   const router = useRouter();
-  const { profiles } = useAccountProfiles();
+  const { profiles, loaded } = useAccountProfiles();
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const deniedProfileId = useAuthStore(selectDeniedProfileId);
   const setActiveProfile = useAuthStore((state) => state.setActiveProfile);
@@ -27,6 +27,8 @@ function NotificationOpen() {
   const to = params?.get("to") ?? null;
 
   useEffect(() => {
+    // An empty list while loading would pass for an account with nothing to switch to and open the page as the previous profile.
+    if (!loaded) return;
     const { switchTo, destination } = resolveNotificationOpen({
       profileId,
       to,
@@ -38,7 +40,7 @@ function NotificationOpen() {
       return;
     }
     router.replace(destination);
-  }, [profileId, to, profiles, deniedProfileId, activeProfileId, setActiveProfile, router]);
+  }, [loaded, profileId, to, profiles, deniedProfileId, activeProfileId, setActiveProfile, router]);
 
   return null;
 }

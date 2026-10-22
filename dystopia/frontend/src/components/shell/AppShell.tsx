@@ -90,9 +90,10 @@ export function AppShell({ children }: AppShellProps) {
     },
     [setActiveProfile, router, pathname]
   );
+  const profilesLoaded = session !== null;
   const accountProfiles = useMemo(
-    () => ({ profiles, switchProfile, refresh, append }),
-    [profiles, switchProfile, refresh, append]
+    () => ({ profiles, loaded: profilesLoaded, switchProfile, refresh, append }),
+    [profiles, profilesLoaded, switchProfile, refresh, append]
   );
 
   useEffect(() => {

@@ -87,7 +87,7 @@ describe("useProfile saving", () => {
       root.render(
         createElement(
           AccountProfilesProvider,
-          { value: { profiles: [], switchProfile: () => {}, refresh, append: async () => {} } },
+          { value: { profiles: [], loaded: true, switchProfile: () => {}, refresh, append: async () => {} } },
           createElement(Probe)
         )
       );
