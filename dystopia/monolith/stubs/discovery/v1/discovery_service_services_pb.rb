@@ -19,6 +19,7 @@ module Discovery
         rpc :SearchPosts, ::Discovery::V1::SearchPostsRequest, ::Discovery::V1::SearchPostsResponse
         rpc :RankPosts, ::Discovery::V1::RankPostsRequest, ::Discovery::V1::RankPostsResponse
         rpc :SuggestUsers, ::Discovery::V1::SuggestUsersRequest, ::Discovery::V1::SuggestUsersResponse
+        rpc :SearchSchedules, ::Discovery::V1::SearchSchedulesRequest, ::Discovery::V1::SearchSchedulesResponse
       end
 
       Stub = Service.rpc_stub_class

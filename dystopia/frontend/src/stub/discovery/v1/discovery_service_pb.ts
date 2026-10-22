@@ -8,13 +8,15 @@ import type { ProfileSummary } from "../../profile/v1/service_pb";
 import { file_profile_v1_service } from "../../profile/v1/service_pb";
 import type { Post } from "../../post/v1/post_service_pb";
 import { file_post_v1_post_service } from "../../post/v1/post_service_pb";
+import type { Schedule } from "../../schedule/v1/schedule_service_pb";
+import { file_schedule_v1_schedule_service } from "../../schedule/v1/schedule_service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file discovery/v1/discovery_service.proto.
  */
 export const file_discovery_v1_discovery_service: GenFile = /*@__PURE__*/
-  fileDesc("CiRkaXNjb3ZlcnkvdjEvZGlzY292ZXJ5X3NlcnZpY2UucHJvdG8SDGRpc2NvdmVyeS52MSJXChJTZWFyY2hVc2Vyc1JlcXVlc3QSDQoFcXVlcnkYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJEhMKC3JvbGVfZmlsdGVyGAQgASgFImoKE1NlYXJjaFVzZXJzUmVzcG9uc2USLAoIcHJvZmlsZXMYASADKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIkIKElNlYXJjaFBvc3RzUmVxdWVzdBINCgVxdWVyeRgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiWgoTU2VhcmNoUG9zdHNSZXNwb25zZRIcCgVwb3N0cxgBIAMoCzINLnBvc3QudjEuUG9zdBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCJbChBSYW5rUG9zdHNSZXF1ZXN0EigKBnBlcmlvZBgBIAEoDjIYLmRpc2NvdmVyeS52MS5SYW5rUGVyaW9kEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJYChFSYW5rUG9zdHNSZXNwb25zZRIcCgVwb3N0cxgBIAMoCzINLnBvc3QudjEuUG9zdBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCI0ChNTdWdnZXN0VXNlcnNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJrChRTdWdnZXN0VXNlcnNSZXNwb25zZRIsCghwcm9maWxlcxgBIAMoCzIaLnByb2ZpbGUudjEuUHJvZmlsZVN1bW1hcnkSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgqaQoKUmFua1BlcmlvZBIbChdSQU5LX1BFUklPRF9VTlNQRUNJRklFRBAAEhMKD1JBTktfUEVSSU9EX0RBWRABEhQKEFJBTktfUEVSSU9EX1dFRUsQAhITCg9SQU5LX1BFUklPRF9BTEwQAzLfAgoQRGlzY292ZXJ5U2VydmljZRJSCgtTZWFyY2hVc2VycxIgLmRpc2NvdmVyeS52MS5TZWFyY2hVc2Vyc1JlcXVlc3QaIS5kaXNjb3ZlcnkudjEuU2VhcmNoVXNlcnNSZXNwb25zZRJSCgtTZWFyY2hQb3N0cxIgLmRpc2NvdmVyeS52MS5TZWFyY2hQb3N0c1JlcXVlc3QaIS5kaXNjb3ZlcnkudjEuU2VhcmNoUG9zdHNSZXNwb25zZRJMCglSYW5rUG9zdHMSHi5kaXNjb3ZlcnkudjEuUmFua1Bvc3RzUmVxdWVzdBofLmRpc2NvdmVyeS52MS5SYW5rUG9zdHNSZXNwb25zZRJVCgxTdWdnZXN0VXNlcnMSIS5kaXNjb3ZlcnkudjEuU3VnZ2VzdFVzZXJzUmVxdWVzdBoiLmRpc2NvdmVyeS52MS5TdWdnZXN0VXNlcnNSZXNwb25zZWIGcHJvdG8z", [file_profile_v1_service, file_post_v1_post_service]);
+  fileDesc("CiRkaXNjb3ZlcnkvdjEvZGlzY292ZXJ5X3NlcnZpY2UucHJvdG8SDGRpc2NvdmVyeS52MSJXChJTZWFyY2hVc2Vyc1JlcXVlc3QSDQoFcXVlcnkYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJEhMKC3JvbGVfZmlsdGVyGAQgASgFImoKE1NlYXJjaFVzZXJzUmVzcG9uc2USLAoIcHJvZmlsZXMYASADKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIkIKElNlYXJjaFBvc3RzUmVxdWVzdBINCgVxdWVyeRgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiWgoTU2VhcmNoUG9zdHNSZXNwb25zZRIcCgVwb3N0cxgBIAMoCzINLnBvc3QudjEuUG9zdBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCJbChBSYW5rUG9zdHNSZXF1ZXN0EigKBnBlcmlvZBgBIAEoDjIYLmRpc2NvdmVyeS52MS5SYW5rUGVyaW9kEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJYChFSYW5rUG9zdHNSZXNwb25zZRIcCgVwb3N0cxgBIAMoCzINLnBvc3QudjEuUG9zdBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCI0ChNTdWdnZXN0VXNlcnNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJrChRTdWdnZXN0VXNlcnNSZXNwb25zZRIsCghwcm9maWxlcxgBIAMoCzIaLnByb2ZpbGUudjEuUHJvZmlsZVN1bW1hcnkSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgimAEKFlNlYXJjaFNjaGVkdWxlc1JlcXVlc3QSEQoJd29ya19kYXRlGAEgASgJEhIKCnByZWZlY3R1cmUYAiABKAkSEQoJdGltZV9iYW5kGAMgASgJEhYKDmZvbGxvd2luZ19vbmx5GAQgASgIEg0KBXF1ZXJ5GAUgASgJEg0KBWxpbWl0GAYgASgFEg4KBmN1cnNvchgHIAEoCSKOAQoUU2NoZWR1bGVTZWFyY2hSZXN1bHQSJwoIc2NoZWR1bGUYASABKAsyFS5zY2hlZHVsZS52MS5TY2hlZHVsZRIrCgdwcm9maWxlGAIgASgLMhoucHJvZmlsZS52MS5Qcm9maWxlU3VtbWFyeRISCgpwcmVmZWN0dXJlGAMgASgJEgwKBG5vdGUYBCABKAkidQoXU2VhcmNoU2NoZWR1bGVzUmVzcG9uc2USMwoHcmVzdWx0cxgBIAMoCzIiLmRpc2NvdmVyeS52MS5TY2hlZHVsZVNlYXJjaFJlc3VsdBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCppCgpSYW5rUGVyaW9kEhsKF1JBTktfUEVSSU9EX1VOU1BFQ0lGSUVEEAASEwoPUkFOS19QRVJJT0RfREFZEAESFAoQUkFOS19QRVJJT0RfV0VFSxACEhMKD1JBTktfUEVSSU9EX0FMTBADMr8DChBEaXNjb3ZlcnlTZXJ2aWNlElIKC1NlYXJjaFVzZXJzEiAuZGlzY292ZXJ5LnYxLlNlYXJjaFVzZXJzUmVxdWVzdBohLmRpc2NvdmVyeS52MS5TZWFyY2hVc2Vyc1Jlc3BvbnNlElIKC1NlYXJjaFBvc3RzEiAuZGlzY292ZXJ5LnYxLlNlYXJjaFBvc3RzUmVxdWVzdBohLmRpc2NvdmVyeS52MS5TZWFyY2hQb3N0c1Jlc3BvbnNlEkwKCVJhbmtQb3N0cxIeLmRpc2NvdmVyeS52MS5SYW5rUG9zdHNSZXF1ZXN0Gh8uZGlzY292ZXJ5LnYxLlJhbmtQb3N0c1Jlc3BvbnNlElUKDFN1Z2dlc3RVc2VycxIhLmRpc2NvdmVyeS52MS5TdWdnZXN0VXNlcnNSZXF1ZXN0GiIuZGlzY292ZXJ5LnYxLlN1Z2dlc3RVc2Vyc1Jlc3BvbnNlEl4KD1NlYXJjaFNjaGVkdWxlcxIkLmRpc2NvdmVyeS52MS5TZWFyY2hTY2hlZHVsZXNSZXF1ZXN0GiUuZGlzY292ZXJ5LnYxLlNlYXJjaFNjaGVkdWxlc1Jlc3BvbnNlYgZwcm90bzM", [file_profile_v1_service, file_post_v1_post_service, file_schedule_v1_schedule_service]);
 
 /**
  * @generated from message discovery.v1.SearchUsersRequest
@@ -233,6 +235,112 @@ export const SuggestUsersResponseSchema: GenMessage<SuggestUsersResponse> = /*@_
   messageDesc(file_discovery_v1_discovery_service, 7);
 
 /**
+ * @generated from message discovery.v1.SearchSchedulesRequest
+ */
+export type SearchSchedulesRequest = Message<"discovery.v1.SearchSchedulesRequest"> & {
+  /**
+   * @generated from field: string work_date = 1;
+   */
+  workDate: string;
+
+  /**
+   * @generated from field: string prefecture = 2;
+   */
+  prefecture: string;
+
+  /**
+   * @generated from field: string time_band = 3;
+   */
+  timeBand: string;
+
+  /**
+   * @generated from field: bool following_only = 4;
+   */
+  followingOnly: boolean;
+
+  /**
+   * @generated from field: string query = 5;
+   */
+  query: string;
+
+  /**
+   * @generated from field: int32 limit = 6;
+   */
+  limit: number;
+
+  /**
+   * @generated from field: string cursor = 7;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message discovery.v1.SearchSchedulesRequest.
+ * Use `create(SearchSchedulesRequestSchema)` to create a new message.
+ */
+export const SearchSchedulesRequestSchema: GenMessage<SearchSchedulesRequest> = /*@__PURE__*/
+  messageDesc(file_discovery_v1_discovery_service, 8);
+
+/**
+ * @generated from message discovery.v1.ScheduleSearchResult
+ */
+export type ScheduleSearchResult = Message<"discovery.v1.ScheduleSearchResult"> & {
+  /**
+   * @generated from field: schedule.v1.Schedule schedule = 1;
+   */
+  schedule?: Schedule | undefined;
+
+  /**
+   * @generated from field: profile.v1.ProfileSummary profile = 2;
+   */
+  profile?: ProfileSummary | undefined;
+
+  /**
+   * @generated from field: string prefecture = 3;
+   */
+  prefecture: string;
+
+  /**
+   * @generated from field: string note = 4;
+   */
+  note: string;
+};
+
+/**
+ * Describes the message discovery.v1.ScheduleSearchResult.
+ * Use `create(ScheduleSearchResultSchema)` to create a new message.
+ */
+export const ScheduleSearchResultSchema: GenMessage<ScheduleSearchResult> = /*@__PURE__*/
+  messageDesc(file_discovery_v1_discovery_service, 9);
+
+/**
+ * @generated from message discovery.v1.SearchSchedulesResponse
+ */
+export type SearchSchedulesResponse = Message<"discovery.v1.SearchSchedulesResponse"> & {
+  /**
+   * @generated from field: repeated discovery.v1.ScheduleSearchResult results = 1;
+   */
+  results: ScheduleSearchResult[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message discovery.v1.SearchSchedulesResponse.
+ * Use `create(SearchSchedulesResponseSchema)` to create a new message.
+ */
+export const SearchSchedulesResponseSchema: GenMessage<SearchSchedulesResponse> = /*@__PURE__*/
+  messageDesc(file_discovery_v1_discovery_service, 10);
+
+/**
  * @generated from enum discovery.v1.RankPeriod
  */
 export enum RankPeriod {
@@ -298,6 +406,14 @@ export const DiscoveryService: GenService<{
     methodKind: "unary";
     input: typeof SuggestUsersRequestSchema;
     output: typeof SuggestUsersResponseSchema;
+  },
+  /**
+   * @generated from rpc discovery.v1.DiscoveryService.SearchSchedules
+   */
+  searchSchedules: {
+    methodKind: "unary";
+    input: typeof SearchSchedulesRequestSchema;
+    output: typeof SearchSchedulesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_discovery_v1_discovery_service, 0);
