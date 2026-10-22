@@ -8,7 +8,7 @@ import type { PaginatedSchedulesResponse, ScheduleSearchFilters } from "../types
 
 const DEBOUNCE_MS = 300;
 
-export function useSearchSchedules({ date, prefecture, timeBand, followingOnly, query }: ScheduleSearchFilters) {
+export function useSearchSchedules({ date, prefecture, area, industry, timeBand, followingOnly, query }: ScheduleSearchFilters) {
   const profileId = useAuthStore((s) => s.activeProfileId);
   const [debounced, setDebounced] = useState(query);
 
@@ -24,6 +24,8 @@ export function useSearchSchedules({ date, prefecture, timeBand, followingOnly, 
     if (prev && !prev.hasMore) return null;
     const params = new URLSearchParams({ date });
     if (prefecture) params.set("prefecture", prefecture);
+    if (area) params.set("area", area);
+    if (industry) params.set("industry", industry);
     if (timeBand) params.set("timeBand", timeBand);
     if (followingOnly) params.set("followingOnly", "true");
     if (name) params.set("q", name);
@@ -34,7 +36,7 @@ export function useSearchSchedules({ date, prefecture, timeBand, followingOnly, 
   const { data, error, size, setSize, isLoading, isValidating } =
     useSWRInfinite<PaginatedSchedulesResponse>(getKey, fetcher, { revalidateOnFocus: false });
 
-  const filterKey = JSON.stringify([date, prefecture, timeBand, followingOnly, name]);
+  const filterKey = JSON.stringify([date, prefecture, area, industry, timeBand, followingOnly, name]);
   const lastFilterKey = useRef(filterKey);
   // swr/infinite keeps the page count per key, so a filter set seen before would come back with its old pages.
   useLayoutEffect(() => {

@@ -15,18 +15,18 @@ module Discovery
       CURSOR_PROFILE_ID = /\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/
       LEADING_AT = /\A[@＠]+/
 
-      Result = Data.define(:schedule, :summary, :prefecture, :note)
+      Result = Data.define(:schedule, :summary, :prefecture, :area, :note)
 
-      def call(viewer_profile_id:, work_date:, prefecture: "", time_band: "", following_only: false, query: "", limit: DEFAULT_LIMIT, cursor: nil)
+      def call(viewer_profile_id:, work_date:, prefecture: "", area: "", industry: "", time_band: "", following_only: false, query: "", limit: DEFAULT_LIMIT, cursor: nil)
         date = parse_date(work_date)
         raise Errors::ValidationError, "開始時間帯が正しくありません" unless TIME_BANDS.include?(time_band)
 
         limit = normalize_limit(limit)
-        prefectures = profile_repo.visible_cast_prefectures(prefecture: prefecture, query: query.to_s.strip.sub(LEADING_AT, ""))
+        areas = profile_repo.visible_cast_areas(prefecture: prefecture, area: area, industry: industry, query: query.to_s.strip.sub(LEADING_AT, ""))
         rows = schedule_repo.search(
           work_date: date,
           time_band: time_band,
-          profile_ids: candidate_ids(prefectures.keys, viewer_profile_id: viewer_profile_id, following_only: following_only),
+          profile_ids: candidate_ids(areas.keys, viewer_profile_id: viewer_profile_id, following_only: following_only),
           limit: limit,
           cursor: parse_cursor(cursor)
         )
@@ -35,7 +35,7 @@ module Discovery
           encode_cursor(start_time: last[:start_time], profile_id: last[:profile_id])
         end
 
-        { results: build_results(page[:items], prefectures, viewer_profile_id), next_cursor: page[:next_cursor], has_more: page[:has_more] }
+        { results: build_results(page[:items], areas, viewer_profile_id), next_cursor: page[:next_cursor], has_more: page[:has_more] }
       end
 
       private
@@ -59,7 +59,7 @@ module Discovery
         ids - block_repo.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
       end
 
-      def build_results(rows, prefectures, viewer_profile_id)
+      def build_results(rows, areas, viewer_profile_id)
         summaries = summarize_profiles.call(profile_ids: rows.map { |row| row[:profile_id] })
         notes = notes_by_post_id(rows, viewer_profile_id)
 
@@ -67,7 +67,8 @@ module Discovery
           summary = summaries[row[:profile_id].to_s]
           next unless summary
 
-          Result.new(schedule: row, summary: summary, prefecture: prefectures[row[:profile_id]].to_s, note: notes.fetch(row[:post_id].to_s, ""))
+          location = areas.fetch(row[:profile_id], {})
+          Result.new(schedule: row, summary: summary, prefecture: location[:prefecture].to_s, area: location[:area].to_s, note: notes.fetch(row[:post_id].to_s, ""))
         end
       end
 

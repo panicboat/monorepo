@@ -13,7 +13,7 @@ module Profile
       ROLE_CAST = 2
 
       def call(profile_id:, display_name:, username: nil, bio: nil, website: nil,
-               sns_links: {}, prefecture: nil, is_private: false, age: nil,
+               sns_links: {}, prefecture: nil, area: nil, is_private: false, age: nil,
                body_stats: {}, industry: nil, follow_approval_required: false)
         current = profile_repository.find_by_id(profile_id)
         return nil unless current
@@ -27,6 +27,7 @@ module Profile
           bio: bio,
           website: website,
           prefecture: prefecture,
+          area: prefecture ? area : nil,
           is_private: is_private ? true : false,
           follow_approval_required: follow_approval_required ? true : false
         }

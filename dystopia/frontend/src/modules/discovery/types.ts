@@ -21,6 +21,8 @@ export type ScheduleTimeBand = "" | "day" | "evening" | "night";
 export interface ScheduleSearchFilters {
   date: string;
   prefecture: string;
+  area: string;
+  industry: string;
   timeBand: ScheduleTimeBand;
   followingOnly: boolean;
   query: string;

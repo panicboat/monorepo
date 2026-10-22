@@ -37,6 +37,7 @@ message Profile {
   int32 role = 20;
   bool disabled = 21;
   bool follow_approval_required = 22;
+  string area = 23;
 }
 
 message ProfileSummary {
@@ -91,6 +92,7 @@ message SaveProfileRequest {
   BodyStats body_stats = 9;
   string industry = 11;
   bool follow_approval_required = 12;
+  string area = 13;
 }
 message SaveProfileResponse { Profile profile = 1; }
 

@@ -19,6 +19,7 @@ module Profile
             website: profile.website || "",
             sns_links: sns_links_proto(cast&.sns_links),
             prefecture: profile.prefecture || "",
+            area: profile.area || "",
             is_private: profile.is_private ? true : false,
             follow_approval_required: profile.follow_approval_required ? true : false,
             registered_at: profile.registered_at ? profile.registered_at.iso8601 : "",

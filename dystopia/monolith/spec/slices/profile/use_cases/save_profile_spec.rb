@@ -35,6 +35,20 @@ RSpec.describe "Profile::UseCases::SaveProfile", type: :database do
     expect(repo.find_by_id(missing)).to be_nil
   end
 
+  it "saves the main area with its prefecture" do
+    profile = uc.call(profile_id: profile_id, display_name: "Coco", prefecture: "東京都", area: "新宿")
+
+    expect(profile).to have_attributes(prefecture: "東京都", area: "新宿")
+  end
+
+  it "drops the area when no prefecture is given" do
+    uc.call(profile_id: profile_id, display_name: "Coco", prefecture: "東京都", area: "新宿")
+
+    profile = uc.call(profile_id: profile_id, display_name: "Coco", area: "新宿")
+
+    expect(profile).to have_attributes(prefecture: nil, area: nil)
+  end
+
   it "rejects a missing display_name" do
     expect { uc.call(profile_id: profile_id, display_name: "") }.to raise_error(Errors::ValidationError)
   end

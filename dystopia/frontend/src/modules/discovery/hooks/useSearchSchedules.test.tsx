@@ -17,13 +17,14 @@ vi.mock("@/stores/authStore", () => ({
 
 const { useSearchSchedules } = await import("./useSearchSchedules");
 
-const BASE: ScheduleSearchFilters = { date: "2026-10-22", prefecture: "", timeBand: "", followingOnly: false, query: "" };
+const BASE: ScheduleSearchFilters = { date: "2026-10-22", prefecture: "", area: "", industry: "", timeBand: "", followingOnly: false, query: "" };
 
 function resultFor(profileId: string): ScheduleSearchResultView {
   return {
     schedule: { profileId, workDate: "2026-10-22", startTime: "20:00", endTime: "02:00" },
     profile: { profileId, username: profileId, displayName: profileId, avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
     prefecture: "東京都",
+    area: "",
     note: "",
   };
 }
@@ -72,14 +73,16 @@ afterEach(async () => {
 });
 
 describe("useSearchSchedules", () => {
-  it("requests the first page for the date with the area, band, following switch and name", async () => {
-    await show({ date: "2026-10-23", prefecture: "東京都", timeBand: "evening", followingOnly: true, query: " すず " });
+  it("requests the first page for the date with the prefecture, area, industry, band, following switch and name", async () => {
+    await show({ date: "2026-10-23", prefecture: "東京都", area: "新宿", industry: "ソープ", timeBand: "evening", followingOnly: true, query: " すず " });
 
     expect(requested()).toHaveLength(1);
     expect(requested()[0].startsWith("/api/discovery/schedules?")).toBe(true);
     expect(params(requested()[0])).toEqual({
       date: "2026-10-23",
       prefecture: "東京都",
+      area: "新宿",
+      industry: "ソープ",
       timeBand: "evening",
       followingOnly: "true",
       q: "すず",

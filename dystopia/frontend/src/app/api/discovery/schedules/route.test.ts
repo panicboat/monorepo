@@ -36,6 +36,7 @@ const result = create(ScheduleSearchResultSchema, {
     industry: "デリヘル",
   }),
   prefecture: "東京都",
+  area: "新宿",
   note: "久しぶりの出勤です",
 });
 
@@ -44,13 +45,23 @@ describe("GET /api/discovery/schedules", () => {
     discovery.searchSchedules.mockReset().mockResolvedValue({ results: [result], nextCursor: "next-1", hasMore: true });
   });
 
-  it("passes the date, area, start band, following switch, name and cursor to the request", async () => {
+  it("passes the date, prefecture, area, industry, start band, following switch, name and cursor to the request", async () => {
     await GET(
-      search({ date: "2026-10-22", prefecture: "東京都", timeBand: "night", followingOnly: "true", q: "すず", cursor: "cur-1" })
+      search({ date: "2026-10-22", prefecture: "東京都", area: "新宿", industry: "ソープ", timeBand: "night", followingOnly: "true", q: "すず", cursor: "cur-1" })
     );
 
     expect(discovery.searchSchedules).toHaveBeenCalledWith(
-      { workDate: "2026-10-22", prefecture: "東京都", timeBand: "night", followingOnly: true, query: "すず", limit: 20, cursor: "cur-1" },
+      {
+        workDate: "2026-10-22",
+        prefecture: "東京都",
+        area: "新宿",
+        industry: "ソープ",
+        timeBand: "night",
+        followingOnly: true,
+        query: "すず",
+        limit: 20,
+        cursor: "cur-1",
+      },
       expect.anything()
     );
   });
@@ -59,7 +70,7 @@ describe("GET /api/discovery/schedules", () => {
     await GET(search({ date: "2026-10-22" }));
 
     expect(discovery.searchSchedules).toHaveBeenCalledWith(
-      { workDate: "2026-10-22", prefecture: "", timeBand: "", followingOnly: false, query: "", limit: 20, cursor: "" },
+      { workDate: "2026-10-22", prefecture: "", area: "", industry: "", timeBand: "", followingOnly: false, query: "", limit: 20, cursor: "" },
       expect.anything()
     );
   });
@@ -82,6 +93,7 @@ describe("GET /api/discovery/schedules", () => {
             industry: "デリヘル",
           },
           prefecture: "東京都",
+          area: "新宿",
           note: "久しぶりの出勤です",
         },
       ],

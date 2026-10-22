@@ -7,7 +7,7 @@ require "slices/profile/presenters/profile_presenter"
 RSpec.describe Profile::Presenters::ProfilePresenter do
   let(:profile_struct) do
     Struct.new(:id, :account_id, :username, :display_name, :bio, :avatar_media_id, :cover_media_id,
-      :website, :prefecture, :is_private, :follow_approval_required, :registered_at, :disabled_at)
+      :website, :prefecture, :is_private, :follow_approval_required, :registered_at, :disabled_at, :area)
   end
 
   let(:cast_struct) do
@@ -38,6 +38,15 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
       expect(proto.body_stats.height_cm).to eq(0)
       expect(proto.body_stats.cup).to eq("")
       expect(proto.age).to eq(0)
+    end
+
+    it "maps the prefecture and the main area" do
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, "東京都", false, false, nil, nil, "新宿")
+
+      proto = described_class.to_proto(profile)
+
+      expect(proto.prefecture).to eq("東京都")
+      expect(proto.area).to eq("新宿")
     end
 
     it "maps the cityheaven sns link" do

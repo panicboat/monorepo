@@ -48,6 +48,13 @@ describe("mapProfileToView", () => {
     expect(mapProfileToView(create(ProfileSchema, { id: "prof-1" })).followApprovalRequired).toBe(false);
   });
 
+  it("maps the prefecture and the main area", () => {
+    const view = mapProfileToView(create(ProfileSchema, { id: "prof-1", prefecture: "東京都", area: "新宿" }));
+
+    expect(view).toMatchObject({ prefecture: "東京都", area: "新宿" });
+    expect(mapProfileToView(create(ProfileSchema, { id: "prof-1" })).area).toBe("");
+  });
+
   it("maps the disabled flag", () => {
     expect(mapProfileToView(create(ProfileSchema, { id: "prof-1", disabled: true })).disabled).toBe(true);
     expect(mapProfileToView(create(ProfileSchema, { id: "prof-1" })).disabled).toBe(false);
@@ -86,6 +93,14 @@ describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
 
   it.each([true, false])("passes followApprovalRequired=%s through to the save request unchanged", (value) => {
     expect(buildSaveProfileRequest({ displayName: "ゆな", followApprovalRequired: value }).followApprovalRequired).toBe(value);
+  });
+});
+
+describe("main area in the save request", () => {
+  it("carries the prefecture and the area from the view to the save request", () => {
+    const view = { ...emptyProfileView("prof-1"), displayName: "Coco", prefecture: "大阪府", area: "梅田" };
+
+    expect(buildSaveProfileRequest(profileViewToSavePayload(view))).toMatchObject({ prefecture: "大阪府", area: "梅田" });
   });
 });
 

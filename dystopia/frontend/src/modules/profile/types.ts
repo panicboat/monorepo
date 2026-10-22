@@ -29,6 +29,7 @@ export interface ProfileView {
   website: string;
   snsLinks: SnsLinksView;
   prefecture: string;
+  area: string;
   isPrivate: boolean;
   followApprovalRequired: boolean;
   registeredAt: string;
@@ -55,6 +56,7 @@ export interface SaveProfilePayload {
   website?: string;
   snsLinks?: Partial<SnsLinksView>;
   prefecture?: string;
+  area?: string;
   isPrivate?: boolean;
   followApprovalRequired: boolean;
   age?: number;

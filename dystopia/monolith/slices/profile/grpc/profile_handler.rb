@@ -98,6 +98,7 @@ module Profile
           website: blank_to_nil(m.website),
           sns_links: sns_links_to_hash(m.sns_links),
           prefecture: blank_to_nil(m.prefecture),
+          area: blank_to_nil(m.area),
           is_private: m.is_private,
           follow_approval_required: m.follow_approval_required,
           age: zero_to_nil(m.age),

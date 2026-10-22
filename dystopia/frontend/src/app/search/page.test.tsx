@@ -371,16 +371,18 @@ describe("SearchPage", () => {
         await view.unmount();
       });
 
-      it("writes the date, area, start band and following switch while on the schedules tab", async () => {
+      it("writes the date, prefecture, area, industry, start band and following switch while on the schedules tab", async () => {
         navigation.tab = "schedules";
         const view = await open();
 
-        await view.choose({ date: tomorrow(), prefecture: "東京都", timeBand: "night", followingOnly: true });
+        await view.choose({ date: tomorrow(), prefecture: "東京都", area: "新宿", industry: "ソープ", timeBand: "night", followingOnly: true });
 
         expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({
           tab: "schedules",
           date: tomorrow(),
           prefecture: "東京都",
+          area: "新宿",
+          industry: "ソープ",
           timeBand: "night",
           following: "1",
         });
@@ -395,7 +397,7 @@ describe("SearchPage", () => {
       it("drops the filters from the URL on the other tabs and brings them back with the schedules tab", async () => {
         navigation.tab = "schedules";
         const view = await open();
-        const chosen = { date: tomorrow(), prefecture: "大阪府", timeBand: "day", followingOnly: false };
+        const chosen = { date: tomorrow(), prefecture: "大阪府", area: "", industry: "", timeBand: "day", followingOnly: false };
         await view.choose(chosen);
 
         await view.select("ユーザー");
@@ -410,11 +412,11 @@ describe("SearchPage", () => {
 
       it("restores the filters written in the URL", async () => {
         navigation.tab = "schedules";
-        navigation.extra = { date: tomorrow(), prefecture: "東京都", timeBand: "night", following: "1" };
+        navigation.extra = { date: tomorrow(), prefecture: "東京都", area: "新宿", industry: "ソープ", timeBand: "night", following: "1" };
         const view = await open();
 
         expect(view.selectedTab()).toBe("出勤");
-        expect(view.choices()).toEqual({ date: tomorrow(), prefecture: "東京都", timeBand: "night", followingOnly: true });
+        expect(view.choices()).toEqual({ date: tomorrow(), prefecture: "東京都", area: "新宿", industry: "ソープ", timeBand: "night", followingOnly: true });
         expect(navigation.replace).not.toHaveBeenCalled();
 
         await view.unmount();
@@ -422,7 +424,7 @@ describe("SearchPage", () => {
 
       it("falls back to today, every area and every start band for values that do not fit", async () => {
         navigation.tab = "schedules";
-        navigation.extra = { date: "2020-01-01", prefecture: "Narnia", timeBand: "noon", following: "yes" };
+        navigation.extra = { date: "2020-01-01", prefecture: "Narnia", area: "新宿", industry: "soap", timeBand: "noon", following: "yes" };
         const view = await open();
 
         expect(view.choices()).toEqual(defaultSearchChoices());

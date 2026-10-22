@@ -6,7 +6,7 @@ import { Select } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleChip } from "@/components/ui/toggle-chip";
 import { useSearchSchedules } from "@/modules/discovery";
-import { PREFECTURES } from "@/modules/profile/lib/constants";
+import { INDUSTRIES, PREFECTURES, areasOf } from "@/modules/profile/lib/constants";
 import { formatDayLabel, formatScheduleDay } from "@/modules/schedule/lib/dates";
 import { TIME_BANDS, searchDays, type ScheduleSearchChoices } from "@/modules/schedule/lib/searchChoices";
 import { ScheduleSearchCard } from "./ScheduleSearchCard";
@@ -35,9 +35,10 @@ interface ScheduleSearchPanelProps {
 
 export function ScheduleSearchPanel({ query, choices, onChoicesChange }: ScheduleSearchPanelProps) {
   const days = useMemo(searchDays, []);
-  const { date, prefecture, timeBand, followingOnly } = choices;
-  const { results, hasMore, loading, error, loadMore } = useSearchSchedules({ date, prefecture, timeBand, followingOnly, query });
-  const narrowed = prefecture !== "" || timeBand !== "" || followingOnly || query.trim() !== "";
+  const { date, prefecture, area, industry, timeBand, followingOnly } = choices;
+  const { results, hasMore, loading, error, loadMore } = useSearchSchedules({ date, prefecture, area, industry, timeBand, followingOnly, query });
+  const narrowed = prefecture !== "" || area !== "" || industry !== "" || timeBand !== "" || followingOnly || query.trim() !== "";
+  const areaChoices = areasOf(prefecture);
 
   return (
     <div>
@@ -53,11 +54,37 @@ export function ScheduleSearchPanel({ query, choices, onChoicesChange }: Schedul
         </div>
       </FilterGroup>
       <FilterGroup title="エリア">
-        <Select aria-label="エリア" value={prefecture} onChange={(e) => onChoicesChange({ ...choices, prefecture: e.target.value })}>
-          <option value="">全国</option>
-          {PREFECTURES.map((p) => (
-            <option key={p} value={p}>
-              {p}
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Select
+            aria-label="都道府県"
+            value={prefecture}
+            onChange={(e) => onChoicesChange({ ...choices, prefecture: e.target.value, area: "" })}
+          >
+            <option value="">全国</option>
+            {PREFECTURES.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </Select>
+          {areaChoices.length > 0 && (
+            <Select aria-label="エリア" value={area} onChange={(e) => onChoicesChange({ ...choices, area: e.target.value })}>
+              <option value="">{prefecture}のすべて</option>
+              {areaChoices.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </Select>
+          )}
+        </div>
+      </FilterGroup>
+      <FilterGroup title="業種">
+        <Select aria-label="業種" value={industry} onChange={(e) => onChoicesChange({ ...choices, industry: e.target.value })}>
+          <option value="">すべて</option>
+          {INDUSTRIES.map((i) => (
+            <option key={i.name} value={i.name}>
+              {i.name}
             </option>
           ))}
         </Select>

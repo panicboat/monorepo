@@ -128,12 +128,14 @@ module Profile
         visible_profiles.where(prefecture: prefecture).pluck(:id)
       end
 
-      def visible_cast_prefectures(prefecture: nil, query: nil)
+      def visible_cast_areas(prefecture: nil, area: nil, industry: nil, query: nil)
         scope = filter_by_role(visible_profiles, 2)
         scope = scope.where(prefecture: prefecture) unless prefecture.to_s.empty?
+        scope = scope.where(area: area) unless area.to_s.empty?
+        scope = scope.where(id: profiles.dataset.db[:profile__casts].where(industry: industry).select(:profile_id)) unless industry.to_s.empty?
         scope = filter_by_name(scope, query) unless query.to_s.strip.empty?
 
-        scope.dataset.select_hash(:id, :prefecture).transform_values(&:to_s)
+        scope.dataset.select_map([:id, :prefecture, :area]).to_h { |id, pref, area_name| [id, { prefecture: pref.to_s, area: area_name.to_s }] }
       end
 
       def save_media(profile_id:, avatar_media_id: nil, cover_media_id: nil)

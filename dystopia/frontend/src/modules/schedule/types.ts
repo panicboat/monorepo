@@ -11,6 +11,7 @@ export interface ScheduleSearchResultView {
   schedule: ScheduleView;
   profile: ProfileSummaryView;
   prefecture: string;
+  area: string;
   note: string;
 }
 

@@ -23,16 +23,25 @@ describe("searchDays", () => {
 });
 
 describe("defaultSearchChoices", () => {
-  it("is today in Japan, every area, every start band and the following switch off", () => {
-    expect(defaultSearchChoices()).toEqual({ date: "2026-10-23", prefecture: "", timeBand: "", followingOnly: false });
+  it("is today in Japan, every area, every industry, every start band and the following switch off", () => {
+    expect(defaultSearchChoices()).toEqual({ date: "2026-10-23", prefecture: "", area: "", industry: "", timeBand: "", followingOnly: false });
   });
 });
 
 describe("parseSearchChoices", () => {
-  it("reads the date, area, start band and following switch", () => {
-    const params = query("date=2026-10-24&prefecture=%E6%9D%B1%E4%BA%AC%E9%83%BD&timeBand=night&following=1");
+  it("reads the date, prefecture, area, industry, start band and following switch", () => {
+    const params = query(
+      `date=2026-10-24&prefecture=${encodeURIComponent("東京都")}&area=${encodeURIComponent("新宿")}&industry=${encodeURIComponent("ソープ")}&timeBand=night&following=1`
+    );
 
-    expect(parseSearchChoices(params)).toEqual({ date: "2026-10-24", prefecture: "東京都", timeBand: "night", followingOnly: true });
+    expect(parseSearchChoices(params)).toEqual({
+      date: "2026-10-24",
+      prefecture: "東京都",
+      area: "新宿",
+      industry: "ソープ",
+      timeBand: "night",
+      followingOnly: true,
+    });
   });
 
   it("accepts every start band", () => {
@@ -55,6 +64,15 @@ describe("parseSearchChoices", () => {
 
   it("falls back to every area for an unknown prefecture", () => {
     expect(parseSearchChoices(query("prefecture=Tokyo")).prefecture).toBe("");
+  });
+
+  it("falls back to every area for an area outside the prefecture or without a prefecture", () => {
+    expect(parseSearchChoices(query(`prefecture=${encodeURIComponent("大阪府")}&area=${encodeURIComponent("新宿")}`)).area).toBe("");
+    expect(parseSearchChoices(query(`area=${encodeURIComponent("新宿")}`)).area).toBe("");
+  });
+
+  it("falls back to every industry for an unknown industry", () => {
+    expect(parseSearchChoices(query("industry=soap")).industry).toBe("");
   });
 
   it("falls back to every start band for an unknown band", () => {
@@ -82,13 +100,20 @@ describe("writeSearchChoices", () => {
   it("writes each choice that differs from the default, with 1 for the following switch", () => {
     const params = query("");
 
-    writeSearchChoices(params, { date: "2026-10-24", prefecture: "東京都", timeBand: "night", followingOnly: true });
+    writeSearchChoices(params, { date: "2026-10-24", prefecture: "東京都", area: "新宿", industry: "ソープ", timeBand: "night", followingOnly: true });
 
-    expect(Object.fromEntries(params)).toEqual({ date: "2026-10-24", prefecture: "東京都", timeBand: "night", following: "1" });
+    expect(Object.fromEntries(params)).toEqual({
+      date: "2026-10-24",
+      prefecture: "東京都",
+      area: "新宿",
+      industry: "ソープ",
+      timeBand: "night",
+      following: "1",
+    });
   });
 
   it("round-trips through parseSearchChoices", () => {
-    const choices = { date: "2026-10-30", prefecture: "大阪府", timeBand: "evening" as const, followingOnly: true };
+    const choices = { date: "2026-10-30", prefecture: "大阪府", area: "梅田", industry: "デリヘル", timeBand: "evening" as const, followingOnly: true };
     const params = query("");
 
     writeSearchChoices(params, choices);
