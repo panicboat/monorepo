@@ -25,6 +25,7 @@ interface EditProfileSheetProps {
 interface FormState {
   username: string;
   isPrivate: boolean;
+  followApprovalRequired: boolean;
   displayName: string;
   bio: string;
   prefecture: string;
@@ -48,6 +49,7 @@ function toForm(p: ProfileView): FormState {
   return {
     username: p.username,
     isPrivate: p.isPrivate,
+    followApprovalRequired: p.followApprovalRequired,
     displayName: p.displayName,
     bio: p.bio,
     prefecture: p.prefecture,
@@ -84,6 +86,7 @@ function buildPayload(f: FormState, isCast: boolean): SaveProfilePayload {
     },
     prefecture: f.prefecture,
     isPrivate: f.isPrivate,
+    followApprovalRequired: f.followApprovalRequired,
     age: isCast ? Number(f.age) || 0 : 0,
     bodyStats: isCast
       ? {
@@ -256,6 +259,14 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
             <span className="text-xs text-text-muted">フォロワーだけが閲覧できます</span>
           </div>
           <Toggle checked={form.isPrivate} onCheckedChange={(value) => set("isPrivate", value)} aria-label="プロフィールに鍵をかける" />
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-text-primary">フォローを承認制にする</span>
+            <span className="text-xs text-text-muted">フォローされる前に、あなたが承認します</span>
+          </div>
+          <Toggle checked={form.followApprovalRequired} onCheckedChange={(value) => set("followApprovalRequired", value)} aria-label="フォローを承認制にする" />
         </div>
 
         {error && <p className="text-sm text-error">{error}</p>}

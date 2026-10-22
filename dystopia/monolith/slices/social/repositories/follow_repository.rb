@@ -26,12 +26,6 @@ module Social
         follows.dataset.where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id).delete > 0
       end
 
-      def approve_all_pending(profile_id:)
-        follows.dataset
-          .where(followee_profile_id: profile_id, status: "pending")
-          .update(status: "approved", updated_at: Time.now)
-      end
-
       def update_status(follower_profile_id:, followee_profile_id:, status:)
         updated = follows.dataset
           .where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id)

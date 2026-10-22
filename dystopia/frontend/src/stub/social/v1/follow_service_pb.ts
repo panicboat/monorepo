@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file social/v1/follow_service.proto.
  */
 export const file_social_v1_follow_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zb2NpYWwvdjEvZm9sbG93X3NlcnZpY2UucHJvdG8SCXNvY2lhbC52MSIqCg1Gb2xsb3dSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJIjkKDkZvbGxvd1Jlc3BvbnNlEicKBnN0YXR1cxgBIAEoDjIXLnNvY2lhbC52MS5Gb2xsb3dTdGF0dXMiLAoPVW5mb2xsb3dSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJIhIKEFVuZm9sbG93UmVzcG9uc2UiNwoaQ2FuY2VsRm9sbG93UmVxdWVzdFJlcXVlc3QSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYASABKAkiHQobQ2FuY2VsRm9sbG93UmVxdWVzdFJlc3BvbnNlIjsKG0FwcHJvdmVGb2xsb3dSZXF1ZXN0UmVxdWVzdBIcChRyZXF1ZXN0ZXJfcHJvZmlsZV9pZBgBIAEoCSIeChxBcHByb3ZlRm9sbG93UmVxdWVzdFJlc3BvbnNlIjoKGlJlamVjdEZvbGxvd1JlcXVlc3RSZXF1ZXN0EhwKFHJlcXVlc3Rlcl9wcm9maWxlX2lkGAEgASgJIh0KG1JlamVjdEZvbGxvd1JlcXVlc3RSZXNwb25zZSJJChRMaXN0Rm9sbG93aW5nUmVxdWVzdBISCgpwcm9maWxlX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJsChVMaXN0Rm9sbG93aW5nUmVzcG9uc2USLAoIcHJvZmlsZXMYASADKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIkkKFExpc3RGb2xsb3dlcnNSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJImwKFUxpc3RGb2xsb3dlcnNSZXNwb25zZRIsCghwcm9maWxlcxgBIAMoCzIaLnByb2ZpbGUudjEuUHJvZmlsZVN1bW1hcnkSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiQQogTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIngKIUxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXNwb25zZRIsCghwcm9maWxlcxgBIAMoCzIaLnByb2ZpbGUudjEuUHJvZmlsZVN1bW1hcnkSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiNAoWR2V0Rm9sbG93U3RhdHVzUmVxdWVzdBIaChJ0YXJnZXRfcHJvZmlsZV9pZHMYASADKAkipwEKF0dldEZvbGxvd1N0YXR1c1Jlc3BvbnNlEkIKCHN0YXR1c2VzGAEgAygLMjAuc29jaWFsLnYxLkdldEZvbGxvd1N0YXR1c1Jlc3BvbnNlLlN0YXR1c2VzRW50cnkaSAoNU3RhdHVzZXNFbnRyeRILCgNrZXkYASABKAkSJgoFdmFsdWUYAiABKA4yFy5zb2NpYWwudjEuRm9sbG93U3RhdHVzOgI4ASIeChxHZXRQZW5kaW5nRm9sbG93Q291bnRSZXF1ZXN0Ii4KHUdldFBlbmRpbmdGb2xsb3dDb3VudFJlc3BvbnNlEg0KBWNvdW50GAEgASgFIiwKFkdldFNvY2lhbENvdW50c1JlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoCSJLChdHZXRTb2NpYWxDb3VudHNSZXNwb25zZRIXCg9mb2xsb3dpbmdfY291bnQYASABKAUSFwoPZm9sbG93ZXJzX2NvdW50GAIgASgFKnwKDEZvbGxvd1N0YXR1cxIdChlGT0xMT1dfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFgoSRk9MTE9XX1NUQVRVU19OT05FEAESGQoVRk9MTE9XX1NUQVRVU19QRU5ESU5HEAISGgoWRk9MTE9XX1NUQVRVU19BUFBST1ZFRBADMogICg1Gb2xsb3dTZXJ2aWNlEj0KBkZvbGxvdxIYLnNvY2lhbC52MS5Gb2xsb3dSZXF1ZXN0Ghkuc29jaWFsLnYxLkZvbGxvd1Jlc3BvbnNlEkMKCFVuZm9sbG93Ehouc29jaWFsLnYxLlVuZm9sbG93UmVxdWVzdBobLnNvY2lhbC52MS5VbmZvbGxvd1Jlc3BvbnNlEmQKE0NhbmNlbEZvbGxvd1JlcXVlc3QSJS5zb2NpYWwudjEuQ2FuY2VsRm9sbG93UmVxdWVzdFJlcXVlc3QaJi5zb2NpYWwudjEuQ2FuY2VsRm9sbG93UmVxdWVzdFJlc3BvbnNlEmcKFEFwcHJvdmVGb2xsb3dSZXF1ZXN0EiYuc29jaWFsLnYxLkFwcHJvdmVGb2xsb3dSZXF1ZXN0UmVxdWVzdBonLnNvY2lhbC52MS5BcHByb3ZlRm9sbG93UmVxdWVzdFJlc3BvbnNlEmQKE1JlamVjdEZvbGxvd1JlcXVlc3QSJS5zb2NpYWwudjEuUmVqZWN0Rm9sbG93UmVxdWVzdFJlcXVlc3QaJi5zb2NpYWwudjEuUmVqZWN0Rm9sbG93UmVxdWVzdFJlc3BvbnNlElIKDUxpc3RGb2xsb3dpbmcSHy5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1Jlc3BvbnNlElIKDUxpc3RGb2xsb3dlcnMSHy5zb2NpYWwudjEuTGlzdEZvbGxvd2Vyc1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdEZvbGxvd2Vyc1Jlc3BvbnNlEnYKGUxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHMSKy5zb2NpYWwudjEuTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1JlcXVlc3QaLC5zb2NpYWwudjEuTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1Jlc3BvbnNlElgKD0dldEZvbGxvd1N0YXR1cxIhLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXF1ZXN0GiIuc29jaWFsLnYxLkdldEZvbGxvd1N0YXR1c1Jlc3BvbnNlEmoKFUdldFBlbmRpbmdGb2xsb3dDb3VudBInLnNvY2lhbC52MS5HZXRQZW5kaW5nRm9sbG93Q291bnRSZXF1ZXN0Giguc29jaWFsLnYxLkdldFBlbmRpbmdGb2xsb3dDb3VudFJlc3BvbnNlElgKD0dldFNvY2lhbENvdW50cxIhLnNvY2lhbC52MS5HZXRTb2NpYWxDb3VudHNSZXF1ZXN0GiIuc29jaWFsLnYxLkdldFNvY2lhbENvdW50c1Jlc3BvbnNlYgZwcm90bzM", [file_profile_v1_service]);
+  fileDesc("Ch5zb2NpYWwvdjEvZm9sbG93X3NlcnZpY2UucHJvdG8SCXNvY2lhbC52MSIqCg1Gb2xsb3dSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJIjkKDkZvbGxvd1Jlc3BvbnNlEicKBnN0YXR1cxgBIAEoDjIXLnNvY2lhbC52MS5Gb2xsb3dTdGF0dXMiLAoPVW5mb2xsb3dSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJIhIKEFVuZm9sbG93UmVzcG9uc2UiNwoaQ2FuY2VsRm9sbG93UmVxdWVzdFJlcXVlc3QSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYASABKAkiHQobQ2FuY2VsRm9sbG93UmVxdWVzdFJlc3BvbnNlIjsKG0FwcHJvdmVGb2xsb3dSZXF1ZXN0UmVxdWVzdBIcChRyZXF1ZXN0ZXJfcHJvZmlsZV9pZBgBIAEoCSIeChxBcHByb3ZlRm9sbG93UmVxdWVzdFJlc3BvbnNlIiEKH0FwcHJvdmVBbGxGb2xsb3dSZXF1ZXN0c1JlcXVlc3QiOgogQXBwcm92ZUFsbEZvbGxvd1JlcXVlc3RzUmVzcG9uc2USFgoOYXBwcm92ZWRfY291bnQYASABKAUiOgoaUmVqZWN0Rm9sbG93UmVxdWVzdFJlcXVlc3QSHAoUcmVxdWVzdGVyX3Byb2ZpbGVfaWQYASABKAkiHQobUmVqZWN0Rm9sbG93UmVxdWVzdFJlc3BvbnNlIkkKFExpc3RGb2xsb3dpbmdSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJImwKFUxpc3RGb2xsb3dpbmdSZXNwb25zZRIsCghwcm9maWxlcxgBIAMoCzIaLnByb2ZpbGUudjEuUHJvZmlsZVN1bW1hcnkSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiSQoUTGlzdEZvbGxvd2Vyc1JlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkibAoVTGlzdEZvbGxvd2Vyc1Jlc3BvbnNlEiwKCHByb2ZpbGVzGAEgAygLMhoucHJvZmlsZS52MS5Qcm9maWxlU3VtbWFyeRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCJBCiBMaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkieAohTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1Jlc3BvbnNlEiwKCHByb2ZpbGVzGAEgAygLMhoucHJvZmlsZS52MS5Qcm9maWxlU3VtbWFyeRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCI0ChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhoKEnRhcmdldF9wcm9maWxlX2lkcxgBIAMoCSK1AgoXR2V0Rm9sbG93U3RhdHVzUmVzcG9uc2USQgoIc3RhdHVzZXMYASADKAsyMC5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVzcG9uc2UuU3RhdHVzZXNFbnRyeRJTChFhcHByb3ZhbF9yZXF1aXJlZBgCIAMoCzI4LnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZS5BcHByb3ZhbFJlcXVpcmVkRW50cnkaSAoNU3RhdHVzZXNFbnRyeRILCgNrZXkYASABKAkSJgoFdmFsdWUYAiABKA4yFy5zb2NpYWwudjEuRm9sbG93U3RhdHVzOgI4ARo3ChVBcHByb3ZhbFJlcXVpcmVkRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ASIeChxHZXRQZW5kaW5nRm9sbG93Q291bnRSZXF1ZXN0Ii4KHUdldFBlbmRpbmdGb2xsb3dDb3VudFJlc3BvbnNlEg0KBWNvdW50GAEgASgFIiwKFkdldFNvY2lhbENvdW50c1JlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoCSJLChdHZXRTb2NpYWxDb3VudHNSZXNwb25zZRIXCg9mb2xsb3dpbmdfY291bnQYASABKAUSFwoPZm9sbG93ZXJzX2NvdW50GAIgASgFKnwKDEZvbGxvd1N0YXR1cxIdChlGT0xMT1dfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFgoSRk9MTE9XX1NUQVRVU19OT05FEAESGQoVRk9MTE9XX1NUQVRVU19QRU5ESU5HEAISGgoWRk9MTE9XX1NUQVRVU19BUFBST1ZFRBADMv0ICg1Gb2xsb3dTZXJ2aWNlEj0KBkZvbGxvdxIYLnNvY2lhbC52MS5Gb2xsb3dSZXF1ZXN0Ghkuc29jaWFsLnYxLkZvbGxvd1Jlc3BvbnNlEkMKCFVuZm9sbG93Ehouc29jaWFsLnYxLlVuZm9sbG93UmVxdWVzdBobLnNvY2lhbC52MS5VbmZvbGxvd1Jlc3BvbnNlEmQKE0NhbmNlbEZvbGxvd1JlcXVlc3QSJS5zb2NpYWwudjEuQ2FuY2VsRm9sbG93UmVxdWVzdFJlcXVlc3QaJi5zb2NpYWwudjEuQ2FuY2VsRm9sbG93UmVxdWVzdFJlc3BvbnNlEmcKFEFwcHJvdmVGb2xsb3dSZXF1ZXN0EiYuc29jaWFsLnYxLkFwcHJvdmVGb2xsb3dSZXF1ZXN0UmVxdWVzdBonLnNvY2lhbC52MS5BcHByb3ZlRm9sbG93UmVxdWVzdFJlc3BvbnNlEnMKGEFwcHJvdmVBbGxGb2xsb3dSZXF1ZXN0cxIqLnNvY2lhbC52MS5BcHByb3ZlQWxsRm9sbG93UmVxdWVzdHNSZXF1ZXN0Gisuc29jaWFsLnYxLkFwcHJvdmVBbGxGb2xsb3dSZXF1ZXN0c1Jlc3BvbnNlEmQKE1JlamVjdEZvbGxvd1JlcXVlc3QSJS5zb2NpYWwudjEuUmVqZWN0Rm9sbG93UmVxdWVzdFJlcXVlc3QaJi5zb2NpYWwudjEuUmVqZWN0Rm9sbG93UmVxdWVzdFJlc3BvbnNlElIKDUxpc3RGb2xsb3dpbmcSHy5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1Jlc3BvbnNlElIKDUxpc3RGb2xsb3dlcnMSHy5zb2NpYWwudjEuTGlzdEZvbGxvd2Vyc1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdEZvbGxvd2Vyc1Jlc3BvbnNlEnYKGUxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHMSKy5zb2NpYWwudjEuTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1JlcXVlc3QaLC5zb2NpYWwudjEuTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1Jlc3BvbnNlElgKD0dldEZvbGxvd1N0YXR1cxIhLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXF1ZXN0GiIuc29jaWFsLnYxLkdldEZvbGxvd1N0YXR1c1Jlc3BvbnNlEmoKFUdldFBlbmRpbmdGb2xsb3dDb3VudBInLnNvY2lhbC52MS5HZXRQZW5kaW5nRm9sbG93Q291bnRSZXF1ZXN0Giguc29jaWFsLnYxLkdldFBlbmRpbmdGb2xsb3dDb3VudFJlc3BvbnNlElgKD0dldFNvY2lhbENvdW50cxIhLnNvY2lhbC52MS5HZXRTb2NpYWxDb3VudHNSZXF1ZXN0GiIuc29jaWFsLnYxLkdldFNvY2lhbENvdW50c1Jlc3BvbnNlYgZwcm90bzM", [file_profile_v1_service]);
 
 /**
  * @generated from message social.v1.FollowRequest
@@ -139,6 +139,36 @@ export const ApproveFollowRequestResponseSchema: GenMessage<ApproveFollowRequest
   messageDesc(file_social_v1_follow_service, 7);
 
 /**
+ * @generated from message social.v1.ApproveAllFollowRequestsRequest
+ */
+export type ApproveAllFollowRequestsRequest = Message<"social.v1.ApproveAllFollowRequestsRequest"> & {
+};
+
+/**
+ * Describes the message social.v1.ApproveAllFollowRequestsRequest.
+ * Use `create(ApproveAllFollowRequestsRequestSchema)` to create a new message.
+ */
+export const ApproveAllFollowRequestsRequestSchema: GenMessage<ApproveAllFollowRequestsRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_follow_service, 8);
+
+/**
+ * @generated from message social.v1.ApproveAllFollowRequestsResponse
+ */
+export type ApproveAllFollowRequestsResponse = Message<"social.v1.ApproveAllFollowRequestsResponse"> & {
+  /**
+   * @generated from field: int32 approved_count = 1;
+   */
+  approvedCount: number;
+};
+
+/**
+ * Describes the message social.v1.ApproveAllFollowRequestsResponse.
+ * Use `create(ApproveAllFollowRequestsResponseSchema)` to create a new message.
+ */
+export const ApproveAllFollowRequestsResponseSchema: GenMessage<ApproveAllFollowRequestsResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_follow_service, 9);
+
+/**
  * @generated from message social.v1.RejectFollowRequestRequest
  */
 export type RejectFollowRequestRequest = Message<"social.v1.RejectFollowRequestRequest"> & {
@@ -153,7 +183,7 @@ export type RejectFollowRequestRequest = Message<"social.v1.RejectFollowRequestR
  * Use `create(RejectFollowRequestRequestSchema)` to create a new message.
  */
 export const RejectFollowRequestRequestSchema: GenMessage<RejectFollowRequestRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 8);
+  messageDesc(file_social_v1_follow_service, 10);
 
 /**
  * @generated from message social.v1.RejectFollowRequestResponse
@@ -166,7 +196,7 @@ export type RejectFollowRequestResponse = Message<"social.v1.RejectFollowRequest
  * Use `create(RejectFollowRequestResponseSchema)` to create a new message.
  */
 export const RejectFollowRequestResponseSchema: GenMessage<RejectFollowRequestResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 9);
+  messageDesc(file_social_v1_follow_service, 11);
 
 /**
  * @generated from message social.v1.ListFollowingRequest
@@ -193,7 +223,7 @@ export type ListFollowingRequest = Message<"social.v1.ListFollowingRequest"> & {
  * Use `create(ListFollowingRequestSchema)` to create a new message.
  */
 export const ListFollowingRequestSchema: GenMessage<ListFollowingRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 10);
+  messageDesc(file_social_v1_follow_service, 12);
 
 /**
  * @generated from message social.v1.ListFollowingResponse
@@ -220,7 +250,7 @@ export type ListFollowingResponse = Message<"social.v1.ListFollowingResponse"> &
  * Use `create(ListFollowingResponseSchema)` to create a new message.
  */
 export const ListFollowingResponseSchema: GenMessage<ListFollowingResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 11);
+  messageDesc(file_social_v1_follow_service, 13);
 
 /**
  * @generated from message social.v1.ListFollowersRequest
@@ -247,7 +277,7 @@ export type ListFollowersRequest = Message<"social.v1.ListFollowersRequest"> & {
  * Use `create(ListFollowersRequestSchema)` to create a new message.
  */
 export const ListFollowersRequestSchema: GenMessage<ListFollowersRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 12);
+  messageDesc(file_social_v1_follow_service, 14);
 
 /**
  * @generated from message social.v1.ListFollowersResponse
@@ -274,7 +304,7 @@ export type ListFollowersResponse = Message<"social.v1.ListFollowersResponse"> &
  * Use `create(ListFollowersResponseSchema)` to create a new message.
  */
 export const ListFollowersResponseSchema: GenMessage<ListFollowersResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 13);
+  messageDesc(file_social_v1_follow_service, 15);
 
 /**
  * @generated from message social.v1.ListPendingFollowRequestsRequest
@@ -296,7 +326,7 @@ export type ListPendingFollowRequestsRequest = Message<"social.v1.ListPendingFol
  * Use `create(ListPendingFollowRequestsRequestSchema)` to create a new message.
  */
 export const ListPendingFollowRequestsRequestSchema: GenMessage<ListPendingFollowRequestsRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 14);
+  messageDesc(file_social_v1_follow_service, 16);
 
 /**
  * @generated from message social.v1.ListPendingFollowRequestsResponse
@@ -323,7 +353,7 @@ export type ListPendingFollowRequestsResponse = Message<"social.v1.ListPendingFo
  * Use `create(ListPendingFollowRequestsResponseSchema)` to create a new message.
  */
 export const ListPendingFollowRequestsResponseSchema: GenMessage<ListPendingFollowRequestsResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 15);
+  messageDesc(file_social_v1_follow_service, 17);
 
 /**
  * @generated from message social.v1.GetFollowStatusRequest
@@ -340,7 +370,7 @@ export type GetFollowStatusRequest = Message<"social.v1.GetFollowStatusRequest">
  * Use `create(GetFollowStatusRequestSchema)` to create a new message.
  */
 export const GetFollowStatusRequestSchema: GenMessage<GetFollowStatusRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 16);
+  messageDesc(file_social_v1_follow_service, 18);
 
 /**
  * @generated from message social.v1.GetFollowStatusResponse
@@ -350,6 +380,11 @@ export type GetFollowStatusResponse = Message<"social.v1.GetFollowStatusResponse
    * @generated from field: map<string, social.v1.FollowStatus> statuses = 1;
    */
   statuses: { [key: string]: FollowStatus };
+
+  /**
+   * @generated from field: map<string, bool> approval_required = 2;
+   */
+  approvalRequired: { [key: string]: boolean };
 };
 
 /**
@@ -357,7 +392,7 @@ export type GetFollowStatusResponse = Message<"social.v1.GetFollowStatusResponse
  * Use `create(GetFollowStatusResponseSchema)` to create a new message.
  */
 export const GetFollowStatusResponseSchema: GenMessage<GetFollowStatusResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 17);
+  messageDesc(file_social_v1_follow_service, 19);
 
 /**
  * @generated from message social.v1.GetPendingFollowCountRequest
@@ -370,7 +405,7 @@ export type GetPendingFollowCountRequest = Message<"social.v1.GetPendingFollowCo
  * Use `create(GetPendingFollowCountRequestSchema)` to create a new message.
  */
 export const GetPendingFollowCountRequestSchema: GenMessage<GetPendingFollowCountRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 18);
+  messageDesc(file_social_v1_follow_service, 20);
 
 /**
  * @generated from message social.v1.GetPendingFollowCountResponse
@@ -387,7 +422,7 @@ export type GetPendingFollowCountResponse = Message<"social.v1.GetPendingFollowC
  * Use `create(GetPendingFollowCountResponseSchema)` to create a new message.
  */
 export const GetPendingFollowCountResponseSchema: GenMessage<GetPendingFollowCountResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 19);
+  messageDesc(file_social_v1_follow_service, 21);
 
 /**
  * @generated from message social.v1.GetSocialCountsRequest
@@ -404,7 +439,7 @@ export type GetSocialCountsRequest = Message<"social.v1.GetSocialCountsRequest">
  * Use `create(GetSocialCountsRequestSchema)` to create a new message.
  */
 export const GetSocialCountsRequestSchema: GenMessage<GetSocialCountsRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 20);
+  messageDesc(file_social_v1_follow_service, 22);
 
 /**
  * @generated from message social.v1.GetSocialCountsResponse
@@ -426,7 +461,7 @@ export type GetSocialCountsResponse = Message<"social.v1.GetSocialCountsResponse
  * Use `create(GetSocialCountsResponseSchema)` to create a new message.
  */
 export const GetSocialCountsResponseSchema: GenMessage<GetSocialCountsResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_follow_service, 21);
+  messageDesc(file_social_v1_follow_service, 23);
 
 /**
  * @generated from enum social.v1.FollowStatus
@@ -494,6 +529,14 @@ export const FollowService: GenService<{
     methodKind: "unary";
     input: typeof ApproveFollowRequestRequestSchema;
     output: typeof ApproveFollowRequestResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.FollowService.ApproveAllFollowRequests
+   */
+  approveAllFollowRequests: {
+    methodKind: "unary";
+    input: typeof ApproveAllFollowRequestsRequestSchema;
+    output: typeof ApproveAllFollowRequestsResponseSchema;
   },
   /**
    * @generated from rpc social.v1.FollowService.RejectFollowRequest

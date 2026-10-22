@@ -59,6 +59,19 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 
+  const approveAll = useCallback(async () => {
+    if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
+    const res = await fetch("/api/social/follow/requests/approve-all", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to approve all");
+    }
+    await Promise.all([mutateList(), mutateCount()]);
+  }, [mutateList, mutateCount]);
+
   return {
     requests: list?.requests || [],
     hasMore: list?.hasMore || false,
@@ -68,6 +81,7 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
     error: listError,
     approve,
     reject,
+    approveAll,
     refresh: () => { mutateList(); mutateCount(); },
   };
 }

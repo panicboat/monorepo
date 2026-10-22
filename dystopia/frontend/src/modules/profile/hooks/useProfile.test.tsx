@@ -94,7 +94,7 @@ describe("useProfile saving", () => {
     });
 
     await act(async () => {
-      await api!.saveProfile({ displayName: "Renamed" });
+      await api!.saveProfile({ displayName: "Renamed", followApprovalRequired: false });
     });
     expect(refresh).toHaveBeenCalledTimes(1);
 

@@ -19,6 +19,7 @@ module Social
         rpc :Unfollow, ::Social::V1::UnfollowRequest, ::Social::V1::UnfollowResponse
         rpc :CancelFollowRequest, ::Social::V1::CancelFollowRequestRequest, ::Social::V1::CancelFollowRequestResponse
         rpc :ApproveFollowRequest, ::Social::V1::ApproveFollowRequestRequest, ::Social::V1::ApproveFollowRequestResponse
+        rpc :ApproveAllFollowRequests, ::Social::V1::ApproveAllFollowRequestsRequest, ::Social::V1::ApproveAllFollowRequestsResponse
         rpc :RejectFollowRequest, ::Social::V1::RejectFollowRequestRequest, ::Social::V1::RejectFollowRequestResponse
         rpc :ListFollowing, ::Social::V1::ListFollowingRequest, ::Social::V1::ListFollowingResponse
         rpc :ListFollowers, ::Social::V1::ListFollowersRequest, ::Social::V1::ListFollowersResponse

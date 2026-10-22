@@ -6,10 +6,11 @@ import { useAuthStore } from "@/stores/authStore";
 import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
 
 interface FollowResponse { status: FollowStatus }
-interface StatusResponse { statuses: Record<string, FollowStatus> }
+interface StatusResponse { statuses: Record<string, FollowStatus>; approvalRequired?: Record<string, boolean> }
 
 export function useFollow(targetProfileId: string | null | undefined) {
   const [status, setStatus] = useState<FollowStatus>(FollowStatus.NONE);
+  const [approvalRequired, setApprovalRequired] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export function useFollow(targetProfileId: string | null | undefined) {
         );
         if (cancelled) return;
         setStatus(res.statuses?.[targetProfileId] ?? FollowStatus.NONE);
+        setApprovalRequired(res.approvalRequired?.[targetProfileId] ?? false);
       } catch (e) {
         console.error("useFollow fetch error", e);
       }
@@ -71,6 +73,7 @@ export function useFollow(targetProfileId: string | null | undefined) {
     status,
     isFollowing: status === FollowStatus.APPROVED,
     isPending: status === FollowStatus.PENDING,
+    approvalRequired,
     follow,
     unfollow,
     cancelRequest,

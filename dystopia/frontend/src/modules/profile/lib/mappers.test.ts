@@ -43,6 +43,11 @@ describe("mapProfileToView", () => {
     expect(Object.keys(view)).not.toContain("accountId");
   });
 
+  it("maps the follow approval flag", () => {
+    expect(mapProfileToView(create(ProfileSchema, { id: "prof-1", followApprovalRequired: true })).followApprovalRequired).toBe(true);
+    expect(mapProfileToView(create(ProfileSchema, { id: "prof-1" })).followApprovalRequired).toBe(false);
+  });
+
   it("maps the disabled flag", () => {
     expect(mapProfileToView(create(ProfileSchema, { id: "prof-1", disabled: true })).disabled).toBe(true);
     expect(mapProfileToView(create(ProfileSchema, { id: "prof-1" })).disabled).toBe(false);
@@ -50,6 +55,10 @@ describe("mapProfileToView", () => {
 });
 
 describe("emptyProfileView", () => {
+  it("does not require follow approval", () => {
+    expect(emptyProfileView("prof-1").followApprovalRequired).toBe(false);
+  });
+
   it("has a zeroed bodyStats", () => {
     expect(emptyProfileView("prof-1").bodyStats).toEqual({ heightCm: 0, bust: 0, waist: 0, hip: 0, cup: "" });
   });
@@ -66,6 +75,17 @@ describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
 
     expect(request.bodyStats).toEqual({ heightCm: 158, bustCm: 88, waistCm: 58, hipCm: 86, cup: "D" });
     expect(request.snsLinks.cityheaven).toBe("https://www.cityheaven.net/example/");
+  });
+
+  it("carries the follow approval flag from the view to the save request", () => {
+    const view = { ...emptyProfileView("prof-1"), followApprovalRequired: true };
+
+    expect(profileViewToSavePayload(view).followApprovalRequired).toBe(true);
+    expect(buildSaveProfileRequest(profileViewToSavePayload(view)).followApprovalRequired).toBe(true);
+  });
+
+  it.each([true, false])("passes followApprovalRequired=%s through to the save request unchanged", (value) => {
+    expect(buildSaveProfileRequest({ displayName: "ゆな", followApprovalRequired: value }).followApprovalRequired).toBe(value);
   });
 });
 

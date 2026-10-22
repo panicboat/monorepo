@@ -159,4 +159,48 @@ describe("EditProfileSheet", () => {
 
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: true }));
   });
+
+  it("saves the follow approval setting of the profile", async () => {
+    const onSave = vi.fn(async () => {});
+    await renderSheet(onSave);
+
+    await act(async () => (document.querySelector('[aria-label="フォローを承認制にする"]') as HTMLButtonElement).click());
+    await act(async () => saveButton().click());
+
+    expect(document.body.textContent).toContain("フォローされる前に、あなたが承認します");
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ followApprovalRequired: true, isPrivate: false }));
+  });
+
+  it("keeps the current follow approval setting when other fields change", async () => {
+    const onSave = vi.fn(async () => {});
+    document.body.innerHTML = "";
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    await act(async () => {
+      createRoot(container).render(
+        createElement(EditProfileSheet, {
+          open: true,
+          onOpenChange: () => {},
+          profile: { ...emptyProfileView("p1"), displayName: "ゆな", username: "yuna", followApprovalRequired: true },
+          isCast: false,
+          onSave,
+          onSaveMedia: async () => {},
+        })
+      );
+    });
+
+    await act(async () => (document.querySelector('[aria-label="プロフィールに鍵をかける"]') as HTMLButtonElement).click());
+    await act(async () => saveButton().click());
+
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: true, followApprovalRequired: true }));
+  });
+
+  it("sends the unchanged approval setting even when it is off", async () => {
+    const onSave = vi.fn(async () => {});
+    await renderSheet(onSave);
+
+    await act(async () => saveButton().click());
+
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ followApprovalRequired: false }));
+  });
 });

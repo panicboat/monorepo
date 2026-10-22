@@ -99,6 +99,7 @@ module Profile
           sns_links: sns_links_to_hash(m.sns_links),
           prefecture: blank_to_nil(m.prefecture),
           is_private: m.is_private,
+          follow_approval_required: m.follow_approval_required,
           age: zero_to_nil(m.age),
           body_stats: body_stats_to_hash(m.body_stats),
           industry: blank_to_nil(m.industry)

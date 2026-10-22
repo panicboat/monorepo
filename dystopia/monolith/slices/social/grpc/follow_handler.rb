@@ -17,6 +17,7 @@ module Social
       rpc :Follow, ::Social::V1::FollowRequest, ::Social::V1::FollowResponse
       rpc :Unfollow, ::Social::V1::UnfollowRequest, ::Social::V1::UnfollowResponse
       rpc :CancelFollowRequest, ::Social::V1::CancelFollowRequestRequest, ::Social::V1::CancelFollowRequestResponse
+      rpc :ApproveAllFollowRequests, ::Social::V1::ApproveAllFollowRequestsRequest, ::Social::V1::ApproveAllFollowRequestsResponse
       rpc :ApproveFollowRequest, ::Social::V1::ApproveFollowRequestRequest, ::Social::V1::ApproveFollowRequestResponse
       rpc :RejectFollowRequest, ::Social::V1::RejectFollowRequestRequest, ::Social::V1::RejectFollowRequestResponse
       rpc :ListFollowing, ::Social::V1::ListFollowingRequest, ::Social::V1::ListFollowingResponse
@@ -31,6 +32,7 @@ module Social
         unfollow_uc: "use_cases.follows.unfollow",
         cancel_follow_request_uc: "use_cases.follows.cancel_follow_request",
         approve_follow_request_uc: "use_cases.follows.approve_follow_request",
+        approve_all_follow_requests_uc: "use_cases.follows.approve_all_follow_requests",
         reject_follow_request_uc: "use_cases.follows.reject_follow_request",
         list_following_uc: "use_cases.follows.list_following",
         list_followers_uc: "use_cases.follows.list_followers",
@@ -62,6 +64,12 @@ module Social
         authenticate_user!
         approve_follow_request_uc.call(target_profile_id: current_profile_id, requester_profile_id: request.message.requester_profile_id)
         ::Social::V1::ApproveFollowRequestResponse.new
+      end
+
+      def approve_all_follow_requests
+        authenticate_user!
+        result = approve_all_follow_requests_uc.call(target_profile_id: current_profile_id)
+        ::Social::V1::ApproveAllFollowRequestsResponse.new(approved_count: result[:approved_count])
       end
 
       def reject_follow_request
@@ -113,12 +121,14 @@ module Social
 
       def get_follow_status
         authenticate_user!
-        statuses = get_follow_status_uc.call(
+        result = get_follow_status_uc.call(
           follower_profile_id: current_profile_id,
           target_profile_ids: request.message.target_profile_ids.to_a
         )
-        proto_statuses = statuses.transform_values { |s| status_to_enum(s) }
-        ::Social::V1::GetFollowStatusResponse.new(statuses: proto_statuses)
+        ::Social::V1::GetFollowStatusResponse.new(
+          statuses: result[:statuses].transform_values { |s| status_to_enum(s) },
+          approval_required: result[:approval_required]
+        )
       end
 
       def get_pending_follow_count

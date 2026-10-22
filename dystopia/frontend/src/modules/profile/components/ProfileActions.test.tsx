@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   role: "guest" as "guest" | "cast",
   isFollowing: false,
   isPending: false,
+  approvalRequired: false,
   follow: vi.fn(),
   unfollow: vi.fn(),
   cancelRequest: vi.fn(),
@@ -27,6 +28,7 @@ vi.mock("@/modules/social", () => ({
   useFollow: () => ({
     isFollowing: mocks.isFollowing,
     isPending: mocks.isPending,
+    approvalRequired: mocks.approvalRequired,
     follow: mocks.follow,
     unfollow: mocks.unfollow,
     cancelRequest: mocks.cancelRequest,
@@ -71,6 +73,7 @@ beforeEach(() => {
   mocks.role = "guest";
   mocks.isFollowing = false;
   mocks.isPending = false;
+  mocks.approvalRequired = false;
   mocks.follow.mockReset();
   mocks.unfollow.mockReset();
   mocks.cancelRequest.mockReset();
@@ -108,16 +111,28 @@ describe("ProfileActions", () => {
     expect(labels(render())).toEqual(["menu:unfollow,block", "message:primary"]);
   });
 
-  it("offers a follow request without message on an unfollowed private profile", () => {
-    mocks.role = "cast";
+  it("offers a follow request, not a plain follow, on an unfollowed profile that requires approval", () => {
+    mocks.approvalRequired = true;
 
-    expect(labels(render(true))).toEqual(["menu:block", "フォロー申請"]);
+    expect(labels(render())).toEqual(["menu:block", "フォローを申請"]);
   });
 
-  it("shows a pending request on a private profile", () => {
-    mocks.isPending = true;
+  it("offers a plain follow on an unfollowed locked profile that does not require approval", () => {
+    expect(labels(render(true))).toEqual(["menu:block", "フォロー"]);
+  });
 
-    expect(labels(render(true))).toEqual(["menu:block", "申請中"]);
+  it("offers no message to a cast on an unfollowed locked profile", () => {
+    mocks.role = "cast";
+    mocks.approvalRequired = true;
+
+    expect(labels(render(true))).toEqual(["menu:block", "フォローを申請"]);
+  });
+
+  it("shows a pending request", () => {
+    mocks.isPending = true;
+    mocks.approvalRequired = true;
+
+    expect(labels(render())).toEqual(["menu:block", "申請中"]);
   });
 
   it("follows when the follow button is pressed", async () => {

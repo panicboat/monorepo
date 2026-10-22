@@ -14,8 +14,9 @@ module Profile
 
       def call(profile_id:, display_name:, username: nil, bio: nil, website: nil,
                sns_links: {}, prefecture: nil, is_private: false, age: nil,
-               body_stats: {}, industry: nil)
-        return nil unless profile_repository.find_by_id(profile_id)
+               body_stats: {}, industry: nil, follow_approval_required: false)
+        current = profile_repository.find_by_id(profile_id)
+        return nil unless current
 
         validate_display_name!(display_name)
         validate_bio!(bio)
@@ -26,7 +27,8 @@ module Profile
           bio: bio,
           website: website,
           prefecture: prefecture,
-          is_private: is_private ? true : false
+          is_private: is_private ? true : false,
+          follow_approval_required: follow_approval_required ? true : false
         }
         attrs[:username] = username unless username.nil?
 
