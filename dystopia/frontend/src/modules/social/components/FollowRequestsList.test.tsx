@@ -18,7 +18,7 @@ vi.mock("../hooks/useFollowRequests", () => ({
 const { FollowRequestsList } = await import("./FollowRequestsList");
 
 const requester = (overrides: Partial<ProfileSummaryView> = {}): ProfileSummaryView => ({
-  profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: false, role: "guest", ...overrides,
+  profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: false, role: "guest", industry: "", ...overrides,
 });
 
 describe("FollowRequestsList", () => {

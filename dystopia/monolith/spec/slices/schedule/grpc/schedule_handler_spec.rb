@@ -54,4 +54,57 @@ RSpec.describe Schedule::Grpc::ScheduleHandler, type: :database do
     expect(schedules_of(other_cast)).to be_empty
     expect(schedules_of(cast)).to eq([[cast, "2026-10-20", "20:00", "02:00"]])
   end
+
+  describe "announcement" do
+    let(:post_repo) { Post::Slice["repositories.post_repository"] }
+
+    def announce(work_date, **attrs)
+      request = Schedule::V1::SaveScheduleRequest.new(
+        work_date: work_date, start_time: "20:00", end_time: "02:00", announce: true, announce_time: "09:00", announce_note: "hi", **attrs
+      )
+      rpc(:save_schedule, request)
+    end
+
+    def invalid_argument_message
+      yield
+      nil
+    rescue GRPC::BadStatus => e
+      [e.code, e.details]
+    end
+
+    it "creates a public post for a future work date and removes it when the schedule is deleted" do
+      act_as(cast)
+      announce("2099-10-24")
+
+      post = db[:post__posts].where(author_profile_id: cast).first
+      expect(post[:content]).to eq("hi")
+      expect(post[:visibility]).to eq("public")
+
+      rpc(:delete_schedule, Schedule::V1::DeleteScheduleRequest.new(work_date: "2099-10-24"))
+      expect(db[:post__posts].where(author_profile_id: cast).count).to eq(0)
+    end
+
+    it "answers INVALID_ARGUMENT when the announcement time is not before the schedule end" do
+      act_as(cast)
+      request = Schedule::V1::SaveScheduleRequest.new(work_date: "2099-10-24", start_time: "10:00", end_time: "18:00", announce: true, announce_time: "18:00")
+
+      expect(invalid_argument_message { rpc(:save_schedule, request) })
+        .to eq([GRPC::Core::StatusCodes::INVALID_ARGUMENT, "お知らせの時刻は出勤の終了より前にしてください"])
+    end
+
+    it "answers INVALID_ARGUMENT when the note exceeds 200 characters" do
+      act_as(cast)
+
+      expect(invalid_argument_message { announce("2099-10-24", announce_note: "あ" * 201) })
+        .to eq([GRPC::Core::StatusCodes::INVALID_ARGUMENT, "ひとことは200文字以内で入力してください"])
+    end
+
+    it "does not validate the announcement fields when announce is off" do
+      act_as(cast)
+      request = Schedule::V1::SaveScheduleRequest.new(work_date: "2099-10-24", start_time: "10:00", end_time: "18:00", announce: false, announce_time: "18:00", announce_note: "あ" * 300)
+
+      expect { rpc(:save_schedule, request) }.not_to raise_error
+      expect(db[:post__posts].where(author_profile_id: cast).count).to eq(0)
+    end
+  end
 end

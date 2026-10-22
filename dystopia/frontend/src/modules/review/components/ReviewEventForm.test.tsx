@@ -10,7 +10,7 @@ vi.mock("@/modules/profile/components/ActingProfileLabel", () => ({ ActingProfil
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const base: ProfileSummaryView = { profileId: "p-1", displayName: "はなこ", username: "hanako", avatarUrl: "", isPrivate: false, role: "cast" };
+const base: ProfileSummaryView = { profileId: "p-1", displayName: "はなこ", username: "hanako", avatarUrl: "", isPrivate: false, role: "cast", industry: "" };
 let cast: ProfileSummaryView | null = base;
 
 function Harness({ initial, withRating, onSubmit }: { initial: ReviewEventInput; withRating: boolean; onSubmit: (event: ReviewEventInput, rating: number | null) => void }) {

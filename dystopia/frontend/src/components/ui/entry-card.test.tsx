@@ -10,6 +10,7 @@ const profile: ProfileSummaryView = {
   avatarUrl: "",
   isPrivate: false,
   role: null,
+  industry: "",
 };
 
 const profileLinks = (html: string) => html.match(/<a[^>]*href="\/u\/yuna"/g)?.length ?? 0;

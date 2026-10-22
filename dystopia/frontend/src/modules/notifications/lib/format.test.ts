@@ -16,6 +16,7 @@ function buildNotification(overrides: Partial<NotificationView>): NotificationVi
       avatarUrl: "",
       isPrivate: false,
       role: "guest",
+      industry: "",
     },
     latestEventAt: "2026-01-01T00:00:00.000Z",
     readAt: null,

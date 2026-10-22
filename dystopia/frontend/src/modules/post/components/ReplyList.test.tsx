@@ -32,6 +32,7 @@ const reply: CommentView = {
     avatarUrl: "",
     isPrivate: false,
     role: null,
+    industry: "",
     username: "coco_u",
   },
   repliesCount: 0,

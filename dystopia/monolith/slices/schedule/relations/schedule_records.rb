@@ -9,6 +9,7 @@ module Schedule
         attribute :work_date, Types::Date
         attribute :start_time, Types::String
         attribute :end_time, Types::String
+        attribute :post_id, Types::String.optional
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 

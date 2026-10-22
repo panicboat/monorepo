@@ -48,9 +48,9 @@ const event = (id: string, overrides: Partial<Karte["events"][number]> = {}): Ka
 const karte = (overrides: Partial<Karte> = {}): Karte => ({
   id: "k-1",
   authorProfileId: "persona-a",
-  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast" },
+  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
   targetProfileId: "guest-1",
-  target: { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" },
+  target: { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
   isMine: true,
   rating: null,
   events: [event("e-1"), event("e-2", { stage: "service", outcome: "ended_early", tags: [], note: "30分で帰った", occurredOn: "2026-10-14" })],

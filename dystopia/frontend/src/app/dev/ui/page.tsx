@@ -71,6 +71,7 @@ export default function DevUiPage() {
         avatarUrl: "",
         isPrivate: false,
         role: null,
+        industry: "",
       },
       likesCount: 12,
       commentsCount: 3,
@@ -78,6 +79,7 @@ export default function DevUiPage() {
       hashtags: ["新作", "渋谷"],
       mentions: [],
       liked: false,
+      schedule: null,
     },
     {
       id: "mock-2",
@@ -94,6 +96,7 @@ export default function DevUiPage() {
         avatarUrl: "",
         isPrivate: false,
         role: null,
+        industry: "",
       },
       likesCount: 1,
       commentsCount: 0,
@@ -101,6 +104,7 @@ export default function DevUiPage() {
       hashtags: [],
       mentions: [],
       liked: true,
+      schedule: null,
     },
   ];
 

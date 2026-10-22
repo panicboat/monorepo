@@ -12,8 +12,19 @@ RSpec.describe "Profile::UseCases::SummarizeProfiles", type: :database do
 
     summaries = uc.call(profile_ids: [cast, guest])
 
-    expect(summaries[cast].to_h).to eq(profile_id: cast, username: "rin", display_name: "りん", avatar_url: "", is_private: true, role: 2)
+    expect(summaries[cast].to_h).to eq(profile_id: cast, username: "rin", display_name: "りん", avatar_url: "", is_private: true, role: 2, industry: "")
     expect(summaries[guest].to_h).to include(username: "hanako", is_private: false, role: 1)
+  end
+
+  it "reads the cast industry in the same query and leaves it empty without a cast" do
+    cast = create_account_with_profile(role: 2, username: "with_industry")
+    db[:profile__casts].insert(profile_id: cast, industry: "fuzoku")
+    guest = create_account_with_profile(username: "no_industry")
+
+    summaries = uc.call(profile_ids: [cast, guest])
+
+    expect(summaries[cast].industry).to eq("fuzoku")
+    expect(summaries[guest].industry).to eq("")
   end
 
   it "fills the avatar url from the media slice" do

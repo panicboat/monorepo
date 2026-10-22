@@ -85,7 +85,7 @@ export function GuestHeroArt() {
           </div>
         </div>
       </div>
-      <div className="float-card shift guest-float-shift">
+      <div className="float-card schedule guest-float-schedule">
         <div className="float-label">TONIGHT · 出勤予定</div>
         <div className="float-title">
           {"Rin · 10.11 SUN "}
@@ -224,7 +224,7 @@ export function GuestStories() {
         </article>
         <article className="story-row reverse">
           <div className="story-visual">
-            <div className="shift-ui guest-shift-ui">
+            <div className="schedule-ui guest-schedule-ui">
               <div className="bar">
                 <h4>Rin の出勤予定</h4>
                 <small>プロフィールから ↗</small>
@@ -247,7 +247,7 @@ export function GuestStories() {
                   <small>未登録</small>
                 </div>
               </div>
-              <div className="shift-msg">♡ 好きな人の予定が、日常の投稿と同じ場所に。</div>
+              <div className="schedule-msg">♡ 好きな人の予定が、日常の投稿と同じ場所に。</div>
             </div>
           </div>
           <div className="story-copy">

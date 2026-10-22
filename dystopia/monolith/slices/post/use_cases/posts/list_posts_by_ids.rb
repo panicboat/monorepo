@@ -31,6 +31,7 @@ module Post
           end
           media_files = load_media_files(posts)
           mentioned_usernames = mentioned_usernames_for(posts.flat_map { |p| p.post_mentions.map(&:profile_id) })
+          schedules = schedule_adapter.find_by_post_ids(ids.map(&:to_s))
 
           posts.each_with_object({}) do |post, hash|
             proto = Post::Presenters::PostPresenter.to_post_proto(
@@ -40,7 +41,8 @@ module Post
               comments_count: comments_counts[post.id] || 0,
               liked: liked[post.id] || false,
               media_files: media_files,
-              mentioned_usernames: mentioned_usernames
+              mentioned_usernames: mentioned_usernames,
+              schedules: schedules
             )
             hash[post.id.to_s] = proto if proto
           end
@@ -69,6 +71,10 @@ module Post
 
         def media_adapter
           @media_adapter ||= Post::Adapters::MediaAdapter.new
+        end
+
+        def schedule_adapter
+          @schedule_adapter ||= Post::Adapters::ScheduleAdapter.new
         end
 
         def visibility_filter

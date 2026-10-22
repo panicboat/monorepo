@@ -11,7 +11,7 @@ vi.mock("../hooks/useKarteMutations", () => ({ useKarteMutations: () => ({ creat
 const { KarteCreateForm } = await import("./KarteCreateForm");
 const { emptyKarteEvent } = await import("./KarteEventForm");
 
-const target = { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" as const };
+const target = { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" as const, industry: "" };
 
 function Harness({ onCreated }: { onCreated: () => void }) {
   const [event, setEvent] = useState(() => emptyKarteEvent());

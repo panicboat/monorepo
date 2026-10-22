@@ -20,9 +20,9 @@ const event = (id: string, overrides: Partial<Karte["events"][number]> = {}): Ka
 const karte = (overrides: Partial<Karte> = {}): Karte => ({
   id: "k-1",
   authorProfileId: "persona-a",
-  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast" },
+  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
   targetProfileId: "guest-1",
-  target: { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" },
+  target: { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
   isMine: true,
   rating: null,
   events: [
@@ -105,7 +105,7 @@ describe("KarteCard", () => {
   });
 
   it("names the profile a karte of my list was written as when it is not the current one", async () => {
-    const other = await mount({ karte: karte({ authorProfileId: "persona-b", author: { profileId: "persona-b", username: "yuna_osaka", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast" } }), variant: "mine" });
+    const other = await mount({ karte: karte({ authorProfileId: "persona-b", author: { profileId: "persona-b", username: "yuna_osaka", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast", industry: "" } }), variant: "mine" });
     const deleted = await mount({ karte: karte({ authorProfileId: "persona-gone", author: null }), variant: "mine" });
     const current = await mount({ karte: karte(), variant: "mine" });
 

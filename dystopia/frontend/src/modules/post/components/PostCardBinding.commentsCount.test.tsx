@@ -44,13 +44,14 @@ const feedPost: PostView = {
   createdAt: new Date().toISOString(),
   publishedAt: new Date().toISOString(),
   expiresAt: "",
-  author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "", isPrivate: false, role: null },
+  author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "", isPrivate: false, role: null, industry: "" },
   likesCount: 0,
   commentsCount: 3,
   visibility: "public",
   hashtags: [],
   mentions: [],
   liked: false,
+  schedule: null,
 };
 
 let serverCount: number;

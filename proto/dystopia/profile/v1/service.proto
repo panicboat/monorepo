@@ -46,6 +46,7 @@ message ProfileSummary {
   string avatar_url = 4;
   bool is_private = 5;
   int32 role = 6;
+  string industry = 7;
 }
 
 message SnsLinks {

@@ -23,11 +23,27 @@ module Schedule
             SET start_time = EXCLUDED.start_time,
                 end_time = EXCLUDED.end_time,
                 updated_at = EXCLUDED.updated_at
-          RETURNING id, profile_id, work_date, start_time, end_time, created_at, updated_at
+          RETURNING id, profile_id, work_date, start_time, end_time, post_id, created_at, updated_at
         SQL
 
         ds = schedule_records.dataset.db
         ds.fetch(sql, new_id, profile_id, work_date, start_time, end_time, now, now).first
+      end
+
+      def find(profile_id:, work_date:)
+        schedule_records.dataset.where(profile_id: profile_id, work_date: work_date).first
+      end
+
+      def set_post_id(id:, post_id:)
+        schedule_records.dataset.where(id: id).update(post_id: post_id)
+      end
+
+      def find_by_post_ids(post_ids:)
+        return {} if post_ids.nil? || post_ids.empty?
+
+        schedule_records.dataset.where(post_id: post_ids).to_h do |row|
+          [row[:post_id].to_s, { work_date: row[:work_date].to_s, start_time: row[:start_time], end_time: row[:end_time] }]
+        end
       end
 
       def delete(profile_id:, work_date:)

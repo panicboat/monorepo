@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toDateKey, formatDayLabel, buildDateRange, formatMonthDay } from "./dates";
+import { toDateKey, formatDayLabel, formatScheduleDay, buildDateRange, formatMonthDay, crossesMidnight } from "./dates";
 
 describe("toDateKey", () => {
   it("formats a local date as YYYY-MM-DD", () => {
@@ -17,6 +17,13 @@ describe("formatDayLabel", () => {
   });
 });
 
+describe("formatScheduleDay", () => {
+  it("formats a date key with the weekday in full-width parentheses", () => {
+    expect(formatScheduleDay("2026-10-24")).toBe("10/24（土）");
+    expect(formatScheduleDay("2026-01-05")).toBe("1/5（月）");
+  });
+});
+
 describe("buildDateRange", () => {
   it("returns consecutive date keys starting from the given date", () => {
     expect(buildDateRange(new Date(2026, 8, 18), 3)).toEqual([
@@ -31,5 +38,26 @@ describe("formatMonthDay", () => {
   it("shows a date key as month/day without leading zeros", () => {
     expect(formatMonthDay("2026-10-13")).toBe("10/13");
     expect(formatMonthDay("2026-01-05")).toBe("1/5");
+  });
+});
+
+describe("crossesMidnight", () => {
+  it("is true when the end is at or before the start", () => {
+    expect(crossesMidnight("20:00", "02:00")).toBe(true);
+    expect(crossesMidnight("23:30", "04:00")).toBe(true);
+    expect(crossesMidnight("20:00", "20:00")).toBe(true);
+  });
+
+  it("is true when the start is before 05:00", () => {
+    expect(crossesMidnight("01:00", "05:00")).toBe(true);
+    expect(crossesMidnight("03:00", "08:00")).toBe(true);
+    expect(crossesMidnight("04:59", "23:00")).toBe(true);
+    expect(crossesMidnight("00:00", "12:00")).toBe(true);
+  });
+
+  it("is false for a schedule that starts at or after 05:00 and ends later the same day", () => {
+    expect(crossesMidnight("05:00", "08:00")).toBe(false);
+    expect(crossesMidnight("10:00", "18:00")).toBe(false);
+    expect(crossesMidnight("18:00", "23:00")).toBe(false);
   });
 });

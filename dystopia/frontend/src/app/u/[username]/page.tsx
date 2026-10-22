@@ -50,6 +50,7 @@ export default function PublicProfilePage() {
     avatarUrl: profile.avatarUrl,
     isPrivate: profile.isPrivate,
     role: "guest",
+    industry: profile.industry,
   };
 
   return (

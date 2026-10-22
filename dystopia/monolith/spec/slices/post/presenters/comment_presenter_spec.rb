@@ -16,7 +16,7 @@ RSpec.describe Post::Presenters::CommentPresenter do
 
     it "presents the author as a profile summary with its privacy" do
       summary = Profile::UseCases::SummarizeProfiles::Summary.new(
-        profile_id: "user-1", username: "coco_u", display_name: "Coco", avatar_url: "", is_private: true, role: 1
+        profile_id: "user-1", username: "coco_u", display_name: "Coco", avatar_url: "", is_private: true, role: 1, industry: ""
       )
 
       proto = described_class.to_proto(comment, author: summary)

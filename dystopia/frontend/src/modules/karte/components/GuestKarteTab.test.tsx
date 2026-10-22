@@ -26,7 +26,7 @@ vi.mock("@/components/compose/ComposeToSheet", () => ({
 
 const { GuestKarteTab } = await import("./GuestKarteTab");
 
-const guest: ProfileSummaryView = { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" };
+const guest: ProfileSummaryView = { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest", industry: "" };
 
 describe("GuestKarteTab", () => {
   it("shows the reliability above the guest's kartes and writes a karte for this guest", async () => {

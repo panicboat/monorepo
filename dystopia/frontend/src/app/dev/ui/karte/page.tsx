@@ -11,9 +11,9 @@ const mockKartes: Karte[] = [
   {
     id: "k1",
     authorProfileId: "cast-demo",
-    author: { profileId: "cast-demo", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast" },
+    author: { profileId: "cast-demo", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
     targetProfileId: "guest-demo",
-    target: { profileId: "guest-demo", username: "guest_demo", displayName: "ゲスト", avatarUrl: "", isPrivate: false, role: "guest" },
+    target: { profileId: "guest-demo", username: "guest_demo", displayName: "ゲスト", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
     isMine: true,
     rating: null,
     events: [
@@ -26,9 +26,9 @@ const mockKartes: Karte[] = [
   {
     id: "k2",
     authorProfileId: "cast-other",
-    author: { profileId: "cast-other", username: "sakura", displayName: "さくら", avatarUrl: "", isPrivate: false, role: "cast" },
+    author: { profileId: "cast-other", username: "sakura", displayName: "さくら", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
     targetProfileId: "guest-demo",
-    target: { profileId: "guest-demo", username: "guest_demo", displayName: "ゲスト", avatarUrl: "", isPrivate: false, role: "guest" },
+    target: { profileId: "guest-demo", username: "guest_demo", displayName: "ゲスト", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
     isMine: false,
     rating: 2,
     events: [
@@ -74,7 +74,7 @@ export default function DevUiKartePage() {
       <section>
         <h2 className="pb-3 text-sm font-bold text-text-secondary">KarteEventForm</h2>
         <KarteEventForm
-          guest={{ profileId: "guest-demo", displayName: "ゲスト", username: "guest_demo", avatarUrl: "", isPrivate: false, role: "guest" }}
+          guest={{ profileId: "guest-demo", displayName: "ゲスト", username: "guest_demo", avatarUrl: "", isPrivate: false, role: "guest", industry: "" }}
           value={event}
           onChange={setEvent}
           rating={{ value: rating, onChange: setRating }}

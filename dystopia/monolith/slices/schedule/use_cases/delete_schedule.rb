@@ -11,10 +11,19 @@ module Schedule
 
       def call(profile_id:, work_date:)
         validate_format!(work_date, "出勤日")
-        schedule_repo.delete(profile_id: profile_id, work_date: work_date)
+
+        schedule_repo.transaction do
+          row = schedule_repo.find(profile_id: profile_id, work_date: work_date)
+          post_repo.delete_post(row[:post_id]) if row && row[:post_id]
+          schedule_repo.delete(profile_id: profile_id, work_date: work_date)
+        end
       end
 
       private
+
+      def post_repo
+        @post_repo ||= Post::Slice["repositories.post_repository"]
+      end
 
       def validate_format!(value, label)
         unless value.is_a?(String) && value.match?(DATE_FORMAT)

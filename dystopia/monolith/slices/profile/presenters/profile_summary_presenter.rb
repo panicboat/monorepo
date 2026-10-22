@@ -12,7 +12,8 @@ module Profile
           display_name: summary.display_name,
           avatar_url: summary.avatar_url,
           is_private: summary.is_private,
-          role: summary.role
+          role: summary.role,
+          industry: summary.industry
         )
       end
     end

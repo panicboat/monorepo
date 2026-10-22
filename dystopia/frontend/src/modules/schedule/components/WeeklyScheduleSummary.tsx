@@ -11,7 +11,7 @@ export function WeeklyScheduleSummary({ profileId, onShowMore }: { profileId: st
 
   if (loading) return null;
 
-  const shifts = [...schedules]
+  const scheduleLines = [...schedules]
     .sort((a, b) => a.workDate.localeCompare(b.workDate))
     .map((s) => `${formatMonthDay(s.workDate)} ${s.startTime}〜${s.endTime}`);
 
@@ -23,7 +23,7 @@ export function WeeklyScheduleSummary({ profileId, onShowMore }: { profileId: st
           もっと見る →
         </button>
       </div>
-      <p className="pb-1 text-sm text-text-secondary">{shifts.length > 0 ? shifts.join("　") : "今週の予定はありません"}</p>
+      <p className="pb-1 text-sm text-text-secondary">{scheduleLines.length > 0 ? scheduleLines.join("　") : "今週の予定はありません"}</p>
     </section>
   );
 }

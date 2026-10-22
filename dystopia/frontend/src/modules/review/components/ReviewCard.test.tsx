@@ -20,9 +20,9 @@ const event = (id: string, overrides: Partial<Review["events"][number]> = {}): R
 const review = (overrides: Partial<Review> = {}): Review => ({
   id: "k-1",
   authorProfileId: "persona-a",
-  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest" },
+  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
   targetProfileId: "cast-1",
-  target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" },
+  target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
   isMine: true,
   rating: null,
   events: [
@@ -105,7 +105,7 @@ describe("ReviewCard", () => {
   });
 
   it("names the profile a review of my list was written as when it is not the current one", async () => {
-    const other = await mount({ review: review({ authorProfileId: "persona-b", author: { profileId: "persona-b", username: "yuna_osaka", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest" } }), variant: "mine" });
+    const other = await mount({ review: review({ authorProfileId: "persona-b", author: { profileId: "persona-b", username: "yuna_osaka", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest", industry: "" } }), variant: "mine" });
     const deleted = await mount({ review: review({ authorProfileId: "persona-gone", author: null }), variant: "mine" });
     const current = await mount({ review: review(), variant: "mine" });
 

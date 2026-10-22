@@ -48,9 +48,9 @@ const event = (id: string, overrides: Partial<Review["events"][number]> = {}): R
 const review = (overrides: Partial<Review> = {}): Review => ({
   id: "k-1",
   authorProfileId: "persona-a",
-  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest" },
+  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
   targetProfileId: "cast-1",
-  target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" },
+  target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
   isMine: true,
   rating: null,
   events: [event("e-1"), event("e-2", { stage: "service", outcome: "ended_early", tags: [], note: "30分で帰った", occurredOn: "2026-10-14" })],

@@ -15,6 +15,12 @@ export interface PostMediaView {
   mediaId: string;
 }
 
+export interface PostScheduleView {
+  workDate: string;
+  startTime: string;
+  endTime: string;
+}
+
 export interface PostView {
   id: string;
   authorProfileId: string;
@@ -30,6 +36,7 @@ export interface PostView {
   hashtags: string[];
   mentions: MentionView[];
   liked: boolean;
+  schedule: PostScheduleView | null;
 }
 
 export interface SavePostMediaInput {
