@@ -108,6 +108,16 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
       expect(post.expires_at).to eq(jst(2026, 10, 25, 3, 0))
     end
 
+    it "makes a post public again when it was changed to private" do
+      first = save
+      post_repo.update_post(first[:post_id], visibility: "private")
+
+      row = save
+
+      expect(row[:post_id]).to eq(first[:post_id])
+      expect(post_of(row).visibility).to eq("public")
+    end
+
     it "moves a scheduled post to the new announcement time" do
       save
       row = save(announce_time: "12:00")

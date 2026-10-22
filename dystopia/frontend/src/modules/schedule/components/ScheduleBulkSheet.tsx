@@ -24,6 +24,9 @@ const PRESETS = [
 
 type Mode = "work" | "clear";
 
+// An end at or before the start runs past midnight, so any announcement time on the work date precedes it.
+const announcesAfterEnd = (start: string, end: string, announceTime: string) => end > start && announceTime >= end;
+
 const chipClass = (selected: boolean) =>
   cn(
     "min-h-11 rounded-full border px-4 text-sm",
@@ -56,10 +59,13 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
 
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
   const hasPlanSelected = [...selected].some((dateKey) => byDate.has(dateKey));
+  const announceTooLate = announce && start !== "" && end !== "" && announceTime !== "" && announcesAfterEnd(start, end, announceTime);
   const ready =
     !loading &&
     !error &&
-    (mode === "clear" ? hasPlanSelected : selected.size > 0 && start !== "" && end !== "" && (!announce || announceTime !== ""));
+    (mode === "clear"
+      ? hasPlanSelected
+      : selected.size > 0 && start !== "" && end !== "" && (!announce || announceTime !== "") && !announceTooLate);
 
   const toggle = (dateKey: string) =>
     setSelected((current) => {
@@ -199,11 +205,19 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
                   <Toggle checked={announce} onCheckedChange={setAnnounce} aria-label="投稿でお知らせする" />
                   <span>投稿でお知らせする</span>
                 </label>
+                {hasPlanSelected && (
+                  <p className="text-sm text-text-secondary">
+                    {announce ? "保存済みのお知らせの投稿は、この時刻とひとことで書き換わります" : "保存済みのお知らせの投稿は消えます"}
+                  </p>
+                )}
                 {announce && (
                   <>
-                    <div className="flex items-center gap-3 text-sm text-text-secondary">
-                      <span className="shrink-0">お知らせする時刻</span>
-                      <TimeSelect label="お知らせする時刻" value={announceTime} onChange={setAnnounceTime} />
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-3 text-sm text-text-secondary">
+                        <span className="shrink-0">お知らせする時刻</span>
+                        <TimeSelect label="お知らせする時刻" value={announceTime} onChange={setAnnounceTime} />
+                      </div>
+                      {announceTooLate && <p className="text-sm text-error">お知らせの時刻は出勤の終了より前にしてください</p>}
                     </div>
                     <label className="flex flex-col gap-1 text-sm text-text-secondary">
                       ひとこと

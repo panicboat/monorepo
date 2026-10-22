@@ -4,7 +4,7 @@ ROM::SQL.migration do
   up do
     alter_table(:schedule__schedules) do
       add_column :post_id, :uuid
-      add_index :post_id, where: Sequel.~(post_id: nil), name: :idx_schedule_schedules_post_id
+      add_index :post_id, unique: true, where: Sequel.~(post_id: nil), name: :idx_schedule_schedules_post_id
     end
   end
 

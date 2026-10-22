@@ -79,6 +79,21 @@ RSpec.describe "Schedule::Repositories::ScheduleRepository", type: :database do
     expect(repo.upsert(profile_id: profile_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")[:post_id]).to be_nil
   end
 
+  it "rejects two schedules linked to the same post" do
+    first = repo.upsert(profile_id: profile_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")
+    second = repo.upsert(profile_id: profile_id, work_date: "2026-09-21", start_time: "20:00", end_time: "02:00")
+    post_id = SecureRandom.uuid_v7
+    repo.set_post_id(id: first[:id], post_id: post_id)
+
+    expect { repo.set_post_id(id: second[:id], post_id: post_id) }.to raise_error(Sequel::UniqueConstraintViolation)
+  end
+
+  it "allows many schedules without a linked post" do
+    repo.upsert(profile_id: profile_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")
+
+    expect { repo.upsert(profile_id: profile_id, work_date: "2026-09-21", start_time: "20:00", end_time: "02:00") }.not_to raise_error
+  end
+
   it "finds only the schedules linked to the given post ids" do
     linked = repo.upsert(profile_id: profile_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")
     repo.upsert(profile_id: profile_id, work_date: "2026-09-21", start_time: "10:00", end_time: "18:00")

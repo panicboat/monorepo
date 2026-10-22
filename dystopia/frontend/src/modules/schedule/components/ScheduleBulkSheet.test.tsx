@@ -77,6 +77,12 @@ const setValue = async (element: HTMLTextAreaElement | HTMLSelectElement, value:
   });
 };
 
+const setTime = async (label: string, value: string) => {
+  const [hour, minute] = value.split(":");
+  await setValue(document.querySelector(`select[aria-label="${label}（時）"]`) as HTMLSelectElement, hour);
+  await setValue(document.querySelector(`select[aria-label="${label}（分）"]`) as HTMLSelectElement, minute);
+};
+
 describe("ScheduleBulkSheet", () => {
   it("shows two weeks from today with each day's current plan", async () => {
     await mount();
@@ -242,6 +248,99 @@ describe("ScheduleBulkSheet", () => {
     await click(button("予定を入れる")!);
     expect(announceSwitch()).not.toBeNull();
     expect(text()).not.toContain("お知らせの投稿も消えます");
+  });
+
+  describe("telling what the switch does to a saved announcement", () => {
+    const WILL_DELETE = "保存済みのお知らせの投稿は消えます";
+    const WILL_REWRITE = "保存済みのお知らせの投稿は、この時刻とひとことで書き換わります";
+
+    it("warns that the saved post is deleted while the switch is off and a selected day has a plan", async () => {
+      await mount();
+      await click(day("2026-10-13"));
+      await click(announceSwitch()!);
+
+      expect(text()).toContain(WILL_DELETE);
+      expect(text()).not.toContain(WILL_REWRITE);
+    });
+
+    it("warns that the saved post is rewritten while the switch is on and a selected day has a plan", async () => {
+      await mount();
+      await click(day("2026-10-13"));
+
+      expect(text()).toContain(WILL_REWRITE);
+      expect(text()).not.toContain(WILL_DELETE);
+    });
+
+    it("says nothing when no selected day has a plan", async () => {
+      await mount();
+      expect(text()).not.toContain(WILL_REWRITE);
+
+      await click(day("2026-10-14"));
+      expect(text()).not.toContain(WILL_REWRITE);
+      await click(announceSwitch()!);
+      expect(text()).not.toContain(WILL_DELETE);
+    });
+  });
+
+  describe("checking the announcement time against the shift end", () => {
+    const TOO_LATE = "お知らせの時刻は出勤の終了より前にしてください";
+    const pickShift = async (startTime: string, endTime: string, announceAt: string) => {
+      await click(day("2026-10-14"));
+      await setTime("開始", startTime);
+      await setTime("終了", endTime);
+      await setTime("お知らせする時刻", announceAt);
+    };
+
+    it("blocks a same-day shift announced after its end", async () => {
+      await mount();
+      await pickShift("03:00", "08:00", "09:00");
+
+      expect(button("選択した日に反映")!.disabled).toBe(true);
+      expect(text()).toContain(TOO_LATE);
+    });
+
+    it("blocks a same-day shift announced at its end", async () => {
+      await mount();
+      await pickShift("03:00", "08:00", "08:00");
+
+      expect(button("選択した日に反映")!.disabled).toBe(true);
+      expect(text()).toContain(TOO_LATE);
+    });
+
+    it("allows a same-day shift announced before its end", async () => {
+      await mount();
+      await pickShift("03:00", "08:00", "07:00");
+
+      expect(button("選択した日に反映")!.disabled).toBe(false);
+      expect(text()).not.toContain(TOO_LATE);
+    });
+
+    it("allows any announcement time on the work date for an overnight shift", async () => {
+      await mount();
+      await pickShift("20:00", "02:00", "23:30");
+
+      expect(button("選択した日に反映")!.disabled).toBe(false);
+      expect(text()).not.toContain(TOO_LATE);
+    });
+
+    it("does not check the time while the switch is off", async () => {
+      await mount();
+      await pickShift("03:00", "08:00", "09:00");
+      await click(announceSwitch()!);
+
+      expect(button("選択した日に反映")!.disabled).toBe(false);
+      expect(text()).not.toContain(TOO_LATE);
+    });
+
+    it("saves once the time is moved before the end", async () => {
+      await mount();
+      await pickShift("03:00", "08:00", "09:00");
+      await setTime("お知らせする時刻", "07:00");
+
+      await click(button("選択した日に反映")!);
+
+      expect(mocks.save.mock.calls).toEqual([["2026-10-14", "03:00", "08:00", { announce: true, announceTime: "07:00", announceNote: "" }]]);
+    });
   });
 
   it("clears only the days that have a plan", async () => {

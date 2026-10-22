@@ -53,7 +53,7 @@ module Schedule
         published_at = showing ? existing.published_at : window.published_at
         return discard(existing) if window.expires_at <= published_at
 
-        post_repo.update_post(existing.id, content: note, published_at: published_at, expires_at: window.expires_at)
+        post_repo.update_post(existing.id, content: note, visibility: "public", published_at: published_at, expires_at: window.expires_at)
         existing.id
       end
 
