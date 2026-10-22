@@ -151,7 +151,7 @@
 | 列 | 型 | 制約 |
 |---|---|---|
 | `id` | uuid | 主キー（uuid v7） |
-| `account_id` | text | NOT NULL、索引 |
+| `account_id` | uuid | NOT NULL、索引 |
 | `endpoint` | text | NOT NULL、一意 |
 | `p256dh` | text | NOT NULL |
 | `auth` | text | NOT NULL |
