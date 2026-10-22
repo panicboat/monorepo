@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({ enterKeys: [] as string[] }));
+const mocks = vi.hoisted(() => ({ enterKeys: [] as string[], feedFilters: [] as string[] }));
 
 vi.mock("@/lib/motion/useEnterAnimation", () => ({
   useEnterAnimation: (_ref: unknown, key: string) => {
@@ -13,7 +13,7 @@ vi.mock("@/lib/motion/useEnterAnimation", () => ({
   },
 }));
 vi.mock("@/modules/feed/hooks/useFeed", () => ({
-  useFeed: () => ({
+  useFeed: ({ filter }: { filter: string }) => (mocks.feedFilters.push(filter), {
     posts: [], loading: false, loadingMore: false, error: null, hasMore: false, initialized: true,
     fetchInitial: vi.fn(), fetchMore: vi.fn(), reset: vi.fn(),
   }),
@@ -58,5 +58,20 @@ describe("HomePage tab content", () => {
     await selectTab(container, "クチコミ");
     expect(mocks.enterKeys.at(-1)).toBe("reviews");
     expect(container.textContent).toContain("ゲストがキャストについて残した新着のクチコミです。");
+  });
+
+  it("puts the followers tab next to the following tab and loads the followers feed from it", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    await act(async () => {
+      createRoot(container).render(createElement(HomePage));
+    });
+
+    expect(Array.from(container.querySelectorAll('[role="tab"]'), (tab) => tab.textContent)).toEqual([
+      "全国", "エリア", "フォロー中", "フォロワー", "カルテ", "クチコミ",
+    ]);
+    await selectTab(container, "フォロワー");
+    expect(mocks.enterKeys.at(-1)).toBe("followers");
+    expect(mocks.feedFilters.at(-1)).toBe("followers");
   });
 });

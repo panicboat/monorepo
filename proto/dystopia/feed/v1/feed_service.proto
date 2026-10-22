@@ -13,6 +13,7 @@ enum FeedFilter {
   FEED_FILTER_ALL = 1;
   FEED_FILTER_FOLLOWING = 2;
   FEED_FILTER_AREA = 3;
+  FEED_FILTER_FOLLOWERS = 4;
 }
 
 message ListFeedRequest {

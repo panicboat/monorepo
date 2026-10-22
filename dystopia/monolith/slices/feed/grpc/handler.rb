@@ -30,6 +30,7 @@ module Feed
         when :FEED_FILTER_ALL then "all"
         when :FEED_FILTER_AREA then "area"
         when :FEED_FILTER_FOLLOWING then "following"
+        when :FEED_FILTER_FOLLOWERS then "followers"
         else
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "filter is required")
         end

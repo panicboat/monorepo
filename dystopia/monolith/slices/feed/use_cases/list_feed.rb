@@ -26,6 +26,8 @@ module Feed
           list_profile_ids_by_prefecture_uc.call(prefecture: prefecture)
         when "following"
           @follow_adapter.following_profile_ids(profile_id: viewer_profile_id)
+        when "followers"
+          readable_author_ids(viewer_profile_id, @follow_adapter.follower_profile_ids(profile_id: viewer_profile_id))
         else
           raise ArgumentError, "unknown filter: #{filter.inspect}"
         end
@@ -36,7 +38,8 @@ module Feed
           author_profile_ids: author_ids,
           excluded_author_profile_ids: excluded,
           include_private: filter == "following",
-          viewer_profile_id: viewer_profile_id
+          viewer_profile_id: viewer_profile_id,
+          private_author_profile_ids: filter == "followers" ? mutual_ids(viewer_profile_id, author_ids) : []
         )
 
         has_more = post_ids.length > limit
@@ -51,6 +54,22 @@ module Feed
       end
 
       private
+
+      AuthorRef = Struct.new(:author_profile_id)
+
+      # Narrow to authors whose public posts the viewer may read, so locked or blocked followers never thin out a page.
+      def readable_author_ids(viewer_profile_id, profile_ids)
+        refs = profile_ids.map { |id| AuthorRef.new(id) }
+        filter_visible_posts.call(viewer_profile_id: viewer_profile_id, posts: refs).map(&:author_profile_id)
+      end
+
+      def mutual_ids(viewer_profile_id, follower_ids)
+        follower_ids & @follow_adapter.following_profile_ids(profile_id: viewer_profile_id)
+      end
+
+      def filter_visible_posts
+        @filter_visible_posts ||= Social::Slice["use_cases.filter_visible_posts"]
+      end
 
       def post_repo
         @post_repo ||= Post::Slice["repositories.post_repository"]

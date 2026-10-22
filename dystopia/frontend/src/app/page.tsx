@@ -20,10 +20,11 @@ const POST_TAB_ITEMS: TabItem[] = [
   { id: "all", label: "全国" },
   { id: "area", label: "エリア" },
   { id: "following", label: "フォロー中" },
+  { id: "followers", label: "フォロワー" },
 ];
 
 function isFeedFilter(tab: HomeTabValue): tab is FeedFilterValue {
-  return tab === "all" || tab === "area" || tab === "following";
+  return tab === "all" || tab === "area" || tab === "following" || tab === "followers";
 }
 
 export default function HomePage() {
