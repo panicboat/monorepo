@@ -1,6 +1,7 @@
 "use client";
 
 import { useNotificationPreferences } from "@/modules/notifications/hooks/useNotificationPreferences";
+import { usePushDevice, type PushDeviceState } from "@/modules/notifications/hooks/usePushDevice";
 import { Toggle } from "@/components/ui/toggle";
 import type { NotificationPreferences } from "@/modules/notifications/types";
 
@@ -9,7 +10,6 @@ type ToggleField = keyof NotificationPreferences;
 interface Row {
   field: ToggleField;
   label: string;
-  description?: string;
 }
 
 const PUSH_TYPE_ROWS: Row[] = [
@@ -21,8 +21,16 @@ const PUSH_TYPE_ROWS: Row[] = [
   { field: "message", label: "メッセージ" },
 ];
 
+const DEVICE_NOTES: Partial<Record<PushDeviceState, string>> = {
+  unsupported: "この端末では受け取れません",
+  "needs-install": "ホーム画面に追加すると受け取れます",
+  denied: "ブラウザの設定で通知を許可してください",
+  unconfigured: "この環境では受け取れません",
+};
+
 export function NotificationSettings() {
   const { preferences, loading, updating, error, update } = useNotificationPreferences();
+  const device = usePushDevice();
 
   if (loading) {
     return <div className="py-4 text-sm text-text-secondary">読み込み中…</div>;
@@ -34,13 +42,27 @@ export function NotificationSettings() {
   const onToggle = (field: ToggleField) => (value: boolean) => {
     void update({ [field]: value } as Partial<NotificationPreferences>);
   };
+  const deviceSwitchable = device.state === "on" || device.state === "off";
 
   return (
     <div className="flex flex-col gap-6 py-4">
       <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-text-secondary">この端末</h2>
         <ToggleRow
-          label="プッシュ通知を受け取る"
-          description="オフにするとすべての種別の通知が届きません"
+          label="この端末で受け取る"
+          description={DEVICE_NOTES[device.state] ?? "オンにすると、この端末に通知が届きます"}
+          checked={device.state === "on"}
+          onCheckedChange={(value) => void (value ? device.enable() : device.disable())}
+          disabled={device.busy || !deviceSwitchable}
+        />
+        {device.failed && <p className="text-xs text-text-secondary">端末の設定を変更できませんでした</p>}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-text-secondary">このプロフィール</h2>
+        <ToggleRow
+          label="端末に通知を送る"
+          description="オフにすると、このプロフィール宛ての通知はどの端末にも届きません"
           checked={preferences.pushEnabled}
           onCheckedChange={onToggle("pushEnabled")}
           disabled={updating}
@@ -48,7 +70,8 @@ export function NotificationSettings() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-text-secondary">プッシュ通知の個別設定</h2>
+        <h2 className="text-sm font-semibold text-text-secondary">端末に送る通知</h2>
+        <p className="text-xs text-text-muted">アプリ内の通知一覧には、設定に関係なくすべて表示されます</p>
         {PUSH_TYPE_ROWS.map((row) => (
           <ToggleRow
             key={row.field}
