@@ -12,9 +12,13 @@ describe("resolveNotificationOpen", () => {
     expect(resolveNotificationOpen({ ...base, activeProfileId: "p2" })).toEqual({ switchTo: null, destination: "/posts/1" });
   });
 
-  it("does not switch to a profile the account cannot act as", () => {
-    expect(resolveNotificationOpen({ ...base, profileId: "someone-else" })).toEqual({ switchTo: null, destination: "/posts/1" });
-    expect(resolveNotificationOpen({ ...base, profileId: null })).toEqual({ switchTo: null, destination: "/posts/1" });
+  it("opens the notification list without switching when the account cannot act as the receiving profile", () => {
+    expect(resolveNotificationOpen({ ...base, profileId: "disabled-profile" })).toEqual({ switchTo: null, destination: "/notifications" });
+    expect(resolveNotificationOpen({ ...base, profileId: null })).toEqual({ switchTo: null, destination: "/notifications" });
+    expect(resolveNotificationOpen({ ...base, activeProfileId: "p2", selectableProfileIds: ["p1"] })).toEqual({
+      switchTo: null,
+      destination: "/notifications",
+    });
   });
 
   it("opens the notification list instead of a page outside the app", () => {

@@ -111,6 +111,16 @@ describe("NotificationOpenPage", () => {
     expect(mocks.replace).toHaveBeenCalledWith("/posts/1");
   });
 
+  it("opens the notification list as the active profile when the account cannot act as the receiving one", async () => {
+    mocks.takeNotificationHandoff.mockResolvedValueOnce({ profile: "disabled-profile", to: "/u/rin" });
+
+    await open("id=tap-6");
+
+    expect(mocks.setActiveProfile).not.toHaveBeenCalled();
+    expect(mocks.replace).toHaveBeenCalledWith("/notifications");
+    expect(mocks.replace).toHaveBeenCalledTimes(1);
+  });
+
   it("opens the notification list for a recorded destination outside the app", async () => {
     mocks.takeNotificationHandoff.mockResolvedValueOnce({ profile: "p1", to: "https://evil.example" });
 
