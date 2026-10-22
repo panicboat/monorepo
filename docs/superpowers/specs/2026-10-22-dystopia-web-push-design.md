@@ -209,7 +209,8 @@
 | `SendPush`（rspec） | Who receives what の条件、題名と本文（宛先を添える場合・100 文字で切る場合・本文が空の場合）、開く URL、404/410 で購読が消えること、時間切れでも例外を出さないこと、鍵が無いと送らないこと |
 | `Emit`（rspec） | 種類の設定が OFF でもアプリ内通知が作られ、端末には送られないこと |
 | `SendMessage`（rspec） | 送信の後に DM の通知を送ること |
-| フォロー（rspec） | 承認不要のフォローで `follow` が作られること、申請の承認では通知が作られないこと、`follow_approved` の行が `follow` に改名されること |
+| フォロー（rspec） | 承認不要のフォローで `follow` が作られること、申請の承認では通知が作られないこと |
+| 種類の改名（migration） | `follow_approved` の行が `follow` に改名されること（テスト DB に行を入れて migrate し、psql で確かめる） |
 | 購読の repository と RPC（rspec） | 同じ endpoint を別のアカウントが登録すると持ち主が替わること、解除、アカウント削除で消えること |
 | 設定（rspec・vitest） | 消した項目と改名した項目が proto・BFF・画面で揃っていること |
 | 設定画面（vitest） | 受け取れない理由の出し分け、有効にする・無効にする操作 |
