@@ -12,7 +12,8 @@ import { ProfileName } from "@/components/ui/profile-name";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { ScheduleSearchPanel } from "@/modules/schedule/components/ScheduleSearchPanel";
-import { parseSearchChoices, writeSearchChoices, type ScheduleSearchChoices } from "@/modules/schedule/lib/searchChoices";
+import { parseSearchChoices, writeSearchChoices, type ScheduleSearchChoices, type SearchHome } from "@/modules/schedule/lib/searchChoices";
+import { useProfile } from "@/modules/profile/hooks";
 import { FollowButton } from "@/modules/social";
 import { useSearchUsers, useSearchPosts } from "@/modules/discovery";
 import type { SearchUsersRoleFilter } from "@/modules/discovery/hooks/useSearchUsers";
@@ -45,8 +46,12 @@ function SearchFromUrl() {
   const params = useSearchParams();
   const urlQuery = params?.get("q") ?? "";
   const urlTab = params?.get("tab") ?? "";
+  const { profile, loading } = useProfile();
+  // Wait for the acting profile so the schedule filters start from its area instead of switching after the first search.
+  if (loading) return null;
+  const home: SearchHome = { prefecture: profile?.prefecture ?? "", area: profile?.area ?? "" };
   // Remount per URL query only: a tag opened from the results must replace what was typed, but the tab and filters this page writes must not.
-  return <SearchView key={urlQuery} initialQuery={urlQuery} initialTab={urlTab} initialChoices={parseSearchChoices(params)} />;
+  return <SearchView key={urlQuery} initialQuery={urlQuery} initialTab={urlTab} initialChoices={parseSearchChoices(params, home)} home={home} />;
 }
 
 function initialTabFor(urlTab: string, query: string): string {
@@ -58,9 +63,10 @@ interface SearchViewProps {
   initialQuery: string;
   initialTab: string;
   initialChoices: ScheduleSearchChoices;
+  home: SearchHome;
 }
 
-function SearchView({ initialQuery, initialTab, initialChoices }: SearchViewProps) {
+function SearchView({ initialQuery, initialTab, initialChoices, home }: SearchViewProps) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [tab, setTab] = useState(initialTabFor(initialTab, initialQuery));
@@ -71,7 +77,7 @@ function SearchView({ initialQuery, initialTab, initialChoices }: SearchViewProp
     const next = new URLSearchParams();
     if (initialQuery !== "") next.set("q", initialQuery);
     next.set("tab", nextTab);
-    if (nextTab === "schedules") writeSearchChoices(next, nextChoices);
+    if (nextTab === "schedules") writeSearchChoices(next, nextChoices, home);
     router.replace(`/search?${next}`, { scroll: false });
   }
 
