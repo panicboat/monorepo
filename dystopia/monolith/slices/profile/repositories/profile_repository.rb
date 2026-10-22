@@ -158,17 +158,15 @@ module Profile
         q = query.to_s.strip
         return [] if q.empty?
 
-        pattern = "%#{q}%"
-        scope = visible_profiles.where(
-          Sequel.|(
-            Sequel.lit("username ILIKE ?", pattern),
-            Sequel.lit("display_name ILIKE ?", pattern)
-          )
-        )
+        scope = visible_profiles.where(name_matches(q))
         scope = filter_by_role(scope, role_filter)
         scope = apply_cursor(scope, cursor)
 
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
+      def visible_ids_matching(query:)
+        visible_profiles.where(name_matches(query.to_s.strip)).dataset.select(:id)
       end
 
       def role_of(profile_id)
@@ -190,6 +188,14 @@ module Profile
       end
 
       private
+
+      def name_matches(query)
+        pattern = "%#{query}%"
+        Sequel.|(
+          Sequel.lit("username ILIKE ?", pattern),
+          Sequel.lit("display_name ILIKE ?", pattern)
+        )
+      end
 
       # Profile management and the username uniqueness check must not read through this scope: they act on hidden profiles too.
       def visible_profiles

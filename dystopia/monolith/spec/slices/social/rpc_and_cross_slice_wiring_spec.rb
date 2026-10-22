@@ -58,6 +58,8 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       expect(following.profiles.map(&:role)).to eq([2])
       expect(following.profiles).to all(be_a(::Profile::V1::ProfileSummary))
       expect(following.profiles.map(&:is_private)).to eq([false])
+      expect(rpc(Social::Grpc::FollowHandler, :list_following, Social::V1::ListFollowingRequest.new(query: "PUBLIC")).profiles.map(&:profile_id)).to eq([public_cast])
+      expect(rpc(Social::Grpc::FollowHandler, :list_following, Social::V1::ListFollowingRequest.new(query: "private")).profiles).to be_empty
       expect(followers.profiles.map(&:profile_id)).to eq([viewer])
       expect(followers.profiles.map(&:role)).to eq([1])
       expect(followers.profiles).to all(be_a(::Profile::V1::ProfileSummary))

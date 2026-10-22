@@ -13,8 +13,9 @@ export async function GET(req: NextRequest) {
     const profileId = req.nextUrl.searchParams.get("profile_id") || "";
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
+    const query = req.nextUrl.searchParams.get("q") || "";
 
-    const res = await socialFollowClient.listFollowing({ profileId, limit, cursor }, { headers });
+    const res = await socialFollowClient.listFollowing({ profileId, limit, cursor, query }, { headers });
     return NextResponse.json({
       profiles: (res.profiles || []).map(summaryToView),
       nextCursor: res.nextCursor || "",

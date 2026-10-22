@@ -72,6 +72,23 @@ describe("SideSheet", () => {
     expect(onOpenChange.mock.calls).toEqual([[false]]);
   });
 
+  it("leaves Escape to a combobox whose suggestions are open", async () => {
+    const onOpenChange = vi.fn();
+    const combobox = (expanded: boolean) => createElement("textarea", { role: "combobox", "aria-expanded": expanded, "aria-label": "本文" });
+    const { rerender } = await render(sheet({ onOpenChange, children: combobox(true) }));
+    const pressEscape = () =>
+      act(async () => {
+        document.querySelector('textarea[aria-label="本文"]')!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+      });
+
+    await pressEscape();
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    await rerender(sheet({ onOpenChange, children: combobox(false) }));
+    await pressEscape();
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
+  });
+
   it("asks to close when the page behind it is pressed", async () => {
     const onOpenChange = vi.fn();
     await render(sheet({ onOpenChange }));

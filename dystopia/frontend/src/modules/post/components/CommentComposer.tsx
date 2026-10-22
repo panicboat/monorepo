@@ -2,9 +2,9 @@
 
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useAddComment } from "@/modules/post/hooks/useAddComment";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
+import { MentionTextarea } from "./MentionTextarea";
 
 interface CommentComposerProps {
   postId: string;
@@ -37,9 +37,9 @@ export function CommentComposer({ postId }: CommentComposerProps) {
   return (
     <form onSubmit={handleSubmit} className="border-b border-divider px-4 py-3">
       <ActingProfileLabel className="mb-2" />
-      <Textarea
+      <MentionTextarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onValueChange={setContent}
         placeholder="コメントを書く"
         rows={2}
         aria-label="コメント内容"

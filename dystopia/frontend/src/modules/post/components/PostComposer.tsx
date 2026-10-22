@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
 import { Input } from "@/components/ui/input";
 import type { SavePostPayload } from "@/modules/post/lib/post-view";
@@ -14,6 +13,7 @@ import { useMediaUpload } from "@/modules/media/hooks/useMediaUpload";
 import type { UploadedMedia } from "@/modules/media/types";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 import { useProfile } from "@/modules/profile/hooks";
+import { MentionTextarea } from "./MentionTextarea";
 
 const MAX_ATTACHMENTS = 4;
 
@@ -113,9 +113,9 @@ export function PostComposer({
   return (
     <form onSubmit={handleSubmit} className={className}>
       <ActingProfileLabel className="mb-2" />
-      <Textarea
+      <MentionTextarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onValueChange={setContent}
         placeholder="いまどうしてる？"
         rows={4}
         aria-label="投稿内容"
