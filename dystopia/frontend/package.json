@@ -52,7 +52,7 @@
     "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^10.13.0",
     "eslint-config-next": "16.4.2",
-    "happy-dom": "^21.0.3",
+    "happy-dom": "^21.0.4",
     "prettier": "^3.9.10",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
