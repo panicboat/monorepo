@@ -46,5 +46,27 @@ RSpec.describe "Social::UseCases::Follows::Follow", type: :database do
       expect(types_for(target)).to eq(["follow_request"])
       expect(types_for(follower)).to be_empty
     end
+
+    def actor_counts_for(profile_id)
+      notification_repo.list(recipient_profile_id: profile_id).map { |notification| [notification.type, notification.actor_count] }
+    end
+
+    it "does not notify again when the profile is already followed" do
+      target = create_account_with_profile(role: 2, username: "followed_target")
+
+      follow.call(follower_profile_id: follower, target_profile_id: target)
+
+      expect(follow.call(follower_profile_id: follower, target_profile_id: target)).to eq(status: "approved")
+      expect(actor_counts_for(target)).to eq([["follow", 1]])
+    end
+
+    it "does not notify again when a follow request is already pending" do
+      target = create_account_with_profile(role: 2, username: "requested_target", follow_approval_required: true)
+
+      follow.call(follower_profile_id: follower, target_profile_id: target)
+
+      expect(follow.call(follower_profile_id: follower, target_profile_id: target)).to eq(status: "pending")
+      expect(actor_counts_for(target)).to eq([["follow_request", 1]])
+    end
   end
 end
