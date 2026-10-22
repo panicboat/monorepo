@@ -95,7 +95,11 @@
 | フォロー | `/u/<送った人の username>` |
 | DM | `/messages/<thread_id>` |
 
-通知が開くのは `/notifications/open?profile=<宛先のプロフィール ID>&to=<上表の画面>` にする。この画面は、`profile` が自分のアカウントの選べるプロフィールで、表示中と違えば切り替え、その後 `to` の画面へ置き換えで移る。`profile` が自分のものでなければ切り替えずに移る。`to` が `/` で始まらない、または `//` で始まるときは `/notifications` へ移る（他のサイトへ飛ばさない）。
+通知が持つ移動先は `/notifications/open?profile=<宛先のプロフィール ID>&to=<上表の画面>` にする。通知をタップすると、service worker がこの `profile` と `to` を使い捨ての記録として Cache Storage（`notification-open`）に保存し、`/notifications/open?id=<記録の ID>` を開く。保存するのは最後のタップの 1 件だけで、記録を保存できなかったときは `/notifications` を開く。
+
+`/notifications/open` の画面は URL の `profile` と `to` を読まず、`id` の記録だけを使い、読んだ記録は消す。記録の `profile` が自分のアカウントの選べるプロフィールで、表示中と違えば切り替え、その後 `to` の画面へ置き換えで移る。`profile` が自分のものでなければ切り替えずに移る。`to` が `/` で始まらない、または `//` で始まるときは `/notifications` へ移る（他のサイトへ飛ばさない）。記録の無い URL は、切り替えずに `/notifications` を開く。
+
+切り替えを URL ではなく service worker の記録からだけ行うのは、`/notifications/open?profile=…&to=…` のリンクは誰でも作れるためである。プロフィールの `website` や DM に置かれたそのリンクで切り替えると、開いた人のアカウントが別のプロフィール X も持っていれば、黙って X に切り替わって `to`（例えばリンクを置いた人のプロフィール）を開き、表示中だったプロフィール Y の直後に X の足跡が付く。これで X と Y が同じアカウントだと分かってしまう。アカウントのプロフィール同士のつながりを隠すことは、このプロダクトの前提である。
 
 対象の画面を直接開かずにこの画面を挟むのは、切り替える前のプロフィールで対象の画面を一度でも描くと、足跡や既読がそのプロフィールで付くためである。
 
@@ -188,11 +192,11 @@
 
 ### Frontend
 
-- `public/sw.js`: `push` で通知を出し、`notificationclick` で既に開いているウィンドウを前に出して移動するか、新しく開く
+- `public/sw.js`: `push` で通知を出し、`notificationclick` で既に開いているウィンドウを前に出して移動するか、新しく開く。開く先が `/notifications/open` のときは、`profile` と `to` を Cache Storage（`notification-open`）に使い捨ての記録として保存し、`/notifications/open?id=<記録の ID>` を開く
 - BFF の route を 3 つ足す（設定の取得・購読の登録・購読の解除）
 - 設定画面を Settings screen のとおりに作り直す
 - アプリ内通知の文言と移動先（`modules/notifications/lib/format.ts`）を `FOLLOW` に合わせる
-- `/notifications/open` の画面で、プロフィールの切り替えと移動を行う
+- `/notifications/open` の画面で、`id` の記録を読んで消し（`modules/notifications/lib/handoff.ts`）、記録に従ってプロフィールの切り替えと移動を行う。記録の無い URL では切り替えずに `/notifications` を開く。切り替えると AppShell がこの画面を作り直すので、読んだ記録は作り直しの後まで画面のモジュール内に `id` と組で持ち越す
 - アプリを開いたときの購読の登録し直しを AppShell で行う
 
 ### Infrastructure (`dystopia/lambda`)
@@ -215,7 +219,7 @@
 | 設定（rspec・vitest） | 消した項目と改名した項目が proto・BFF・画面で揃っていること |
 | 設定画面（vitest） | 受け取れない理由の出し分け、有効にする・無効にする操作 |
 | `sw.js`（vitest） | 通知の表示内容、タップでの移動先 |
-| `/notifications/open`（vitest） | 自分のプロフィールへの切り替え、他人のプロフィールや不正な `to` の扱い |
+| `/notifications/open`（vitest） | 記録からの自分のプロフィールへの切り替えと、作り直しの後の移動、`profile`・`to` を付けて作った記録の無い URL では切り替えずに `/notifications` を開くこと、他人のプロフィールや不正な `to` の扱い、記録の読み取りと削除（`handoff.ts`） |
 | AppShell（vitest） | アプリを開いたときの購読の登録し直し |
 | 購読の登録（rspec） | 許可していないホスト・http・空の鍵を拒むこと |
 | 実機（ローカル） | 鍵を作り、Chrome で購読して通知が届き、タップで対象の画面が開くこと |

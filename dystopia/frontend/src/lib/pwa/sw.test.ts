@@ -8,21 +8,44 @@ const ORIGIN = "https://dystopia.city";
 
 type Listener = (event: Record<string, unknown>) => void;
 
-function loadWorker(windows: Array<{ url: string; focus: () => Promise<unknown>; navigate: (url: string) => Promise<unknown> }> = []) {
+function loadWorker(
+  windows: Array<{ url: string; focus: () => Promise<unknown>; navigate: (url: string) => Promise<unknown> }> = [],
+  { failStore = false } = {}
+) {
   const listeners: Record<string, Listener> = {};
   const showNotification = vi.fn<(title: string, options: NotificationOptions) => Promise<void>>(async () => {});
   const openWindow = vi.fn(async () => null);
+  const calls: string[] = [];
+  const stored = new Map<string, Response>();
+  const cache = {
+    put: vi.fn(async (key: string, response: Response) => {
+      if (failStore) throw new Error("quota exceeded");
+      calls.push("put");
+      stored.set(key, response);
+    }),
+  };
+  const caches = {
+    delete: vi.fn(async (name: string) => {
+      calls.push(`delete ${name}`);
+      return true;
+    }),
+    open: vi.fn(async (name: string) => {
+      calls.push(`open ${name}`);
+      return cache;
+    }),
+  };
   const self = {
     location: { origin: ORIGIN },
     registration: { showNotification },
     clients: { matchAll: vi.fn(async () => windows), openWindow, claim: vi.fn(async () => {}) },
+    crypto: { randomUUID: () => "tap-1" },
     skipWaiting: vi.fn(),
     addEventListener: (type: string, listener: Listener) => {
       listeners[type] = listener;
     },
   };
-  vm.runInNewContext(source, { self, URL });
-  return { listeners, showNotification, openWindow };
+  vm.runInNewContext(source, { self, URL, Response, caches });
+  return { listeners, showNotification, openWindow, caches, calls, stored };
 }
 
 async function dispatch(listener: Listener, event: Record<string, unknown>) {
@@ -66,6 +89,35 @@ describe("service worker", () => {
     }
   });
 
+  it("records the tap and opens the profile handoff page with only the record's id", async () => {
+    const worker = loadWorker();
+
+    await dispatch(worker.listeners.notificationclick, click("/notifications/open?profile=p&to=%2Fposts%2F1"));
+
+    expect(worker.calls).toEqual(["delete notification-open", "open notification-open", "put"]);
+    expect([...worker.stored.keys()]).toEqual(["/notifications/open/tap-1"]);
+    expect(await worker.stored.get("/notifications/open/tap-1")?.json()).toEqual({ profile: "p", to: "/posts/1" });
+    expect(worker.openWindow).toHaveBeenCalledWith(`${ORIGIN}/notifications/open?id=tap-1`);
+  });
+
+  it("opens any other app page unchanged without recording anything", async () => {
+    const worker = loadWorker();
+
+    await dispatch(worker.listeners.notificationclick, click("/posts/1?profile=p"));
+
+    expect(worker.caches.delete).not.toHaveBeenCalled();
+    expect(worker.caches.open).not.toHaveBeenCalled();
+    expect(worker.openWindow).toHaveBeenCalledWith(`${ORIGIN}/posts/1?profile=p`);
+  });
+
+  it("opens the notification list when the tap cannot be recorded", async () => {
+    const worker = loadWorker([], { failStore: true });
+
+    await dispatch(worker.listeners.notificationclick, click("/notifications/open?profile=p&to=%2Fposts%2F1"));
+
+    expect(worker.openWindow).toHaveBeenCalledWith(`${ORIGIN}/notifications`);
+  });
+
   it("brings an open window forward and navigates it to the page", async () => {
     const open = { url: `${ORIGIN}/home`, focus: vi.fn(async () => open), navigate: vi.fn(async () => open) };
     const worker = loadWorker([open]);
@@ -75,7 +127,7 @@ describe("service worker", () => {
 
     expect(event.notification.close).toHaveBeenCalled();
     expect(open.focus).toHaveBeenCalled();
-    expect(open.navigate).toHaveBeenCalledWith(`${ORIGIN}/notifications/open?profile=p&to=%2Fposts%2F1`);
+    expect(open.navigate).toHaveBeenCalledWith(`${ORIGIN}/notifications/open?id=tap-1`);
     expect(worker.openWindow).not.toHaveBeenCalled();
   });
 

@@ -1,11 +1,17 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAccountProfiles } from "@/modules/profile/context/AccountProfilesContext";
 import { selectableProfiles } from "@/modules/profile/lib/session";
 import { resolveNotificationOpen } from "@/modules/notifications/lib/open";
+import { takeNotificationHandoff, type NotificationHandoff } from "@/modules/notifications/lib/handoff";
 import { useAuthStore, selectActiveProfileId, selectDeniedProfileId } from "@/stores/authStore";
+
+const NOTIFICATION_LIST = "/notifications";
+
+// Kept outside the component: switching remounts this page under the new profile, and by then the record is gone from the cache.
+let recordAcrossSwitch: { id: string; record: NotificationHandoff } | null = null;
 
 export default function NotificationOpenPage() {
   return (
@@ -23,24 +29,41 @@ function NotificationOpen() {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const deniedProfileId = useAuthStore(selectDeniedProfileId);
   const setActiveProfile = useAuthStore((state) => state.setActiveProfile);
-  const profileId = params?.get("profile") ?? null;
-  const to = params?.get("to") ?? null;
+  const id = params?.get("id") ?? null;
+  const recordRead = useRef(false);
+  const [record, setRecord] = useState<NotificationHandoff | null | undefined>(undefined);
 
   useEffect(() => {
     // An empty list while loading would pass for an account with nothing to switch to and open the page as the previous profile.
-    if (!loaded) return;
+    if (!loaded || recordRead.current) return;
+    recordRead.current = true;
+    if (id && recordAcrossSwitch?.id === id) {
+      setRecord(recordAcrossSwitch.record);
+      recordAcrossSwitch = null;
+      return;
+    }
+    void takeNotificationHandoff(id).then(setRecord);
+  }, [loaded, id]);
+
+  useEffect(() => {
+    if (record === undefined) return;
+    if (record === null) {
+      router.replace(NOTIFICATION_LIST);
+      return;
+    }
     const { switchTo, destination } = resolveNotificationOpen({
-      profileId,
-      to,
+      profileId: record.profile,
+      to: record.to,
       selectableProfileIds: selectableProfiles(profiles, deniedProfileId).map((profile) => profile.id),
       activeProfileId,
     });
     if (switchTo) {
+      if (id) recordAcrossSwitch = { id, record };
       setActiveProfile(switchTo);
       return;
     }
     router.replace(destination);
-  }, [loaded, profileId, to, profiles, deniedProfileId, activeProfileId, setActiveProfile, router]);
+  }, [record, id, profiles, deniedProfileId, activeProfileId, setActiveProfile, router]);
 
   return null;
 }

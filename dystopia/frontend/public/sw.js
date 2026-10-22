@@ -2,6 +2,8 @@ const FALLBACK_TITLE = "dystopia";
 const FALLBACK_BODY = "新しいお知らせがあります";
 const FALLBACK_URL = "/notifications";
 const ICON_URL = "/pwa-icon/192";
+const OPEN_PATH = "/notifications/open";
+const OPEN_RECORDS = "notification-open";
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
@@ -51,8 +53,25 @@ async function openPage(path) {
   await self.clients.openWindow(url);
 }
 
+// The open page switches profiles only from a record written here, since a crafted link to it must not reveal which profiles share an account.
+async function recordOpen(target) {
+  const url = new URL(target, self.location.origin);
+  if (url.pathname !== OPEN_PATH) return target;
+  try {
+    const id = self.crypto.randomUUID();
+    await caches.delete(OPEN_RECORDS);
+    const cache = await caches.open(OPEN_RECORDS);
+    const record = JSON.stringify({ profile: url.searchParams.get("profile"), to: url.searchParams.get("to") });
+    await cache.put(`${OPEN_PATH}/${id}`, new Response(record, { headers: { "content-type": "application/json" } }));
+    return `${OPEN_PATH}?id=${id}`;
+  } catch {
+    // FALLBACK: Without a record the open page cannot switch profiles, so the notification list is opened instead.
+    return FALLBACK_URL;
+  }
+}
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const target = event.notification.data && event.notification.data.url;
-  event.waitUntil(openPage(isAppPath(target) ? target : FALLBACK_URL));
+  event.waitUntil(isAppPath(target) ? recordOpen(target).then(openPage) : openPage(FALLBACK_URL));
 });
