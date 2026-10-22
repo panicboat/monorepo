@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ProfileName } from "@/components/ui/profile-name";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
+import { ScheduleSearchPanel } from "@/modules/schedule/components/ScheduleSearchPanel";
 import { FollowButton } from "@/modules/social";
 import { useSearchUsers, useSearchPosts } from "@/modules/discovery";
 import type { SearchUsersRoleFilter } from "@/modules/discovery/hooks/useSearchUsers";
@@ -26,6 +27,7 @@ const ROLE_CHIPS: Array<{ id: SearchUsersRoleFilter; label: string }> = [
 const TABS: TabItem[] = [
   { id: "users", label: "ユーザー" },
   { id: "posts", label: "投稿" },
+  { id: "schedules", label: "出勤" },
 ];
 
 const HASHTAG_QUERY = /^[#＃]/;
@@ -39,14 +41,21 @@ export default function SearchPage() {
 }
 
 function SearchFromUrl() {
-  const urlQuery = useSearchParams()?.get("q") ?? "";
-  // Remount per URL query: a tag opened from the results must replace what was typed, not be ignored.
-  return <SearchView key={urlQuery} initialQuery={urlQuery} />;
+  const params = useSearchParams();
+  const urlQuery = params?.get("q") ?? "";
+  const urlTab = params?.get("tab") ?? "";
+  // Remount per URL query and tab: a tag opened from the results must replace what was typed, not be ignored.
+  return <SearchView key={`${urlTab}:${urlQuery}`} initialQuery={urlQuery} initialTab={urlTab} />;
 }
 
-function SearchView({ initialQuery }: { initialQuery: string }) {
+function initialTabFor(urlTab: string, query: string): string {
+  if (TABS.some((t) => t.id === urlTab)) return urlTab;
+  return HASHTAG_QUERY.test(query) ? "posts" : "users";
+}
+
+function SearchView({ initialQuery, initialTab }: { initialQuery: string; initialTab: string }) {
   const [query, setQuery] = useState(initialQuery);
-  const [tab, setTab] = useState(HASHTAG_QUERY.test(initialQuery) ? "posts" : "users");
+  const [tab, setTab] = useState(initialTabFor(initialTab, initialQuery));
   const [roleFilter, setRoleFilter] = useState<SearchUsersRoleFilter>(0);
 
   const users = useSearchUsers(tab === "users" ? query : "", roleFilter);
@@ -110,7 +119,7 @@ function SearchView({ initialQuery }: { initialQuery: string }) {
         </div>
       )}
 
-      {trimmed.length === 0 && (
+      {trimmed.length === 0 && tab !== "schedules" && (
         <div className="flex flex-col items-center px-4 py-12 text-center">
           <Search className="size-10 text-text-secondary" strokeWidth={1.5} />
           <p className="pt-3 text-text-primary">ユーザーや投稿を検索</p>
@@ -155,6 +164,8 @@ function SearchView({ initialQuery }: { initialQuery: string }) {
           )}
         </>
       )}
+
+      {tab === "schedules" && <ScheduleSearchPanel query={query} />}
 
       {tab === "posts" && trimmed.length > 0 && (
         <>
