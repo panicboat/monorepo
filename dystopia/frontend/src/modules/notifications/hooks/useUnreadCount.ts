@@ -4,6 +4,8 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
 
+export const UNREAD_COUNT_KEY = "/api/notifications/unread-count";
+
 interface UnreadCountResponse {
   count: number;
 }
@@ -11,7 +13,7 @@ interface UnreadCountResponse {
 export function useUnreadCount() {
   const profileId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<UnreadCountResponse>(
-    profileId ? "/api/notifications/unread-count" : null,
+    profileId ? UNREAD_COUNT_KEY : null,
     fetcher,
     { refreshInterval: 30000, revalidateOnFocus: false }
   );
