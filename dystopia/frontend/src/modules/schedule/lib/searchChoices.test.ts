@@ -28,6 +28,62 @@ describe("defaultSearchChoices", () => {
   });
 });
 
+describe("defaultSearchChoices with the acting profile's main area", () => {
+  it("starts from the prefecture and the area of the profile", () => {
+    expect(defaultSearchChoices({ prefecture: "東京都", area: "新宿" })).toMatchObject({ prefecture: "東京都", area: "新宿" });
+  });
+
+  it("drops an area that does not belong to the prefecture and an unknown prefecture", () => {
+    expect(defaultSearchChoices({ prefecture: "東京都", area: "梅田" })).toMatchObject({ prefecture: "東京都", area: "" });
+    expect(defaultSearchChoices({ prefecture: "Tokyo", area: "新宿" })).toMatchObject({ prefecture: "", area: "" });
+  });
+});
+
+describe("parseSearchChoices with the acting profile's main area", () => {
+  const home = { prefecture: "東京都", area: "新宿" };
+
+  it("uses the profile's area when the URL has no prefecture", () => {
+    expect(parseSearchChoices(query(""), home)).toMatchObject({ prefecture: "東京都", area: "新宿" });
+    expect(parseSearchChoices(null, home)).toMatchObject({ prefecture: "東京都", area: "新宿" });
+  });
+
+  it("reads an empty prefecture as 全国 chosen over the profile's area", () => {
+    expect(parseSearchChoices(query("prefecture="), home)).toMatchObject({ prefecture: "", area: "" });
+  });
+
+  it("does not carry the profile's area into another prefecture or a prefecture without an area", () => {
+    expect(parseSearchChoices(query(`prefecture=${encodeURIComponent("大阪府")}`), home)).toMatchObject({ prefecture: "大阪府", area: "" });
+    expect(parseSearchChoices(query(`prefecture=${encodeURIComponent("東京都")}`), home)).toMatchObject({ prefecture: "東京都", area: "" });
+  });
+
+  it("falls back to the profile's area for an unknown prefecture", () => {
+    expect(parseSearchChoices(query(`prefecture=Narnia&area=${encodeURIComponent("梅田")}`), home)).toMatchObject({ prefecture: "東京都", area: "新宿" });
+  });
+});
+
+describe("writeSearchChoices with the acting profile's main area", () => {
+  const home = { prefecture: "東京都", area: "新宿" };
+  const written = (choices: Partial<ReturnType<typeof defaultSearchChoices>>) => {
+    const params = query("");
+    writeSearchChoices(params, { ...defaultSearchChoices(home), ...choices }, home);
+    return params.toString();
+  };
+
+  it("writes nothing for the profile's area and writes every other choice of area so it reads back the same", () => {
+    expect(written({})).toBe("");
+    expect(written({ prefecture: "", area: "" })).toBe("prefecture=");
+    expect(written({ area: "" })).toBe(`prefecture=${encodeURIComponent("東京都")}`);
+    expect(written({ area: "池袋" })).toBe(`prefecture=${encodeURIComponent("東京都")}&area=${encodeURIComponent("池袋")}`);
+
+    for (const choices of [{}, { prefecture: "", area: "" }, { area: "" }, { area: "池袋" }, { prefecture: "大阪府", area: "梅田" }]) {
+      const params = query("");
+      const chosen = { ...defaultSearchChoices(home), ...choices };
+      writeSearchChoices(params, chosen, home);
+      expect(parseSearchChoices(new URLSearchParams(params.toString()), home)).toEqual(chosen);
+    }
+  });
+});
+
 describe("parseSearchChoices", () => {
   it("reads the date, prefecture, area, industry, start band and following switch", () => {
     const params = query(

@@ -18,6 +18,7 @@ const navigation = vi.hoisted(() => ({
   replace: vi.fn(),
 }));
 const panel = vi.hoisted(() => ({ next: null as unknown }));
+const acting = vi.hoisted(() => ({ profile: null as { prefecture: string; area: string } | null, loading: false }));
 const enterKeys = vi.hoisted(() => [] as string[]);
 
 vi.mock("@/lib/motion/useEnterAnimation", () => ({
@@ -38,6 +39,9 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: navigation.replace }),
 }));
 
+vi.mock("@/modules/profile/hooks", () => ({
+  useProfile: () => ({ profile: acting.profile, loading: acting.loading }),
+}));
 vi.mock("@/modules/discovery", () => ({
   useSearchUsers: hookMocks.useSearchUsers,
   useSearchPosts: hookMocks.useSearchPosts,
@@ -408,6 +412,34 @@ describe("SearchPage", () => {
         expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({ tab: "schedules", date: tomorrow(), prefecture: "大阪府", timeBand: "day" });
 
         await view.unmount();
+      });
+
+      it("starts from the acting profile's main area and keeps 全国 in the URL once it is chosen", async () => {
+        acting.profile = { prefecture: "東京都", area: "新宿" };
+        navigation.tab = "schedules";
+        const view = await open();
+
+        expect(view.choices()).toMatchObject({ prefecture: "東京都", area: "新宿" });
+
+        await view.choose({ ...view.choices(), prefecture: "", area: "" });
+        expect(view.lastUrl().searchParams.get("prefecture")).toBe("");
+        expect(view.lastUrl().searchParams.has("area")).toBe(false);
+
+        await view.choose(defaultSearchChoices({ prefecture: "東京都", area: "新宿" }));
+        expect(Object.fromEntries(view.lastUrl().searchParams)).toEqual({ tab: "schedules" });
+
+        await view.unmount();
+        acting.profile = null;
+      });
+
+      it("shows nothing until the acting profile is loaded", async () => {
+        acting.loading = true;
+        const view = await open();
+
+        expect(view.container.innerHTML).toBe("");
+
+        await view.unmount();
+        acting.loading = false;
       });
 
       it("restores the filters written in the URL", async () => {
