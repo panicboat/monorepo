@@ -10,7 +10,7 @@ module Notifications
 
       PREFERENCE_FIELD_BY_TYPE = {
         "like" => :like,
-        "comment" => :post,
+        "comment" => :comment,
         "reply" => :reply,
         "follow_request" => :follow,
         "follow_approved" => :follow,

@@ -23,15 +23,12 @@ export interface PaginatedNotificationsResponse {
 
 export interface NotificationPreferences {
   pushEnabled: boolean;
-  post: boolean;
+  comment: boolean;
   like: boolean;
-  repost: boolean;
-  quote: boolean;
   reply: boolean;
   follow: boolean;
   mention: boolean;
   message: boolean;
-  oshi: boolean;
   footprintUnreadBadge: boolean;
   footprintsRecordMyVisits: boolean;
 }

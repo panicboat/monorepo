@@ -13,15 +13,12 @@ interface Row {
 }
 
 const PUSH_TYPE_ROWS: Row[] = [
-  { field: "post", label: "ポスト" },
   { field: "like", label: "いいね" },
-  { field: "repost", label: "リポスト" },
-  { field: "quote", label: "引用" },
+  { field: "comment", label: "コメント" },
   { field: "reply", label: "リプライ" },
-  { field: "follow", label: "フォロー" },
   { field: "mention", label: "メンション" },
+  { field: "follow", label: "フォロー" },
   { field: "message", label: "メッセージ" },
-  { field: "oshi", label: "推し！" },
 ];
 
 export function NotificationSettings() {

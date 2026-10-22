@@ -91,15 +91,12 @@ module Notifications
         input = request.message.preferences
         attrs = {
           push_enabled: input.push_enabled,
-          post: input.post,
+          comment: input.comment,
           like: input.like,
-          repost: input.repost,
-          quote: input.quote,
           reply: input.reply,
           follow: input.follow,
           mention: input.mention,
           message: input.message,
-          oshi: input.oshi,
           footprint_unread_badge: input.footprint_unread_badge,
           footprints_record_my_visits: input.footprints_record_my_visits
         }
@@ -118,15 +115,12 @@ module Notifications
       def preferences_to_proto(prefs)
         ::Notifications::V1::NotificationPreferences.new(
           push_enabled: prefs[:push_enabled],
-          post: prefs[:post],
+          comment: prefs[:comment],
           like: prefs[:like],
-          repost: prefs[:repost],
-          quote: prefs[:quote],
           reply: prefs[:reply],
           follow: prefs[:follow],
           mention: prefs[:mention],
           message: prefs[:message],
-          oshi: prefs[:oshi],
           footprint_unread_badge: prefs[:footprint_unread_badge],
           footprints_record_my_visits: prefs[:footprints_record_my_visits]
         )
