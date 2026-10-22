@@ -44,6 +44,14 @@ beforeEach(() => {
 });
 
 describe("ChatPage", () => {
+  it("keeps the ban on direct deals under the heading", () => {
+    const html = renderToStaticMarkup(<ChatPage />);
+
+    expect(html).toMatch(
+      /<\/h1>.*<p role="note"[^>]*>当DMでの直接の金銭交渉・店舗を介さない直接取引（裏引き）は固く禁じます。違反が確認された場合、アカウントを凍結することがあります。<\/p><\/header>/
+    );
+  });
+
   it("heads the conversation with the counterpart's name linked to their profile", () => {
     const html = renderToStaticMarkup(<ChatPage />);
 

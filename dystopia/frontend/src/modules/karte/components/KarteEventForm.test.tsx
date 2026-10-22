@@ -49,6 +49,14 @@ async function setValue(element: HTMLTextAreaElement | HTMLSelectElement, value:
 }
 
 describe("KarteEventForm", () => {
+  it("asks for manners and atmosphere in the note and forbids personal details", async () => {
+    const container = await mount(emptyKarteEvent());
+
+    expect(container.querySelector("textarea")?.getAttribute("placeholder")).toBe(
+      "本名・電話番号・勤務先などの個人情報は記載禁止です。マナーや清潔感、会話の雰囲気などを記入してください"
+    );
+  });
+
   it("shows which profile the karte is recorded as above the inputs", async () => {
     const container = await mount(emptyKarteEvent());
 
