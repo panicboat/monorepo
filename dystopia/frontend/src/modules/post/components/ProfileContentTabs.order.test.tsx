@@ -22,7 +22,7 @@ vi.mock("@/modules/post/hooks/useAuthorComments", () => ({
 
 const { ProfileContentTabs } = await import("./ProfileContentTabs");
 
-describe("ProfileContentTabs order and above-tabs content", () => {
+describe("ProfileContentTabs order and initial tab", () => {
   it("puts the leading tabs right after posts and the extra tabs at the end", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
@@ -45,33 +45,25 @@ describe("ProfileContentTabs order and above-tabs content", () => {
     ]);
   });
 
-  it("renders above the tabs with the selected tab and a way to switch", async () => {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    await act(async () => {
-      createRoot(container).render(
-        createElement(ProfileContentTabs, {
-          profileId: "p-1",
-          leadingTabs: [{ id: "schedule", label: "予定", content: <div>schedule-pane</div> }],
-          renderAboveTabs: (tab: string, selectTab: (id: string) => void) =>
-            tab === "schedule" ? null : (
-              <button type="button" onClick={() => selectTab("schedule")}>
-                above:{tab}
-              </button>
-            ),
-        })
-      );
-    });
-    expect(container.textContent).toContain("above:posts");
+  it("opens on the initial tab and falls back to posts for an unknown one", async () => {
+    const render = async (initialTab: string) => {
+      const container = document.createElement("div");
+      document.body.appendChild(container);
+      await act(async () => {
+        createRoot(container).render(
+          createElement(ProfileContentTabs, {
+            profileId: "p-1",
+            initialTab,
+            leadingTabs: [{ id: "schedule", label: "予定", content: <div>schedule-pane</div> }],
+          })
+        );
+      });
+      return container.querySelector('[role="tab"][aria-selected="true"]')?.textContent;
+    };
 
-    await act(async () => {
-      (Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "above:posts") as HTMLButtonElement).click();
-    });
-
-    expect(container.textContent).not.toContain("above:");
-    expect(container.textContent).toContain("schedule-pane");
+    expect(await render("schedule")).toBe("予定");
+    expect(await render("nope")).toBe("投稿");
   });
-
   it("keys the enter animation by the selected tab", async () => {
     mocks.enterKeys.length = 0;
     const container = document.createElement("div");

@@ -9,7 +9,7 @@ import type { ScheduleSearchResultView } from "@/modules/schedule/types";
 
 export function ScheduleSearchCard({ result }: { result: ScheduleSearchResultView }) {
   const { schedule, profile, prefecture, note } = result;
-  const href = `/u/${encodeURIComponent(profile.username)}`;
+  const href = `/u/${encodeURIComponent(profile.username)}?tab=schedule`;
   const icon = industryIcon(profile.industry);
   const endsNextDay = crossesMidnight(schedule.startTime, schedule.endTime);
 

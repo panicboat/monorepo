@@ -33,7 +33,7 @@ export function PostScheduleCard({ schedule, author }: PostScheduleCardProps) {
   );
 
   return author?.username ? (
-    <Link href={`/u/${encodeURIComponent(author.username)}`} className={`${FRAME} hover:border-accent/60`}>
+    <Link href={`/u/${encodeURIComponent(author.username)}?tab=schedule`} className={`${FRAME} hover:border-accent/60`}>
       {content}
     </Link>
   ) : (

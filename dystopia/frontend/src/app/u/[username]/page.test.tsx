@@ -5,10 +5,12 @@ import { emptyProfileView } from "@/modules/profile/lib/mappers";
 const mocks = vi.hoisted(() => ({
   profile: null as import("@/modules/profile/types").ProfileView | null,
   viewerRole: "guest" as "cast" | "guest",
+  search: "",
 }));
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ username: "profile_user" }),
+  useSearchParams: () => new URLSearchParams(mocks.search),
 }));
 
 vi.mock("@/modules/profile/hooks", () => ({
@@ -52,14 +54,14 @@ vi.mock("@/modules/post/components/ProfileContentTabs", () => ({
   ProfileContentTabs: ({
     leadingTabs,
     extraTabs,
-    renderAboveTabs,
+    initialTab,
   }: {
     leadingTabs?: { id: string; label: string }[];
     extraTabs?: { id: string; label: string }[];
-    renderAboveTabs?: (tab: string, selectTab: (id: string) => void) => import("react").ReactNode;
+    initialTab?: string;
   }) => (
     <div>
-      {renderAboveTabs?.("posts", () => {})}
+      <span>{`initial-tab:${initialTab ?? ""}`}</span>
       {[...(leadingTabs ?? []), ...(extraTabs ?? [])].map((t) => (
         <span key={t.id}>{t.label}</span>
       ))}
@@ -68,7 +70,6 @@ vi.mock("@/modules/post/components/ProfileContentTabs", () => ({
 }));
 vi.mock("@/modules/schedule", () => ({
   ScheduleTab: () => null,
-  WeeklyScheduleSummary: () => <span>weekly-summary</span>,
 }));
 
 const { default: PublicProfilePage } = await import("./page");
@@ -152,24 +153,40 @@ describe("PublicProfilePage karte tab visibility", () => {
 });
 
 describe("PublicProfilePage tabs", () => {
-  it("leads a cast profile with schedules and reviews and shows the weekly summary", () => {
+  it("leads a cast profile with schedules and reviews", () => {
     mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
     mocks.viewerRole = "guest";
+    mocks.search = "";
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
     expect(html).toContain(">予定<");
     expect(html.indexOf(">予定<")).toBeLessThan(html.indexOf("クチコミ"));
-    expect(html).toContain("weekly-summary");
   });
 
-  it("gives a guest profile no weekly summary", () => {
-    mocks.profile = { ...emptyProfileView("profile-1"), role: 1 };
-    mocks.viewerRole = "cast";
+  it("puts nothing above the tabs, so switching tabs keeps the page in place", () => {
+    mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
+    mocks.search = "";
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
-    expect(html).not.toContain("weekly-summary");
+    expect(html).not.toContain("今週の予定");
+  });
+
+  it("opens the tab named in the URL", () => {
+    mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
+    mocks.search = "tab=schedule";
+
+    expect(renderToStaticMarkup(<PublicProfilePage />)).toContain("initial-tab:schedule");
+  });
+
+  it("puts the karte tab before reviews on a guest profile seen by a cast", () => {
+    mocks.profile = { ...emptyProfileView("profile-1"), role: 1 };
+    mocks.viewerRole = "cast";
+    mocks.search = "";
+
+    const html = renderToStaticMarkup(<PublicProfilePage />);
+
     expect(html.indexOf("カルテ")).toBeLessThan(html.indexOf("クチコミ"));
   });
 });
