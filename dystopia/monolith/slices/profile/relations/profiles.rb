@@ -11,6 +11,7 @@ module Profile
         attribute :cover_media_id, Types::String.optional
         attribute :website, Types::String.optional
         attribute :prefecture, Types::String.optional
+        attribute :area, Types::String.optional
         attribute :is_private, Types::Bool
         attribute :follow_approval_required, Types::Bool
         attribute :registered_at, Types::Time.optional

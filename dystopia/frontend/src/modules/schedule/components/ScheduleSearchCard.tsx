@@ -5,9 +5,10 @@ import { ProfileName } from "@/components/ui/profile-name";
 import { FollowButton } from "@/modules/social/components/FollowButton";
 import { ScheduleSummary } from "./ScheduleSummary";
 import type { ScheduleSearchResultView } from "@/modules/schedule/types";
+import { formatLocation } from "@/modules/profile/lib/constants";
 
 export function ScheduleSearchCard({ result }: { result: ScheduleSearchResultView }) {
-  const { schedule, profile, prefecture, note } = result;
+  const { schedule, profile, prefecture, area, note } = result;
   const href = `/u/${encodeURIComponent(profile.username)}?tab=schedule`;
 
   return (
@@ -20,7 +21,7 @@ export function ScheduleSearchCard({ result }: { result: ScheduleSearchResultVie
           </p>
           <p className="truncate text-sm text-text-secondary">@{profile.username}</p>
         </Link>
-        {prefecture && <span className="shrink-0 text-sm text-text-secondary">{prefecture}</span>}
+        {prefecture && <span className="shrink-0 text-sm text-text-secondary">{formatLocation(prefecture, area)}</span>}
       </div>
       {note && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-text-primary">{note}</p>}
       <ScheduleSummary

@@ -204,3 +204,45 @@ describe("EditProfileSheet", () => {
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ followApprovalRequired: false }));
   });
 });
+
+describe("EditProfileSheet main area", () => {
+  async function choose(selector: string, value: string) {
+    const select = document.querySelector(selector) as HTMLSelectElement;
+    await act(async () => {
+      select.value = value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
+  it("offers the areas of the chosen prefecture, clears the area with the prefecture and saves both", async () => {
+    document.body.innerHTML = "";
+    const onSave = vi.fn(async () => {});
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    await act(async () => {
+      createRoot(container).render(
+        createElement(EditProfileSheet, {
+          open: true,
+          onOpenChange: () => {},
+          profile: { ...emptyProfileView("p1"), displayName: "ゆな", username: "yuna", prefecture: "東京都", area: "新宿" },
+          isCast: true,
+          onSave,
+          onSaveMedia: async () => {},
+        })
+      );
+    });
+
+    expect(document.body.textContent).toContain("主要エリア");
+    expect((document.querySelector("#area") as HTMLSelectElement).value).toBe("新宿");
+    expect(Array.from(document.querySelectorAll("#area option"), (option) => option.textContent)).not.toContain("梅田");
+
+    await choose("#prefecture", "大阪府");
+    expect((document.querySelector("#area") as HTMLSelectElement).value).toBe("");
+    await choose("#area", "梅田");
+    await act(async () => {
+      (Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "保存").at(-1) as HTMLButtonElement).click();
+    });
+
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ prefecture: "大阪府", area: "梅田" }));
+  });
+});

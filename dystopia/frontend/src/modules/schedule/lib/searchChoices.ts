@@ -1,6 +1,6 @@
 import type { ScheduleSearchFilters, ScheduleTimeBand } from "@/modules/discovery/types";
 import { todayInJapan } from "@/lib/utils/japan-date";
-import { PREFECTURES } from "@/modules/profile/lib/constants";
+import { INDUSTRIES, PREFECTURES, areasOf } from "@/modules/profile/lib/constants";
 import { buildDateRange } from "./dates";
 
 export type ScheduleSearchChoices = Omit<ScheduleSearchFilters, "query">;
@@ -18,19 +18,25 @@ export const TIME_BANDS: Array<{ id: ScheduleTimeBand; label: string }> = [
 export const searchDays = () => buildDateRange(new Date(`${todayInJapan()}T12:00:00`), DAYS);
 
 export function defaultSearchChoices(): ScheduleSearchChoices {
-  return { date: searchDays()[0], prefecture: "", timeBand: "", followingOnly: false };
+  return { date: searchDays()[0], prefecture: "", area: "", industry: "", timeBand: "", followingOnly: false };
 }
 
 export function parseSearchChoices(params: Pick<URLSearchParams, "get"> | null): ScheduleSearchChoices {
   const defaults = defaultSearchChoices();
   const date = params?.get("date") ?? "";
   const prefecture = params?.get("prefecture") ?? "";
+  const area = params?.get("area") ?? "";
+  const industry = params?.get("industry") ?? "";
   const timeBand = TIME_BANDS.find((band) => band.id === params?.get("timeBand"))?.id;
 
-  // FALLBACK: A date outside the search range, an unknown area or an unknown start band falls back to the default.
+  const knownPrefecture = PREFECTURES.some((p) => p === prefecture);
+
+  // FALLBACK: A date outside the search range, an unknown prefecture, area, industry or start band falls back to the default.
   return {
     date: searchDays().includes(date) ? date : defaults.date,
-    prefecture: PREFECTURES.some((p) => p === prefecture) ? prefecture : defaults.prefecture,
+    prefecture: knownPrefecture ? prefecture : defaults.prefecture,
+    area: knownPrefecture && areasOf(prefecture).includes(area) ? area : defaults.area,
+    industry: INDUSTRIES.some((i) => i.name === industry) ? industry : defaults.industry,
     timeBand: timeBand ?? defaults.timeBand,
     followingOnly: params?.get("following") === "1",
   };
@@ -40,6 +46,8 @@ export function writeSearchChoices(params: URLSearchParams, choices: ScheduleSea
   const defaults = defaultSearchChoices();
   if (choices.date !== defaults.date) params.set("date", choices.date);
   if (choices.prefecture !== defaults.prefecture) params.set("prefecture", choices.prefecture);
+  if (choices.area !== defaults.area) params.set("area", choices.area);
+  if (choices.industry !== defaults.industry) params.set("industry", choices.industry);
   if (choices.timeBand !== defaults.timeBand) params.set("timeBand", choices.timeBand);
   if (choices.followingOnly) params.set("following", "1");
 }

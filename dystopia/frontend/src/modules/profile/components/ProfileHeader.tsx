@@ -6,7 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { LockMark } from "@/components/ui/lock-mark";
 import type { ProfileView } from "@/modules/profile/types";
 import { formatBodyStats, formatHeight } from "@/modules/profile/lib/format";
-import { industryIcon } from "@/modules/profile/lib/constants";
+import { formatLocation, industryIcon } from "@/modules/profile/lib/constants";
 
 const SNS_LABELS: { key: keyof ProfileView["snsLinks"]; label: string }[] = [
   { key: "x", label: "X" },
@@ -83,7 +83,9 @@ export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
             {isCast ? "キャスト" : "ゲスト"}
           </span>
           {profile.prefecture && (
-            <span className="rounded-full bg-text-secondary/10 px-2.5 py-0.5 text-xs text-text-secondary">{profile.prefecture}</span>
+            <span className="rounded-full bg-text-secondary/10 px-2.5 py-0.5 text-xs text-text-secondary">
+              {formatLocation(profile.prefecture, profile.area)}
+            </span>
           )}
         </div>
         {profile.website && (

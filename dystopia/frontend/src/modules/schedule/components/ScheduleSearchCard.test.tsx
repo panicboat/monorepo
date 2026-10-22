@@ -34,6 +34,7 @@ const BASE: ScheduleSearchResultView = {
   schedule: { profileId: "cast-1", workDate: "2026-10-22", startTime: "16:00", endTime: "22:00" },
   profile: { profileId: "cast-1", username: "suzu_21", displayName: "すず", avatarUrl: "", isPrivate: false, role: "cast", industry: "箱ヘル" },
   prefecture: "東京都",
+  area: "",
   note: "",
 };
 
@@ -44,6 +45,7 @@ interface Overrides {
   schedule?: Partial<ScheduleSearchResultView["schedule"]>;
   profile?: Partial<ScheduleSearchResultView["profile"]>;
   prefecture?: string;
+  area?: string;
   note?: string;
 }
 
@@ -113,6 +115,12 @@ describe("ScheduleSearchCard", () => {
     await mount({ profile: { industry: "未登録の業種" } });
     expect(container.querySelector('[role="img"]')).toBeNull();
     expect(container.textContent).not.toContain("未登録の業種");
+  });
+
+  it("shows the main area after the prefecture", async () => {
+    await mount({ area: "新宿" });
+
+    expect(container.textContent).toContain("東京都 / 新宿");
   });
 
   it("shows no area when the profile has none", async () => {

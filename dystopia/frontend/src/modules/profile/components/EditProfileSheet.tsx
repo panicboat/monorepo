@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/ui/form-field";
 import { Toggle } from "@/components/ui/toggle";
 import { useUsernameAvailability } from "@/modules/profile/hooks/useUsernameCheck";
-import { PREFECTURES, CUP_SIZES, INDUSTRIES } from "@/modules/profile/lib/constants";
+import { PREFECTURES, CUP_SIZES, INDUSTRIES, areasOf } from "@/modules/profile/lib/constants";
 import type { ProfileView, SaveProfilePayload } from "@/modules/profile/types";
 import { ImageUpload } from "@/modules/profile/components/ImageUpload";
 
@@ -29,6 +29,7 @@ interface FormState {
   displayName: string;
   bio: string;
   prefecture: string;
+  area: string;
   website: string;
   age: string;
   heightCm: string;
@@ -53,6 +54,7 @@ function toForm(p: ProfileView): FormState {
     displayName: p.displayName,
     bio: p.bio,
     prefecture: p.prefecture,
+    area: p.area,
     website: p.website,
     age: p.age ? String(p.age) : "",
     heightCm: p.bodyStats.heightCm ? String(p.bodyStats.heightCm) : "",
@@ -85,6 +87,7 @@ function buildPayload(f: FormState, isCast: boolean): SaveProfilePayload {
       cityheaven: f.snsCityheaven,
     },
     prefecture: f.prefecture,
+    area: f.area,
     isPrivate: f.isPrivate,
     followApprovalRequired: f.followApprovalRequired,
     age: isCast ? Number(f.age) || 0 : 0,
@@ -110,6 +113,7 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
   const username = useUsernameAvailability(form.username, profile.username);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const areaChoices = areasOf(form.prefecture);
 
   const handleSave = async () => {
     setSaving(true);
@@ -173,15 +177,32 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
           />
         </FormField>
 
-        <FormField label="場所" htmlFor="prefecture">
-          <Select id="prefecture" value={form.prefecture} onChange={(e) => set("prefecture", e.target.value)}>
-            <option value="">未選択</option>
-            {PREFECTURES.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </Select>
+        <FormField label="主要エリア" htmlFor="prefecture">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Select
+              id="prefecture"
+              aria-label="都道府県"
+              value={form.prefecture}
+              onChange={(e) => setForm((f) => ({ ...f, prefecture: e.target.value, area: "" }))}
+            >
+              <option value="">未選択</option>
+              {PREFECTURES.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </Select>
+            {areaChoices.length > 0 && (
+              <Select id="area" aria-label="エリア" value={form.area} onChange={(e) => set("area", e.target.value)}>
+                <option value="">エリアを選ばない</option>
+                {areaChoices.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </div>
         </FormField>
 
         <FormField label="ウェブサイト" htmlFor="website">

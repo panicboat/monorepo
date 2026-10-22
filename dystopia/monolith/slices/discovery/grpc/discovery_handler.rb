@@ -91,6 +91,8 @@ module Discovery
           viewer_profile_id: current_profile_id,
           work_date: m.work_date,
           prefecture: m.prefecture,
+          area: m.area,
+          industry: m.industry,
           time_band: m.time_band,
           following_only: m.following_only,
           query: m.query,
@@ -142,6 +144,7 @@ module Discovery
           ),
           profile: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(entry.summary),
           prefecture: entry.prefecture,
+          area: entry.area,
           note: entry.note
         )
       end

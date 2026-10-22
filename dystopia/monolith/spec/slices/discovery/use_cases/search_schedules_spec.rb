@@ -35,8 +35,8 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
     result[:results].map { |entry| entry.summary.profile_id }
   end
 
-  it "returns each cast's schedule with the summary, the prefecture and an empty note" do
-    suzu = cast(display_name: "Suzu", prefecture: "東京都")
+  it "returns each cast's schedule with the summary, the prefecture, the area and an empty note" do
+    suzu = cast(display_name: "Suzu", prefecture: "東京都", area: "新宿")
     schedule(suzu, start_time: "16:00")
 
     entry = search[:results].first
@@ -44,6 +44,7 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
     expect(entry.schedule).to include(profile_id: suzu, work_date: Date.new(2026, 10, 22), start_time: "16:00", end_time: "02:00")
     expect(entry.summary).to have_attributes(profile_id: suzu, display_name: "Suzu", role: 2)
     expect(entry.prefecture).to eq("東京都")
+    expect(entry.area).to eq("新宿")
     expect(entry.note).to eq("")
   end
 
@@ -98,6 +99,21 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
     expect(profile_ids(search(prefecture: "東京都"))).to contain_exactly(tokyo, other)
     expect(profile_ids(search(query: "SUZU"))).to contain_exactly(tokyo, osaka)
     expect(profile_ids(search(prefecture: "東京都", query: "suzu"))).to eq([tokyo])
+  end
+
+  it "narrows by area and by industry" do
+    shinjuku_soap = cast(prefecture: "東京都", area: "新宿")
+    shinjuku_delivery = cast(prefecture: "東京都", area: "新宿")
+    ikebukuro_soap = cast(prefecture: "東京都", area: "池袋")
+    db = Hanami.app["db.gateway"].connection
+    db[:profile__casts].insert(profile_id: shinjuku_soap, industry: "ソープ")
+    db[:profile__casts].insert(profile_id: shinjuku_delivery, industry: "デリヘル")
+    db[:profile__casts].insert(profile_id: ikebukuro_soap, industry: "ソープ")
+    [shinjuku_soap, shinjuku_delivery, ikebukuro_soap].each { |profile| schedule(profile) }
+
+    expect(profile_ids(search(prefecture: "東京都", area: "新宿"))).to contain_exactly(shinjuku_soap, shinjuku_delivery)
+    expect(profile_ids(search(industry: "ソープ"))).to contain_exactly(shinjuku_soap, ikebukuro_soap)
+    expect(profile_ids(search(prefecture: "東京都", area: "新宿", industry: "ソープ"))).to eq([shinjuku_soap])
   end
 
   it "ignores a leading @ in the name, as the card shows the username" do

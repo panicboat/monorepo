@@ -16,6 +16,7 @@ const profile: ProfileView = {
   website: "",
   snsLinks: { x: "", instagram: "", tiktok: "", bluesky: "", line: "", cityheaven: "" },
   prefecture: "東京都",
+  area: "",
   isPrivate: false,
   followApprovalRequired: false,
   registeredAt: "",
@@ -85,6 +86,12 @@ describe("ProfileHeader", () => {
 
     expect(html).toContain(">東京都</span>");
     expect(html.match(/📍/g)).toHaveLength(1);
+  });
+
+  it("shows the main area after the prefecture", () => {
+    const html = renderToStaticMarkup(<ProfileHeader profile={{ ...profile, area: "新宿" }} role="cast" />);
+
+    expect(html).toContain(">東京都 / 新宿</span>");
   });
 
   it("shows the industry as text when it has no icon", () => {

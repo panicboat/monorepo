@@ -163,21 +163,25 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     end
   end
 
-  describe "#visible_cast_prefectures" do
+  describe "#visible_cast_areas" do
     let(:cast_account) { create_account(role: 2) }
 
     def deactivate(account)
       Hanami.app["db.gateway"].connection[:identity__accounts].where(id: account).update(deactivated_at: Time.now)
     end
 
-    it "returns the prefecture of each visible cast, keyed by profile id" do
-      tokyo = create_profile(owner: cast_account, username: "cast_tokyo", prefecture: "東京都")
+    it "returns the prefecture and the area of each visible cast, keyed by profile id" do
+      tokyo = create_profile(owner: cast_account, username: "cast_tokyo", prefecture: "東京都", area: "新宿")
       osaka = create_profile(owner: create_account(role: 2), username: "cast_osaka", prefecture: "大阪府")
       unset = create_profile(owner: create_account(role: 2), username: "cast_unset")
 
-      result = repo.visible_cast_prefectures
+      result = repo.visible_cast_areas
 
-      expect(result).to include(tokyo.id => "東京都", osaka.id => "大阪府", unset.id => "")
+      expect(result).to include(
+        tokyo.id => { prefecture: "東京都", area: "新宿" },
+        osaka.id => { prefecture: "大阪府", area: "" },
+        unset.id => { prefecture: "", area: "" }
+      )
     end
 
     it "leaves out guests, disabled profiles and deactivated accounts" do
@@ -188,7 +192,7 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
       deactivate(deactivated_account)
       visible = create_profile(owner: cast_account, prefecture: "東京都")
 
-      result = repo.visible_cast_prefectures(prefecture: "東京都")
+      result = repo.visible_cast_areas(prefecture: "東京都")
 
       expect(result.keys).to include(visible.id)
       expect(result.keys).not_to include(guest.id, disabled.id, deactivated.id)
@@ -198,8 +202,28 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
       tokyo = create_profile(owner: cast_account, prefecture: "東京都")
       osaka = create_profile(owner: create_account(role: 2), prefecture: "大阪府")
 
-      expect(repo.visible_cast_prefectures(prefecture: "東京都").keys).to include(tokyo.id)
-      expect(repo.visible_cast_prefectures(prefecture: "東京都").keys).not_to include(osaka.id)
+      expect(repo.visible_cast_areas(prefecture: "東京都").keys).to include(tokyo.id)
+      expect(repo.visible_cast_areas(prefecture: "東京都").keys).not_to include(osaka.id)
+    end
+
+    it "narrows by area" do
+      shinjuku = create_profile(owner: cast_account, prefecture: "東京都", area: "新宿")
+      ikebukuro = create_profile(owner: create_account(role: 2), prefecture: "東京都", area: "池袋")
+
+      expect(repo.visible_cast_areas(prefecture: "東京都", area: "新宿").keys).to include(shinjuku.id)
+      expect(repo.visible_cast_areas(prefecture: "東京都", area: "新宿").keys).not_to include(ikebukuro.id)
+    end
+
+    it "narrows by the industry of the cast" do
+      soap = create_profile(owner: cast_account)
+      delivery = create_profile(owner: create_account(role: 2))
+      unset = create_profile(owner: create_account(role: 2))
+      db = Hanami.app["db.gateway"].connection
+      db[:profile__casts].insert(profile_id: soap.id, industry: "ソープ")
+      db[:profile__casts].insert(profile_id: delivery.id, industry: "デリヘル")
+
+      expect(repo.visible_cast_areas(industry: "ソープ").keys).to include(soap.id)
+      expect(repo.visible_cast_areas(industry: "ソープ").keys).not_to include(delivery.id, unset.id)
     end
 
     it "narrows by display name or username, ignoring case" do
@@ -207,7 +231,7 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
       by_username = create_profile(owner: create_account(role: 2), display_name: "Other", username: "xx_NEEDLE_xx")
       neither = create_profile(owner: create_account(role: 2), display_name: "Other", username: "plain_two")
 
-      result = repo.visible_cast_prefectures(query: "needle")
+      result = repo.visible_cast_areas(query: "needle")
 
       expect(result.keys).to contain_exactly(by_name.id, by_username.id)
       expect(result.keys).not_to include(neither.id)
@@ -217,8 +241,8 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
       literal = create_profile(owner: cast_account, display_name: "100%_sure")
       other = create_profile(owner: create_account(role: 2), display_name: "100 sure")
 
-      expect(repo.visible_cast_prefectures(query: "100%_").keys).to eq([literal.id])
-      expect(repo.visible_cast_prefectures(query: "100%_").keys).not_to include(other.id)
+      expect(repo.visible_cast_areas(query: "100%_").keys).to eq([literal.id])
+      expect(repo.visible_cast_areas(query: "100%_").keys).not_to include(other.id)
     end
 
     it "combines the prefecture and the query" do
@@ -226,7 +250,7 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
       create_profile(owner: create_account(role: 2), display_name: "Both", prefecture: "大阪府")
       create_profile(owner: create_account(role: 2), display_name: "Other", prefecture: "東京都")
 
-      expect(repo.visible_cast_prefectures(prefecture: "東京都", query: "Both").keys).to eq([match.id])
+      expect(repo.visible_cast_areas(prefecture: "東京都", query: "Both").keys).to eq([match.id])
     end
   end
 

@@ -16,6 +16,8 @@ export async function GET(req: NextRequest) {
       {
         workDate: params.get("date") || "",
         prefecture: params.get("prefecture") || "",
+        area: params.get("area") || "",
+        industry: params.get("industry") || "",
         timeBand: params.get("timeBand") || "",
         followingOnly: params.get("followingOnly") === "true",
         query: params.get("q") || "",
@@ -28,7 +30,7 @@ export async function GET(req: NextRequest) {
       // FALLBACK: Skip a result the server sent without its schedule or profile.
       results: (res.results || []).flatMap((r) =>
         r.schedule && r.profile
-          ? [{ schedule: mapScheduleToView(r.schedule), profile: summaryToView(r.profile), prefecture: r.prefecture, note: r.note }]
+          ? [{ schedule: mapScheduleToView(r.schedule), profile: summaryToView(r.profile), prefecture: r.prefecture, area: r.area, note: r.note }]
           : []
       ),
       nextCursor: res.nextCursor || "",

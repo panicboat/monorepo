@@ -27,6 +27,7 @@ function resultFor(profileId: string): ScheduleSearchResultView {
     schedule: { profileId, workDate: "2026-10-23", startTime: "20:00", endTime: "02:00" },
     profile: { profileId, username: profileId, displayName: `name-${profileId}`, avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
     prefecture: "東京都",
+    area: "",
     note: "",
   };
 }
@@ -76,8 +77,10 @@ function click(el: Element) {
   });
 }
 
-async function chooseArea(value: string) {
-  const select = container.querySelector("select") as HTMLSelectElement;
+const selectNamed = (label: string) => container.querySelector(`select[aria-label="${label}"]`) as HTMLSelectElement | null;
+
+async function choose(label: string, value: string) {
+  const select = selectNamed(label)!;
   await act(async () => {
     select.value = value;
     select.dispatchEvent(new Event("change", { bubbles: true }));
@@ -144,7 +147,7 @@ describe("ScheduleSearchPanel filters", () => {
   it("starts on every area, every start band and the following switch off", async () => {
     await mount();
 
-    expect(lastFilters()).toEqual({ date: "2026-10-23", prefecture: "", timeBand: "", followingOnly: false, query: "" });
+    expect(lastFilters()).toEqual({ date: "2026-10-23", prefecture: "", area: "", industry: "", timeBand: "", followingOnly: false, query: "" });
     const select = container.querySelector("select") as HTMLSelectElement;
     expect(select.selectedOptions[0].textContent).toBe("全国");
     expect(Array.from(select.options)).toHaveLength(48);
@@ -163,7 +166,7 @@ describe("ScheduleSearchPanel filters", () => {
     expect(chipsIn("出勤日")[2].getAttribute("aria-pressed")).toBe("true");
     expect(chip("出勤日", "今日").getAttribute("aria-pressed")).toBe("false");
 
-    await chooseArea("大阪府");
+    await choose("都道府県", "大阪府");
     expect(lastFilters().prefecture).toBe("大阪府");
 
     await click(chip("勤務時間帯", "夜（18〜21時）"));
@@ -177,16 +180,44 @@ describe("ScheduleSearchPanel filters", () => {
 
     await click(container.querySelector('[role="switch"]')!);
     expect(lastFilters().followingOnly).toBe(true);
-    expect(lastFilters()).toEqual({ date: "2026-10-25", prefecture: "大阪府", timeBand: "", followingOnly: true, query: "" });
+    expect(lastFilters()).toEqual({ date: "2026-10-25", prefecture: "大阪府", area: "", industry: "", timeBand: "", followingOnly: true, query: "" });
 
-    await chooseArea("");
+    await choose("都道府県", "");
     expect(lastFilters().prefecture).toBe("");
   });
 
-  it("starts from the choices it is given", async () => {
-    await mount("", { date: "2026-10-25", prefecture: "東京都", timeBand: "night", followingOnly: true });
+  it("offers the areas of the chosen prefecture and clears the area when the prefecture changes", async () => {
+    await mount();
+    expect(selectNamed("エリア")).toBeNull();
 
-    expect(lastFilters()).toEqual({ date: "2026-10-25", prefecture: "東京都", timeBand: "night", followingOnly: true, query: "" });
+    await choose("都道府県", "東京都");
+    const areas = Array.from(selectNamed("エリア")!.options, (option) => option.textContent);
+    expect(areas[0]).toBe("東京都のすべて");
+    expect(areas).toContain("新宿");
+    expect(areas).not.toContain("梅田");
+
+    await choose("エリア", "新宿");
+    expect(lastFilters()).toMatchObject({ prefecture: "東京都", area: "新宿" });
+
+    await choose("都道府県", "大阪府");
+    expect(lastFilters()).toMatchObject({ prefecture: "大阪府", area: "" });
+    expect(selectNamed("エリア")!.value).toBe("");
+  });
+
+  it("passes the industry that is chosen", async () => {
+    await mount();
+    const industries = Array.from(selectNamed("業種")!.options, (option) => option.textContent);
+    expect(industries.slice(0, 3)).toEqual(["すべて", "ソープ", "デリヘル"]);
+
+    await choose("業種", "ソープ");
+
+    expect(lastFilters().industry).toBe("ソープ");
+  });
+
+  it("starts from the choices it is given", async () => {
+    await mount("", { date: "2026-10-25", prefecture: "東京都", area: "", industry: "", timeBand: "night", followingOnly: true });
+
+    expect(lastFilters()).toEqual({ date: "2026-10-25", prefecture: "東京都", area: "", industry: "", timeBand: "night", followingOnly: true, query: "" });
     expect(chipsIn("出勤日")[2].getAttribute("aria-pressed")).toBe("true");
     expect((container.querySelector("select") as HTMLSelectElement).value).toBe("東京都");
     expect(chip("勤務時間帯", "深夜（21時〜翌5時）").getAttribute("aria-pressed")).toBe("true");
@@ -197,16 +228,16 @@ describe("ScheduleSearchPanel filters", () => {
     await mount();
 
     await click(chipsIn("出勤日")[1]);
-    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "", timeBand: "", followingOnly: false });
+    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "", area: "", industry: "", timeBand: "", followingOnly: false });
 
-    await chooseArea("大阪府");
-    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", timeBand: "", followingOnly: false });
+    await choose("都道府県", "大阪府");
+    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", area: "", industry: "", timeBand: "", followingOnly: false });
 
     await click(chip("勤務時間帯", "夜（18〜21時）"));
-    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", timeBand: "evening", followingOnly: false });
+    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", area: "", industry: "", timeBand: "evening", followingOnly: false });
 
     await click(container.querySelector('[role="switch"]')!);
-    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", timeBand: "evening", followingOnly: true });
+    expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "大阪府", area: "", industry: "", timeBand: "evening", followingOnly: true });
     expect(mocks.onChoicesChange).toHaveBeenCalledTimes(4);
   });
 
@@ -254,10 +285,10 @@ describe("ScheduleSearchPanel results", () => {
     const EMPTY_DAY = "この日の出勤予定はまだありません";
 
     await mount();
-    await chooseArea("大阪府");
+    await choose("都道府県", "大阪府");
     expect(container.textContent).toContain(NARROWED);
     expect(container.textContent).not.toContain(EMPTY_DAY);
-    await chooseArea("");
+    await choose("都道府県", "");
     expect(container.textContent).toContain(EMPTY_DAY);
     expect(container.textContent).not.toContain(NARROWED);
 

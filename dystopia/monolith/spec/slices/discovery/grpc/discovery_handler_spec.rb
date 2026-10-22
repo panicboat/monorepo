@@ -160,9 +160,9 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
       schedule_repo.upsert(profile_id: profile, work_date: "2026-10-22", start_time: start_time, end_time: "02:00")
     end
 
-    it "returns the schedule, the profile summary, the prefecture and the note of each cast" do
+    it "returns the schedule, the profile summary, the prefecture, the area and the note of each cast" do
       db = Hanami.app["db.gateway"].connection
-      db[:profile__profiles].where(id: public_cast).update(prefecture: "東京都")
+      db[:profile__profiles].where(id: public_cast).update(prefecture: "東京都", area: "新宿")
       db[:profile__casts].insert(profile_id: public_cast, industry: "fuzoku")
       row = schedule(public_cast, start_time: "16:00")
       announcement = post_repo.create_post(author_profile_id: public_cast, content: "hello", visibility: "public", published_at: Time.now - 60, expires_at: Time.now + 3600)
@@ -175,7 +175,11 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
       expect(result.schedule).to eq(Schedule::V1::Schedule.new(profile_id: public_cast, work_date: "2026-10-22", start_time: "16:00", end_time: "02:00"))
       expect(result.profile).to have_attributes(profile_id: public_cast, username: "discovery_public", role: 2, industry: "fuzoku")
       expect(result.prefecture).to eq("東京都")
+      expect(result.area).to eq("新宿")
       expect(result.note).to eq("hello")
+      expect(search_schedules(prefecture: "東京都", area: "新宿", industry: "fuzoku").results.map { |entry| entry.profile.profile_id }).to eq([public_cast])
+      expect(search_schedules(area: "池袋").results).to be_empty
+      expect(search_schedules(industry: "ソープ").results).to be_empty
     end
 
     it "shows private casts, hides the ones the acting profile is blocked with, and limits following_only to approved follows" do

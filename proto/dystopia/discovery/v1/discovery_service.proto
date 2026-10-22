@@ -77,6 +77,8 @@ message SearchSchedulesRequest {
   string query = 5;
   int32 limit = 6;
   string cursor = 7;
+  string area = 8;
+  string industry = 9;
 }
 
 message ScheduleSearchResult {
@@ -84,6 +86,7 @@ message ScheduleSearchResult {
   profile.v1.ProfileSummary profile = 2;
   string prefecture = 3;
   string note = 4;
+  string area = 5;
 }
 
 message SearchSchedulesResponse {
