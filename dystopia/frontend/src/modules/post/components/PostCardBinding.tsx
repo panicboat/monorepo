@@ -5,10 +5,13 @@ import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
 import { profileDisplayName } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { formatMonthDayTimeInJapan } from "@/lib/utils/japan-date";
 import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
+import { selectActiveProfileId, useAuthStore } from "@/stores/authStore";
 import { PostText } from "@/modules/post/lib/post-text";
+import { displayStateOf } from "@/modules/post/lib/display-window";
 import type { PostView } from "@/modules/post/lib/post-view";
 import { usePostLike } from "@/modules/post/hooks/usePostLike";
 import { useBookmark } from "@/modules/bookmarks";
@@ -27,6 +30,17 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
   const liked = isLiked(post.id, post.liked);
   const likesCount = getLikesCount(post.id, post.likesCount);
   const commentsCount = usePostCommentCountStore((s) => s.counts[post.id]) ?? post.commentsCount;
+
+  const viewerId = useAuthStore(selectActiveProfileId);
+  const isOwnPost = !!viewerId && viewerId === post.authorProfileId;
+  const displayState = isOwnPost ? displayStateOf(post) : "live";
+  const statusMark =
+    displayState === "scheduled"
+      ? `予約 ${formatMonthDayTimeInJapan(post.publishedAt)} から`
+      : displayState === "expired"
+        ? "表示終了"
+        : undefined;
+  const postedAt = post.publishedAt || post.createdAt;
 
   const authorName = profileDisplayName(post.author);
   const authorHandle = post.author?.username ?? "";
@@ -113,7 +127,8 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
       authorHref={authorHref}
       detailHref={inDetail ? undefined : href}
       onDetailClick={inDetail ? undefined : openDetail}
-      time={post.createdAt ? formatTimeAgo(post.createdAt) : ""}
+      time={postedAt && displayState !== "scheduled" ? formatTimeAgo(postedAt) : ""}
+      statusMark={statusMark}
       isPrivate={post.visibility === "private"}
       body={<PostText content={post.content} mentions={post.mentions} hashtags={post.hashtags} />}
       images={images.length > 0 ? images : undefined}

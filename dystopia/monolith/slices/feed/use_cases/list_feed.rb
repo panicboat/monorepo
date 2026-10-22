@@ -16,7 +16,7 @@ module Feed
 
       def call(filter:, viewer_profile_id:, prefecture: nil, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
-        decoded_cursor = decode_cursor(cursor)
+        decoded_cursor = decode_cursor(cursor, keys: [:published_at, :id])
         excluded = @block_adapter.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
 
         author_ids = case filter
@@ -46,8 +46,8 @@ module Feed
         truncated = has_more ? post_ids.first(limit) : post_ids
 
         next_cursor = if has_more && truncated.any?
-          last_created_at = post_repo.created_at_for_id(truncated.last)
-          last_created_at ? encode_cursor(created_at: last_created_at.iso8601, id: truncated.last) : nil
+          last_published_at = post_repo.published_at_for_id(truncated.last)
+          last_published_at ? encode_cursor(published_at: last_published_at.iso8601(6), id: truncated.last) : nil
         end
 
         { post_ids: truncated, next_cursor: next_cursor, has_more: has_more }

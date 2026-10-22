@@ -28,15 +28,16 @@ module Post
 
       def list_posts
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : decode_cursor(request.message.cursor)
+        cursor = request.message.cursor.empty? ? nil : decode_cursor(request.message.cursor, keys: [:published_at, :id])
         author_profile_id = request.message.author_profile_id.empty? ? nil : request.message.author_profile_id
         return ::Post::V1::ListPostsResponse.new(posts: [], next_cursor: "", has_more: false) if author_profile_id && !author_readable?(author_profile_id)
 
-        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_profile_id: author_profile_id, media_only: request.message.media_only, include_private: author_profile_id ? followers_only_readable?(author_profile_id) : false)
+        live_only = author_profile_id.nil? || author_profile_id != current_profile_id
+        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_profile_id: author_profile_id, media_only: request.message.media_only, include_private: author_profile_id ? followers_only_readable?(author_profile_id) : false, live_only: live_only)
         has_more = rows.length > limit
         rows = rows.first(limit) if has_more
         next_cursor = if has_more && rows.any?
-          encode_cursor(created_at: rows.last.created_at.iso8601, id: rows.last.id)
+          encode_cursor(published_at: rows.last.published_at.iso8601(6), id: rows.last.id)
         else
           ""
         end
@@ -69,13 +70,16 @@ module Post
         hashtags = m.hashtags.to_a
         mentions = extract_mentions.call(content: content)
         is_create = m.id.empty?
+        now = Time.now
 
         if is_create
-          post = post_repo.create_post(author_profile_id: current_profile_id, content: content, visibility: visibility)
+          published_at, expires_at = display_window(m, now: now)
+          post = post_repo.create_post(author_profile_id: current_profile_id, content: content, visibility: visibility, published_at: published_at, expires_at: expires_at)
         else
           existing = post_repo.find_by_id_and_author(id: m.id, author_profile_id: current_profile_id)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
-          post_repo.update_post(m.id, content: content, visibility: visibility)
+          published_at, expires_at = display_window(m, now: now, existing: existing)
+          post_repo.update_post(m.id, content: content, visibility: visibility, published_at: published_at, expires_at: expires_at)
           post = post_repo.find_by_id(m.id)
         end
 
@@ -84,7 +88,7 @@ module Post
         post_repo.save_mentions(post_id: post.id, mentions: mentions)
         post = post_repo.find_by_id(post.id)
 
-        if is_create
+        if is_create && published_at <= now
           mentions.uniq { |mention| mention[:profile_id] }
             .select { |mention| mention_visible?(mention[:profile_id], post) }
             .each do |mention|
@@ -114,6 +118,42 @@ module Post
       end
 
       private
+
+      def display_window(message, now:, existing: nil)
+        requested_start = parse_display_time(message.published_at)
+        requested_end = parse_display_time(message.expires_at)
+
+        published_at = if existing && existing.published_at <= now
+          if requested_start && requested_start.to_i != existing.published_at.to_i
+            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示開始は予約中の投稿だけ変更できます")
+          end
+
+          existing.published_at
+        else
+          if requested_start && requested_start <= now
+            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示開始は今より後の時刻を指定してください")
+          end
+
+          requested_start || now
+        end
+
+        # An end sent back unchanged may be past, so an expired post can still be edited.
+        unchanged_end = existing&.expires_at && requested_end&.to_i == existing.expires_at.to_i
+        expires_at = unchanged_end ? existing.expires_at : requested_end
+        if expires_at && (expires_at <= published_at || (!unchanged_end && expires_at <= now))
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示終了は表示開始と今より後の時刻を指定してください")
+        end
+
+        [published_at, expires_at]
+      end
+
+      def parse_display_time(value)
+        return nil if value.empty?
+
+        Time.iso8601(value)
+      rescue ArgumentError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "日時の形式が正しくありません")
+      end
 
       def mention_visible?(profile_id, post)
         viewer_can_see_post.call(viewer_profile_id: profile_id, post: post)

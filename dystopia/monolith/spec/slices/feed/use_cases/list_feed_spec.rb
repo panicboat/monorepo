@@ -109,4 +109,40 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
       expect(followers_feed).to eq([])
     end
   end
+
+  describe "the display window" do
+    let(:now) { Time.now }
+
+    it "lists only live posts, even the viewer's own" do
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: author, status: "approved")
+      live = post_repo.create_post(author_profile_id: author, content: "live", visibility: "public", published_at: now - 60)
+      own_live = post_repo.create_post(author_profile_id: viewer, content: "own live", visibility: "public", published_at: now - 60)
+      [author, viewer].each do |id|
+        post_repo.create_post(author_profile_id: id, content: "scheduled", visibility: "public", published_at: now + 3600)
+        post_repo.create_post(author_profile_id: id, content: "expired", visibility: "public", published_at: now - 7200, expires_at: now - 3600)
+      end
+
+      expect(uc.call(filter: "all", viewer_profile_id: viewer)[:post_ids]).to contain_exactly(live.id.to_s, own_live.id.to_s)
+      expect(uc.call(filter: "following", viewer_profile_id: viewer)[:post_ids]).to eq([live.id.to_s])
+    end
+
+    it "orders by the display start and pages through equal starts without gaps or repeats" do
+      shared = now - 60
+      tied = Array.new(3) { post_repo.create_post(author_profile_id: author, content: "tied", visibility: "public", published_at: shared) }
+      newest = post_repo.create_post(author_profile_id: author, content: "newest", visibility: "public", published_at: now - 30, created_at: now - 86_400)
+      oldest = post_repo.create_post(author_profile_id: author, content: "oldest", visibility: "public", published_at: now - 3600)
+
+      ids = []
+      cursor = nil
+      loop do
+        page = uc.call(filter: "all", viewer_profile_id: viewer, limit: 2, cursor: cursor)
+        ids.concat(page[:post_ids])
+        break unless page[:has_more]
+
+        cursor = page[:next_cursor]
+      end
+
+      expect(ids).to eq([newest.id.to_s, *tied.map { |post| post.id.to_s }.sort.reverse, oldest.id.to_s])
+    end
+  end
 end

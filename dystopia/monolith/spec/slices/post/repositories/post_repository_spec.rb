@@ -227,4 +227,79 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
       expect(repo.find_by_id(other.id)).not_to be_nil
     end
   end
+
+  describe "display window" do
+    let(:now) { Time.now }
+    let!(:live) { repo.create_post(author_profile_id: cast_id, content: "window live #w", visibility: "public", published_at: now - 3600, expires_at: now + 3600) }
+    let!(:scheduled) { repo.create_post(author_profile_id: cast_id, content: "window scheduled #w", visibility: "public", published_at: now + 3600) }
+    let!(:expired) { repo.create_post(author_profile_id: cast_id, content: "window expired #w", visibility: "public", published_at: now - 7200, expires_at: now - 3600) }
+
+    before { [live, scheduled, expired].each { |post| repo.save_hashtags(post_id: post.id, hashtags: ["w"]) } }
+
+    it "keeps feeds, search, hashtags and ranking to live posts" do
+      expect(repo.list_post_ids(viewer_profile_id: cast_id)).to eq([live.id])
+      expect(repo.search_by_content(query: "window")).to eq([live.id])
+      expect(repo.search_by_hashtag(tag: "w")).to eq([live.id])
+      expect(repo.top_by_likes(period: "all").map(&:first)).to eq([live.id])
+    end
+
+    it "keeps the profile list to live posts unless it lists every post" do
+      expect(repo.list_posts(author_profile_id: cast_id).map(&:id)).to eq([live.id])
+      expect(repo.list_posts(author_profile_id: cast_id, live_only: false).map(&:id)).to eq([scheduled.id, live.id, expired.id])
+    end
+
+    it "ranks by the display start for a period" do
+      late = repo.create_post(author_profile_id: cast_id, content: "late", visibility: "public", published_at: now - 60, created_at: now - (10 * 86_400))
+      early = repo.create_post(author_profile_id: cast_id, content: "early", visibility: "public", published_at: now - (3 * 86_400))
+
+      day = repo.top_by_likes(period: "day").map(&:first)
+
+      expect(day).to include(late.id, live.id)
+      expect(day).not_to include(early.id)
+    end
+
+    it "orders the feed by the display start and pages through equal starts without gaps or repeats" do
+      shared = now - 60
+      tied = Array.new(3) { repo.create_post(author_profile_id: cast_id, content: "tied", visibility: "public", published_at: shared) }
+      newest = repo.create_post(author_profile_id: cast_id, content: "newest", visibility: "public", published_at: now - 30, created_at: now - 86_400)
+
+      ids = []
+      cursor = nil
+      loop do
+        page = repo.list_post_ids(limit: 2, cursor: cursor, viewer_profile_id: cast_id)
+        ids.concat(page.first(2))
+        break if page.length <= 2
+
+        cursor = { published_at: repo.published_at_for_id(page[1]), id: page[1] }
+      end
+
+      expect(ids).to eq([newest.id, *tied.map(&:id).sort.reverse, live.id])
+    end
+
+    it "orders search and hashtags by the display start and pages through equal starts without gaps or repeats" do
+      shared = now - 60
+      tied = Array.new(3) do
+        repo.create_post(author_profile_id: cast_id, content: "window tied #w", visibility: "public", published_at: shared).tap { |post| repo.save_hashtags(post_id: post.id, hashtags: ["w"]) }
+      end
+      newest = repo.create_post(author_profile_id: cast_id, content: "window newest #w", visibility: "public", published_at: now - 30, created_at: now - 86_400)
+      repo.save_hashtags(post_id: newest.id, hashtags: ["w"])
+      expected = [newest.id, *tied.map(&:id).sort.reverse, live.id]
+
+      page_through = lambda do |search|
+        ids = []
+        cursor = nil
+        loop do
+          page = search.call(cursor)
+          ids.concat(page.first(2))
+          break if page.length <= 2
+
+          cursor = { published_at: repo.published_at_for_id(page[1]), id: page[1] }
+        end
+        ids
+      end
+
+      expect(page_through.call(->(cursor) { repo.search_by_content(query: "window", limit: 2, cursor: cursor) })).to eq(expected)
+      expect(page_through.call(->(cursor) { repo.search_by_hashtag(tag: "w", limit: 2, cursor: cursor) })).to eq(expected)
+    end
+  end
 end

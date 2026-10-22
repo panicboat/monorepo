@@ -62,6 +62,8 @@ export default function DevUiPage() {
       content: "新作のお洋服届きました！今日はこれで出勤します🌷",
       media: [],
       createdAt: "2026-06-08T11:55:00Z",
+      publishedAt: "2026-06-08T11:55:00Z",
+      expiresAt: "",
       author: {
         profileId: "demo",
         displayName: "ゆな",
@@ -83,6 +85,8 @@ export default function DevUiPage() {
       content: "今度の週末空いてる方いますか？",
       media: [],
       createdAt: "2026-06-08T11:00:00Z",
+      publishedAt: "2026-06-08T11:00:00Z",
+      expiresAt: "",
       author: {
         profileId: "guest-1",
         displayName: "ぱにっく",

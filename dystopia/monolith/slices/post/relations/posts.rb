@@ -10,6 +10,8 @@ module Post
         attribute :visibility, Types::String
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
+        attribute :published_at, Types::Time
+        attribute :expires_at, Types::Time.optional
 
         primary_key :id
 

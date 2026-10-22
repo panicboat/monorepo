@@ -39,6 +39,8 @@ message Post {
   repeated string hashtags = 10;
   bool liked = 11;
   repeated PostMention mentions = 12;
+  string published_at = 13;
+  string expires_at = 14;
 }
 
 message ListPostsRequest {
@@ -61,6 +63,8 @@ message SavePostRequest {
   repeated PostMedia media = 3;
   string visibility = 4;
   repeated string hashtags = 5;
+  string published_at = 6;
+  string expires_at = 7;
 }
 
 message SavePostResponse {

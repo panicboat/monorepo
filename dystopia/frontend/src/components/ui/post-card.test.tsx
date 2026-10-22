@@ -58,6 +58,19 @@ describe("PostCard", () => {
     expect(html).not.toContain('aria-label="非公開"');
   });
 
+  it("shows the status mark next to the time", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} statusMark="表示終了" />);
+
+    expect(html).toMatch(/· 1分前<\/span><span[^>]*>表示終了<\/span>/);
+  });
+
+  it("shows no status mark by default", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} />);
+
+    expect(html).not.toContain("表示終了");
+    expect(html).not.toContain("予約");
+  });
+
   it("leaves a public post unmarked", () => {
     const html = renderToStaticMarkup(<PostCard {...baseProps} />);
 

@@ -21,6 +21,8 @@ export interface PostView {
   content: string;
   media: PostMediaView[];
   createdAt: string;
+  publishedAt: string;
+  expiresAt: string;
   author: ProfileSummaryView | null;
   likesCount: number;
   commentsCount: number;
@@ -41,6 +43,8 @@ export interface SavePostPayload {
   media?: SavePostMediaInput[];
   visibility?: "public" | "private";
   hashtags?: string[];
+  publishedAt?: string;
+  expiresAt?: string;
 }
 
 export interface PostsListView {

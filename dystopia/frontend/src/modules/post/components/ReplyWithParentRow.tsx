@@ -49,7 +49,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
               size="sm"
             />
             <ProfileName profile={parentPost.author} />
-            <span>· {parentPost.createdAt ? formatTimeAgo(parentPost.createdAt) : ""}</span>
+            <span>· {parentPost.publishedAt || parentPost.createdAt ? formatTimeAgo(parentPost.publishedAt || parentPost.createdAt) : ""}</span>
           </div>
           <p className="mt-1 line-clamp-2 text-sm text-text-primary">
             <PostText content={parentPost.content} mentions={parentPost.mentions} hashtags={parentPost.hashtags} />

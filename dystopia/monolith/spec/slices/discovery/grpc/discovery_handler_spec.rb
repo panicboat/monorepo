@@ -66,6 +66,19 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     expect(rpc(:search_posts, Discovery::V1::SearchPostsRequest.new(query: "#spring")).posts.first.hashtags).to eq(["spring"])
   end
 
+  it "pages search results by the display start" do
+    now = Time.now
+    started = post_repo.create_post(author_profile_id: public_cast, content: "paged started", visibility: "public", published_at: now - 60, created_at: now - 86_400)
+    older = Array.new(2) { |i| post_repo.create_post(author_profile_id: public_cast, content: "paged older", visibility: "public", published_at: now - (3600 * (i + 1))) }
+    act_as(viewer)
+
+    first = rpc(:search_posts, Discovery::V1::SearchPostsRequest.new(query: "paged", limit: 2))
+    second = rpc(:search_posts, Discovery::V1::SearchPostsRequest.new(query: "paged", limit: 2, cursor: first.next_cursor))
+
+    expect(first.posts.map(&:id) + second.posts.map(&:id)).to eq([started.id, *older.map(&:id)])
+    expect(second.has_more).to be(false)
+  end
+
   it "searches and ranks posts as the acting profile is allowed to see them" do
     act_as(viewer)
     expect(searched_post_ids).to eq([public_post.id])
@@ -84,6 +97,16 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     post_repo.create_post(author_profile_id: public_cast, content: "discovery followers", visibility: "private")
     follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_cast, status: "approved")
     act_as(viewer)
+
+    expect(searched_post_ids).to eq([public_post.id])
+    expect(ranked_post_ids).to eq([public_post.id])
+  end
+
+  it "keeps scheduled and expired posts out of search and ranking" do
+    now = Time.now
+    post_repo.create_post(author_profile_id: public_cast, content: "discovery scheduled", visibility: "public", published_at: now + 3600)
+    post_repo.create_post(author_profile_id: public_cast, content: "discovery expired", visibility: "public", published_at: now - 7200, expires_at: now - 3600)
+    act_as(public_cast)
 
     expect(searched_post_ids).to eq([public_post.id])
     expect(ranked_post_ids).to eq([public_post.id])

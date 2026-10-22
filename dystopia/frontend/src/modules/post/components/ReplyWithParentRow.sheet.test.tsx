@@ -15,6 +15,8 @@ const parentPost = {
   content: "元の投稿",
   media: [],
   createdAt: new Date().toISOString(),
+  publishedAt: new Date().toISOString(),
+  expiresAt: "",
   author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "", isPrivate: false, role: null },
   likesCount: 0,
   commentsCount: 1,

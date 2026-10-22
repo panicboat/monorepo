@@ -12,15 +12,15 @@ module Discovery
 
       def call(query:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
-        decoded_cursor = decode_cursor(cursor)
+        decoded_cursor = decode_cursor(cursor, keys: [:published_at, :id])
 
         post_ids = matching_post_ids(query.to_s.strip, limit: limit, cursor: decoded_cursor)
         has_more = post_ids.length > limit
         truncated = has_more ? post_ids.first(limit) : post_ids
 
         next_cursor = if has_more && truncated.any?
-          last_created_at = post_repo.created_at_for_id(truncated.last)
-          last_created_at ? encode_cursor(created_at: last_created_at.iso8601, id: truncated.last) : nil
+          last_published_at = post_repo.published_at_for_id(truncated.last)
+          last_published_at ? encode_cursor(published_at: last_published_at.iso8601(6), id: truncated.last) : nil
         end
 
         post_protos_map = list_posts_uc.call(post_ids: truncated, viewer_profile_id: viewer_profile_id)

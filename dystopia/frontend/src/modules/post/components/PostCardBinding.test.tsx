@@ -1,11 +1,12 @@
 // @vitest-environment happy-dom
 // React 19's act() needs this flag because testing-library does not set it reliably.
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PostCardBinding } from "./PostCardBinding";
 import type { PostView } from "@/modules/post/lib/post-view";
+import { useAuthStore } from "@/stores/authStore";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: () => {} }),
@@ -24,6 +25,8 @@ const basePost: PostView = {
   content: "こんにちは",
   media: [],
   createdAt: new Date().toISOString(),
+  publishedAt: new Date().toISOString(),
+  expiresAt: "",
   author: {
     profileId: "author-1",
     displayName: "テスト太郎",
@@ -179,5 +182,105 @@ describe("PostCardBinding", () => {
       root.unmount();
     });
     container.remove();
+  });
+
+  describe("display window marks", () => {
+    const hours = (h: number) => new Date(Date.now() + h * 3600000).toISOString();
+    const asViewer = (profileId: string | null) => useAuthStore.setState({ activeProfileId: profileId });
+
+    afterEach(() => asViewer(null));
+
+    // The store is read from its initial state when rendering to a string, so the viewer only shows up in a mounted tree.
+    const renderMounted = async (post: PostView) => {
+      const container = document.createElement("div");
+      document.body.appendChild(container);
+      const root = createRoot(container);
+      await act(async () => {
+        root.render(<PostCardBinding post={post} />);
+      });
+      const html = container.innerHTML;
+      await act(async () => {
+        root.unmount();
+      });
+      container.remove();
+      return html;
+    };
+
+    it("marks the author's scheduled post with its start in Japan time", async () => {
+      asViewer("author-1");
+      const publishedAt = "2099-10-25T00:05:00.000Z";
+
+      const html = await renderMounted({ ...basePost, publishedAt });
+
+      expect(html).toContain("予約 10/25 09:05 から");
+    });
+
+    it("shows no elapsed time on the author's scheduled post", async () => {
+      asViewer("author-1");
+
+      const html = await renderMounted({ ...basePost, publishedAt: "2099-10-25T00:05:00.000Z" });
+
+      expect(html).not.toContain("·");
+      expect(html).not.toContain("now");
+    });
+
+    it("keeps the elapsed time on a live post", async () => {
+      asViewer("author-1");
+
+      const html = await renderMounted(basePost);
+
+      expect(html).toContain("·");
+    });
+
+    it("marks the author's expired post", async () => {
+      asViewer("author-1");
+
+      const html = await renderMounted({ ...basePost, publishedAt: hours(-5), expiresAt: hours(-1) });
+
+      expect(html).toContain("表示終了");
+      expect(html).not.toContain("予約");
+    });
+
+    it("shows no mark on a live post, with or without an end", async () => {
+      asViewer("author-1");
+
+      const plain = await renderMounted(basePost);
+      const withEnd = await renderMounted({ ...basePost, expiresAt: hours(5) });
+
+      for (const html of [plain, withEnd]) {
+        expect(html).not.toContain("予約");
+        expect(html).not.toContain("表示終了");
+      }
+    });
+
+    it("shows no mark to a viewer who is not the author", async () => {
+      asViewer("someone-else");
+
+      const scheduled = await renderMounted({ ...basePost, publishedAt: hours(5) });
+      const expired = await renderMounted({ ...basePost, publishedAt: hours(-5), expiresAt: hours(-1) });
+
+      for (const html of [scheduled, expired]) {
+        expect(html).not.toContain("予約");
+        expect(html).not.toContain("表示終了");
+      }
+    });
+
+    it("dates the post by its display start rather than its creation", () => {
+      const createdAt = new Date(Date.now() - 3 * 86400000).toISOString();
+
+      const html = renderToStaticMarkup(
+        <PostCardBinding post={{ ...basePost, createdAt, publishedAt: new Date().toISOString() }} />
+      );
+
+      expect(html).toMatch(/· (<!-- -->)?now</);
+    });
+
+    it("falls back to the creation time when there is no display start", () => {
+      const createdAt = new Date(Date.now() - 3 * 86400000).toISOString();
+
+      const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, createdAt, publishedAt: "" }} />);
+
+      expect(html).toMatch(/· (<!-- -->)?3d ago</);
+    });
   });
 });

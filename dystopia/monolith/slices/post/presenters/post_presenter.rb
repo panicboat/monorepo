@@ -22,7 +22,9 @@ module Post
           visibility: post.respond_to?(:visibility) ? post.visibility : "public",
           hashtags: hashtags.sort_by(&:position).map(&:tag),
           liked: liked,
-          mentions: mentions.select { |m| mentioned_usernames.key?(m.profile_id.to_s) }.map { |m| mention_to_proto(m, mentioned_usernames: mentioned_usernames) }
+          mentions: mentions.select { |m| mentioned_usernames.key?(m.profile_id.to_s) }.map { |m| mention_to_proto(m, mentioned_usernames: mentioned_usernames) },
+          published_at: post.published_at.iso8601,
+          expires_at: post.expires_at&.iso8601 || ""
         )
       end
 

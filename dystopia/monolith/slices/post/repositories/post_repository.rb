@@ -9,8 +9,8 @@ module Post
         posts.combine(:post_media, :hashtags, :post_mentions).by_pk(id).one
       end
 
-      def created_at_for_id(id)
-        posts.dataset.where(id: id).get(:created_at)
+      def published_at_for_id(id)
+        posts.dataset.where(id: id).get(:published_at)
       end
 
       def find_by_ids(ids:)
@@ -66,9 +66,10 @@ module Post
         end
       end
 
-      def list_posts(limit: 20, cursor: nil, author_profile_id: nil, media_only: false, include_private: false)
+      def list_posts(limit: 20, cursor: nil, author_profile_id: nil, media_only: false, include_private: false, live_only: true)
         scope = posts.combine(:post_media, :hashtags, :post_mentions).exclude(author_profile_id: nil)
         scope = scope.where(visibility: "public") unless include_private
+        scope = scope.where(live_condition) if live_only
         scope = scope.where(author_profile_id: author_profile_id) if author_profile_id
 
         if media_only
@@ -78,18 +79,18 @@ module Post
 
         if cursor
           scope = scope.where {
-            (created_at < cursor[:created_at]) |
-              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+            (published_at < cursor[:published_at]) |
+              ((published_at =~ cursor[:published_at]) & (id < cursor[:id]))
           }
         end
 
-        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+        scope.order { [published_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
       def list_post_ids(limit: 20, cursor: nil, author_profile_ids: nil, excluded_author_profile_ids: [], include_private: false, viewer_profile_id: nil, private_author_profile_ids: [])
         return [] if !author_profile_ids.nil? && author_profile_ids.empty?
 
-        scope = posts.dataset
+        scope = posts.dataset.where(live_condition)
         unless include_private
           readable = Sequel[visibility: "public"]
           readable |= Sequel[author_profile_id: viewer_profile_id] if viewer_profile_id
@@ -101,12 +102,12 @@ module Post
 
         if cursor
           scope = scope.where {
-            (created_at < cursor[:created_at]) |
-              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+            (published_at < cursor[:published_at]) |
+              ((published_at =~ cursor[:published_at]) & (id < cursor[:id]))
           }
         end
 
-        scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
+        scope.order(Sequel.desc(:published_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
       end
 
       def find_by_id_and_author(id:, author_profile_id:)
@@ -118,7 +119,7 @@ module Post
         return [] if q.empty?
 
         pattern = "%#{q}%"
-        scope = posts.dataset.where(visibility: "public").where(Sequel.lit("content ILIKE ?", pattern))
+        scope = posts.dataset.where(visibility: "public").where(live_condition).where(Sequel.lit("content ILIKE ?", pattern))
 
         newest_ids(scope, limit: limit, cursor: cursor)
       end
@@ -128,19 +129,19 @@ module Post
         return [] if t.empty?
 
         tagged = posts.dataset.db[:post__hashtags].where(Sequel.function(:lower, :tag) => t.downcase).select(:post_id)
-        scope = posts.dataset.where(visibility: "public").where(id: tagged)
+        scope = posts.dataset.where(visibility: "public").where(live_condition).where(id: tagged)
 
         newest_ids(scope, limit: limit, cursor: cursor)
       end
 
       def top_by_likes(period:, limit: 20, cursor: nil)
-        ds = posts.dataset.where(visibility: "public")
+        ds = posts.dataset.where(visibility: "public").where(live_condition)
 
         case period.to_s
         when "day"
-          ds = ds.where { Sequel[:post__posts][:created_at] >= Sequel.lit("NOW() - INTERVAL '1 day'") }
+          ds = ds.where { Sequel[:post__posts][:published_at] >= Sequel.lit("NOW() - INTERVAL '1 day'") }
         when "week"
-          ds = ds.where { Sequel[:post__posts][:created_at] >= Sequel.lit("NOW() - INTERVAL '7 days'") }
+          ds = ds.where { Sequel[:post__posts][:published_at] >= Sequel.lit("NOW() - INTERVAL '7 days'") }
         when "all"
         else
           return []
@@ -173,15 +174,22 @@ module Post
 
       private
 
+      # Uses the app clock, not SQL now(), so lists agree with FilterVisiblePosts and save validation.
+      def live_condition(now = Time.now)
+        published_at = Sequel[:post__posts][:published_at]
+        expires_at = Sequel[:post__posts][:expires_at]
+        (published_at <= now) & (Sequel[expires_at => nil] | (expires_at > now))
+      end
+
       def newest_ids(scope, limit:, cursor:)
         if cursor
           scope = scope.where {
-            (created_at < cursor[:created_at]) |
-              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+            (published_at < cursor[:published_at]) |
+              ((published_at =~ cursor[:published_at]) & (id < cursor[:id]))
           }
         end
 
-        scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
+        scope.order(Sequel.desc(:published_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
       end
     end
   end

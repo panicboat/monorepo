@@ -199,4 +199,116 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       expect(listed_ids).to eq([])
     end
   end
+
+  describe "#save_post display window" do
+    let(:post_repo) { Post::Slice["repositories.post_repository"] }
+    let(:now) { Time.now }
+
+    before do
+      mentioned_id
+      Current.account_id = SecureRandom.uuid_v7
+      Current.profile_id = author_profile_id
+    end
+
+    def save(id: "", content: "window", published_at: "", expires_at: "")
+      message = Post::V1::SavePostRequest.new(id: id, content: content, visibility: "public", published_at: published_at, expires_at: expires_at)
+      described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: message).save_post
+    end
+
+    def expect_invalid(&block)
+      expect(&block).to raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(GRPC::Core::StatusCodes::INVALID_ARGUMENT) }
+    end
+
+    it "starts a post now and keeps it without an end when no window is given" do
+      saved = post_repo.find_by_id(save.post.id)
+
+      expect(saved.published_at).to be_within(5).of(now)
+      expect(saved.expires_at).to be_nil
+    end
+
+    it "stores a future start and an end after it" do
+      response = save(published_at: (now + 3600).iso8601, expires_at: (now + 7200).iso8601)
+      saved = post_repo.find_by_id(response.post.id)
+
+      expect([saved.published_at.to_i, saved.expires_at.to_i]).to eq([(now + 3600).to_i, (now + 7200).to_i])
+      expect(Time.iso8601(response.post.published_at).to_i).to eq((now + 3600).to_i)
+      expect(Time.iso8601(response.post.expires_at).to_i).to eq((now + 7200).to_i)
+    end
+
+    it "rejects a start in the past" do
+      expect_invalid { save(published_at: (now - 60).iso8601) }
+    end
+
+    it "rejects an end before the start or in the past" do
+      expect_invalid { save(published_at: (now + 7200).iso8601, expires_at: (now + 3600).iso8601) }
+      expect_invalid { save(expires_at: (now - 60).iso8601) }
+    end
+
+    it "rejects a time it cannot read" do
+      expect_invalid { save(published_at: "tomorrow") }
+    end
+
+    it "rejects a new start on a live post and keeps the start when none is sent" do
+      live = save
+      original = post_repo.find_by_id(live.post.id).published_at
+
+      expect_invalid { save(id: live.post.id, published_at: (now + 3600).iso8601) }
+      save(id: live.post.id, content: "edited")
+      expect(post_repo.find_by_id(live.post.id).published_at).to eq(original)
+    end
+
+    it "accepts the live post's own start sent back unchanged" do
+      live = save
+
+      expect { save(id: live.post.id, content: "edited", published_at: live.post.published_at) }.not_to raise_error
+    end
+
+    it "moves a scheduled post's start, and starts it now when the start is cleared" do
+      scheduled = save(published_at: (now + 3600).iso8601)
+
+      save(id: scheduled.post.id, published_at: (now + 600).iso8601)
+      expect(post_repo.find_by_id(scheduled.post.id).published_at.to_i).to eq((now + 600).to_i)
+
+      save(id: scheduled.post.id)
+      expect(post_repo.find_by_id(scheduled.post.id).published_at).to be_within(5).of(now)
+    end
+
+    it "changes or clears the end at any time" do
+      live = save(expires_at: (now + 3600).iso8601)
+
+      save(id: live.post.id, expires_at: (now + 7200).iso8601)
+      expect(post_repo.find_by_id(live.post.id).expires_at.to_i).to eq((now + 7200).to_i)
+
+      save(id: live.post.id)
+      expect(post_repo.find_by_id(live.post.id).expires_at).to be_nil
+    end
+
+    it "edits an expired post that sends its past end back unchanged" do
+      expired = post_repo.create_post(author_profile_id: author_profile_id, content: "old", visibility: "public", published_at: now - 7200, expires_at: now - 3600)
+
+      save(id: expired.id, content: "edited", expires_at: (now - 3600).iso8601)
+
+      edited = post_repo.find_by_id(expired.id)
+      expect([edited.content, edited.expires_at.to_i]).to eq(["edited", (now - 3600).to_i])
+      expect_invalid { save(id: expired.id, expires_at: (now - 1800).iso8601) }
+    end
+
+    it "rejects moving a scheduled start past its unchanged end" do
+      scheduled = save(published_at: (now + 3600).iso8601, expires_at: (now + 7200).iso8601)
+
+      expect_invalid { save(id: scheduled.post.id, published_at: (now + 10_800).iso8601, expires_at: scheduled.post.expires_at) }
+    end
+
+    it "does not notify mentions on a post created as scheduled" do
+      save(content: "hi @mentioned_user", published_at: (now + 3600).iso8601)
+
+      expect(notification_repo.list(recipient_profile_id: mentioned_id).map(&:type)).not_to include("mention")
+    end
+
+    it "notifies mentions on a post created as live with an end" do
+      save(content: "hi @mentioned_user", expires_at: (now + 3600).iso8601)
+
+      expect(notification_repo.list(recipient_profile_id: mentioned_id).map(&:type)).to include("mention")
+    end
+  end
 end
