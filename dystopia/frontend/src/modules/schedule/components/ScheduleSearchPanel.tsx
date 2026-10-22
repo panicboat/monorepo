@@ -2,6 +2,7 @@
 
 import { useId, useMemo, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Select } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleChip } from "@/components/ui/toggle-chip";
@@ -80,14 +81,27 @@ export function ScheduleSearchPanel({ query, choices, onChoicesChange }: Schedul
         </div>
       </FilterGroup>
       <FilterGroup title="業種">
-        <Select aria-label="業種" value={industry} onChange={(e) => onChoicesChange({ ...choices, industry: e.target.value })}>
-          <option value="">すべて</option>
+        <div className="flex flex-wrap gap-2">
+          <ToggleChip pressed={industry === ""} onClick={() => onChoicesChange({ ...choices, industry: "" })}>
+            すべて
+          </ToggleChip>
           {INDUSTRIES.map((i) => (
-            <option key={i.name} value={i.name}>
-              {i.name}
-            </option>
+            <button
+              key={i.name}
+              type="button"
+              aria-pressed={industry === i.name}
+              aria-label={i.name}
+              title={i.name}
+              onClick={() => onChoicesChange({ ...choices, industry: industry === i.name ? "" : i.name })}
+              className={cn(
+                "flex size-11 items-center justify-center rounded-full border text-xl",
+                industry === i.name ? "border-accent bg-accent/15" : "border-border hover:bg-bg-secondary"
+              )}
+            >
+              <span aria-hidden="true">{i.icon}</span>
+            </button>
           ))}
-        </Select>
+        </div>
       </FilterGroup>
       <FilterGroup title="勤務時間帯">
         <div className="flex flex-wrap gap-2">

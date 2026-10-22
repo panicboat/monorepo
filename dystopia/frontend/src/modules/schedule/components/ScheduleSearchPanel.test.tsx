@@ -204,14 +204,24 @@ describe("ScheduleSearchPanel filters", () => {
     expect(selectNamed("エリア")!.value).toBe("");
   });
 
-  it("passes the industry that is chosen", async () => {
+  it("offers each industry as an icon named after it and passes the one that is chosen", async () => {
     await mount();
-    const industries = Array.from(selectNamed("業種")!.options, (option) => option.textContent);
-    expect(industries.slice(0, 3)).toEqual(["すべて", "ソープ", "デリヘル"]);
+    const buttons = chipsIn("業種");
+    expect(buttons.slice(0, 3).map((b) => [b.getAttribute("aria-label") ?? b.textContent, b.textContent])).toEqual([
+      ["すべて", "すべて"],
+      ["ソープ", "🛁"],
+      ["デリヘル", "🚗"],
+    ]);
+    expect(chip("業種", "すべて").getAttribute("aria-pressed")).toBe("true");
 
-    await choose("業種", "ソープ");
-
+    const soap = buttons.find((b) => b.getAttribute("aria-label") === "ソープ")!;
+    await click(soap);
     expect(lastFilters().industry).toBe("ソープ");
+    expect(soap.getAttribute("aria-pressed")).toBe("true");
+    expect(chip("業種", "すべて").getAttribute("aria-pressed")).toBe("false");
+
+    await click(soap);
+    expect(lastFilters().industry).toBe("");
   });
 
   it("starts from the choices it is given", async () => {
