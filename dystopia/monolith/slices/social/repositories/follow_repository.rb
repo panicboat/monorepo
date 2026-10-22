@@ -49,8 +49,9 @@ module Social
         follows.where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id).one
       end
 
-      def list_following(profile_id:, status: "approved", limit: 20, cursor: nil)
+      def list_following(profile_id:, status: "approved", limit: 20, cursor: nil, followee_profile_ids: nil)
         scope = follows.where(follower_profile_id: profile_id, status: status)
+        scope = scope.where(followee_profile_id: followee_profile_ids) if followee_profile_ids
         scope = apply_cursor(scope, cursor)
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end

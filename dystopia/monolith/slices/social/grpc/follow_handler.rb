@@ -83,8 +83,9 @@ module Social
         profile_id = request.message.profile_id.empty? ? current_profile_id : request.message.profile_id
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        query = request.message.query.empty? ? nil : request.message.query
 
-        result = list_following_uc.call(profile_id: profile_id, limit: limit, cursor: cursor)
+        result = list_following_uc.call(profile_id: profile_id, limit: limit, cursor: cursor, query: query)
         ::Social::V1::ListFollowingResponse.new(
           profiles: present_profiles(result[:profiles]),
           next_cursor: result[:next_cursor] || "",

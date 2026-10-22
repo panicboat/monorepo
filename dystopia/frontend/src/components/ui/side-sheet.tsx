@@ -50,6 +50,10 @@ export function SideSheet({ open, onOpenChange, title, onBack, stepKey, children
             event.preventDefault();
             opener.current?.focus();
           }}
+          // Radix hears Escape in the capture phase, before an open combobox inside can close only its suggestions.
+          onEscapeKeyDown={(event) => {
+            if (event.target instanceof Element && event.target.matches('[role="combobox"][aria-expanded="true"]')) event.preventDefault();
+          }}
           className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[510px] flex-col bg-bg-elevated shadow-2xl data-[state=closed]:animate-sheet-out data-[state=open]:animate-sheet-in md:border-l md:border-border"
         >
           <header className="flex min-h-[72px] items-center gap-3 border-b border-divider px-4 md:px-5">
