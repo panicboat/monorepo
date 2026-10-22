@@ -2,16 +2,13 @@ import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ProfileName } from "@/components/ui/profile-name";
-import { industryIcon } from "@/modules/profile/lib/constants";
 import { FollowButton } from "@/modules/social/components/FollowButton";
-import { crossesMidnight, formatScheduleDay } from "@/modules/schedule/lib/dates";
+import { ScheduleSummary } from "./ScheduleSummary";
 import type { ScheduleSearchResultView } from "@/modules/schedule/types";
 
 export function ScheduleSearchCard({ result }: { result: ScheduleSearchResultView }) {
   const { schedule, profile, prefecture, note } = result;
   const href = `/u/${encodeURIComponent(profile.username)}?tab=schedule`;
-  const icon = industryIcon(profile.industry);
-  const endsNextDay = crossesMidnight(schedule.startTime, schedule.endTime);
 
   return (
     <div className="border-b border-border px-4 py-3">
@@ -23,23 +20,16 @@ export function ScheduleSearchCard({ result }: { result: ScheduleSearchResultVie
           </p>
           <p className="truncate text-sm text-text-secondary">@{profile.username}</p>
         </Link>
-        <span className="flex shrink-0 items-center gap-1 text-sm text-text-secondary">
-          {icon && (
-            <span role="img" aria-label={profile.industry} title={profile.industry}>
-              {icon}
-            </span>
-          )}
-          {prefecture && <span>{prefecture}</span>}
-        </span>
-      </div>
-      <div className="mt-2 rounded-xl border border-border bg-surface p-3">
-        <p className="text-lg font-bold tabular-nums text-text-primary">
-          {schedule.startTime}〜{schedule.endTime}
-          {endsNextDay && <span className="ml-1 text-sm font-normal text-text-secondary">翌日</span>}
-        </p>
-        <p className="text-xs text-text-secondary">{formatScheduleDay(schedule.workDate)}</p>
+        {prefecture && <span className="shrink-0 text-sm text-text-secondary">{prefecture}</span>}
       </div>
       {note && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-text-primary">{note}</p>}
+      <ScheduleSummary
+        workDate={schedule.workDate}
+        startTime={schedule.startTime}
+        endTime={schedule.endTime}
+        industry={profile.industry}
+        href={href}
+      />
       <div className="mt-3 flex justify-end gap-2">
         <FollowButton targetProfileId={profile.profileId} />
         <Button asChild variant="secondary" size="sm">

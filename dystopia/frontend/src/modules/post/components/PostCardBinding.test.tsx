@@ -193,7 +193,8 @@ describe("PostCardBinding", () => {
     it("shows the heading and the time of the linked schedule, linked to the author's schedule tab", () => {
       const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, schedule }} />);
 
-      expect(html).toContain("10/23（金） 20:00〜02:00");
+      expect(html).toContain("20:00〜02:00");
+      expect(html).toContain("10/23（金）");
       expect(html).toMatch(/<a[^>]*href="\/u\/test_taro\?tab=schedule"[^>]*>(?:(?!<\/a>).)*出勤(?:(?!<\/a>).)*20:00〜02:00/s);
     });
 
@@ -228,7 +229,8 @@ describe("PostCardBinding", () => {
       );
 
       expect(html).not.toContain('<a href="/u/');
-      expect(html).toContain("10/23（金） 20:00〜02:00");
+      expect(html).toContain("20:00〜02:00");
+      expect(html).toContain("10/23（金）");
     });
 
     it("keeps the note above the card", () => {
@@ -249,7 +251,8 @@ describe("PostCardBinding", () => {
     it("shows the card in the post detail as well", () => {
       const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, schedule }} inDetail />);
 
-      expect(html).toContain("10/23（金） 20:00〜02:00");
+      expect(html).toContain("20:00〜02:00");
+      expect(html).toContain("10/23（金）");
     });
   });
 

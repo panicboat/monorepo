@@ -87,14 +87,22 @@ describe("ScheduleSearchCard", () => {
     expect(container.textContent).toContain("10/22（木）");
   });
 
-  it("shows the area next to the industry icon, which is named by the industry", async () => {
+  it("shows the area in the name row and the industry icon in the schedule summary, as on posts", async () => {
     await mount();
 
     const icon = container.querySelector('[role="img"]') as HTMLElement;
     expect(icon.textContent).toBe("📦");
     expect(icon.getAttribute("aria-label")).toBe("箱ヘル");
+    expect(icon.closest(".rounded-xl")?.textContent).toContain("10/22（木）");
+    expect(icon.closest(".rounded-xl")?.textContent).not.toContain("東京都");
     expect(container.textContent).toContain("東京都");
-    expect(icon.parentElement?.textContent).toContain("東京都");
+  });
+
+  it("puts the note above the schedule summary, as a post puts its text above the card", async () => {
+    await mount({ note: "久しぶりの出勤。" });
+
+    const text = container.textContent ?? "";
+    expect(text.indexOf("久しぶりの出勤。")).toBeLessThan(text.indexOf("出勤16:00"));
   });
 
   it("shows no icon for an empty or unlisted industry", async () => {
