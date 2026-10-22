@@ -7,7 +7,8 @@
 今の構成で前提になる事実は次のとおり。
 
 - PWA の manifest はある（`frontend/src/app/manifest.ts`、#1286 は完了）。iOS は、ホーム画面に追加した PWA でだけ Web Push を受け取れる
-- アプリ内通知は全て `Notifications::UseCases::Emit` を通って作られる。種類はいいね・コメント・リプライ・メンション・フォロー申請・フォロー成立の 6 つ
+- アプリ内通知は全て `Notifications::UseCases::Emit` を通って作られる。種類はいいね・コメント・リプライ・メンション・フォロー申請・フォロー成立（`follow_approved`）の 6 つ
+- `follow_approved` は 2 つの場面で使われている。承認不要の相手をフォローしたとき（宛先はフォローされた人）と、フォロー申請が承認されたとき（宛先は申請した人）。文言は種類だけで「あなたをフォローしました」に決まるため、後者では意味が逆になる
 - DM（`Messaging::UseCases::SendMessage`）は `Emit` を通らず、未読バッジだけが付く
 - 通知設定（`notifications.preferences`）はプロフィールごと。`push_enabled` はどこからも参照されず、種類ごとの設定はアプリ内通知を作るかどうかを切り替えている。リポスト・引用・推し！は対応する機能が無く、`post` は実際にはコメント通知を止めている
 - アプリにログアウトの操作は無い。セッションを終えるのはアカウント削除（`deactivate`）だけ
@@ -19,7 +20,8 @@
 
 | 論点 | 決定 | 理由 |
 |---|---|---|
-| 送る出来事 | アプリ内通知の 6 種類と DM | ユーザーの判断。DM はアプリ内の一覧には載せず、端末にだけ送る |
+| 送る出来事 | アプリ内通知の全種類と DM | ユーザーの判断。DM はアプリ内の一覧には載せず、端末にだけ送る |
+| フォロー申請の承認 | 申請した人に通知しない。`follow_approved` は `follow`（フォローされた）に改名する | ユーザーの判断。申請者は相手のプロフィールのボタンで承認を知れる。X も承認を通知しない（第三者の解説による。公式ヘルプには記述が無い） |
 | 種類ごとの設定 | 端末への送信だけを止める。アプリ内の一覧には常に全て載る | ユーザーの判断。一覧を起きたことの記録として欠かさない |
 | 複数プロフィール | 購読はアカウントと端末の組で持ち、アカウントの全プロフィール宛ての通知を送る。プロフィールごとの「端末に送る」（`push_enabled`）で止められる | ユーザーの判断 |
 | 表示内容 | 誰が何をしたかに加えて、コメント・リプライ・メンション・DM の本文まで出す | ユーザーの判断 |
@@ -37,7 +39,6 @@
 - キューと再送（#1640）
 - アプリのアイコンに出す未読数（Badging API）
 - 端末の一覧や、他の端末の購読を消す画面
-- フォロー申請の承認を伝える通知の文言（`follow_approved` は承認時にも「あなたをフォローしました」になる）。端末への通知も今のアプリ内通知と同じ文言を使う
 
 ## Rules
 
@@ -55,10 +56,17 @@
 | コメント | `comment` |
 | リプライ | `reply` |
 | メンション | `mention` |
-| フォロー申請・フォロー成立 | `follow` |
+| フォロー申請・フォロー | `follow` |
 | DM | `message` |
 
 アプリ内通知は、種類ごとの設定や `push_enabled` に関係なく常に作る。
+
+### Follow notifications
+
+- フォロー（`follow`）: 承認不要の相手をフォローしたとき、フォローされた人に送る
+- フォロー申請（`follow_request`）: 承認が必要な相手をフォローしたとき、申請された人に送る
+- フォロー申請の承認では、アプリ内通知も端末への通知も作らない
+- 既に保存されている `follow_approved` の行は `follow` に改名する。承認の場面で作られた行も区別せずに改名する（今の表示と同じ文言のまま残るだけで、悪くはならない）
 
 ### Content
 
@@ -69,7 +77,7 @@
 | リプライ | 送った人の表示名 | あなたのコメントに返信しました：（本文） |
 | メンション | 送った人の表示名 | あなたをメンションしました：（本文） |
 | フォロー申請 | 送った人の表示名 | フォロー申請が届きました |
-| フォロー成立 | 送った人の表示名 | あなたをフォローしました |
+| フォロー | 送った人の表示名 | あなたをフォローしました |
 | DM | 送った人の表示名 | （メッセージ本文） |
 
 - 動作の文言はアプリ内通知（`frontend/src/modules/notifications/lib/format.ts`）と揃える。端末への通知は 1 件ずつ送るので「ほか N 人も」は付けない
@@ -84,7 +92,7 @@
 | いいね | `/posts/<post_id>` |
 | コメント・リプライ・メンション | `/posts/<target_post_id>` |
 | フォロー申請 | `/u/<宛先の username>/requests` |
-| フォロー成立 | `/u/<送った人の username>` |
+| フォロー | `/u/<送った人の username>` |
 | DM | `/messages/<thread_id>` |
 
 開く URL には `profile=<宛先のプロフィール ID>` を付ける。アプリはこの値を読み、自分のアカウントのプロフィールなら表示中のプロフィールをそれに切り替え、URL から `profile` を消す。自分のプロフィールでなければ切り替えずに消す。
@@ -147,9 +155,12 @@
 - `post` を `comment` に改名する
 - 残りの列（`push_enabled`・`like`・`reply`・`follow`・`mention`・`message`・`footprint_unread_badge`・`footprints_record_my_visits`）はそのまま
 
+`notifications.notifications` の `type` が `follow_approved` の行は `follow` に改名する。
+
 ### Proto (`notifications.v1`)
 
 - `NotificationPreferences` から `repost`・`quote`・`oshi` を消して番号を `reserved` にし、`post` を `comment` に改名する
+- `NotificationType` の `NOTIFICATION_TYPE_FOLLOW_APPROVED = 5` を `NOTIFICATION_TYPE_FOLLOW = 5` に改名する
 - `NotificationService` に次の RPC を足す
 
 | RPC | 入力 | 出力 |
@@ -167,6 +178,7 @@
 - `Notifications::UseCases::SendPush`: Rules の判定・本文の作成・並列送信・無効な購読の削除
 - `Notifications::UseCases::Emit`: 種類ごとの設定でアプリ内通知を止めるのをやめる。アプリ内通知を作った後に `SendPush` を呼ぶ
 - `Messaging::UseCases::SendMessage`: メッセージを保存した後に `SendPush` を呼ぶ
+- `Social::UseCases::Follows::Follow`: 承認不要のフォローで `follow` を送る。`ApproveFollowRequest` は通知を作らない
 - アカウント削除（`Identity::UseCases::Account::PurgeIdentity`）で購読を全て消す
 - 設定に `VAPID_PRIVATE_KEY`（PEM）と `VAPID_SUBJECT` を足す。どちらも任意で、無ければ送信しない。公開鍵は秘密鍵から計算する
 
@@ -175,6 +187,7 @@
 - `public/sw.js`: `push` で通知を出し、`notificationclick` で既に開いているウィンドウを前に出して移動するか、新しく開く
 - BFF の route を 3 つ足す（設定の取得・購読の登録・購読の解除）
 - 設定画面を Settings screen のとおりに作り直す
+- アプリ内通知の文言と移動先（`modules/notifications/lib/format.ts`）を `FOLLOW` に合わせる
 - `profile` 付きの URL を開いたときの切り替えを AppShell で行う
 - アプリを開いたときの購読の登録し直しを AppShell で行う
 
@@ -192,6 +205,7 @@
 | `SendPush`（rspec） | Who receives what の条件、題名と本文（宛先を添える場合・100 文字で切る場合・本文が空の場合）、開く URL、404/410 で購読が消えること、時間切れでも例外を出さないこと、鍵が無いと送らないこと |
 | `Emit`（rspec） | 種類の設定が OFF でもアプリ内通知が作られ、端末には送られないこと |
 | `SendMessage`（rspec） | 送信の後に DM の通知を送ること |
+| フォロー（rspec） | 承認不要のフォローで `follow` が作られること、申請の承認では通知が作られないこと、`follow_approved` の行が `follow` に改名されること |
 | 購読の repository と RPC（rspec） | 同じ endpoint を別のアカウントが登録すると持ち主が替わること、解除、アカウント削除で消えること |
 | 設定（rspec・vitest） | 消した項目と改名した項目が proto・BFF・画面で揃っていること |
 | 設定画面（vitest） | 受け取れない理由の出し分け、有効にする・無効にする操作 |
