@@ -4,6 +4,18 @@ mock_provider "aws" {
       id = "sg-private-trust"
     }
   }
+
+  mock_resource "aws_iam_policy" {
+    defaults = {
+      arn = "arn:aws:iam::337169763788:policy/test"
+    }
+  }
+
+  mock_resource "aws_iam_role" {
+    defaults = {
+      arn = "arn:aws:iam::337169763788:role/test"
+    }
+  }
 }
 mock_provider "random" {}
 
