@@ -7,3 +7,4 @@ registries:
 packages:
   - name: opentofu/opentofu@v1.12.6
   - name: gruntwork-io/terragrunt@v1.0.2
+  - name: suzuki-shunsuke/tfcmt@v4.14.19
