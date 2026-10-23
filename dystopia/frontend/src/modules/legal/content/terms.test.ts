@@ -126,7 +126,15 @@ describe("TERMS", () => {
   });
 
   it("keeps a deactivated guest's review rating in the cast's average until deletion", () => {
-    expect(article(18)).toMatch(/退会したゲストが書いたクチコミは、第4項の削除が済むまで、対象のキャストの評価の平均、評価した人数および評価済みのクチコミの件数の集計に含まれます/);
+    expect(article(18)).toMatch(/退会したゲストが書いたクチコミの評価は、第4項の削除が済むまで、対象のキャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）に含まれます/);
+  });
+
+  it("lets the operator restrict access by a non-registered person who does what article 15 paragraph 2 prohibits", () => {
+    expect(article(16)).toContain("利用者以外の方が第15条第2項で禁止する行為をしたと判断した場合、その方による本サービスへのアクセスの制限その他の必要な措置をとることができます");
+  });
+
+  it("ends the chance to undo a deactivation at the deletion in article 18 paragraph 4", () => {
+    expect(article(18)).toContain("ただし、第4項の削除が済んだ後は、退会を取り消すことはできません");
   });
 
   it("keeps to the app's words", () => {
