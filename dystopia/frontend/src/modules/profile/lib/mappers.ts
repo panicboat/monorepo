@@ -7,7 +7,7 @@ import type {
   SnsLinksView,
 } from "@/modules/profile/types";
 
-const EMPTY_SNS: SnsLinksView = { x: "", instagram: "", tiktok: "", bluesky: "", line: "", cityheaven: "" };
+const EMPTY_SNS: SnsLinksView = { x: "", instagram: "", tiktok: "", bluesky: "", litlink: "", cityheaven: "" };
 const EMPTY_BODY_STATS: BodyStatsView = { heightCm: 0, bust: 0, waist: 0, hip: 0, cup: "" };
 
 function mapSnsLinks(s: SnsLinks | undefined): SnsLinksView {
@@ -17,7 +17,7 @@ function mapSnsLinks(s: SnsLinks | undefined): SnsLinksView {
     instagram: s.instagram || "",
     tiktok: s.tiktok || "",
     bluesky: s.bluesky || "",
-    line: s.line || "",
+    litlink: s.litlink || "",
     cityheaven: s.cityheaven || "",
   };
 }
@@ -109,7 +109,7 @@ export function buildSaveProfileRequest(payload: SaveProfilePayload) {
       instagram: sns?.instagram || "",
       tiktok: sns?.tiktok || "",
       bluesky: sns?.bluesky || "",
-      line: sns?.line || "",
+      litlink: sns?.litlink || "",
       cityheaven: sns?.cityheaven || "",
     },
     prefecture: payload.prefecture || "",

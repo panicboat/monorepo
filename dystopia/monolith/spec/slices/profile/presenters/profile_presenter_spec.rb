@@ -58,6 +58,15 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
       expect(proto.sns_links.cityheaven).to eq("https://www.cityheaven.net/example/")
     end
 
+    it "maps the litlink sns link" do
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, false, false, nil, nil)
+      cast = cast_struct.new({ "litlink" => "https://lit.link/coco" }, nil, {}, nil)
+
+      proto = described_class.to_proto(profile, cast: cast)
+
+      expect(proto.sns_links.litlink).to eq("https://lit.link/coco")
+    end
+
     it "no longer exposes cup_size, height_cm, shop_id, or website on the proto" do
       expect(::Profile::V1::Profile.descriptor.map(&:name)).not_to include("cup_size", "height_cm", "shop_id", "website")
       expect(::Profile::V1::SaveProfileRequest.descriptor.map(&:name)).not_to include("website")

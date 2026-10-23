@@ -57,7 +57,7 @@ message SnsLinks {
   string instagram = 2;
   string tiktok = 3;
   string bluesky = 4;
-  string line = 5;
+  string litlink = 5;
   string cityheaven = 6;
 }
 

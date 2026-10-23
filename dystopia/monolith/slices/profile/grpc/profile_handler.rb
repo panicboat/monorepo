@@ -210,7 +210,7 @@ module Profile
           "instagram" => sns.instagram,
           "tiktok" => sns.tiktok,
           "bluesky" => sns.bluesky,
-          "line" => sns.line,
+          "litlink" => sns.litlink,
           "cityheaven" => sns.cityheaven
         }.reject { |_, v| v.nil? || v.empty? }
       end

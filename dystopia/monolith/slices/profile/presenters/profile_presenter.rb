@@ -39,7 +39,7 @@ module Profile
             instagram: h["instagram"] || h[:instagram] || "",
             tiktok: h["tiktok"] || h[:tiktok] || "",
             bluesky: h["bluesky"] || h[:bluesky] || "",
-            line: h["line"] || h[:line] || "",
+            litlink: h["litlink"] || h[:litlink] || "",
             cityheaven: h["cityheaven"] || h[:cityheaven] || ""
           )
         end

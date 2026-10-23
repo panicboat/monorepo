@@ -41,7 +41,7 @@ interface FormState {
   snsInstagram: string;
   snsTiktok: string;
   snsBluesky: string;
-  snsLine: string;
+  snsLitlink: string;
   snsCityheaven: string;
 }
 
@@ -65,7 +65,7 @@ function toForm(p: ProfileView): FormState {
     snsInstagram: p.snsLinks.instagram,
     snsTiktok: p.snsLinks.tiktok,
     snsBluesky: p.snsLinks.bluesky,
-    snsLine: p.snsLinks.line,
+    snsLitlink: p.snsLinks.litlink,
     snsCityheaven: p.snsLinks.cityheaven,
   };
 }
@@ -80,7 +80,7 @@ function buildPayload(f: FormState, isCast: boolean): SaveProfilePayload {
       instagram: f.snsInstagram,
       tiktok: f.snsTiktok,
       bluesky: f.snsBluesky,
-      line: f.snsLine,
+      litlink: f.snsLitlink,
       cityheaven: f.snsCityheaven,
     },
     prefecture: f.prefecture,
@@ -254,7 +254,7 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
           <Input value={form.snsInstagram} onChange={(e) => set("snsInstagram", e.target.value)} placeholder="Instagram" />
           <Input value={form.snsTiktok} onChange={(e) => set("snsTiktok", e.target.value)} placeholder="TikTok" />
           <Input value={form.snsBluesky} onChange={(e) => set("snsBluesky", e.target.value)} placeholder="Bluesky" />
-          <Input value={form.snsLine} onChange={(e) => set("snsLine", e.target.value)} placeholder="LINE" />
+          <Input value={form.snsLitlink} onChange={(e) => set("snsLitlink", e.target.value)} placeholder="lit.link" />
           <Input
             value={form.snsCityheaven}
             onChange={(e) => set("snsCityheaven", e.target.value)}
