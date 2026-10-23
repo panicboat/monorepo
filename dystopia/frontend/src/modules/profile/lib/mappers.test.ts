@@ -34,6 +34,17 @@ describe("mapProfileToView", () => {
     expect(view.snsLinks.cityheaven).toBe("https://www.cityheaven.net/example/");
   });
 
+  it("maps the litlink sns link", () => {
+    const proto = create(ProfileSchema, {
+      id: "prof-1",
+      snsLinks: { litlink: "https://lit.link/yuna" },
+    });
+
+    const view = mapProfileToView(proto);
+
+    expect(view.snsLinks.litlink).toBe("https://lit.link/yuna");
+  });
+
   it("carries the profile id and no account id", () => {
     const proto = create(ProfileSchema, { id: "prof-1" });
 
@@ -72,6 +83,15 @@ describe("emptyProfileView", () => {
 });
 
 describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
+  it("carries the litlink sns link through the save request", () => {
+    const view = emptyProfileView("prof-1");
+    view.snsLinks.litlink = "https://lit.link/yuna";
+
+    const request = buildSaveProfileRequest(profileViewToSavePayload(view));
+
+    expect(request.snsLinks.litlink).toBe("https://lit.link/yuna");
+  });
+
   it("round-trips bodyStats and cityheaven through the save request", () => {
     const view = emptyProfileView("prof-1");
     view.bodyStats = { heightCm: 158, bust: 88, waist: 58, hip: 86, cup: "D" };

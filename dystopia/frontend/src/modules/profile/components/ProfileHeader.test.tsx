@@ -13,7 +13,7 @@ const profile: ProfileView = {
   avatarUrl: "",
   coverMediaId: "",
   coverUrl: "",
-  snsLinks: { x: "", instagram: "", tiktok: "", bluesky: "", line: "", cityheaven: "" },
+  snsLinks: { x: "", instagram: "", tiktok: "", bluesky: "", litlink: "", cityheaven: "" },
   prefecture: "東京都",
   area: "",
   isPrivate: false,
@@ -27,6 +27,14 @@ const profile: ProfileView = {
 };
 
 describe("ProfileHeader", () => {
+  it("links the litlink sns link under the lit.link label", () => {
+    const html = renderToStaticMarkup(
+      <ProfileHeader profile={{ ...profile, snsLinks: { ...profile.snsLinks, litlink: "https://lit.link/yuna" } }} role="cast" />
+    );
+
+    expect(html).toMatch(/<a href="https:\/\/lit.link\/yuna"[^>]*>lit.link<\/a>/);
+  });
+
   it("labels a cast profile as キャスト, not セラピスト", () => {
     const html = renderToStaticMarkup(<ProfileHeader profile={profile} role="cast" />);
 

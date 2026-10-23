@@ -13,7 +13,7 @@ const SNS_LABELS: { key: keyof ProfileView["snsLinks"]; label: string }[] = [
   { key: "instagram", label: "Instagram" },
   { key: "tiktok", label: "TikTok" },
   { key: "bluesky", label: "Bluesky" },
-  { key: "line", label: "LINE" },
+  { key: "litlink", label: "lit.link" },
   { key: "cityheaven", label: "CityHeaven" },
 ];
 

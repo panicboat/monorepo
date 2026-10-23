@@ -5,7 +5,7 @@ export interface SnsLinksView {
   instagram: string;
   tiktok: string;
   bluesky: string;
-  line: string;
+  litlink: string;
   cityheaven: string;
 }
 
