@@ -92,6 +92,15 @@ describe("PRIVACY", () => {
     expect(section(4)).toContain("ゲストには、本サービス上では、自分についてのカルテも表示されません");
   });
 
+  it("shows a review of a party who left the way the terms do", () => {
+    const display = PRIVACY.sections[3].paragraphs.find((paragraph) => paragraph.text.startsWith("クチコミの内容（評価、段階、結果、タグ、メモおよび日付）"));
+
+    expect(display?.text).toBe(
+      "クチコミの内容（評価、段階、結果、タグ、メモおよび日付）と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。" +
+        "書いたゲストまたは対象のキャストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、その利用者の表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストの投稿を見ることができる利用者に表示されます。",
+    );
+  });
+
   it("explains that there is no sign-out", () => {
     expect(section(8)).toMatch(/ログアウトの機能がありません/);
   });

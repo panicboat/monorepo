@@ -169,7 +169,7 @@ describe("TERMS", () => {
   it("keeps the reviews a profile wrote and the reviews about it when the profile is deleted", () => {
     const multipleProfiles = TERMS.sections[5].paragraphs[3].text;
 
-    expect(multipleProfiles).toContain("プロフィールを削除しても、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミは残ります。この場合、削除したプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。");
+    expect(multipleProfiles).toContain("プロフィールを削除しても、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミは残ります。この場合、削除したプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。そのプロフィールで書いたクチコミの評価は、対象のキャストの評価の集計に含まれます。");
     expect(multipleProfiles).not.toContain("クチコミも削除されます");
   });
 
@@ -177,7 +177,8 @@ describe("TERMS", () => {
     const display = TERMS.sections[10].paragraphs[2].text;
 
     expect(display).toContain("クチコミの内容と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。");
-    expect(display).toContain("書いたゲストまたは対象のキャストが退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、その利用者の表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストのプロフィールを見ることができる利用者に表示されます。");
+    expect(display).toContain("書いたゲストまたは対象のキャストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、その利用者の表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストの投稿を見ることができる利用者に表示されます。");
+    expect(display).not.toContain("書いたゲストのプロフィールを見ることができる利用者");
   });
 
   it("limits the guest's view of karte to the service screens", () => {
