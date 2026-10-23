@@ -83,6 +83,7 @@ RSpec.describe Profile::UseCases::PurgeProfile, type: :database do
     described_class.new.call(profile_id: guest)
     described_class.new.call(profile_id: cast)
 
+    expect(db[:profile__profiles].where(id: [guest, cast]).count).to eq(0)
     expect(db[:review__reviews].count).to eq(1)
     expect(db[:review__events].count).to eq(1)
   end

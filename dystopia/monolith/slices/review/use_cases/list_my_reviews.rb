@@ -23,7 +23,7 @@ module Review
       private
 
       def counts_for(account_id)
-        rows = review_repo.parties_and_ratings_by_account(author_account_id: account_id)
+        rows = review_repo.ratings_by_account(author_account_id: account_id)
         { total: rows.size, unrated: rows.count { |row| row.rating.nil? } }
       end
     end

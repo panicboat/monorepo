@@ -72,8 +72,8 @@ module Review
         end
       end
 
-      def parties_and_ratings_by_account(author_account_id:)
-        review_records.where(author_account_id: author_account_id).select(:author_profile_id, :target_profile_id, :rating).to_a
+      def ratings_by_account(author_account_id:)
+        review_records.where(author_account_id: author_account_id).select(:rating).to_a
       end
 
       def rating_summary(target_profile_id:)
