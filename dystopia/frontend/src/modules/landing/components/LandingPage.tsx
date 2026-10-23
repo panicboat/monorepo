@@ -154,6 +154,10 @@ export function LandingPage() {
             </a>
             <small>夜に生きる人の、もうひとつの街。</small>
           </div>
+          <nav aria-label="規約">
+            <Link href="/terms">利用規約</Link>
+            <Link href="/privacy">プライバシーポリシー</Link>
+          </nav>
         </div>
       </footer>
     </div>

@@ -11,6 +11,7 @@ interface ResolveShellModeArgs {
   isAuthRoute: boolean;
   isOnboardingRoute: boolean;
   isLandingRoute: boolean;
+  isPublicRoute: boolean;
 }
 
 export function resolveShellMode(args: ResolveShellModeArgs): ShellMode {
@@ -23,7 +24,9 @@ export function resolveShellMode(args: ResolveShellModeArgs): ShellMode {
     isAuthRoute,
     isOnboardingRoute,
     isLandingRoute,
+    isPublicRoute,
   } = args;
+  if (isPublicRoute) return "bare";
   if (isAuthRoute && !isOnboardingRoute) return "bare";
   if (!isHydrated) return "loading";
   if (!isAuthenticated) {

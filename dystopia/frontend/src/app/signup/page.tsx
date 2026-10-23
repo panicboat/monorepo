@@ -35,10 +35,11 @@ function SignupForm({ initialRole }: { initialRole: 1 | 2 }) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ageConfirmed) return;
+    if (!ageConfirmed || !agreed) return;
     setError(null);
     setSubmitting(true);
     try {
@@ -117,13 +118,46 @@ function SignupForm({ initialRole }: { initialRole: 1 | 2 }) {
 
             <RoleSelector value={role} onChange={setRole} />
 
+            <label className="flex items-start gap-2 text-sm text-text-primary">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 size-4 shrink-0 accent-accent"
+              />
+              <span>
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  利用規約
+                </Link>
+                と
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  プライバシーポリシー
+                </Link>
+                に同意する
+              </span>
+            </label>
+
             {error && (
               <p role="alert" className="text-sm text-error">
                 {error}
               </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={submitting}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={submitting || !agreed}
+            >
               {submitting ? "送信中…" : "SMS を送信"}
             </Button>
           </form>

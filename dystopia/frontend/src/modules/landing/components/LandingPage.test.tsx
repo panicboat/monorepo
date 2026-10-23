@@ -63,6 +63,13 @@ describe("LandingPage", () => {
     expect(html).toContain("18歳以上の方が対象です");
   });
 
+  it("links to the terms and the privacy policy from the footer", () => {
+    const footer = renderToStaticMarkup(<LandingPage />).split("<footer")[1];
+
+    expect(footer).toMatch(/<a href="\/terms">利用規約<\/a>/);
+    expect(footer).toMatch(/<a href="\/privacy">プライバシーポリシー<\/a>/);
+  });
+
   it("switches every part of the page to the guest side and remembers it in the address", async () => {
     const container = await mount();
 

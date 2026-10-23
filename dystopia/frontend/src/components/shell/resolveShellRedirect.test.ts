@@ -8,6 +8,7 @@ const base = {
   isAuthRoute: false,
   isOnboardingRoute: false,
   isLandingRoute: false,
+  isPublicRoute: false,
 };
 
 describe("resolveShellRedirect", () => {
@@ -54,5 +55,11 @@ describe("resolveShellRedirect", () => {
     expect(resolveShellRedirect({ ...base, sessionKind: "select" })).toBeNull();
     expect(resolveShellRedirect({ ...base, sessionKind: "unavailable" })).toBeNull();
     expect(resolveShellRedirect({ ...base, sessionKind: null })).toBeNull();
+  });
+
+  it("leaves every visitor on a public route", () => {
+    expect(resolveShellRedirect({ ...base, isPublicRoute: true, isAuthenticated: false, sessionKind: null })).toBeNull();
+    expect(resolveShellRedirect({ ...base, isPublicRoute: true, sessionKind: "onboarding" })).toBeNull();
+    expect(resolveShellRedirect({ ...base, isPublicRoute: true })).toBeNull();
   });
 });

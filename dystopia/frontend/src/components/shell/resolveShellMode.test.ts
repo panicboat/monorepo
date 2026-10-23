@@ -10,6 +10,7 @@ const base = {
   isAuthRoute: false,
   isOnboardingRoute: false,
   isLandingRoute: false,
+  isPublicRoute: false,
 };
 
 describe("resolveShellMode", () => {
@@ -118,5 +119,18 @@ describe("resolveShellMode", () => {
         isLandingRoute: true,
       })
     ).toBe("landing");
+  });
+
+  it("keeps public routes bare in every identity state", () => {
+    const states = [
+      { isHydrated: false, isAuthenticated: false, hasActiveProfile: false, sessionKind: null },
+      { isHydrated: true, isAuthenticated: false, hasActiveProfile: false, sessionKind: null },
+      { isHydrated: true, isAuthenticated: true, hasActiveProfile: false, sessionKind: "onboarding" as const },
+      { isHydrated: true, isAuthenticated: true, hasActiveProfile: false, sessionKind: "select" as const },
+      { isHydrated: true, isAuthenticated: true, hasActiveProfile: true, sessionKind: "active" as const },
+    ];
+    for (const state of states) {
+      expect(resolveShellMode({ ...base, ...state, isPublicRoute: true })).toBe("bare");
+    }
   });
 });
