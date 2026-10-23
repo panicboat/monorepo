@@ -142,7 +142,7 @@ describe("TERMS", () => {
   });
 
   it("limits the guest's view of karte to the service screens", () => {
-    expect(article(10)).toContain("ゲストは、本サービス上では、自分についてのカルテも見ることができません");
+    expect(article(10)).toContain("本サービス上でカルテを見ることができるのは、キャストだけです");
   });
 
   it("keeps to the app's words", () => {

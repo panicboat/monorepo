@@ -68,8 +68,17 @@ describe("PRIVACY", () => {
     expect(section(7)).toMatch(/通知の配信サービスは、配信のために、暗号化した通知を一時的に保持します/);
   });
 
+  it("limits the Tokyo statement to the service's functions and stores inquiries with the contact service", () => {
+    expect(section(7)).toContain("本サービスの機能を通じて取得した情報は、AWS の東京リージョン");
+    expect(section(7)).toContain("第2節の問い合わせなどで運営者が取得した情報は、運営者の連絡先として使うサービスに保存します");
+  });
+
   it("explains that there is no sign-out", () => {
     expect(section(8)).toMatch(/ログアウトの機能がありません/);
+  });
+
+  it("says deactivation also ends the login on the account's other devices", () => {
+    expect(section(8)).toMatch(/そのアカウントでログインしている他の端末でも[^。]*ログインの状態が終わります/);
   });
 
   it("states backup and log periods without a deletion date for deactivated accounts", () => {
@@ -90,6 +99,7 @@ describe("PRIVACY", () => {
 
     expect(retention).toContain("プロフィールを削除した場合は、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミも削除されます");
     expect(retention).toMatch(/退会したアカウントの情報を削除します。ただし、次の2つの段落に定めるカルテと DM は、退会した後も残ります/);
+    expect(retention).toContain("前の段落の画像と動画のファイルも、残る場合があります");
   });
 
   it("limits when the operator reads messages", () => {
@@ -110,7 +120,7 @@ describe("PRIVACY", () => {
     expect(requests).toContain("本人（退会した方を含みます）は、運営者の連絡先に");
     expect(requests).toContain("登録した電話番号の照合など、運営者が定める方法で確認します");
     expect(requests).not.toContain("ユーザー名の照合");
-    expect(requests).toContain("カルテとクチコミの内容の訂正の請求には、削除または非表示によって対応することがあります");
+    expect(requests).toContain("カルテとクチコミについて内容の訂正を請求された場合、運営者は、削除または非表示によって対応することがあります");
   });
 
   it("tells users individually about changes that greatly harm them", () => {
