@@ -265,7 +265,7 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
         <div className="flex items-center justify-between gap-3 border-t border-divider pt-4">
           <div className="flex flex-col">
             <span className="text-sm font-medium text-text-primary">プロフィールに鍵をかける</span>
-            <span className="text-xs text-text-muted">フォロワーだけが閲覧できます</span>
+            <span className="text-xs text-text-muted">投稿はフォロワーだけが見られます。プロフィールの項目、フォロー・フォロワーの一覧、コメント、予定などは、フォロワー以外にも表示されます</span>
           </div>
           <Toggle checked={form.isPrivate} onCheckedChange={(value) => set("isPrivate", value)} aria-label="プロフィールに鍵をかける" />
         </div>

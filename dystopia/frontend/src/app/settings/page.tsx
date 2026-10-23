@@ -55,8 +55,7 @@ export default function SettingsPage() {
             <section className="border-t border-border mt-8 pt-6">
               <h2 className="text-base font-medium text-error">アカウントを退会</h2>
               <p className="mt-2 text-sm text-text-secondary">
-                30 日以内に同じ電話番号で login すれば自動的に復活します。
-                30 日経過後はデータが消えます。
+                退会すると、すべてのプロフィールが他の利用者に表示されなくなり、アカウントの情報は後日削除されます。削除が済むまでの間に同じ電話番号でログインすると、退会は取り消されます。
               </p>
               <button
                 type="button"
@@ -85,8 +84,7 @@ export default function SettingsPage() {
           <div className="w-full max-w-sm rounded bg-bg p-4 shadow-lg">
             <p className="text-sm font-medium">本当に退会しますか？</p>
             <p className="mt-2 text-sm text-text-secondary">
-              30 日以内に同じ電話番号で login すれば自動的に復活します。
-              30 日経過後はデータが消えます。
+              退会すると、すべてのプロフィールが他の利用者に表示されなくなり、アカウントの情報は後日削除されます。削除が済むまでの間に同じ電話番号でログインすると、退会は取り消されます。
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button

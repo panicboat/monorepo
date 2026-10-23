@@ -63,6 +63,16 @@ describe("SettingsPage tabs", () => {
     await view.unmount();
   });
 
+  it("says deactivation is undone by logging in before the data is deleted", async () => {
+    useAuthStore.setState({ accountId: "account-1", role: "guest", activeProfileId: "p1" });
+    const view = await mount();
+
+    expect(view.container.textContent).toContain(
+      "退会すると、すべてのプロフィールが他の利用者に表示されなくなり、アカウントの情報は後日削除されます。削除が済むまでの間に同じ電話番号でログインすると、退会は取り消されます。"
+    );
+    await view.unmount();
+  });
+
   it("leaves the deactivation off the appearance tab", async () => {
     useAuthStore.setState({ accountId: "account-1", role: "cast", activeProfileId: "p1" });
     const view = await mount();

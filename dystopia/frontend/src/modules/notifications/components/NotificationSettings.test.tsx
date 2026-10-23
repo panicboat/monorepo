@@ -61,7 +61,7 @@ describe("NotificationSettings", () => {
     for (const removed of ["リポスト", "引用", "推し！", "ポスト"]) {
       expect(toggle(removed)).toBeNull();
     }
-    expect(container.textContent).toContain("アプリ内の通知一覧には、設定に関係なくすべて表示されます");
+    expect(container.textContent).toContain("アプリ内の通知一覧には、設定に関係なくすべて表示されます。メッセージは通知一覧には載らず、「メッセージ」の未読件数でお知らせします");
   });
 
   it("explains why the device cannot receive notifications and locks its switch", async () => {

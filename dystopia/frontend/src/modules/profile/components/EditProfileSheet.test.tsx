@@ -162,6 +162,14 @@ describe("EditProfileSheet", () => {
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: true }));
   });
 
+  it("explains which parts of a locked profile stay visible to non-followers", async () => {
+    await renderSheet(vi.fn(async () => {}));
+
+    expect(document.body.textContent).toContain(
+      "投稿はフォロワーだけが見られます。プロフィールの項目、フォロー・フォロワーの一覧、コメント、予定などは、フォロワー以外にも表示されます"
+    );
+  });
+
   it("saves the follow approval setting of the profile", async () => {
     const onSave = vi.fn(async () => {});
     await renderSheet(onSave);
