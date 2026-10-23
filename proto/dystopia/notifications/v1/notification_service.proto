@@ -15,6 +15,8 @@ service NotificationService {
   rpc GetPushConfig(GetPushConfigRequest) returns (GetPushConfigResponse);
   rpc RegisterPushSubscription(RegisterPushSubscriptionRequest) returns (RegisterPushSubscriptionResponse);
   rpc UnregisterPushSubscription(UnregisterPushSubscriptionRequest) returns (UnregisterPushSubscriptionResponse);
+  rpc GetPushSubscriptionStatus(GetPushSubscriptionStatusRequest) returns (GetPushSubscriptionStatusResponse);
+  rpc ClaimPushEndpoint(ClaimPushEndpointRequest) returns (ClaimPushEndpointResponse);
 }
 
 enum NotificationType {
@@ -68,10 +70,9 @@ message MarkAllReadResponse {
 }
 
 message NotificationPreferences {
-  reserved 4, 5, 10;
-  reserved "repost", "quote", "oshi";
+  reserved 1, 4, 5, 10;
+  reserved "push_enabled", "repost", "quote", "oshi";
 
-  bool push_enabled = 1;
   bool comment = 2;
   bool like = 3;
   bool reply = 6;
@@ -115,3 +116,17 @@ message UnregisterPushSubscriptionRequest {
 }
 
 message UnregisterPushSubscriptionResponse {}
+
+message GetPushSubscriptionStatusRequest {
+  string endpoint = 1;
+}
+
+message GetPushSubscriptionStatusResponse {
+  bool subscribed = 1;
+}
+
+message ClaimPushEndpointRequest {
+  string endpoint = 1;
+}
+
+message ClaimPushEndpointResponse {}

@@ -10,13 +10,14 @@ const push = vi.hoisted(() => ({
   readPushEnvironment: vi.fn(() => ({})),
   detectPushSupport: vi.fn(() => push.support),
   fetchVapidPublicKey: vi.fn(async () => "BPublicKey"),
-  currentPushSubscription: vi.fn(async () => null as object | null),
+  isSubscribedHere: vi.fn(async () => false),
   enablePush: vi.fn(async () => "subscribed"),
   disablePush: vi.fn(async () => {}),
 }));
 vi.mock("@/modules/notifications/lib/push", () => push);
 
 const { usePushDevice } = await import("./usePushDevice");
+const { useAuthStore } = await import("@/stores/authStore");
 
 let latest: ReturnType<typeof usePushDevice>;
 let root: ReturnType<typeof createRoot>;
@@ -34,7 +35,8 @@ async function mount() {
 beforeEach(() => {
   push.support = "available";
   push.fetchVapidPublicKey.mockReset().mockResolvedValue("BPublicKey");
-  push.currentPushSubscription.mockReset().mockResolvedValue(null);
+  push.isSubscribedHere.mockReset().mockResolvedValue(false);
+  useAuthStore.setState({ activeProfileId: "profile-A" });
   push.enablePush.mockReset().mockResolvedValue("subscribed");
   push.disablePush.mockReset().mockResolvedValue(undefined);
 });
@@ -57,12 +59,38 @@ describe("usePushDevice", () => {
     expect(latest.state).toBe("unconfigured");
   });
 
-  it("is on when the browser already holds a subscription", async () => {
-    push.currentPushSubscription.mockResolvedValue({});
+  it("is on when the acting profile is subscribed on this browser", async () => {
+    push.isSubscribedHere.mockResolvedValue(true);
 
     await mount();
 
     expect(latest.state).toBe("on");
+  });
+
+  it("checks the subscription again when the acting profile changes", async () => {
+    push.isSubscribedHere.mockResolvedValue(true);
+    await mount();
+    expect(latest.state).toBe("on");
+
+    push.isSubscribedHere.mockResolvedValue(false);
+    await act(async () => useAuthStore.setState({ activeProfileId: "profile-B" }));
+
+    expect(push.isSubscribedHere).toHaveBeenCalledTimes(2);
+    expect(latest.state).toBe("off");
+  });
+
+  it("is loading from the profile change until the new profile's status arrives", async () => {
+    push.isSubscribedHere.mockResolvedValue(true);
+    await mount();
+    expect(latest.state).toBe("on");
+
+    let resolveStatus: (subscribed: boolean) => void = () => {};
+    push.isSubscribedHere.mockReturnValue(new Promise<boolean>((resolve) => (resolveStatus = resolve)));
+    await act(async () => useAuthStore.setState({ activeProfileId: "profile-B" }));
+    expect(latest.state).toBe("loading");
+
+    await act(async () => resolveStatus(false));
+    expect(latest.state).toBe("off");
   });
 
   it("turns on with the fetched key, and reports a refused permission", async () => {

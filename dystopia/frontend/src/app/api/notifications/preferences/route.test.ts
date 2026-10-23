@@ -13,7 +13,6 @@ vi.mock("@/lib/request", () => ({ buildGrpcHeaders: vi.fn(async () => ({})) }));
 const { GET, PUT } = await import("./route");
 
 const ALL_ON = {
-  pushEnabled: true,
   comment: true,
   like: true,
   reply: true,

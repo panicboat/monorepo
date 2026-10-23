@@ -50,23 +50,12 @@ export function NotificationSettings() {
         <h2 className="text-sm font-semibold text-text-secondary">この端末</h2>
         <ToggleRow
           label="この端末で受け取る"
-          description={DEVICE_NOTES[device.state] ?? "オンにすると、この端末に通知が届きます"}
+          description={DEVICE_NOTES[device.state] ?? "オンにすると、このプロフィール宛ての通知がこの端末に届きます"}
           checked={device.state === "on"}
           onCheckedChange={(value) => void (value ? device.enable() : device.disable())}
           disabled={device.busy || !deviceSwitchable}
         />
         {device.failed && <p className="text-xs text-text-secondary">端末の設定を変更できませんでした</p>}
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-text-secondary">このプロフィール</h2>
-        <ToggleRow
-          label="端末に通知を送る"
-          description="オフにすると、このプロフィール宛ての通知はどの端末にも届きません"
-          checked={preferences.pushEnabled}
-          onCheckedChange={onToggle("pushEnabled")}
-          disabled={updating}
-        />
       </section>
 
       <section className="flex flex-col gap-3">
@@ -78,7 +67,7 @@ export function NotificationSettings() {
             label={row.label}
             checked={preferences[row.field]}
             onCheckedChange={onToggle(row.field)}
-            disabled={updating || !preferences.pushEnabled}
+            disabled={updating}
           />
         ))}
       </section>

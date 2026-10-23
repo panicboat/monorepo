@@ -15,11 +15,11 @@ module Notifications
       MAX_ENDPOINT_LENGTH = 2048
       KEY_FORMAT = /\A[A-Za-z0-9_-]{1,256}={0,2}\z/
 
-      def call(account_id:, endpoint:, p256dh:, auth:)
+      def call(account_id:, profile_id:, endpoint:, p256dh:, auth:)
         raise InvalidSubscriptionError, "endpoint is not a known push service" unless allowed_endpoint?(endpoint.to_s)
         raise InvalidSubscriptionError, "subscription keys are malformed" unless KEY_FORMAT.match?(p256dh.to_s) && KEY_FORMAT.match?(auth.to_s)
 
-        push_subscription_repo.upsert(account_id: account_id, endpoint: endpoint, p256dh: p256dh, auth: auth)
+        push_subscription_repo.upsert(account_id: account_id, profile_id: profile_id, endpoint: endpoint, p256dh: p256dh, auth: auth)
         nil
       end
 

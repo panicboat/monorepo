@@ -12,8 +12,8 @@ module Notifications
         PushProfile.new(id: profile.id, account_id: profile.account_id, username: profile.username, display_name: profile.display_name)
       end
 
-      def visible_count(account_id)
-        profile_repo.visible_ids_by_account(account_id).length
+      def visible_ids(account_id)
+        profile_repo.visible_ids_by_account(account_id)
       end
 
       private

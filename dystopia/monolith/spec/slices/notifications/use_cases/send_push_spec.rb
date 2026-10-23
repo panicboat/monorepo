@@ -53,14 +53,14 @@ RSpec.describe Notifications::UseCases::SendPush, type: :database do
   end
 
   def subscribe(profile_id, device)
-    subscriptions.upsert(account_id: account_of(profile_id), endpoint: endpoint(device), p256dh: "BKey", auth: "auth")
+    subscriptions.upsert(account_id: account_of(profile_id), profile_id: profile_id, endpoint: endpoint(device), p256dh: "BKey", auth: "auth")
   end
 
   def push(kind: "like", **rest)
     use_case.call(recipient_profile_id: recipient, kind: kind, actor_profile_id: actor, post_id: post_id, **rest)
   end
 
-  it "sends to every device of the recipient's account and to no one else" do
+  it "sends to every device registered for the recipient profile and to no one else" do
     subscribe(recipient, "phone")
     subscribe(recipient, "laptop")
     subscribe(actor, "actor-phone")
@@ -77,6 +77,16 @@ RSpec.describe Notifications::UseCases::SendPush, type: :database do
     expect(sent.map { |d| d[:urgency] }).to all(eq("normal"))
   end
 
+  it "sends only to the devices registered for the recipient profile" do
+    sibling = create_account_with_profile(account_id: account_of(recipient), display_name: "別名")
+    subscribe(recipient, "phone")
+    subscribe(sibling, "laptop")
+
+    push
+
+    expect(sender.sent.map { |d| d[:endpoint] }).to eq([endpoint("phone")])
+  end
+
   it "sends a direct message urgently with its text and thread" do
     subscribe(recipient, "phone")
 
@@ -87,26 +97,36 @@ RSpec.describe Notifications::UseCases::SendPush, type: :database do
     )
   end
 
-  it "names the receiving profile when the account shows more than one, ignoring a disabled one" do
-    subscribe(recipient, "phone")
-    disabled_sibling = create_account_with_profile(account_id: account_of(recipient), display_name: "停止中")
-    db[:profile__profiles].where(id: disabled_sibling).update(disabled_at: Time.now)
+  it "names the recipient profile only on a device shared by several profiles" do
+    sibling = create_account_with_profile(account_id: account_of(recipient), display_name: "別名")
+    subscribe(recipient, "shared")
+    subscribe(sibling, "shared")
+    subscribe(recipient, "single")
+    real_builder = Notifications::Slice["use_cases.build_push_message"]
+    shared_flags = []
+    builder = double(:build_push_message)
+    allow(builder).to receive(:call) do |**args|
+      shared_flags << args[:shared_device]
+      real_builder.call(**args)
+    end
 
-    push
-    expect(sender.sent.map { |d| d[:payload]["title"] }).to eq(["りん"])
+    described_class.new(web_push_sender: sender, build_push_message: builder)
+      .call(recipient_profile_id: recipient, kind: "like", actor_profile_id: actor, post_id: post_id)
 
-    create_account_with_profile(account_id: account_of(recipient), display_name: "別名")
-    push
-    expect(sender.sent.map { |d| d[:payload]["title"] }).to eq(["りん → ゆな"])
+    titles = sender.sent.to_h { |d| [d[:endpoint], d[:payload]["title"]] }
+    expect(titles).to eq(endpoint("shared") => "りん → ゆな", endpoint("single") => "りん")
+    expect(shared_flags).to contain_exactly(true, false)
   end
 
-  it "sends nothing when the profile turned device notifications off" do
+  it "does not name the recipient profile when the other profile on the device is disabled" do
+    sibling = create_account_with_profile(account_id: account_of(recipient), display_name: "別名")
     subscribe(recipient, "phone")
-    update_preferences.call(profile_id: recipient, preferences: defaults.merge(push_enabled: false))
+    subscribe(sibling, "phone")
+    db[:profile__profiles].where(id: sibling).update(disabled_at: Time.now)
 
     push
 
-    expect(sender.sent).to be_empty
+    expect(sender.sent.map { |d| d[:payload]["title"] }).to eq(["りん"])
   end
 
   it "sends nothing for a kind the profile turned off, using the follow setting for both follow kinds" do
@@ -149,7 +169,19 @@ RSpec.describe Notifications::UseCases::SendPush, type: :database do
 
     push
 
-    expect(subscriptions.list_by_account(account_of(recipient)).map(&:endpoint)).to eq([endpoint("laptop")])
+    expect(subscriptions.list_by_profile(recipient).map(&:endpoint)).to eq([endpoint("laptop")])
+  end
+
+  it "drops the rows of every profile of the account on a gone endpoint" do
+    sibling = create_account_with_profile(account_id: account_of(recipient), display_name: "別名")
+    subscribe(recipient, "phone")
+    subscribe(sibling, "phone")
+    sender.outcomes = { endpoint("phone") => :gone }
+
+    push
+
+    expect(subscriptions.list_by_profile(recipient)).to be_empty
+    expect(subscriptions.list_by_profile(sibling)).to be_empty
   end
 
   it "raises nothing when a device fails unexpectedly" do

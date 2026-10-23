@@ -8,7 +8,6 @@ import { authFetch } from "@/lib/auth";
 import type { NotificationPreferences } from "@/modules/notifications/types";
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
-  pushEnabled: true,
   comment: true,
   like: true,
   reply: true,

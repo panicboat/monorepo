@@ -22,7 +22,6 @@ export interface PaginatedNotificationsResponse {
 }
 
 export interface NotificationPreferences {
-  pushEnabled: boolean;
   comment: boolean;
   like: boolean;
   reply: boolean;

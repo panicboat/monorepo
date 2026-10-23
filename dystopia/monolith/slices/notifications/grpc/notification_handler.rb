@@ -23,6 +23,8 @@ module Notifications
       rpc :GetPushConfig, ::Notifications::V1::GetPushConfigRequest, ::Notifications::V1::GetPushConfigResponse
       rpc :RegisterPushSubscription, ::Notifications::V1::RegisterPushSubscriptionRequest, ::Notifications::V1::RegisterPushSubscriptionResponse
       rpc :UnregisterPushSubscription, ::Notifications::V1::UnregisterPushSubscriptionRequest, ::Notifications::V1::UnregisterPushSubscriptionResponse
+      rpc :GetPushSubscriptionStatus, ::Notifications::V1::GetPushSubscriptionStatusRequest, ::Notifications::V1::GetPushSubscriptionStatusResponse
+      rpc :ClaimPushEndpoint, ::Notifications::V1::ClaimPushEndpointRequest, ::Notifications::V1::ClaimPushEndpointResponse
 
       include Notifications::Deps[
         list_uc: "use_cases.list_notifications",
@@ -33,6 +35,8 @@ module Notifications
         update_preferences_uc: "use_cases.update_preferences",
         register_push_subscription_uc: "use_cases.register_push_subscription",
         unregister_push_subscription_uc: "use_cases.unregister_push_subscription",
+        get_push_subscription_status_uc: "use_cases.get_push_subscription_status",
+        claim_push_endpoint_uc: "use_cases.claim_push_endpoint",
         web_push_sender: "adapters.web_push_sender"
       ]
 
@@ -96,7 +100,6 @@ module Notifications
         authenticate_user!
         input = request.message.preferences
         attrs = {
-          push_enabled: input.push_enabled,
           comment: input.comment,
           like: input.like,
           reply: input.reply,
@@ -118,18 +121,30 @@ module Notifications
       end
 
       def register_push_subscription
-        authenticate_account!
+        authenticate_user!
         message = request.message
-        register_push_subscription_uc.call(account_id: current_account_id, endpoint: message.endpoint, p256dh: message.p256dh, auth: message.auth)
+        register_push_subscription_uc.call(account_id: current_account_id, profile_id: current_profile_id, endpoint: message.endpoint, p256dh: message.p256dh, auth: message.auth)
         ::Notifications::V1::RegisterPushSubscriptionResponse.new
       rescue ::Notifications::UseCases::RegisterPushSubscription::InvalidSubscriptionError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "この端末の通知を登録できませんでした")
       end
 
       def unregister_push_subscription
-        authenticate_account!
-        unregister_push_subscription_uc.call(account_id: current_account_id, endpoint: request.message.endpoint)
+        authenticate_user!
+        unregister_push_subscription_uc.call(profile_id: current_profile_id, endpoint: request.message.endpoint)
         ::Notifications::V1::UnregisterPushSubscriptionResponse.new
+      end
+
+      def get_push_subscription_status
+        authenticate_user!
+        subscribed = get_push_subscription_status_uc.call(profile_id: current_profile_id, endpoint: request.message.endpoint)
+        ::Notifications::V1::GetPushSubscriptionStatusResponse.new(subscribed: subscribed)
+      end
+
+      def claim_push_endpoint
+        authenticate_account!
+        claim_push_endpoint_uc.call(account_id: current_account_id, endpoint: request.message.endpoint)
+        ::Notifications::V1::ClaimPushEndpointResponse.new
       end
 
       private
@@ -140,7 +155,6 @@ module Notifications
 
       def preferences_to_proto(prefs)
         ::Notifications::V1::NotificationPreferences.new(
-          push_enabled: prefs[:push_enabled],
           comment: prefs[:comment],
           like: prefs[:like],
           reply: prefs[:reply],

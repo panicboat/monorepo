@@ -5,8 +5,8 @@ module Notifications
     class UnregisterPushSubscription
       include Notifications::Deps[push_subscription_repo: "repositories.push_subscription_repository"]
 
-      def call(account_id:, endpoint:)
-        push_subscription_repo.delete_for_account(account_id: account_id, endpoint: endpoint.to_s)
+      def call(profile_id:, endpoint:)
+        push_subscription_repo.delete_for_profile(profile_id: profile_id, endpoint: endpoint.to_s)
         nil
       end
     end

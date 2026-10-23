@@ -17,7 +17,7 @@ RSpec.describe Notifications::UseCases::Emit, type: :database do
   end
 
   it "lists the notification even when the recipient turned that kind off for devices" do
-    update_preferences.call(profile_id: recipient_profile_id, preferences: defaults.merge(push_enabled: false, mention: false))
+    update_preferences.call(profile_id: recipient_profile_id, preferences: defaults.merge(mention: false))
 
     expect(emit).not_to be_nil
     expect(notification_repo.list(recipient_profile_id: recipient_profile_id).map(&:type)).to eq(["mention"])

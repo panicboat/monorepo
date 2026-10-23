@@ -20,7 +20,7 @@ RSpec.describe "Notification preferences RPCs", type: :database do
 
   it "saves and returns the comment preference with the remaining fields" do
     input = Notifications::V1::NotificationPreferences.new(
-      push_enabled: false, comment: false, like: true, reply: false, follow: true,
+      comment: false, like: true, reply: false, follow: true,
       mention: false, message: true, footprint_unread_badge: false, footprints_record_my_visits: true
     )
 
@@ -29,6 +29,7 @@ RSpec.describe "Notification preferences RPCs", type: :database do
 
     expect(saved).to eq(input)
     expect(fetched).to eq(input)
+    expect(fetched.to_h).not_to have_key(:push_enabled)
   end
 
   it "returns every preference turned on for a profile that has saved none" do
@@ -36,7 +37,7 @@ RSpec.describe "Notification preferences RPCs", type: :database do
 
     expect(fetched.to_h.values).to all(be(true))
     expect(fetched.to_h.keys).to contain_exactly(
-      :push_enabled, :comment, :like, :reply, :follow, :mention, :message, :footprint_unread_badge, :footprints_record_my_visits
+      :comment, :like, :reply, :follow, :mention, :message, :footprint_unread_badge, :footprints_record_my_visits
     )
   end
 end

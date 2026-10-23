@@ -6,6 +6,7 @@ module Notifications
       schema(:"notifications__push_subscriptions", as: :push_subscription_records, infer: false) do
         attribute :id, Types::String
         attribute :account_id, Types::String
+        attribute :profile_id, Types::String
         attribute :endpoint, Types::String
         attribute :p256dh, Types::String
         attribute :auth, Types::String

@@ -4,7 +4,6 @@ module Notifications
   module UseCases
     class GetPreferences
       DEFAULT_PREFERENCES = {
-        push_enabled: true,
         comment: true,
         like: true,
         reply: true,

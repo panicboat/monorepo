@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  currentPushSubscription,
   detectPushSupport,
   disablePush,
   enablePush,
   fetchVapidPublicKey,
+  isSubscribedHere,
   readPushEnvironment,
 } from "@/modules/notifications/lib/push";
+import { useAuthStore } from "@/stores/authStore";
 
 export type PushDeviceState = "loading" | "unsupported" | "needs-install" | "denied" | "unconfigured" | "off" | "on";
 
@@ -19,9 +20,12 @@ export function usePushDevice() {
   const [vapidPublicKey, setVapidPublicKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const activeProfileId = useAuthStore((s) => s.activeProfileId);
 
   useEffect(() => {
     let cancelled = false;
+    setState("loading");
+    setFailed(false);
     void (async () => {
       const support = detectPushSupport(readPushEnvironment());
       if (support !== "available") {
@@ -36,8 +40,8 @@ export function usePushDevice() {
           return;
         }
         setVapidPublicKey(key);
-        const subscription = await currentPushSubscription();
-        if (!cancelled) setState(subscription ? "on" : "off");
+        const subscribed = await isSubscribedHere();
+        if (!cancelled) setState(subscribed ? "on" : "off");
       } catch {
         if (!cancelled) {
           setState("off");
@@ -48,7 +52,7 @@ export function usePushDevice() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeProfileId]);
 
   const change = useCallback(async (action: () => Promise<PushDeviceState>) => {
     setBusy(true);

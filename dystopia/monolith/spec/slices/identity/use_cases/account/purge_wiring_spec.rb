@@ -102,8 +102,8 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (31 * 24 * 3600))
 
     push_subscriptions = Notifications::Slice["repositories.push_subscription_repository"]
-    push_subscriptions.upsert(account_id: account_id, endpoint: "https://fcm.googleapis.com/fcm/send/purged", p256dh: "BKey", auth: "auth")
-    push_subscriptions.upsert(account_id: bystander_account_id, endpoint: "https://fcm.googleapis.com/fcm/send/kept", p256dh: "BKey", auth: "auth")
+    push_subscriptions.upsert(account_id: account_id, profile_id: persona_a, endpoint: "https://fcm.googleapis.com/fcm/send/purged", p256dh: "BKey", auth: "auth")
+    push_subscriptions.upsert(account_id: bystander_account_id, profile_id: bystander, endpoint: "https://fcm.googleapis.com/fcm/send/kept", p256dh: "BKey", auth: "auth")
 
     result = Identity::Slice["use_cases.account.purge_deactivated_accounts"].call(now: Time.now)
 
