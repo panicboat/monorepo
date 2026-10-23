@@ -71,6 +71,11 @@ describe("PRIVACY", () => {
   it("limits the Tokyo statement to the service's functions and stores inquiries with the contact service", () => {
     expect(section(7)).toContain("本サービスの機能を通じて取得した情報は、AWS の東京リージョン");
     expect(section(7)).toContain("第2節の問い合わせなどで運営者が取得した情報は、運営者の連絡先として使うサービスに保存します");
+    expect(section(6)).toContain("本サービスの機能を通じて取得した情報は、これらのサービスに保存され、または送られます");
+  });
+
+  it("limits the guest's view of karte to the service screens as the terms do", () => {
+    expect(section(4)).toContain("ゲストには、本サービス上では、自分についてのカルテも表示されません");
   });
 
   it("explains that there is no sign-out", () => {
@@ -79,6 +84,7 @@ describe("PRIVACY", () => {
 
   it("says deactivation also ends the login on the account's other devices", () => {
     expect(section(8)).toMatch(/そのアカウントでログインしている他の端末でも[^。]*ログインの状態が終わります/);
+    expect(section(8)).toContain("通常は、その端末のアクセストークンの有効期間が切れた時（退会の操作から1時間以内）に");
   });
 
   it("states backup and log periods without a deletion date for deactivated accounts", () => {

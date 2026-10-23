@@ -133,6 +133,10 @@ describe("TERMS", () => {
     expect(article(16)).toContain("利用者以外の方が第15条第2項で禁止する行為をしたと判断した場合、その方による本サービスへのアクセスの制限その他の必要な措置をとることができます");
   });
 
+  it("says uploaded image and video files may remain after deactivation", () => {
+    expect(article(18)).toContain("アップロードされた画像と動画のファイルも、残る場合があります");
+  });
+
   it("ends the chance to undo a deactivation at the deletion in article 18 paragraph 4", () => {
     expect(article(18)).toContain("ただし、第4項の削除が済んだ後は、退会を取り消すことはできません");
   });
