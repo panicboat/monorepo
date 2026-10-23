@@ -39,6 +39,11 @@ describe("PRIVACY", () => {
     expect(collected).toContain("電話番号");
     expect(collected).toContain("ハッシュ");
     expect(collected).toMatch(/「年齢の確認」への回答は、保存しません/);
+    expect(collected).toContain("電話番号、ハッシュ値、パスワードおよびパスワードを確認するための情報は、いずれも、本サービスのデータベースには保存しません");
+  });
+
+  it("names the profile actions with the screen verbs", () => {
+    expect(section(2)).toContain("利用者がプロフィールを作り、編集し、無効にし、または有効に戻した時に、次の情報を取得します");
   });
 
   it("limits the fields it does not ask for to registration and lists what inquiries bring in", () => {
@@ -82,9 +87,14 @@ describe("PRIVACY", () => {
     expect(section(8)).toMatch(/ログアウトの機能がありません/);
   });
 
+  it("states both expiry cases of the refresh token cookie without nested parentheses", () => {
+    expect(section(8)).toContain("この Cookie は、ログインした時から30日で消えます。ただし、その後にアクセストークンを更新した場合は、最後に更新した時から30日で消えます）");
+    expect(section(8)).not.toMatch(/（[^（）]*（[^（）]*）[^（）]*）/);
+  });
+
   it("says deactivation also ends the login on the account's other devices", () => {
     expect(section(8)).toMatch(/そのアカウントでログインしている他の端末でも[^。]*ログインの状態が終わります/);
-    expect(section(8)).toContain("通常は、その端末のアクセストークンの有効期間が切れた時（退会の操作から1時間以内）に");
+    expect(section(8)).toContain("通常は、それぞれの端末のアクセストークンの有効期間が切れた時（退会の操作から1時間以内）に");
   });
 
   it("states backup and log periods without a deletion date for deactivated accounts", () => {
@@ -127,6 +137,10 @@ describe("PRIVACY", () => {
     expect(requests).toContain("登録した電話番号の照合など、運営者が定める方法で確認します");
     expect(requests).not.toContain("ユーザー名の照合");
     expect(requests).toContain("カルテとクチコミについて内容の訂正を請求された場合、運営者は、削除または非表示によって対応することがあります");
+  });
+
+  it("says a minor's uploaded files may remain, as after deactivation", () => {
+    expect(section(12)).toContain("その利用者の情報を削除します。ただし、その利用者のアカウントでアップロードされた画像と動画のファイル（アバターとカバー画像を含みます）は、残る場合があります");
   });
 
   it("tells users individually about changes that greatly harm them", () => {

@@ -134,7 +134,11 @@ describe("TERMS", () => {
   });
 
   it("says uploaded image and video files may remain after deactivation", () => {
-    expect(article(18)).toContain("アップロードされた画像と動画のファイルも、残る場合があります");
+    expect(article(18)).toContain("そのアカウントでアップロードされた画像と動画のファイル（アバターとカバー画像を含みます）も、残る場合があります");
+  });
+
+  it("says a minor's uploaded files may remain, as after deactivation", () => {
+    expect(article(3)).toContain("その利用者の情報を削除します。ただし、その利用者のアカウントでアップロードされた画像と動画のファイル（アバターとカバー画像を含みます）は、残る場合があります");
   });
 
   it("ends the chance to undo a deactivation at the deletion in article 18 paragraph 4", () => {
