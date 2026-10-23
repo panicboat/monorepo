@@ -37,7 +37,7 @@ graph LR
   end
 ```
 
-サービス内部のアーキテクチャは各 `dystopia/<service>/README.md` および `docs/ARCHITECTURE.md` を参照する。
+サービス内部のアーキテクチャは各 `dystopia/<service>/README.md` および [dystopia/docs](dystopia/docs/README.md) を参照する。
 
 ## 🚢 Deployment
 
