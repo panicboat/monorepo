@@ -92,6 +92,15 @@ describe("PRIVACY", () => {
     expect(section(4)).toContain("ゲストには、本サービス上では、自分についてのカルテも表示されません");
   });
 
+  it("shows a review of a party who left the way the terms do", () => {
+    const display = PRIVACY.sections[3].paragraphs.find((paragraph) => paragraph.text.startsWith("クチコミの内容（評価、段階、結果、タグ、メモおよび日付）"));
+
+    expect(display?.text).toBe(
+      "クチコミの内容（評価、段階、結果、タグ、メモおよび日付）と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。" +
+        "書いたゲストまたは対象のキャストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、そのプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストの投稿を見ることができる利用者に表示されます。",
+    );
+  });
+
   it("explains that there is no sign-out", () => {
     expect(section(8)).toMatch(/ログアウトの機能がありません/);
   });
@@ -124,13 +133,27 @@ describe("PRIVACY", () => {
     expect(section(9)).toContain("DM は、送った利用者も受け取った利用者も削除できません。");
   });
 
-  it("says reviews go with a deleted profile and that karte and DMs stay after deactivation", () => {
+  it("says karte, DMs and reviews stay after deactivation and that a review's rating stays in the cast's average", () => {
     const retention = section(9);
 
-    expect(retention).toContain("プロフィールを削除した場合は、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミも削除されます");
-    expect(retention).toMatch(/退会したアカウントの情報を削除します。ただし、次の2つの段落に定めるカルテと DM は、退会した後も残ります/);
+    expect(retention).toContain("クチコミは、書いたゲストと対象のキャストのどちらが退会し、またはプロフィールを削除した場合も残ります。この場合、退会した利用者または削除されたプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。書いたゲストが退会し、またはプロフィールを削除しても、そのクチコミの評価は、対象のキャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）に含まれます（利用規約第6条第4項および第18条第7項）。");
+    expect(retention).not.toContain("削除の対象になります");
+    expect(retention).not.toContain("クチコミも削除されます");
+    expect(retention).toContain("利用者が退会すると、そのアカウントのすべてのプロフィールと投稿等は、他の利用者に表示されなくなります（次の3つの段落に定めるカルテ、DM およびクチコミを除きます）。運営者は、退会したアカウントの情報を削除します。ただし、次の3つの段落に定めるカルテ、DM およびクチコミは、退会した後も残ります。");
+    expect(retention).not.toContain("次の2つの段落");
     expect(retention).not.toContain("前の段落の画像と動画のファイルも、残る場合があります");
     expect(retention).toContain("アップロードしたファイルも削除します");
+  });
+
+  it("lists only the counts that include a deactivated account until deletion, not the cast's rating", () => {
+    const counts = PRIVACY.sections[8].paragraphs.find((paragraph) => paragraph.text.includes("削除が済むまでの間、次のものには"));
+
+    expect(counts?.text).toContain("（利用規約第18条第2項）");
+    expect(counts?.text).not.toContain("第18条第2項および第7項");
+    expect(counts?.items).toEqual([
+      "他の利用者の投稿のいいねとコメントの数",
+      "他の利用者のプロフィールの「フォロー中」と「フォロワー」の数",
+    ]);
   });
 
   it("limits when the operator reads messages", () => {

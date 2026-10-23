@@ -113,6 +113,15 @@ describe("KarteDetailSheet", () => {
     expect(text()).toContain("連絡が円滑");
   });
 
+  it("names a missing author as an invalid cast and a missing target as an invalid guest", async () => {
+    await mount(karte({ author: null, target: null }));
+
+    expect(text()).toContain("（無効なゲスト）");
+    expect(text()).toContain("記録者 （無効なキャスト）");
+    expect(text()).not.toContain("@");
+    expect(document.querySelector(".rounded-full")?.textContent).toBe("?");
+  });
+
   it("explains that a star makes the karte count toward the average", async () => {
     await mount(karte());
     expect(text()).toContain("星を付けると平均評価に反映されます");

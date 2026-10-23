@@ -48,12 +48,6 @@ module Review
         review_records.by_pk(id).command(:delete).call
       end
 
-      def delete_by_profile(profile_id)
-        review_records.dataset
-          .where(Sequel.|({ author_profile_id: profile_id }, { target_profile_id: profile_id }))
-          .delete
-      end
-
       def list_by_target(target_profile_id:, limit:, cursor: nil)
         page_by_activity(review_records.where(target_profile_id: target_profile_id), limit, cursor)
       end
@@ -78,8 +72,8 @@ module Review
         end
       end
 
-      def parties_and_ratings_by_account(author_account_id:)
-        review_records.where(author_account_id: author_account_id).select(:author_profile_id, :target_profile_id, :rating).to_a
+      def ratings_by_account(author_account_id:)
+        review_records.where(author_account_id: author_account_id).select(:rating).to_a
       end
 
       def rating_summary(target_profile_id:)

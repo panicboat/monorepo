@@ -187,7 +187,7 @@ export function ProfileManager() {
               {deleteTarget ? handleOf(deleteTarget) : ""} を削除しますか？
             </Dialog.Title>
             <Dialog.Description className="mt-2 text-sm text-text-secondary">
-              このプロフィールの投稿・コメント・フォロー・クチコミが削除され、元に戻せません。相手に届いたメッセージは、送り主が表示されない状態で相手の側に残ります。カルテの記録も残ります。
+              このプロフィールの投稿・コメント・フォローが削除され、元に戻せません。相手に届いたメッセージは、送り主が表示されない状態で相手の側に残ります。カルテとクチコミの記録は、このプロフィールの名前を伏せて残ります。
             </Dialog.Description>
             {error && (
               <p role="alert" className="mt-3 text-sm text-error">

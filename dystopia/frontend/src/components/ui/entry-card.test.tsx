@@ -13,6 +13,8 @@ const profile: ProfileSummaryView = {
   industry: "",
 };
 
+const avatarInitial = (html: string) => html.match(/rounded-full[^>]*>(?:<img[^>]*>)?<span[^>]*>([^<]*)<\/span>/)?.[1];
+
 const profileLinks = (html: string) => html.match(/<a[^>]*href="\/u\/yuna"/g)?.length ?? 0;
 
 describe("EntryCard", () => {
@@ -64,7 +66,12 @@ describe("EntryCard", () => {
   it("shows a deleted profile without profile links", () => {
     const html = renderToStaticMarkup(<EntryCard profile={null} meta="">本文</EntryCard>);
 
-    expect(html).toContain("削除したプロフィール");
+    expect(html).toContain("（無効なユーザー）");
     expect(html).not.toContain("<a ");
+  });
+
+  it("uses a question mark as the avatar initial for a deleted profile and the first character otherwise", () => {
+    expect(avatarInitial(renderToStaticMarkup(<EntryCard profile={null} meta="">本文</EntryCard>))).toBe("?");
+    expect(avatarInitial(renderToStaticMarkup(<EntryCard profile={profile} meta="">本文</EntryCard>))).toBe("ゆ");
   });
 });

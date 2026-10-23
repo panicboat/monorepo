@@ -69,6 +69,34 @@ RSpec.describe "Review list use cases", type: :database do
     expect(result[:summary]).to eq(average_rating: 0.0, rater_count: 0, review_count: 0)
   end
 
+  it "keeps the reviews and the summary of a cast after the author is disabled, deactivated or purged" do
+    third_account = create_account(role: 1)
+    third = create_account_with_profile(account_id: third_account, username: "guest_three")
+    write(rating: 4)
+    write(account: other_guest_account, profile: other_guest, rating: 2)
+    write(account: third_account, profile: third, rating: 3)
+    viewer_account = create_account(role: 1)
+    viewer = create_account_with_profile(account_id: viewer_account, username: "viewer")
+    db[:profile__profiles].where(id: guest).update(disabled_at: Time.now)
+    db[:identity__accounts].where(id: other_guest_account).update(deactivated_at: Time.now)
+    Profile::Slice["use_cases.purge_profile"].call(profile_id: third)
+
+    result = by_target(viewer_account: viewer_account, viewer: viewer)
+
+    expect(result[:reviews].length).to eq(3)
+    expect(result[:summary]).to eq(average_rating: 3.0, rater_count: 3, review_count: 3)
+  end
+
+  it "still hides a deactivated author's review from a viewer the author blocked" do
+    write(rating: 4)
+    viewer_account = create_account(role: 1)
+    viewer = create_account_with_profile(account_id: viewer_account, username: "viewer")
+    db[:identity__accounts].where(id: guest_account).update(deactivated_at: Time.now)
+    Social::Slice["repositories.block_repository"].block(blocker_profile_id: guest, blocked_profile_id: viewer)
+
+    expect(by_target(viewer_account: viewer_account, viewer: viewer)[:reviews]).to eq([])
+  end
+
   it "lists the reviews a guest profile wrote" do
     mine = write
     write(account: other_guest_account, profile: other_guest)
@@ -114,16 +142,24 @@ RSpec.describe "Review list use cases", type: :database do
       expect(by_author(viewer_account: viewer_account, viewer: viewer)).not_to include(about_blocked[:id])
     end
 
-    it "leaves out a review about a disabled cast" do
-      expect(by_author(viewer_account: viewer_account, viewer: viewer)).not_to include(about_disabled[:id])
+    it "shows a review about a disabled cast on the guest's page" do
+      expect(by_author(viewer_account: viewer_account, viewer: viewer)).to include(about_disabled[:id])
     end
 
-    it "shows the author every review except the one about a disabled cast" do
-      expect(by_author(viewer_account: guest_account, viewer: guest)).to eq([about_blocked[:id], about_private[:id], plain[:id]])
+    it "shows a review about a purged cast on the guest's page" do
+      purged_cast = new_cast("purged_cast")
+      about_purged = write(target: purged_cast)
+      Profile::Slice["use_cases.purge_profile"].call(profile_id: purged_cast)
+
+      expect(by_author(viewer_account: viewer_account, viewer: viewer)).to include(about_purged[:id])
+    end
+
+    it "shows the author every review" do
+      expect(by_author(viewer_account: guest_account, viewer: guest)).to eq([about_disabled[:id], about_blocked[:id], about_private[:id], plain[:id]])
     end
   end
 
-  it "leaves a review about a disabled cast out of the viewer's own counts as well as the list" do
+  it "lists and counts a review about a disabled cast among the viewer's own" do
     write(rating: 4)
     disabled_cast = create_account_with_profile(account_id: create_account(role: 2), username: "disabled_cast")
     write(target: disabled_cast)
@@ -131,11 +167,11 @@ RSpec.describe "Review list use cases", type: :database do
 
     result = uc(:list_my_reviews).call(viewer_account_id: guest_account, limit: 20, cursor: nil)
 
-    expect(result[:reviews].length).to eq(1)
-    expect(result[:counts]).to eq(total: 1, unrated: 0)
+    expect(result[:reviews].length).to eq(2)
+    expect(result[:counts]).to eq(total: 2, unrated: 1)
   end
 
-  it "counts neither a rated nor an unrated review about a cast that is no longer visible" do
+  it "counts reviews about casts that are no longer visible" do
     write(rating: 4)
     write(at: Time.now - 10)
     disabled_cast = create_account_with_profile(account_id: create_account(role: 2), username: "disabled_cast")
@@ -147,7 +183,7 @@ RSpec.describe "Review list use cases", type: :database do
 
     result = uc(:list_my_reviews).call(viewer_account_id: guest_account, limit: 20, cursor: nil)
 
-    expect(result[:counts]).to eq(total: 2, unrated: 1)
+    expect(result[:counts]).to eq(total: 6, unrated: 3)
   end
 
   it "lists and counts the viewer's own reviews across the account's profiles" do
@@ -209,5 +245,24 @@ RSpec.describe "Review list use cases", type: :database do
     ids = result[:reviews].map { |r| r[:id] }
     expect(ids).to include(kept[:id])
     expect(ids).not_to include(blocked[:id])
+  end
+
+  it "leaves a review whose cast is disabled out of recent reviews even when the author is active" do
+    disabled_cast = create_account_with_profile(account_id: create_account(role: 2), username: "disabled_cast")
+    about_disabled = write(target: disabled_cast)
+    db[:profile__profiles].where(id: disabled_cast).update(disabled_at: Time.now)
+
+    result = uc(:list_recent_reviews).call(viewer_account_id: other_guest_account, viewer_profile_id: other_guest, limit: 20, cursor: nil)
+
+    expect(result[:reviews].map { |r| r[:id] }).not_to include(about_disabled[:id])
+  end
+
+  it "keeps a review whose author is disabled in recent reviews" do
+    review = write
+    db[:profile__profiles].where(id: guest).update(disabled_at: Time.now)
+
+    result = uc(:list_recent_reviews).call(viewer_account_id: other_guest_account, viewer_profile_id: other_guest, limit: 20, cursor: nil)
+
+    expect(result[:reviews].map { |r| r[:id] }).to include(review[:id])
   end
 end

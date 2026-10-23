@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
-import { profileDisplayName } from "@/components/ui/profile-name";
+import { profileDisplayName, profileInitial } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { formatMonthDayTimeInJapan } from "@/lib/utils/japan-date";
 import { isPlainClick } from "@/lib/utils/isPlainClick";
@@ -126,7 +126,7 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
 
   return (
     <PostCard
-      author={{ name: authorName, handle: authorHandle, avatarSrc, isPrivate: !!post.author?.isPrivate }}
+      author={{ name: authorName, initial: profileInitial(post.author), handle: authorHandle, avatarSrc, isPrivate: !!post.author?.isPrivate }}
       authorHref={authorHref}
       detailHref={inDetail ? undefined : href}
       onDetailClick={inDetail ? undefined : openDetail}

@@ -44,7 +44,7 @@ describe("NotificationRow", () => {
       <NotificationRow notification={{ ...notification, latestActor: null }} onClick={() => {}} />
     );
 
-    expect(html).toContain("削除したプロフィール");
+    expect(html).toContain("（無効なユーザー）");
   });
 
   it("opens the notification from the card and links the actor to their profile outside it", () => {

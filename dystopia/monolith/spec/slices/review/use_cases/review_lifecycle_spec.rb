@@ -82,6 +82,7 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       private_cast = create_account_with_profile(account_id: create_account(role: 2), username: "private_cast", is_private: true)
       review = create(target: private_cast)
 
+      expect(db[:profile__profiles].where(id: persona_a).get(:is_private)).to be false
       expect { read_as(other_guest_account, other_guest, review) }.to invalid("Review not found")
     end
 
@@ -95,12 +96,26 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       expect(read_as(cast_account, cast, review)[:is_mine]).to be false
     end
 
-    it "reads a review whose cast is disabled as not found" do
+    it "reads a review whose cast is disabled through the guest's page and lets the author rate it" do
       review = create
       db[:profile__profiles].where(id: cast).update(disabled_at: Time.now)
 
-      expect { uc(:get_review).call(viewer_account_id: other_guest_account, viewer_profile_id: other_guest, review_id: review[:id]) }.to invalid("Review not found")
-      expect { uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: 4) }.to invalid("Review not found")
+      expect(read_as(other_guest_account, other_guest, review)[:id]).to eq(review[:id])
+      expect(uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: 4)[:rating]).to eq(4)
+    end
+
+    it "reads a review whose author is disabled for another viewer" do
+      review = create
+      db[:profile__profiles].where(id: persona_a).update(disabled_at: Time.now)
+
+      expect(read_as(other_guest_account, other_guest, review)[:author]).to be_nil
+    end
+
+    it "lets the cast read a review whose author is disabled" do
+      review = create
+      db[:profile__profiles].where(id: persona_a).update(disabled_at: Time.now)
+
+      expect(read_as(cast_account, cast, review)[:author]).to be_nil
     end
   end
 
@@ -175,6 +190,14 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       expect { uc(:delete_review).call(viewer_account_id: other_guest_account, review_id: review[:id]) }.to forbidden
       expect(uc(:delete_review).call(viewer_account_id: guest_account, review_id: review[:id])).to be_nil
       expect(db[:review__events].where(review_id: review[:id]).count).to eq(0)
+    end
+
+    it "lets the author delete a review whose cast was purged" do
+      review = create
+      Profile::Slice["use_cases.purge_profile"].call(profile_id: cast)
+
+      expect(uc(:delete_review).call(viewer_account_id: guest_account, review_id: review[:id])).to be_nil
+      expect(db[:review__reviews].where(id: review[:id]).count).to eq(0)
     end
   end
 end

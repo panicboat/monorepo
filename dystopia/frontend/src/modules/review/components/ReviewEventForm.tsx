@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
-import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import { MISSING_CAST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,9 +48,9 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
     >
       <ActingProfileLabel />
       <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
-        <Avatar src={cast?.avatarUrl || undefined} fallback={profileDisplayName(cast).replace("@", "").slice(0, 1) || "?"} size="sm" />
+        <Avatar src={cast?.avatarUrl || undefined} fallback={profileInitial(cast)} size="sm" />
         <div className="min-w-0">
-          <p className="flex min-w-0 text-sm"><ProfileName profile={cast} /></p>
+          <p className="flex min-w-0 text-sm"><ProfileName profile={cast} missing={MISSING_CAST} /></p>
           <p className="truncate text-xs text-text-secondary">{cast?.username ? `@${cast.username} · ` : ""}全員に公開</p>
         </div>
       </div>

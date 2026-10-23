@@ -19,7 +19,7 @@ export interface PostCardVideo {
 }
 
 export interface PostCardProps {
-  author: { name: string; handle: string; avatarSrc?: string; isPrivate?: boolean };
+  author: { name: string; initial?: string; handle: string; avatarSrc?: string; isPrivate?: boolean };
   authorHref?: string;
   detailHref?: string;
   onDetailClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
@@ -52,7 +52,7 @@ export function PostCard({
   const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null);
   const shownImages = images?.slice(0, 4) ?? [];
 
-  const avatar = <Avatar src={author.avatarSrc} fallback={author.name.slice(0, 1)} size="md" href={authorHref} />;
+  const avatar = <Avatar src={author.avatarSrc} fallback={author.initial ?? author.name.slice(0, 1)} size="md" href={authorHref} />;
   const nameAndHandle = (
     <span className="flex items-center gap-1">
       <span className="font-bold text-text-primary">{author.name}</span>

@@ -99,7 +99,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     review_repo.create(author_account_id: account_id, author_profile_id: persona_b, target_profile_id: witness, rating: nil, occurred_on: Date.new(2026, 10, 1))
     review_repo.create(author_account_id: bystander_account_id, author_profile_id: bystander, target_profile_id: witness, rating: nil, occurred_on: Date.new(2026, 10, 1))
 
-    db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (31 * 24 * 3600))
+    db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (91 * 24 * 3600))
 
     push_subscriptions = Notifications::Slice["repositories.push_subscription_repository"]
     push_subscriptions.upsert(account_id: account_id, profile_id: persona_a, endpoint: "https://fcm.googleapis.com/fcm/send/purged", p256dh: "BKey", auth: "auth")
@@ -129,7 +129,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:messaging__read_states].where(profile_id: personas).count).to eq(0)
     expect(db[:messaging__threads].where(profile_a: personas).or(profile_b: personas).count).to eq(0)
     expect(db[:schedule__schedules].where(profile_id: personas).count).to eq(0)
-    expect(db[:review__reviews].where(author_profile_id: personas).or(target_profile_id: personas).count).to eq(0)
+    expect(db[:review__reviews].where(author_profile_id: personas).or(target_profile_id: personas).count).to eq(2)
 
     expect(db[:profile__profiles].where(id: bystander).count).to eq(1)
     expect(db[:profile__casts].where(profile_id: bystander).count).to eq(1)
@@ -157,7 +157,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     persona_b = create_account_with_profile(account_id: account_id)
     schedule_repo.upsert(profile_id: persona_b, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
     post_repo.create_post(author_profile_id: persona_b, content: "purged before the schedule slice")
-    db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (31 * 24 * 3600))
+    db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (91 * 24 * 3600))
     allow(Hanami.logger).to receive(:error)
     purge = Identity::Slice["use_cases.account.purge_deactivated_accounts"]
     schedule_fails = true

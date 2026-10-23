@@ -32,7 +32,6 @@ module Profile
           ::Bookmarks::Slice["use_cases.purge_profile"],
           ::Messaging::Slice["use_cases.purge_profile"],
           ::Social::Slice["use_cases.purge_profile"],
-          ::Review::Slice["use_cases.purge_profile"],
           ::Post::Slice["use_cases.purge_profile"],
           ::Media::Slice["use_cases.purge_profile"],
           ::Schedule::Slice["use_cases.purge_profile"]

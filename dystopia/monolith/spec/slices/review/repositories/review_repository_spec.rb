@@ -39,25 +39,13 @@ RSpec.describe Review::Repositories::ReviewRepository, type: :database do
     expect(repo.rating_summary(target_profile_id: cast)).to eq(average_rating: 0.0, rater_count: 0, review_count: 0)
   end
 
-  it "lists by author profile and reads the parties and ratings by account across profiles" do
+  it "lists by author profile and reads the ratings by account across profiles" do
     second = create_account_with_profile(account_id: guest_account, username: "guest_alt")
     mine = write
     write(author_profile: second, rating: 2)
 
     expect(repo.list_by_author_profile(author_profile_id: guest, limit: 20).map(&:id)).to eq([mine.id])
     expect(repo.list_by_account(author_account_id: guest_account, limit: 20).length).to eq(2)
-    rows = repo.parties_and_ratings_by_account(author_account_id: guest_account)
-    expect(rows.map { |row| [row.author_profile_id, row.target_profile_id, row.rating] }).to contain_exactly([guest, cast, nil], [second, cast, 2])
-  end
-
-  it "deletes the reviews a profile wrote or received" do
-    written = write
-    other_cast = create_account_with_profile(role: 2, username: "cast_two")
-    kept = write(target: other_cast)
-
-    repo.delete_by_profile(cast)
-
-    expect(repo.find(written.id)).to be_nil
-    expect(repo.find(kept.id)).not_to be_nil
+    expect(repo.ratings_by_account(author_account_id: guest_account).map(&:rating)).to contain_exactly(nil, 2)
   end
 end

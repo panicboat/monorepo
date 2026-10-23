@@ -68,7 +68,22 @@ describe("SettingsPage tabs", () => {
     const view = await mount();
 
     expect(view.container.textContent).toContain(
-      "退会すると、すべてのプロフィールが他の利用者に表示されなくなり、アカウントの情報は後日削除されます。削除が済むまでの間に同じ電話番号でログインすると、退会は取り消されます。"
+      "退会すると、すべてのプロフィールが他の利用者に表示されなくなり、アカウントの情報は後日削除されます。書いたクチコミとカルテは、名前を伏せて残ります。消したい場合は、退会の前に削除してください。削除が済むまでの間に同じ電話番号でログインすると、退会は取り消されます。"
+    );
+    await view.unmount();
+  });
+
+  it("says the reviews and the karte stay without a name in the confirmation too", async () => {
+    useAuthStore.setState({ accountId: "account-1", role: "guest", activeProfileId: "p1" });
+    const view = await mount();
+
+    await act(async () => {
+      Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent === "退会する")?.click();
+    });
+
+    const dialog = view.container.querySelector('[role="dialog"]');
+    expect(dialog?.textContent).toContain(
+      "退会すると、すべてのプロフィールが他の利用者に表示されなくなり、アカウントの情報は後日削除されます。書いたクチコミとカルテは、名前を伏せて残ります。消したい場合は、退会の前に削除してください。削除が済むまでの間に同じ電話番号でログインすると、退会は取り消されます。"
     );
     await view.unmount();
   });

@@ -132,8 +132,22 @@ describe("TERMS", () => {
     expect(article(14)).toContain("ブロックは、その2つのプロフィールの間でだけ効きます");
   });
 
-  it("keeps a deactivated guest's review rating in the cast's average until deletion", () => {
-    expect(article(18)).toMatch(/退会したゲストが書いたクチコミの評価は、第4項の削除が済むまで、対象のキャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）に含まれます/);
+  it("keeps reviews after either party deactivates and keeps a deactivated guest's rating in the cast's average", () => {
+    const deactivation = article(18);
+
+    expect(deactivation).toContain("クチコミは、書いたゲストと対象のキャストのどちらが退会した場合も残ります。この場合、退会した利用者の表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。");
+    expect(deactivation).toContain("退会したゲストが書いたクチコミの評価は、対象のキャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）に含まれます。");
+    expect(deactivation).not.toContain("削除の対象になります");
+    expect(deactivation).not.toContain("評価は、第4項の削除が済むまで");
+  });
+
+  it("lists the karte, DM and review paragraphs as the ones deactivation leaves in place", () => {
+    const paragraphs = TERMS.sections[17].paragraphs.map((paragraph) => paragraph.text);
+
+    expect(paragraphs[1]).toContain("ただし、第5項から第7項までに定めるものは除きます");
+    expect(paragraphs[3]).toContain("ただし、第5項から第7項までに定めるものは、退会した後も残ります");
+    expect(paragraphs[6]).toMatch(/^クチコミは、/);
+    expect(article(18)).not.toContain("第5項と第6項");
   });
 
   it("lets the operator restrict access by a non-registered person who does what article 15 paragraph 2 prohibits", () => {
@@ -152,8 +166,19 @@ describe("TERMS", () => {
     expect(article(18)).toContain("ただし、第4項の削除が済んだ後は、退会を取り消すことはできません");
   });
 
-  it("deletes the reviews a profile wrote and the reviews about it when the profile is deleted", () => {
-    expect(article(6)).toContain("プロフィールを削除すると、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミも削除されます");
+  it("keeps the reviews a profile wrote and the reviews about it when the profile is deleted", () => {
+    const multipleProfiles = TERMS.sections[5].paragraphs[3].text;
+
+    expect(multipleProfiles).toContain("プロフィールを削除しても、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミは残ります。この場合、削除したプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。そのプロフィールで書いたクチコミの評価は、対象のキャストの評価の集計に含まれます。");
+    expect(multipleProfiles).not.toContain("クチコミも削除されます");
+  });
+
+  it("keeps a review after the guest or the cast leaves and shows it without their profile information", () => {
+    const display = TERMS.sections[10].paragraphs[2].text;
+
+    expect(display).toContain("クチコミの内容と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。");
+    expect(display).toContain("書いたゲストまたは対象のキャストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、そのプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストの投稿を見ることができる利用者に表示されます。");
+    expect(display).not.toContain("書いたゲストのプロフィールを見ることができる利用者");
   });
 
   it("limits the guest's view of karte to the service screens", () => {
