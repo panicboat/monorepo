@@ -34,6 +34,7 @@ import { usePushResync } from "@/modules/notifications/hooks/usePushResync";
 import { cn } from "@/lib/utils";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
+const PUBLIC_ROUTES = ["/terms", "/privacy"];
 
 // A switch re-creates the navigation, so a double click would land on the profile just left and switch straight back.
 const SWITCH_GUARD_MS = 800;
@@ -64,6 +65,7 @@ export function AppShell({ children }: AppShellProps) {
 
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
   const isLandingRoute = pathname === "/";
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
   const isOnboardingRoute = pathname.startsWith("/onboarding");
   const redirectTo = resolveShellRedirect({
     isHydrated,
@@ -72,6 +74,7 @@ export function AppShell({ children }: AppShellProps) {
     isAuthRoute,
     isOnboardingRoute,
     isLandingRoute,
+    isPublicRoute,
   });
 
   useEffect(() => {
@@ -113,6 +116,7 @@ export function AppShell({ children }: AppShellProps) {
     isAuthRoute,
     isOnboardingRoute,
     isLandingRoute,
+    isPublicRoute,
   });
 
   if (mode === "bare") {
