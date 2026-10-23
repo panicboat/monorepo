@@ -4,7 +4,7 @@ module Identity
   module UseCases
     module Account
       class PurgeDeactivatedAccounts
-        GRACE_PERIOD_SECONDS = 30 * 24 * 3600
+        GRACE_PERIOD_SECONDS = 90 * 24 * 3600
 
         Result = Data.define(:purged, :failed_account_ids)
 
