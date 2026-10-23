@@ -204,3 +204,51 @@ resource "aws_lambda_permission" "app_function_url_invoke" {
   principal                = "*"
   invoked_via_function_url = true
 }
+
+resource "aws_iam_role" "scheduler" {
+  name = "dystopia-${var.environment}-scheduler"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "scheduler.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "scheduler_invoke_task" {
+  name = "dystopia-${var.environment}-scheduler-invoke-task"
+  role = aws_iam_role.scheduler.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["lambda:InvokeFunction"]
+      Resource = aws_lambda_function.task.arn
+    }]
+  })
+}
+
+resource "aws_scheduler_schedule" "purge_deactivated" {
+  name                         = "dystopia-${var.environment}-purge-deactivated"
+  schedule_expression          = "cron(0 4 * * ? *)"
+  schedule_expression_timezone = "Asia/Tokyo"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  target {
+    arn      = aws_lambda_function.task.arn
+    role_arn = aws_iam_role.scheduler.arn
+    input    = jsonencode({ task = "purge_deactivated" })
+
+    # The purge is idempotent and the next daily run redoes it, while the default policy retries for 24 hours.
+    retry_policy {
+      maximum_retry_attempts = 0
+    }
+  }
+}
