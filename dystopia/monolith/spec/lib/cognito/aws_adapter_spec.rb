@@ -41,6 +41,13 @@ RSpec.describe Cognito::AwsAdapter do
       expect(adapter.admin_delete_user(sub: sub)).to be(true)
     end
 
+    it "raises without deleting when the lookup returns no users but has a next page" do
+      client.stub_responses(:list_users, users: [], pagination_token: "next")
+
+      expect { adapter.admin_delete_user(sub: sub) }.to raise_error(described_class::LookupIncompleteError)
+      expect(requests(:admin_delete_user)).to be_empty
+    end
+
     it "raises when the lookup fails" do
       client.stub_responses(:list_users, "AccessDeniedException")
 
