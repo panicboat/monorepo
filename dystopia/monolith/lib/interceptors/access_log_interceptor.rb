@@ -3,6 +3,7 @@ require 'json'
 
 module Interceptors
   class AccessLogInterceptor < Gruf::Interceptors::ServerInterceptor
+    # Reads request.context, not ::Current: the inner AuthenticationInterceptor clears ::Current in its ensure before this logs.
     def call
       start_time = Time.now
 
@@ -12,11 +13,11 @@ module Interceptors
 
       log_entry = {
         time: start_time.iso8601,
-        request_id: ::Current.request_id,
+        request_id: request.context[:request_id],
         method: request.method_key,
         service: request.service_key,
-        account_id: ::Current.account_id,
-        profile_id: ::Current.profile_id,
+        account_id: request.context[:account_id],
+        profile_id: request.context[:profile_id],
         duration_ms: duration.round(2),
         status: 'OK',
       }
@@ -29,11 +30,11 @@ module Interceptors
 
       log_entry = {
         time: start_time.iso8601,
-        request_id: ::Current.request_id,
+        request_id: request.context[:request_id],
         method: request.method_key,
         service: request.service_key,
-        account_id: ::Current.account_id,
-        profile_id: ::Current.profile_id,
+        account_id: request.context[:account_id],
+        profile_id: request.context[:profile_id],
         duration_ms: duration.round(2),
         status: 'ERROR',
         error: e.message,

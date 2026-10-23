@@ -2,11 +2,11 @@
 
 require "spec_helper"
 require "lib/interceptors/access_log_interceptor"
-require "lib/current"
 
 RSpec.describe Interceptors::AccessLogInterceptor do
   let(:interceptor) { described_class.new(request, error) }
-  let(:request) { double(:request, method_key: :test_method, service_key: :test_service) }
+  let(:request) { double(:request, method_key: :test_method, service_key: :test_service, context: context) }
+  let(:context) { ActiveSupport::HashWithIndifferentAccess.new }
   let(:error) { double(:error) }
 
   before do
@@ -18,13 +18,9 @@ RSpec.describe Interceptors::AccessLogInterceptor do
   describe "#call" do
     context "when request succeeds" do
       before do
-        ::Current.account_id = "user-123"
-        ::Current.profile_id = "profile-123"
-        ::Current.request_id = "request-abc-123"
-      end
-
-      after do
-        ::Current.clear
+        context[:account_id] = "user-123"
+        context[:profile_id] = "profile-123"
+        context[:request_id] = "request-abc-123"
       end
 
       it "logs request with request_id" do
@@ -50,13 +46,9 @@ RSpec.describe Interceptors::AccessLogInterceptor do
 
     context "when request fails" do
       before do
-        ::Current.account_id = "user-456"
-        ::Current.profile_id = "profile-456"
-        ::Current.request_id = "request-def-456"
-      end
-
-      after do
-        ::Current.clear
+        context[:account_id] = "user-456"
+        context[:profile_id] = "profile-456"
+        context[:request_id] = "request-def-456"
       end
 
       it "logs error with request_id" do
@@ -77,10 +69,6 @@ RSpec.describe Interceptors::AccessLogInterceptor do
     end
 
     context "when request_id is nil" do
-      before do
-        ::Current.clear
-      end
-
       it "logs with nil request_id" do
         expect(logger).to receive(:info) do |json_string|
           log = JSON.parse(json_string)
