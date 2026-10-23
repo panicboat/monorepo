@@ -137,7 +137,7 @@ describe("ProfileManager", () => {
     expect(log).toEqual([]);
     expect(document.body.textContent).toContain("@third を削除しますか？");
     expect(document.body.textContent).toContain(
-      "このプロフィールの投稿・コメント・フォローが削除され、元に戻せません。相手に届いたメッセージは、送り主が表示されない状態で相手の側に残ります。カルテとクチコミの記録も残ります。",
+      "このプロフィールの投稿・コメント・フォローが削除され、元に戻せません。相手に届いたメッセージは、送り主が表示されない状態で相手の側に残ります。カルテとクチコミの記録は、このプロフィールの名前を伏せて残ります。",
     );
 
     const dialog = document.body.querySelector('[role="dialog"]');
