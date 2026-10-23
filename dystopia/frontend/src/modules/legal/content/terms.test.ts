@@ -1,0 +1,115 @@
+import { describe, expect, it } from "vitest";
+import type { LegalSection } from "../types";
+import { EDITION, EFFECTIVE_DATE, OPERATOR } from "./operator";
+import { TERMS } from "./terms";
+
+const HEADINGS = [
+  "目的と適用", "定義", "利用資格", "登録", "アカウントの管理", "プロフィール", "投稿等の責任と権利",
+  "売春・裏引き・店舗外の取引の禁止", "個人情報の書き込みと晒しの禁止", "カルテ", "クチコミ", "予定と予定検索",
+  "DM", "フォロー・ブロック・足跡・通知", "禁止事項", "違反への措置", "権利侵害の申出", "退会",
+  "サービスの変更・中断・終了", "免責", "知的財産権と外部リンク", "通知・連絡", "規約の変更", "有料機能",
+  "分離可能性", "準拠法と管轄", "運営者",
+];
+
+const text = (section: LegalSection) =>
+  [section.heading, ...section.paragraphs.flatMap((paragraph) => [paragraph.text, ...(paragraph.items ?? [])])].join("\n");
+
+const article = (number: number) => text(TERMS.sections[number - 1]);
+
+const all = [TERMS.title, TERMS.preamble, ...TERMS.sections.map(text)].join("\n");
+
+describe("TERMS", () => {
+  it("has the 27 articles in order", () => {
+    expect(TERMS.sections.map((section) => section.heading)).toEqual(HEADINGS);
+    expect(TERMS.title).toBe("利用規約");
+    expect(TERMS.numbering).toBe("article");
+    expect(TERMS.edition).toBe(EDITION);
+    expect(TERMS.effectiveDate).toBe(EFFECTIVE_DATE);
+  });
+
+  it("defines posts and 裏引き", () => {
+    const definitions = article(2);
+
+    expect(definitions).toContain("「投稿等」");
+    expect(definitions).toContain("「裏引き」");
+
+    const posts = TERMS.sections[1].paragraphs.flatMap((paragraph) => paragraph.items ?? []).find((item) => item.startsWith("「投稿等」"));
+    expect(posts).toBeDefined();
+    for (const word of ["コメント", "プロフィール", "カルテ", "クチコミ", "予定", "DM", "画像"]) {
+      expect(posts).toContain(word);
+    }
+  });
+
+  it("puts the responsibility for posts on the user who posted them", () => {
+    const responsibility = article(7);
+
+    expect(responsibility).toMatch(/投稿等/);
+    expect(responsibility).toMatch(/責任/);
+    expect(responsibility).toContain("投稿した利用者");
+  });
+
+  it("bans prostitution and 裏引き", () => {
+    const ban = article(8);
+
+    expect(ban).toContain("売春");
+    expect(ban).toContain("周旋");
+    expect(ban).toContain("裏引き");
+  });
+
+  it("bans writing other people's personal information", () => {
+    const ban = article(9);
+
+    expect(ban).toContain("住所");
+    expect(ban).toContain("勤務先");
+    expect(ban).toContain("電話番号");
+  });
+
+  it("does not exempt the operator from all liability", () => {
+    expect(all).toMatch(/故意(?:又は|または)重大な過失/);
+    expect(all).not.toMatch(/一切(?:の)?責任を負/);
+    expect(all).not.toContain("法律上許される");
+    expect(all).not.toContain("法令上許される");
+    expect(article(20)).toContain("重大な過失を除く過失");
+  });
+
+  it("names the court by the operator's address", () => {
+    const court = article(26);
+
+    expect(court).toContain("運営者の住所地を管轄する地方裁判所");
+    expect(court).toContain("日本法");
+  });
+
+  it("states what stays after deactivation without promising a deletion date", () => {
+    const deactivation = article(18);
+
+    expect(deactivation).toContain("カルテ");
+    expect(deactivation).toContain("DM");
+    expect(all).not.toMatch(/30\s*日/);
+  });
+
+  it("shows the operator placeholders", () => {
+    const operator = article(27);
+
+    expect(operator).toContain(OPERATOR.name);
+    expect(operator).toContain(OPERATOR.address);
+    expect(operator).toContain(OPERATOR.contact);
+  });
+
+  it("keeps to the app's words", () => {
+    expect(all).not.toContain("出勤");
+    expect(all).not.toContain("通報");
+  });
+
+  it("leaves the numbering of paragraphs and items to the view", () => {
+    for (const section of TERMS.sections) {
+      expect(section.heading).not.toMatch(/^第\d+条/);
+      for (const paragraph of section.paragraphs) {
+        expect(paragraph.text).not.toMatch(/^(?:\d+\.|（\d+）)/);
+        if (paragraph.items) {
+          expect(paragraph.items.length).toBeGreaterThan(0);
+          for (const item of paragraph.items) expect(item).not.toMatch(/^(?:\d+\.|（\d+）)/);
+        }
+      }
+    }
+  });
+});
