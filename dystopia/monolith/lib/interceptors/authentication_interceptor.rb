@@ -12,7 +12,10 @@ module Interceptors
 
       if (account_id = request.metadata["x-user-id"])
         ::Current.account_id = account_id
-        ::Current.profile_id = resolve_profile_id(account_id, request.metadata["x-profile-id"])
+        request.context[:account_id] = account_id
+        profile_id = resolve_profile_id(account_id, request.metadata["x-profile-id"])
+        ::Current.profile_id = profile_id
+        request.context[:profile_id] = profile_id
       end
 
       yield
