@@ -1,4 +1,4 @@
-const STRIPPABLE_TYPES = new Set(["video/mp4", "video/quicktime"]);
+const STRIPPABLE_TYPES = new Set(["video/mp4", "video/quicktime", "video/3gpp", "video/3gpp2", "video/x-m4v"]);
 // Rewritten in place because removing a box would shift the stco/co64 chunk offsets.
 const FREE = [0x66, 0x72, 0x65, 0x65];
 const HEADER_PROBE_BYTES = 16;
@@ -31,6 +31,8 @@ function readHeader(bytes: Uint8Array, offset: number, end: number): BoxHeader {
 function neutralizeChildren(moov: Uint8Array, start: number, end: number): void {
   let offset = start;
   while (offset < end) {
+    // QuickTime writers may end a container with a 32-bit zero terminator.
+    if (end - offset < 8 && moov.subarray(offset, end).every((byte) => byte === 0)) break;
     const { type, headerSize, size } = readHeader(moov, offset, end);
     if (type === "udta" || type === "meta") {
       moov.set(FREE, offset + 4);

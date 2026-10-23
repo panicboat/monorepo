@@ -107,10 +107,43 @@ describe("stripVideoMetadata", () => {
     await expect(stripVideoMetadata(video(ftyp, mdat))).rejects.toThrow();
   });
 
-  it("rejects a box that overruns its parent", async () => {
+  it("rejects a box that overruns its parent while staying inside the file", async () => {
     const ftyp = box("ftyp", encoder.encode("isom"));
     const overrun = concat([u32(64), type4("udta"), new Uint8Array(4)]);
     const moov = box("moov", overrun);
+    const mdat = box("mdat", new Uint8Array(100));
+
+    await expect(stripVideoMetadata(video(ftyp, moov, mdat))).rejects.toThrow();
+  });
+
+  it("rewrites udta under a moov that uses a 64-bit size", async () => {
+    const ftyp = box("ftyp", encoder.encode("isom"));
+    const udta = box("udta", encoder.encode("x"));
+    const largeSize = new Uint8Array(8);
+    new DataView(largeSize.buffer).setBigUint64(0, BigInt(16 + udta.length));
+    const moov = concat([u32(1), type4("moov"), largeSize, udta]);
+
+    const bytes = await bytesOf(await stripVideoMetadata(video(ftyp, moov)));
+
+    expect(typeAt(bytes, ftyp.length + 16)).toBe("free");
+  });
+
+  it("stops at a zero terminator that ends moov", async () => {
+    const ftyp = box("ftyp", encoder.encode("isom"));
+    const udta = box("udta", encoder.encode("x"));
+    const moov = concat([u32(8 + udta.length + 4), type4("moov"), udta, new Uint8Array(4)]);
+
+    const result = await stripVideoMetadata(video(ftyp, moov));
+    const bytes = await bytesOf(result);
+
+    expect(typeAt(bytes, ftyp.length + 8)).toBe("free");
+    expect(result.size).toBe(ftyp.length + moov.length);
+  });
+
+  it("rejects a short remainder in moov that is not a zero terminator", async () => {
+    const ftyp = box("ftyp", encoder.encode("isom"));
+    const udta = box("udta", encoder.encode("x"));
+    const moov = concat([u32(8 + udta.length + 4), type4("moov"), udta, new Uint8Array([0, 0, 0, 1])]);
 
     await expect(stripVideoMetadata(video(ftyp, moov))).rejects.toThrow();
   });
@@ -120,6 +153,9 @@ describe("isStrippableVideo", () => {
   it.each([
     ["video/mp4", true],
     ["video/quicktime", true],
+    ["video/3gpp", true],
+    ["video/3gpp2", true],
+    ["video/x-m4v", true],
     ["video/webm", false],
     ["image/jpeg", false],
   ])("treats %s as strippable: %s", (type, expected) => {
