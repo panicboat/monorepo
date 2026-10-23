@@ -26,6 +26,10 @@ async function fill(id: string, value: string) {
   });
 }
 
+async function agreeToTerms() {
+  await act(async () => (document.querySelector('input[type="checkbox"]') as HTMLInputElement).click());
+}
+
 async function submitCredentials() {
   await fill("phone", "09012345678");
   await fill("password", "correct-horse-battery");
@@ -51,6 +55,7 @@ describe("SignupPage age check", () => {
   it("asks whether the visitor is 18 or over before the form can be sent", async () => {
     expect(dialog()?.textContent).toContain("あなたは18歳以上ですか？");
 
+    await agreeToTerms();
     await submitCredentials();
 
     expect(auth.register).not.toHaveBeenCalled();
@@ -60,7 +65,7 @@ describe("SignupPage age check", () => {
     await act(async () => buttonNamed("はい（18歳以上です）").click());
 
     expect(dialog()).toBeNull();
-    await act(async () => (document.querySelector('input[type="checkbox"]') as HTMLInputElement).click());
+    await agreeToTerms();
     await submitCredentials();
     expect(auth.register).toHaveBeenCalledWith("09012345678", "correct-horse-battery");
   });
@@ -70,6 +75,7 @@ describe("SignupPage age check", () => {
 
     expect(dialog()?.textContent).toContain("18歳未満の方はご利用いただけません。");
     expect(buttonNamed("はい（18歳以上です）")).toBeUndefined();
+    await agreeToTerms();
     await submitCredentials();
     expect(auth.register).not.toHaveBeenCalled();
   });
