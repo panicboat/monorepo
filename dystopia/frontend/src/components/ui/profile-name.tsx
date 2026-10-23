@@ -3,23 +3,33 @@ import { cn } from "@/lib/utils";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 import { LockMark } from "./lock-mark";
 
+export const MISSING_USER = "（無効なユーザー）";
+export const MISSING_CAST = "（無効なキャスト）";
+export const MISSING_GUEST = "（無効なゲスト）";
+
 interface ProfileNameProps {
   profile: ProfileSummaryView | null;
   link?: boolean;
   className?: string;
+  missing?: string;
 }
 
-export function profileDisplayName(profile: ProfileSummaryView | null): string {
-  if (!profile) return "削除したプロフィール";
-  return profile.displayName || (profile.username ? `@${profile.username}` : "削除したプロフィール");
+export function profileDisplayName(profile: ProfileSummaryView | null, missing: string = MISSING_USER): string {
+  if (!profile) return missing;
+  return profile.displayName || (profile.username ? `@${profile.username}` : missing);
 }
 
-export function ProfileName({ profile, link = false, className }: ProfileNameProps) {
+export function profileInitial(profile: ProfileSummaryView | null, missing: string = MISSING_USER): string {
+  if (!profile) return "?";
+  return profileDisplayName(profile, missing).replace("@", "").slice(0, 1) || "?";
+}
+
+export function ProfileName({ profile, link = false, className, missing = MISSING_USER }: ProfileNameProps) {
   if (!profile) {
-    return <span className={cn("truncate font-bold text-text-primary", className)}>{profileDisplayName(null)}</span>;
+    return <span className={cn("truncate font-bold text-text-primary", className)}>{missing}</span>;
   }
 
-  const name = profileDisplayName(profile);
+  const name = profileDisplayName(profile, missing);
   const label = (
     <>
       <span className="truncate">{name}</span>

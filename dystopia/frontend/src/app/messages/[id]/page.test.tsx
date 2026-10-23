@@ -97,7 +97,7 @@ describe("ChatPage", () => {
 
     const html = renderToStaticMarkup(<ChatPage />);
 
-    expect(html).toContain("削除したプロフィール");
+    expect(html).toContain("（無効なユーザー）");
     expect(html).toContain("とのメッセージ");
     expect(html).not.toContain('href="/u/');
   });

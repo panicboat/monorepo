@@ -29,7 +29,7 @@ describe("ThreadRow", () => {
   it("shows a deleted-profile label when the counterpart is gone", () => {
     const html = renderToStaticMarkup(<ThreadRow thread={{ ...thread, counterpart: null }} />);
 
-    expect(html).toContain("削除したプロフィール");
+    expect(html).toContain("（無効なユーザー）");
   });
 
   it("links the card to the thread and the counterpart to their profile", () => {

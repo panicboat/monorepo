@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import { MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
@@ -24,7 +24,6 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const latest = review.events[review.events.length - 1];
   const writtenAsOtherProfile = variant === "mine" && review.authorProfileId !== activeProfileId;
-  const authorName = profileDisplayName(review.author);
   const authorHref = review.author?.username ? `/u/${encodeURIComponent(review.author?.username)}` : undefined;
 
   return (
@@ -32,18 +31,18 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
       <div className="flex gap-3">
         <Avatar
           src={review.author?.avatarUrl || undefined}
-          fallback={authorName.replace("@", "").slice(0, 1) || "?"}
+          fallback={profileInitial(review.author, MISSING_GUEST)}
           href={authorHref}
         />
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ / ゲストからキャストへ</p>
           <p className="flex min-w-0 items-center gap-1 text-sm">
-            <ProfileName profile={review.author} link className="text-sm" />
+            <ProfileName profile={review.author} link className="text-sm" missing={MISSING_GUEST} />
             <span className="shrink-0 text-text-secondary">· {formatTimeAgo(review.lastActivityAt)}</span>
           </p>
           {writtenAsOtherProfile && (
             <p className="text-xs text-text-secondary">
-              {review.author?.username ? `@${review.author?.username} として記録` : "削除したプロフィールで記録"}
+              {review.author?.username ? `@${review.author?.username} として記録` : `${MISSING_GUEST}として記録`}
             </p>
           )}
           <button
@@ -53,7 +52,7 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
           >
             <span className="flex items-baseline justify-between gap-2">
               <span className="min-w-0 truncate">
-                <ProfileName profile={review.target} />
+                <ProfileName profile={review.target} missing={MISSING_CAST} />
                 {review.target?.username && <span className="ml-1 text-xs text-text-secondary">@{review.target?.username}</span>}
               </span>
               <span className={review.rating === null ? "shrink-0 text-sm text-text-secondary" : "shrink-0 text-sm font-bold text-rating"}>

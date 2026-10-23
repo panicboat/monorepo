@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
-import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import { MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
 import { useKarte } from "../hooks/useKarte";
@@ -116,11 +116,11 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
         <p className="text-xs font-bold tracking-wide text-text-secondary">KARTE</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <Avatar src={karte.target?.avatarUrl || undefined} fallback={profileDisplayName(karte.target).replace("@", "").slice(0, 1) || "?"} size="sm" />
+            <Avatar src={karte.target?.avatarUrl || undefined} fallback={profileInitial(karte.target, MISSING_GUEST)} size="sm" />
             <div className="min-w-0">
-              <p className="truncate"><ProfileName profile={karte.target} /></p>
+              <p className="truncate"><ProfileName profile={karte.target} missing={MISSING_GUEST} /></p>
               <p className="truncate text-xs text-text-secondary">
-                {karte.target?.username ? `@${karte.target?.username} · ` : ""}記録者 <ProfileName profile={karte.author} className="font-normal" />
+                {karte.target?.username ? `@${karte.target?.username} · ` : ""}記録者 <ProfileName profile={karte.author} className="font-normal" missing={MISSING_CAST} />
               </p>
             </div>
           </div>

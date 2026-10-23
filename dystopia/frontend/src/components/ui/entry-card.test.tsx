@@ -64,7 +64,7 @@ describe("EntryCard", () => {
   it("shows a deleted profile without profile links", () => {
     const html = renderToStaticMarkup(<EntryCard profile={null} meta="">本文</EntryCard>);
 
-    expect(html).toContain("削除したプロフィール");
+    expect(html).toContain("（無効なユーザー）");
     expect(html).not.toContain("<a ");
   });
 });

@@ -113,6 +113,15 @@ describe("ReviewDetailSheet", () => {
     expect(text()).toContain("返信が早い");
   });
 
+  it("names a missing author as an invalid guest and a missing target as an invalid cast", async () => {
+    await mount(review({ author: null, target: null }));
+
+    expect(text()).toContain("（無効なキャスト）");
+    expect(text()).toContain("書いた人 （無効なゲスト）");
+    expect(text()).not.toContain("@");
+    expect(document.querySelector(".rounded-full")?.textContent).toBe("?");
+  });
+
   it("explains that a star makes the review count toward the average", async () => {
     await mount(review());
     expect(text()).toContain("星を付けると平均評価に反映されます");

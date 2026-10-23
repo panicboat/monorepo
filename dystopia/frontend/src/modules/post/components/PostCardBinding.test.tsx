@@ -72,7 +72,7 @@ describe("PostCardBinding", () => {
   it("names a deleted author without a handle", () => {
     const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, author: null }} />);
 
-    expect(html).toContain("削除したプロフィール");
+    expect(html).toContain("（無効なユーザー）");
     expect(html).not.toContain("@author-1");
     expect(html).not.toContain("@</span>");
   });
