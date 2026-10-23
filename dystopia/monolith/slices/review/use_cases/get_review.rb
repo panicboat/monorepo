@@ -9,6 +9,11 @@ module Review
         present_reviews: "use_cases.present_reviews"
       ]
 
+      def initialize(list_visible_profile_ids: nil, **deps)
+        super(**deps)
+        @list_visible_profile_ids = list_visible_profile_ids
+      end
+
       def call(viewer_account_id:, viewer_profile_id:, review_id:)
         review = Ids.valid?(review_id) ? review_repo.find(review_id) : nil
         raise Errors::Invalid, "Review not found" unless review && visible?(review, viewer_account_id, viewer_profile_id)
@@ -19,11 +24,14 @@ module Review
       private
 
       def visible?(review, viewer_account_id, viewer_profile_id)
-        if review.author_account_id == viewer_account_id || viewer_profile_id == review.target_profile_id
-          return filter_visible_reviews.parties_visible?(review)
-        end
+        return true if review.author_account_id == viewer_account_id
+        return list_visible_profile_ids.call(profile_ids: [review.target_profile_id]).any? if viewer_profile_id == review.target_profile_id
 
-        filter_visible_reviews.recent(viewer_profile_id: viewer_profile_id, reviews: [review]).any?
+        filter_visible_reviews.readable?(viewer_profile_id: viewer_profile_id, review: review)
+      end
+
+      def list_visible_profile_ids
+        @list_visible_profile_ids ||= ::Profile::Slice["use_cases.list_visible_profile_ids"]
       end
     end
   end
