@@ -75,4 +75,17 @@ describe("SettingsPage tabs", () => {
     expect(view.container.textContent).not.toContain("アカウントを退会");
     await view.unmount();
   });
+
+  it.each(["プロフィール", "外観"])("links to the terms and the privacy policy on the %s tab", async (label) => {
+    useAuthStore.setState({ accountId: "account-1", role: "guest", activeProfileId: "p1" });
+    const view = await mount();
+
+    await act(async () => {
+      view.tab(label)?.click();
+    });
+
+    expect(view.container.querySelector('a[href="/terms"]')?.textContent).toBe("利用規約");
+    expect(view.container.querySelector('a[href="/privacy"]')?.textContent).toBe("プライバシーポリシー");
+    await view.unmount();
+  });
 });

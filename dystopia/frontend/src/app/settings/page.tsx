@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
 import { useProfile } from "@/modules/profile/hooks";
 import { useAuthStore, selectIsHydrated } from "@/stores/authStore";
@@ -72,6 +73,10 @@ export default function SettingsPage() {
           </>
         )}
       </div>
+      <nav aria-label="規約" className="mt-8 flex gap-4 px-4 text-sm text-text-secondary">
+        <Link href="/terms" className="hover:underline">利用規約</Link>
+        <Link href="/privacy" className="hover:underline">プライバシーポリシー</Link>
+      </nav>
       {confirmOpen && (
         <div
           role="dialog"
