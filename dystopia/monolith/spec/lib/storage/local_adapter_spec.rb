@@ -65,10 +65,10 @@ RSpec.describe Storage::LocalAdapter do
       expect(File.exist?(test_file_path)).to be(false)
     end
 
-    it "returns false for non-existent file" do
+    it "returns true for a file that is already absent" do
       result = adapter.delete(key: "non/existent/file.txt")
 
-      expect(result).to be(false)
+      expect(result).to be(true)
     end
 
     it "returns false for empty key" do

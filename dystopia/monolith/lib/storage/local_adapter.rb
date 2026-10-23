@@ -25,7 +25,7 @@ module Storage
       return false if key.to_s.empty?
 
       path = File.join("public", "uploads", key)
-      return false unless File.exist?(path)
+      return true unless File.exist?(path)
 
       File.delete(path)
       true

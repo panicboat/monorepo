@@ -43,7 +43,7 @@ module Media
       end
 
       def keys_by_uploader(profile_id)
-        files.where(uploader_profile_id: profile_id).pluck(:media_key, :thumbnail_key).flatten.compact
+        files.where(uploader_profile_id: profile_id).pluck(:media_key, :thumbnail_key).flatten.reject { |key| key.nil? || key.empty? }
       end
 
       private
