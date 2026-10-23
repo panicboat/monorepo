@@ -37,7 +37,7 @@ graph LR
   end
 ```
 
-Service-internal architecture is documented in each `dystopia/<service>/README.md` and in `docs/ARCHITECTURE.md`.
+Service-internal architecture is documented in each `dystopia/<service>/README.md` and in [dystopia/docs](dystopia/docs/README.md).
 
 ## 🚢 Deployment
 

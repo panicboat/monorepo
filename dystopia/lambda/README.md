@@ -9,7 +9,30 @@ Browser → CloudFront → Lambda Function URL → Lambda Web Adapter → Next.j
                                                                     └→ gRPC 127.0.0.1:50051 → RDS
 ```
 
-設計の全体と各選択の理由は `docs/superpowers/specs/2026-10-06-dystopia-lambda-hosting-design.md` にある。
+アプリの機能と slice の構成は [dystopia/docs](../docs/README.md) にある。
+
+## Decisions
+
+| 論点 | 決定 | 理由 |
+|---|---|---|
+| 実行形態 | frontend と monolith を 1 つの Lambda コンテナに同居 | Lambda Web Adapter は HTTP/1.1 しか中継できず、gRPC サーバーを単体の Lambda として公開できない。同居なら Next.js から `127.0.0.1` の gRPC に届き、アプリのコード変更が要らない |
+| cold start | 約 5 秒を受け入れる | 追加費用なしで始められる。Provisioned Concurrency は Fargate の最小構成と同水準の費用になる |
+| 外向き通信 | IPv6 の egress-only internet gateway のみ | 固定費ゼロで RDS を private に保てる。NAT instance・NAT Gateway は固定費がかかる |
+| S3 への経路 | gateway endpoint | 無料。SDK の dualstack 設定はコード変更が要り、環境変数で一括指定すると Cognito が DNS に存在しない dualstack ホスト名を引く |
+| 入口 | CloudFront + Lambda Function URL | 静的ファイルをエッジでキャッシュし、ページ表示時の並列リクエストが Lambda に届かないようにする |
+| Function URL の認証 | `NONE` | CloudFront の OAC はブラウザからの POST に body の SHA256 ヘッダを要求し、アプリの API 呼び出しが通らない。直接叩かれてもキャッシュを迂回されるだけで、認証はアプリが行う |
+| Terraform の置き場 | `dystopia/infrastructure` とは別に持つ | `dystopia/infrastructure` は EKS の VPC とクラスタを data source で引いており apply できない。書き換えず残せば EKS に戻すときにそのまま使える |
+| イメージの更新 | CI が関数のコードを更新し、Terraform は `image_uri` を無視 | migration をアプリ更新より先に実行する順序を Terraform の 1 回の apply では表現できない |
+| migration・手動 SQL | 同じイメージの task 用関数を呼ぶ | init の 10 秒制限を避ける。踏み台もクラスタもなく、GitHub Actions からも private な RDS に届かない |
+| CI の組み込み方 | 専用 workflow。`workflow-config.yaml` は変更しない | 環境を再有効化すると `dystopia/infrastructure` や pennyworth の stack まで CI の対象に戻る |
+
+採らなかった構成:
+
+- **monolith を HTTP 化して Lambda を 2 本に分ける**: 全 RPC の transport を書き換える必要があり、EKS に戻す前提と合わない
+- **ECS Fargate**: gRPC がそのまま動くが、本体と入口の費用が固定でかかる
+- **RDS を public にして Lambda を VPC の外に置く**: 送信元 IP を固定できず、5432 番を全世界に開けることになる
+- **静的ファイルを S3 から配信する**: CI にイメージからの取り出しと同期の手順が増える
+- **API Gateway HTTP API のみ**: 静的ファイルも毎回 Lambda を通り、ページ表示のたびに並列の実行環境が立ち上がる
 
 ## Layout
 
