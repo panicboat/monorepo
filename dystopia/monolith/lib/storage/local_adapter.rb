@@ -25,7 +25,7 @@ module Storage
       return false if key.to_s.empty?
 
       path = File.join("public", "uploads", key)
-      return false unless File.exist?(path)
+      return true unless File.exist?(path)
 
       File.delete(path)
       true
@@ -33,6 +33,10 @@ module Storage
       warn "[Storage::LocalAdapter] Failed to delete #{key}: #{e.message}"
       # FALLBACK: Return false when deletion fails.
       false
+    end
+
+    def delete_many(keys:)
+      keys.map { |key| delete(key: key) }.all?
     end
 
     # Local files carry no tags, so the owner is kept in the database row alone.

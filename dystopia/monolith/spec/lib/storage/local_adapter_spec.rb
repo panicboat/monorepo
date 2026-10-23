@@ -65,10 +65,10 @@ RSpec.describe Storage::LocalAdapter do
       expect(File.exist?(test_file_path)).to be(false)
     end
 
-    it "returns false for non-existent file" do
+    it "returns true for a file that is already absent" do
       result = adapter.delete(key: "non/existent/file.txt")
 
-      expect(result).to be(false)
+      expect(result).to be(true)
     end
 
     it "returns false for empty key" do
@@ -81,6 +81,38 @@ RSpec.describe Storage::LocalAdapter do
       result = adapter.delete(key: nil)
 
       expect(result).to be(false)
+    end
+  end
+
+  describe "#delete_many" do
+    let(:directory) { "public/uploads/test_many" }
+
+    before do
+      FileUtils.mkdir_p(directory)
+      File.write("#{directory}/a.txt", "a")
+      File.write("#{directory}/b.txt", "b")
+    end
+
+    after do
+      FileUtils.rm_rf(directory)
+    end
+
+    it "deletes every file and returns true" do
+      result = adapter.delete_many(keys: ["test_many/a.txt", "test_many/b.txt", "test_many/absent.txt"])
+
+      expect(result).to be(true)
+      expect(Dir.children(directory)).to be_empty
+    end
+
+    it "returns false but still deletes the other files when a key is empty" do
+      result = adapter.delete_many(keys: ["", "test_many/a.txt"])
+
+      expect(result).to be(false)
+      expect(File.exist?("#{directory}/a.txt")).to be(false)
+    end
+
+    it "returns true without keys" do
+      expect(adapter.delete_many(keys: [])).to be(true)
     end
   end
 

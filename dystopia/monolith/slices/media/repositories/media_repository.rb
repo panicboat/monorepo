@@ -42,6 +42,10 @@ module Media
         files.where(uploader_profile_id: profile_id).command(:delete).call
       end
 
+      def keys_by_uploader(profile_id)
+        files.where(uploader_profile_id: profile_id).pluck(:media_key, :thumbnail_key).flatten.reject { |key| key.nil? || key.empty? }
+      end
+
       private
 
       def resolve_urls(media)

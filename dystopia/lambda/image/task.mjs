@@ -11,6 +11,10 @@ function commandFor(event) {
     return ["bundle", ["exec", "hanami", "db", "migrate", "--no-dump"]];
   }
 
+  if (event?.task === "purge_deactivated") {
+    return ["bundle", ["exec", "rake", "account:purge_deactivated"]];
+  }
+
   if (event?.task === "psql" && typeof event.sql === "string" && event.sql !== "") {
     return [
       "psql",

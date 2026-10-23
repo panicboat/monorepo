@@ -77,6 +77,15 @@ test("runs the migration command", async () => {
   assert.equal(json.output, "[exec]\n[hanami]\n[db]\n[migrate]\n[--no-dump]\n");
 });
 
+test("runs the account purge", async () => {
+  const { status, json } = await post("/events", JSON.stringify({ task: "purge_deactivated" }));
+
+  assert.equal(status, 200);
+  assert.equal(json.task, "purge_deactivated");
+  assert.equal(json.exitCode, 0);
+  assert.equal(json.output, "[exec]\n[rake]\n[account:purge_deactivated]\n");
+});
+
 test("accepts the event on any POST path", async () => {
   const { status } = await post("/", JSON.stringify({ task: "migrate" }));
 

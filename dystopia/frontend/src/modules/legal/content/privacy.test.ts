@@ -124,7 +124,8 @@ describe("PRIVACY", () => {
 
     expect(retention).toContain("プロフィールを削除した場合は、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミも削除されます");
     expect(retention).toMatch(/退会したアカウントの情報を削除します。ただし、次の2つの段落に定めるカルテと DM は、退会した後も残ります/);
-    expect(retention).toContain("前の段落の画像と動画のファイルも、残る場合があります");
+    expect(retention).not.toContain("前の段落の画像と動画のファイルも、残る場合があります");
+    expect(retention).toContain("アップロードしたファイルも削除します");
   });
 
   it("limits when the operator reads messages", () => {

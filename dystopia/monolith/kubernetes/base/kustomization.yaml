@@ -4,6 +4,7 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - migrate-job.yaml
+  - purge-deactivated-cronjob.yaml
   - service.yaml
   - serviceaccount.yaml
 labels:

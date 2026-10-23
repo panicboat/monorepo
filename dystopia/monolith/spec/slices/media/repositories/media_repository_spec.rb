@@ -127,4 +127,17 @@ RSpec.describe "Media::Repositories::MediaRepository", type: :database do
       expect(repo.find_by_id(theirs.id)).not_to be_nil
     end
   end
+
+  describe "#keys_by_uploader" do
+    it "returns the non-empty media and thumbnail keys of only the files that profile uploaded" do
+      uploader = SecureRandom.uuid_v7
+      repo.create(id: SecureRandom.uuid_v7, media_type: "image", media_key: "media/image/a.jpg", thumbnail_key: "media/image/a_thumb.jpg", uploader_profile_id: uploader)
+      repo.create(id: SecureRandom.uuid_v7, media_type: "image", media_key: "media/image/b.jpg", thumbnail_key: "", uploader_profile_id: uploader)
+      repo.create(id: SecureRandom.uuid_v7, media_type: "image", media_key: "media/image/c.jpg", uploader_profile_id: SecureRandom.uuid_v7)
+
+      expect(repo.keys_by_uploader(uploader)).to match_array(
+        ["media/image/a.jpg", "media/image/a_thumb.jpg", "media/image/b.jpg"]
+      )
+    end
+  end
 end

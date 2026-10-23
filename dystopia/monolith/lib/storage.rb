@@ -30,6 +30,10 @@ module Storage
       adapter.delete(key: key)
     end
 
+    def delete_many(keys:)
+      adapter.delete_many(keys: keys)
+    end
+
     def tag(key:, tags:)
       adapter.tag(key: key, tags: tags)
     end

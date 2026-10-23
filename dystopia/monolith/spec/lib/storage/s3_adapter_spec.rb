@@ -8,6 +8,54 @@ RSpec.describe Storage::S3Adapter do
   let(:client) { Aws::S3::Client.new(stub_responses: true, region: "ap-northeast-1", credentials: Aws::Credentials.new("AKID", "SECRET")) }
   let(:adapter) { described_class.new(client: client, bucket: "media-bucket") }
 
+  describe "#delete_many" do
+    def delete_requests
+      client.api_requests.select { |call| call[:operation_name] == :delete_objects }
+    end
+
+    it "deletes the keys in one quiet request and reports success" do
+      expect(adapter.delete_many(keys: %w[media/p1/a.png media/p1/b.png])).to be true
+
+      expect(delete_requests.size).to eq(1)
+      expect(delete_requests.first[:params]).to include(
+        bucket: "media-bucket",
+        delete: { objects: [{ key: "media/p1/a.png" }, { key: "media/p1/b.png" }], quiet: true }
+      )
+    end
+
+    it "splits the keys into requests of at most 1000" do
+      keys = Array.new(1001) { |i| "media/p1/#{i}.png" }
+
+      expect(adapter.delete_many(keys: keys)).to be true
+
+      expect(delete_requests.map { |call| call[:params][:delete][:objects].size }).to eq([1000, 1])
+    end
+
+    it "reports failure when an object is not deleted" do
+      client.stub_responses(:delete_objects, errors: [{ key: "media/p1/a.png", code: "AccessDenied", message: "Access Denied" }])
+
+      expect(adapter.delete_many(keys: ["media/p1/a.png"])).to be false
+    end
+
+    it "keeps deleting the remaining batches after one fails" do
+      client.stub_responses(:delete_objects, [{ errors: [{ key: "media/p1/0.png", code: "InternalError", message: "boom" }] }, {}])
+
+      expect(adapter.delete_many(keys: Array.new(1001) { |i| "media/p1/#{i}.png" })).to be false
+      expect(delete_requests.size).to eq(2)
+    end
+
+    it "reports failure when the request fails" do
+      client.stub_responses(:delete_objects, "AccessDenied")
+
+      expect(adapter.delete_many(keys: ["media/p1/a.png"])).to be false
+    end
+
+    it "does not call the bucket without keys" do
+      expect(adapter.delete_many(keys: [])).to be true
+      expect(client.api_requests).to be_empty
+    end
+  end
+
   describe "#tag" do
     it "puts the tags on the object and reports success" do
       tagged = adapter.tag(key: "media/p1/m1.png", tags: { "owner-account-id" => "account-1" })

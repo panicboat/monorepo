@@ -30,6 +30,14 @@ RSpec.describe Storage::Adapter do
     end
   end
 
+  describe "#delete_many" do
+    it "raises NotImplementedError" do
+      expect {
+        adapter.delete_many(keys: ["test.jpg"])
+      }.to raise_error(NotImplementedError, /delete_many must be implemented/)
+    end
+  end
+
   describe "#tag" do
     it "raises NotImplementedError" do
       expect {

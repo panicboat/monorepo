@@ -36,6 +36,18 @@ mock_provider "aws" {
     }
   }
 
+  mock_resource "aws_lambda_function" {
+    defaults = {
+      arn = "arn:aws:lambda:ap-northeast-1:337169763788:function:dystopia-production-task"
+    }
+  }
+
+  mock_data "aws_caller_identity" {
+    defaults = {
+      account_id = "337169763788"
+    }
+  }
+
   mock_resource "aws_lambda_function_url" {
     defaults = {
       function_url = "https://abcdefghijklmnop.lambda-url.ap-northeast-1.on.aws/"
@@ -279,5 +291,42 @@ run "push_settings" {
       fn.environment[0].variables["VAPID_SUBJECT"] == "https://dystopia.city"
     ])
     error_message = "Both functions must receive the VAPID key and subject."
+  }
+}
+
+run "account_purge_runs_daily" {
+  command = plan
+
+  assert {
+    condition = (
+      aws_scheduler_schedule.purge_deactivated.schedule_expression == "cron(0 4 * * ? *)" &&
+      aws_scheduler_schedule.purge_deactivated.schedule_expression_timezone == "Asia/Tokyo"
+    )
+    error_message = "The account purge must run every day at 04:00 Asia/Tokyo."
+  }
+
+  assert {
+    condition     = aws_scheduler_schedule.purge_deactivated.flexible_time_window[0].mode == "OFF"
+    error_message = "The account purge must start at the scheduled time, not within a flexible window."
+  }
+
+  assert {
+    condition     = aws_scheduler_schedule.purge_deactivated.target[0].input == jsonencode({ task = "purge_deactivated" })
+    error_message = "The schedule must send the purge_deactivated task to the task function."
+  }
+
+  assert {
+    condition     = aws_scheduler_schedule.purge_deactivated.target[0].retry_policy[0].maximum_retry_attempts == 0
+    error_message = "The scheduler must not retry a failed purge."
+  }
+
+  assert {
+    condition     = aws_lambda_function_event_invoke_config.task.maximum_retry_attempts == 0
+    error_message = "Lambda must not re-run a failed asynchronous purge invocation."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_role.scheduler.assume_role_policy).Statement[0].Condition.StringEquals["aws:SourceAccount"] == "337169763788"
+    error_message = "Only schedules of this account may assume the scheduler role."
   }
 }

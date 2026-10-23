@@ -182,6 +182,12 @@ resource "aws_lambda_function" "task" {
   ]
 }
 
+# Scheduler invokes the task function asynchronously, where Lambda retries a failure twice by default; the deploy-time migrate is a synchronous invoke and ignores this.
+resource "aws_lambda_function_event_invoke_config" "task" {
+  function_name          = aws_lambda_function.task.function_name
+  maximum_retry_attempts = 0
+}
+
 resource "aws_lambda_function_url" "app" {
   function_name      = aws_lambda_function.app.function_name
   authorization_type = "NONE"
@@ -203,4 +209,55 @@ resource "aws_lambda_permission" "app_function_url_invoke" {
   function_name            = aws_lambda_function.app.function_name
   principal                = "*"
   invoked_via_function_url = true
+}
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_role" "scheduler" {
+  name = "dystopia-${var.environment}-scheduler"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "scheduler.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+      Condition = { StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id } }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "scheduler_invoke_task" {
+  name = "dystopia-${var.environment}-scheduler-invoke-task"
+  role = aws_iam_role.scheduler.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["lambda:InvokeFunction"]
+      Resource = aws_lambda_function.task.arn
+    }]
+  })
+}
+
+resource "aws_scheduler_schedule" "purge_deactivated" {
+  name                         = "dystopia-${var.environment}-purge-deactivated"
+  schedule_expression          = "cron(0 4 * * ? *)"
+  schedule_expression_timezone = "Asia/Tokyo"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  target {
+    arn      = aws_lambda_function.task.arn
+    role_arn = aws_iam_role.scheduler.arn
+    input    = jsonencode({ task = "purge_deactivated" })
+
+    # The purge is idempotent and the next daily run redoes it, while the default policy retries for 24 hours.
+    retry_policy {
+      maximum_retry_attempts = 0
+    }
+  }
 }

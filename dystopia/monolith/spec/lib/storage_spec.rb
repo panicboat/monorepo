@@ -69,6 +69,18 @@ RSpec.describe Storage do
     end
   end
 
+  describe ".delete_many" do
+    it "delegates to adapter" do
+      described_class.adapter = mock_adapter
+      allow(mock_adapter).to receive(:delete_many).with(keys: ["a.jpg", "b.jpg"]).and_return(true)
+
+      result = described_class.delete_many(keys: ["a.jpg", "b.jpg"])
+
+      expect(result).to be(true)
+      expect(mock_adapter).to have_received(:delete_many).with(keys: ["a.jpg", "b.jpg"])
+    end
+  end
+
   describe "integration with LocalAdapter" do
     it "generates local upload URL" do
       url = described_class.upload_url(key: "casts/123/photo.jpg", content_type: "image/jpeg")
