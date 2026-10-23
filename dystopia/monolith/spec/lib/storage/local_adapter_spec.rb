@@ -84,6 +84,38 @@ RSpec.describe Storage::LocalAdapter do
     end
   end
 
+  describe "#delete_many" do
+    let(:directory) { "public/uploads/test_many" }
+
+    before do
+      FileUtils.mkdir_p(directory)
+      File.write("#{directory}/a.txt", "a")
+      File.write("#{directory}/b.txt", "b")
+    end
+
+    after do
+      FileUtils.rm_rf(directory)
+    end
+
+    it "deletes every file and returns true" do
+      result = adapter.delete_many(keys: ["test_many/a.txt", "test_many/b.txt", "test_many/absent.txt"])
+
+      expect(result).to be(true)
+      expect(Dir.children(directory)).to be_empty
+    end
+
+    it "returns false but still deletes the other files when a key is empty" do
+      result = adapter.delete_many(keys: ["", "test_many/a.txt"])
+
+      expect(result).to be(false)
+      expect(File.exist?("#{directory}/a.txt")).to be(false)
+    end
+
+    it "returns true without keys" do
+      expect(adapter.delete_many(keys: [])).to be(true)
+    end
+  end
+
   describe "custom configuration" do
     it "allows custom base_url" do
       adapter = described_class.new(base_url: "https://custom.example.com")

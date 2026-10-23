@@ -11,9 +11,9 @@ module Media
 
       def call(profile_id:)
         # Adapters return false instead of raising, so check it; the rows must outlive a failed delete to retry from.
-        repo.keys_by_uploader(profile_id).each do |key|
-          raise FileDeletionError, "failed to delete #{key}" unless Storage.delete(key: key)
-        end
+        keys = repo.keys_by_uploader(profile_id)
+        raise FileDeletionError, "failed to delete #{keys.size} files of profile #{profile_id}" unless Storage.delete_many(keys: keys)
+
         repo.delete_by_uploader(profile_id)
         nil
       end

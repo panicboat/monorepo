@@ -35,6 +35,10 @@ module Storage
       false
     end
 
+    def delete_many(keys:)
+      keys.map { |key| delete(key: key) }.all?
+    end
+
     # Local files carry no tags, so the owner is kept in the database row alone.
     def tag(key:, tags:)
       File.exist?(File.join("public", "uploads", key.to_s))

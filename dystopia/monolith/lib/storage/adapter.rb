@@ -14,6 +14,10 @@ module Storage
       raise NotImplementedError, "#{self.class}#delete must be implemented"
     end
 
+    def delete_many(keys:)
+      raise NotImplementedError, "#{self.class}#delete_many must be implemented"
+    end
+
     def tag(key:, tags:)
       raise NotImplementedError, "#{self.class}#tag must be implemented"
     end

@@ -4,6 +4,7 @@ require_relative "adapter"
 
 module Storage
   class S3Adapter < Adapter
+    DELETE_BATCH_SIZE = 1000
     UPLOAD_URL_EXPIRES_IN = 300
     DOWNLOAD_URL_EXPIRES_IN = 7200
     SIGNING_WINDOW = 3600
@@ -38,6 +39,10 @@ module Storage
       false
     end
 
+    def delete_many(keys:)
+      keys.each_slice(DELETE_BATCH_SIZE).map { |batch| delete_batch(batch) }.all?
+    end
+
     def tag(key:, tags:)
       return false if key.to_s.empty?
 
@@ -47,6 +52,21 @@ module Storage
     rescue Aws::S3::Errors::ServiceError => e
       warn "[Storage::S3Adapter] Failed to tag #{key}: #{e.message}"
       # FALLBACK: Return false when the object is missing or cannot be tagged.
+      false
+    end
+
+    private
+
+    def delete_batch(keys)
+      response = @client.delete_objects(bucket: @bucket, delete: { objects: keys.map { |key| { key: key } }, quiet: true })
+      return true if response.errors.empty?
+
+      warn "[Storage::S3Adapter] Failed to delete #{response.errors.size} of #{keys.size} objects: #{response.errors.first.message}"
+      # FALLBACK: Return false when any object in the batch is not deleted.
+      false
+    rescue Aws::S3::Errors::ServiceError => e
+      warn "[Storage::S3Adapter] Failed to delete #{keys.size} objects: #{e.message}"
+      # FALLBACK: Return false when the batch request fails.
       false
     end
   end
