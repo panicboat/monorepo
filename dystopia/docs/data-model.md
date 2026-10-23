@@ -46,7 +46,7 @@ erDiagram
     }
 ```
 
-- `identity.accounts`: ログイン単位のアカウント。ロールと退会日時を持つ。退会から 30 日を過ぎると削除処理で消える。
+- `identity.accounts`: ログイン単位のアカウント。ロールと退会日時を持つ。退会から 90 日を過ぎると削除処理で消える。
 
 [アカウント](features/account.md)
 
