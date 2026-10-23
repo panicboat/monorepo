@@ -11,6 +11,8 @@ module Schedule
       self.unmarshal_class_method = :decode
       self.service_name = "schedule.v1.ScheduleService"
 
+      ROLE_CAST = 2
+
       bind ::Schedule::V1::ScheduleService::Service
 
       self.rpc_descs.clear
@@ -46,6 +48,7 @@ module Schedule
 
       def save_schedule
         authenticate_user!
+        authorize_cast!
         m = request.message
         row = save_schedule_uc.call(
           profile_id: current_profile_id,
@@ -71,10 +74,23 @@ module Schedule
 
       def delete_schedule
         authenticate_user!
+        authorize_cast!
         delete_schedule_uc.call(profile_id: current_profile_id, work_date: request.message.work_date)
         ::Schedule::V1::DeleteScheduleResponse.new
       rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
+      end
+
+      private
+
+      def authorize_cast!
+        return if get_role.call(profile_id: current_profile_id) == ROLE_CAST
+
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, "キャストだけが予定を登録できます")
+      end
+
+      def get_role
+        @get_role ||= ::Profile::Slice["use_cases.get_role"]
       end
     end
   end

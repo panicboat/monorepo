@@ -55,6 +55,42 @@ RSpec.describe Schedule::Grpc::ScheduleHandler, type: :database do
     expect(schedules_of(cast)).to eq([[cast, "2026-10-20", "20:00", "02:00"]])
   end
 
+  describe "a guest account" do
+    def expect_permission_denied(&block)
+      expect(&block).to raise_error(GRPC::BadStatus) { |e|
+        expect(e.code).to eq(GRPC::Core::StatusCodes::PERMISSION_DENIED)
+        expect(e.details).to eq("キャストだけが予定を登録できます")
+      }
+    end
+
+    it "refuses to save a schedule" do
+      act_as(guest)
+
+      expect_permission_denied { save("2026-10-20") }
+      expect(db[:schedule__schedules].count).to eq(0)
+    end
+
+    it "refuses to save an announced schedule without creating a post" do
+      act_as(guest)
+      request = Schedule::V1::SaveScheduleRequest.new(
+        work_date: "2099-10-24", start_time: "20:00", end_time: "02:00", announce: true, announce_time: "09:00", announce_note: "hi"
+      )
+
+      expect_permission_denied { rpc(:save_schedule, request) }
+      expect(db[:schedule__schedules].count).to eq(0)
+      expect(db[:post__posts].where(author_profile_id: guest).count).to eq(0)
+    end
+
+    it "refuses to delete a schedule" do
+      act_as(cast)
+      save("2026-10-20")
+      act_as(guest)
+
+      expect_permission_denied { rpc(:delete_schedule, Schedule::V1::DeleteScheduleRequest.new(work_date: "2026-10-20")) }
+      expect(db[:schedule__schedules].select_map(:profile_id)).to eq([cast])
+    end
+  end
+
   describe "announcement" do
     let(:post_repo) { Post::Slice["repositories.post_repository"] }
 
