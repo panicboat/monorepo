@@ -60,6 +60,7 @@ describe("SignupPage age check", () => {
     await act(async () => buttonNamed("はい（18歳以上です）").click());
 
     expect(dialog()).toBeNull();
+    await act(async () => (document.querySelector('input[type="checkbox"]') as HTMLInputElement).click());
     await submitCredentials();
     expect(auth.register).toHaveBeenCalledWith("09012345678", "correct-horse-battery");
   });
