@@ -137,6 +137,14 @@ describe("TERMS", () => {
     expect(article(18)).toContain("ただし、第4項の削除が済んだ後は、退会を取り消すことはできません");
   });
 
+  it("deletes the reviews a profile wrote and the reviews about it when the profile is deleted", () => {
+    expect(article(6)).toContain("プロフィールを削除すると、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミも削除されます");
+  });
+
+  it("limits the guest's view of karte to the service screens", () => {
+    expect(article(10)).toContain("ゲストは、本サービス上では、自分についてのカルテも見ることができません");
+  });
+
   it("keeps to the app's words", () => {
     expect(all).not.toContain("出勤");
     expect(all).not.toContain("通報");
