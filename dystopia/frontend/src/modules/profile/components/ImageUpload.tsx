@@ -12,7 +12,7 @@ interface ImageUploadProps {
 
 export function ImageUpload({ shape, url, onUploaded }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { upload, uploading } = useMediaUpload();
+  const { upload, uploading, error } = useMediaUpload();
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,27 +24,34 @@ export function ImageUpload({ shape, url, onUploaded }: ImageUploadProps) {
   };
 
   return (
-    <button
-      type="button"
-      onClick={() => inputRef.current?.click()}
-      disabled={uploading}
-      className={cn(
-        "group relative overflow-hidden border border-border bg-input-bg",
-        shape === "avatar" ? "h-20 w-20 rounded-full" : "h-28 w-full rounded-md"
-      )}
-    >
-      {url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <span className="flex h-full w-full items-center justify-center text-xs text-text-muted">
-          {shape === "avatar" ? "アバター" : "カバー画像"}
+    <div>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className={cn(
+          "group relative overflow-hidden border border-border bg-input-bg",
+          shape === "avatar" ? "h-20 w-20 rounded-full" : "h-28 w-full rounded-md"
+        )}
+      >
+        {url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={url} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center text-xs text-text-muted">
+            {shape === "avatar" ? "アバター" : "カバー画像"}
+          </span>
+        )}
+        <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
+          {uploading ? "アップロード中…" : "変更"}
         </span>
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      </button>
+      {error && (
+        <p role="alert" className="mt-2 text-xs text-error">
+          {error}
+        </p>
       )}
-      <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
-        {uploading ? "アップロード中…" : "変更"}
-      </span>
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-    </button>
+    </div>
   );
 }
