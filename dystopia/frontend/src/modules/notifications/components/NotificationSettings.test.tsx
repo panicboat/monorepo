@@ -8,7 +8,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   device: { state: "off" as string, busy: false, failed: false, enable: vi.fn(async () => {}), disable: vi.fn(async () => {}) },
   preferences: {
-    pushEnabled: true,
     comment: true,
     like: true,
     reply: true,
@@ -43,7 +42,6 @@ function toggle(label: string) {
 
 beforeEach(() => {
   mocks.device = { state: "off", busy: false, failed: false, enable: vi.fn(async () => {}), disable: vi.fn(async () => {}) };
-  mocks.preferences = { ...mocks.preferences, pushEnabled: true };
   mocks.update.mockReset();
 });
 
@@ -52,13 +50,13 @@ afterEach(async () => {
 });
 
 describe("NotificationSettings", () => {
-  it("lists the device switch, the profile switch and the six kinds", async () => {
+  it("lists the device switch and the six kinds", async () => {
     await mount();
 
-    for (const label of ["この端末で受け取る", "端末に通知を送る", "いいね", "コメント", "リプライ", "メンション", "フォロー", "メッセージ"]) {
+    for (const label of ["この端末で受け取る", "いいね", "コメント", "リプライ", "メンション", "フォロー", "メッセージ"]) {
       expect(toggle(label)).not.toBeNull();
     }
-    for (const removed of ["リポスト", "引用", "推し！", "ポスト"]) {
+    for (const removed of ["端末に通知を送る", "リポスト", "引用", "推し！", "ポスト"]) {
       expect(toggle(removed)).toBeNull();
     }
     expect(container.textContent).toContain("アプリ内の通知一覧には、設定に関係なくすべて表示されます。メッセージは通知一覧には載らず、「メッセージ」の未読件数でお知らせします");
@@ -94,13 +92,11 @@ describe("NotificationSettings", () => {
     expect(mocks.device.disable).toHaveBeenCalled();
   });
 
-  it("locks the kinds while the profile sends nothing to devices", async () => {
-    mocks.preferences = { ...mocks.preferences, pushEnabled: false };
-
+  it("says the device receives notifications addressed to this profile", async () => {
     await mount();
 
-    expect(toggle("いいね").disabled).toBe(true);
-    expect(toggle("端末に通知を送る").disabled).toBe(false);
+    expect(container.textContent).toContain("オンにすると、このプロフィール宛ての通知がこの端末に届きます");
+    expect(Array.from(container.querySelectorAll("h2")).map((h) => h.textContent)).not.toContain("このプロフィール");
   });
 
   it("shows a failed device change", async () => {

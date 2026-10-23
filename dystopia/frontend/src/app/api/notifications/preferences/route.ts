@@ -5,7 +5,6 @@ import { requireAuth, handleApiError } from "@/lib/api-helpers";
 import type { NotificationPreferences } from "@/modules/notifications/types";
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
-  pushEnabled: true,
   comment: true,
   like: true,
   reply: true,
@@ -19,7 +18,6 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
 function toView(prefs: Partial<NotificationPreferences> | undefined): NotificationPreferences {
   if (!prefs) return { ...DEFAULT_PREFERENCES };
   return {
-    pushEnabled: !!prefs.pushEnabled,
     comment: !!prefs.comment,
     like: !!prefs.like,
     reply: !!prefs.reply,

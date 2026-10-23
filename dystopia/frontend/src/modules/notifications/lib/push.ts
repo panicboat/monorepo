@@ -15,6 +15,8 @@ export interface PushEnvironment {
 
 const CONFIG_URL = "/api/notifications/push/config";
 const SUBSCRIPTION_URL = "/api/notifications/push/subscription";
+const STATUS_URL = "/api/notifications/push/subscription/status";
+const CLAIM_URL = "/api/notifications/push/claim";
 const SERVICE_WORKER_URL = "/sw.js";
 
 export function readPushEnvironment(): PushEnvironment | null {
@@ -81,16 +83,23 @@ export async function enablePush(vapidPublicKey: string): Promise<"subscribed" |
 export async function disablePush(): Promise<void> {
   const subscription = await currentPushSubscription();
   if (!subscription) return;
+  // The browser subscription stays: the device's other profiles still receive through it.
   await authFetch(SUBSCRIPTION_URL, { method: "DELETE", body: { endpoint: subscription.endpoint } });
-  await subscription.unsubscribe();
+}
+
+export async function isSubscribedHere(): Promise<boolean> {
+  const subscription = await currentPushSubscription();
+  if (!subscription) return false;
+  const { subscribed } = await authFetch<{ subscribed: boolean }>(STATUS_URL, { method: "POST", body: { endpoint: subscription.endpoint } });
+  return subscribed;
 }
 
 export async function resyncPushSubscription(): Promise<void> {
   if (detectPushSupport(readPushEnvironment()) !== "available" || Notification.permission !== "granted") return;
   try {
     const subscription = await currentPushSubscription();
-    if (subscription) await authFetch(SUBSCRIPTION_URL, { method: "POST", body: subscriptionBody(subscription) });
+    if (subscription) await authFetch(CLAIM_URL, { method: "POST", body: { endpoint: subscription.endpoint } });
   } catch {
-    // SILENT: The previous owner keeps the subscription until the next launch registers it again.
+    // SILENT: The previous owner keeps the subscription until the next launch claims it again.
   }
 }

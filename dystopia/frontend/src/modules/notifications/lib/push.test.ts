@@ -8,6 +8,7 @@ const {
   detectPushSupport,
   disablePush,
   enablePush,
+  isSubscribedHere,
   resyncPushSubscription,
 } = await import("./push");
 
@@ -144,7 +145,7 @@ describe("enablePush", () => {
 });
 
 describe("disablePush", () => {
-  it("unregisters on the server, then unsubscribes the browser", async () => {
+  it("unregisters on the server and keeps the browser subscription for the other profiles", async () => {
     const existing = fakeSubscription();
     installBrowser({ existing });
 
@@ -154,7 +155,7 @@ describe("disablePush", () => {
       method: "DELETE",
       body: { endpoint: "https://fcm.googleapis.com/fcm/send/a" },
     });
-    expect(existing.unsubscribe).toHaveBeenCalled();
+    expect(existing.unsubscribe).not.toHaveBeenCalled();
   });
 
   it("does nothing without a subscription", async () => {
@@ -166,13 +167,40 @@ describe("disablePush", () => {
   });
 });
 
+describe("isSubscribedHere", () => {
+  it("is false without asking the server when the browser holds no subscription", async () => {
+    installBrowser();
+
+    expect(await isSubscribedHere()).toBe(false);
+    expect(auth.authFetch).not.toHaveBeenCalled();
+  });
+
+  it("follows the server's answer for the browser's endpoint", async () => {
+    installBrowser({ existing: fakeSubscription() });
+    auth.authFetch.mockResolvedValue({ subscribed: true });
+
+    expect(await isSubscribedHere()).toBe(true);
+    expect(auth.authFetch).toHaveBeenCalledWith("/api/notifications/push/subscription/status", {
+      method: "POST",
+      body: { endpoint: "https://fcm.googleapis.com/fcm/send/a" },
+    });
+
+    auth.authFetch.mockResolvedValue({ subscribed: false });
+    expect(await isSubscribedHere()).toBe(false);
+  });
+});
+
 describe("resyncPushSubscription", () => {
-  it("registers the browser's subscription again when permission is granted", async () => {
+  it("claims the browser's endpoint for the signed-in account when permission is granted", async () => {
     installBrowser({ existing: fakeSubscription() });
 
     await resyncPushSubscription();
 
-    expect(auth.authFetch).toHaveBeenCalledWith("/api/notifications/push/subscription", expect.objectContaining({ method: "POST" }));
+    expect(auth.authFetch).toHaveBeenCalledWith("/api/notifications/push/claim", {
+      method: "POST",
+      body: { endpoint: "https://fcm.googleapis.com/fcm/send/a" },
+    });
+    expect(auth.authFetch).not.toHaveBeenCalledWith("/api/notifications/push/subscription", expect.anything());
   });
 
   it("does nothing before permission is granted", async () => {
@@ -183,7 +211,7 @@ describe("resyncPushSubscription", () => {
     expect(auth.authFetch).not.toHaveBeenCalled();
   });
 
-  it("swallows a failed registration", async () => {
+  it("swallows a failed claim", async () => {
     installBrowser({ existing: fakeSubscription() });
     auth.authFetch.mockRejectedValue(new Error("offline"));
 
