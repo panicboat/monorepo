@@ -57,6 +57,7 @@ describe("PRIVACY", () => {
 
   it("says the app removes location and device metadata from uploaded images and videos on the device", () => {
     expect(section(2)).toContain("利用者の端末で取り除きます");
+    expect(section(2)).toContain("取り除けない場合があります");
   });
 
   it("uses information to send notices about the service", () => {
