@@ -120,6 +120,7 @@ describe("ReviewDetailSheet", () => {
     expect(text()).toContain("書いた人 （無効なゲスト）");
     expect(text()).not.toContain("@");
     expect(document.querySelector(".rounded-full")?.textContent).toBe("?");
+    expect(button("編集")).toBeDefined();
   });
 
   it("explains that a star makes the review count toward the average", async () => {
