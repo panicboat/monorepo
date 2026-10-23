@@ -3,12 +3,14 @@
 require "spec_helper"
 
 RSpec.describe Notifications::UseCases::PurgeProfile do
-  let(:use_case) { described_class.new(notification_repo: notification_repo) }
+  let(:use_case) { described_class.new(notification_repo: notification_repo, push_subscription_repo: push_subscription_repo) }
   let(:notification_repo) { double(:notification_repository) }
+  let(:push_subscription_repo) { double(:push_subscription_repository) }
 
-  it "deletes notifications (recipient or latest_actor) and preferences for the profile" do
+  it "deletes notifications (recipient or latest_actor), preferences and push subscriptions for the profile" do
     expect(notification_repo).to receive(:delete_notifications_by_profile).with("cast-1")
     expect(notification_repo).to receive(:delete_preferences_by_profile).with("cast-1")
+    expect(push_subscription_repo).to receive(:delete_by_profile).with("cast-1")
     use_case.call(profile_id: "cast-1")
   end
 end
