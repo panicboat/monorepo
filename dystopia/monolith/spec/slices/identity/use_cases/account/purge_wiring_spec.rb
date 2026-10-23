@@ -129,7 +129,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:messaging__read_states].where(profile_id: personas).count).to eq(0)
     expect(db[:messaging__threads].where(profile_a: personas).or(profile_b: personas).count).to eq(0)
     expect(db[:schedule__schedules].where(profile_id: personas).count).to eq(0)
-    expect(db[:review__reviews].where(author_profile_id: personas).or(target_profile_id: personas).count).to eq(0)
+    expect(db[:review__reviews].where(author_profile_id: personas).or(target_profile_id: personas).count).to eq(2)
 
     expect(db[:profile__profiles].where(id: bystander).count).to eq(1)
     expect(db[:profile__casts].where(profile_id: bystander).count).to eq(1)

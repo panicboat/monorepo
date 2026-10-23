@@ -66,10 +66,24 @@ RSpec.describe Profile::UseCases::PurgeProfile, type: :database do
       Bookmarks::UseCases::PurgeProfile
       Messaging::UseCases::PurgeProfile
       Social::UseCases::PurgeProfile
-      Review::UseCases::PurgeProfile
       Post::UseCases::PurgeProfile
       Media::UseCases::PurgeProfile
       Schedule::UseCases::PurgeProfile
     ])
+  end
+
+  it "keeps the reviews a purged profile wrote or received" do
+    db = Hanami.app["db.gateway"].connection
+    guest_account = create_account(role: 1)
+    guest = create_account_with_profile(account_id: guest_account, username: "guest_one")
+    cast = create_account_with_profile(role: 2, username: "cast_one")
+    review = Review::Slice["repositories.review_repository"].create(author_account_id: guest_account, author_profile_id: guest, target_profile_id: cast, rating: nil, occurred_on: Date.new(2026, 10, 1))
+    Review::Slice["repositories.event_repository"].create(review_id: review.id, stage: "service", outcome: "satisfied", tags: [], note: nil, occurred_on: Date.new(2026, 10, 1))
+
+    described_class.new.call(profile_id: guest)
+    described_class.new.call(profile_id: cast)
+
+    expect(db[:review__reviews].count).to eq(1)
+    expect(db[:review__events].count).to eq(1)
   end
 end

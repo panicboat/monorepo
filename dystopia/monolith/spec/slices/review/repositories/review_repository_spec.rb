@@ -49,15 +49,4 @@ RSpec.describe Review::Repositories::ReviewRepository, type: :database do
     rows = repo.parties_and_ratings_by_account(author_account_id: guest_account)
     expect(rows.map { |row| [row.author_profile_id, row.target_profile_id, row.rating] }).to contain_exactly([guest, cast, nil], [second, cast, 2])
   end
-
-  it "deletes the reviews a profile wrote or received" do
-    written = write
-    other_cast = create_account_with_profile(role: 2, username: "cast_two")
-    kept = write(target: other_cast)
-
-    repo.delete_by_profile(cast)
-
-    expect(repo.find(written.id)).to be_nil
-    expect(repo.find(kept.id)).not_to be_nil
-  end
 end
