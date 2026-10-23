@@ -182,6 +182,12 @@ resource "aws_lambda_function" "task" {
   ]
 }
 
+# Scheduler invokes the task function asynchronously, where Lambda retries a failure twice by default; the deploy-time migrate is a synchronous invoke and ignores this.
+resource "aws_lambda_function_event_invoke_config" "task" {
+  function_name          = aws_lambda_function.task.function_name
+  maximum_retry_attempts = 0
+}
+
 resource "aws_lambda_function_url" "app" {
   function_name      = aws_lambda_function.app.function_name
   authorization_type = "NONE"
@@ -205,6 +211,8 @@ resource "aws_lambda_permission" "app_function_url_invoke" {
   invoked_via_function_url = true
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_iam_role" "scheduler" {
   name = "dystopia-${var.environment}-scheduler"
 
@@ -214,6 +222,7 @@ resource "aws_iam_role" "scheduler" {
       Effect    = "Allow"
       Principal = { Service = "scheduler.amazonaws.com" }
       Action    = "sts:AssumeRole"
+      Condition = { StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id } }
     }]
   })
 }

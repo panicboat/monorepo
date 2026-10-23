@@ -42,6 +42,12 @@ mock_provider "aws" {
     }
   }
 
+  mock_data "aws_caller_identity" {
+    defaults = {
+      account_id = "337169763788"
+    }
+  }
+
   mock_resource "aws_lambda_function_url" {
     defaults = {
       function_url = "https://abcdefghijklmnop.lambda-url.ap-northeast-1.on.aws/"
@@ -311,6 +317,16 @@ run "account_purge_runs_daily" {
 
   assert {
     condition     = aws_scheduler_schedule.purge_deactivated.target[0].retry_policy[0].maximum_retry_attempts == 0
-    error_message = "A failed purge must wait for the next day's run instead of being retried."
+    error_message = "The scheduler must not retry a failed purge."
+  }
+
+  assert {
+    condition     = aws_lambda_function_event_invoke_config.task.maximum_retry_attempts == 0
+    error_message = "Lambda must not re-run a failed asynchronous purge invocation."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_role.scheduler.assume_role_policy).Statement[0].Condition.StringEquals["aws:SourceAccount"] == "337169763788"
+    error_message = "Only schedules of this account may assume the scheduler role."
   }
 }
