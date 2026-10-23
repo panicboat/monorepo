@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { authFetch } from "@/lib/auth/fetch";
 import { useAuthStore } from "@/stores/authStore";
+import { isResizableImage, MAIN_MAX_EDGE, MAIN_QUALITY, resizeImage } from "@/modules/media/lib/resize";
 
 export interface UploadResult {
   mediaId: string;
@@ -22,19 +23,31 @@ export function useMediaUpload() {
     setError(null);
     try {
       const mediaType = file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
+      let body: Blob = file;
+      let filename = file.name;
+      let contentType = file.type;
+      if (isResizableImage(file.type)) {
+        try {
+          body = await resizeImage(file, MAIN_MAX_EDGE, MAIN_QUALITY);
+        } catch {
+          throw new Error("画像を読み込めませんでした。別の画像を選んでください");
+        }
+        filename = `${file.name.replace(/\.[^.]+$/, "")}.jpg`;
+        contentType = "image/jpeg";
+      }
       const { uploadUrl, mediaKey, mediaId } = await authFetch<{
         uploadUrl: string;
         mediaKey: string;
         mediaId: string;
       }>("/api/media/upload-url", {
         method: "POST",
-        body: { filename: file.name, contentType: file.type, mediaType },
+        body: { filename, contentType, mediaType },
       });
 
       const putRes = await fetch(uploadUrl, {
         method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
+        headers: { "Content-Type": contentType },
+        body,
       });
       if (!putRes.ok) throw new Error("アップロードに失敗しました");
 
@@ -46,14 +59,14 @@ export function useMediaUpload() {
             mediaId,
             mediaKey,
             mediaType,
-            filename: file.name,
-            contentType: file.type,
-            sizeBytes: file.size,
+            filename,
+            contentType,
+            sizeBytes: body.size,
           },
         }
       );
 
-      return { mediaId, url: reg.media?.url || URL.createObjectURL(file) };
+      return { mediaId, url: reg.media?.url || URL.createObjectURL(body) };
     } catch (e) {
       setError(e instanceof Error ? e.message : "アップロードに失敗しました");
       return null;
