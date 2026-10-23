@@ -24,6 +24,8 @@ module Notifications
         rpc :GetPushConfig, ::Notifications::V1::GetPushConfigRequest, ::Notifications::V1::GetPushConfigResponse
         rpc :RegisterPushSubscription, ::Notifications::V1::RegisterPushSubscriptionRequest, ::Notifications::V1::RegisterPushSubscriptionResponse
         rpc :UnregisterPushSubscription, ::Notifications::V1::UnregisterPushSubscriptionRequest, ::Notifications::V1::UnregisterPushSubscriptionResponse
+        rpc :GetPushSubscriptionStatus, ::Notifications::V1::GetPushSubscriptionStatusRequest, ::Notifications::V1::GetPushSubscriptionStatusResponse
+        rpc :ClaimPushEndpoint, ::Notifications::V1::ClaimPushEndpointRequest, ::Notifications::V1::ClaimPushEndpointResponse
       end
 
       Stub = Service.rpc_stub_class
