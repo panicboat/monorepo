@@ -37,7 +37,9 @@ module Notifications
         subscriptions = push_subscription_repo.list_by_profile(recipient_profile_id)
         return nil if subscriptions.empty?
 
-        counts = push_subscription_repo.profile_counts_by_endpoint(account_id: recipient.account_id, endpoints: subscriptions.map(&:endpoint))
+        counts = push_subscription_repo.profile_counts_by_endpoint(
+          profile_ids: profile_adapter.visible_ids(recipient.account_id), endpoints: subscriptions.map(&:endpoint)
+        )
         payloads = {}
         deliveries = subscriptions.map do |subscription|
           shared_device = counts.fetch(subscription.endpoint, 0) > 1

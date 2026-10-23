@@ -51,7 +51,7 @@ RSpec.describe Notifications::Repositories::PushSubscriptionRepository, type: :d
     expect(repo.list_by_profile(profile_a).map(&:endpoint)).to eq(["https://example.com/1", "https://example.com/2"])
   end
 
-  it "counts the profiles of the account per endpoint" do
+  it "counts the given profiles per endpoint" do
     other_account = create_account
     other_profile = create_account_with_profile(account_id: other_account)
     upsert(profile_id: profile_a, endpoint: "e1")
@@ -59,13 +59,17 @@ RSpec.describe Notifications::Repositories::PushSubscriptionRepository, type: :d
     upsert(profile_id: profile_a, endpoint: "e2")
     upsert(profile_id: other_profile, endpoint: "e3", account_id: other_account)
 
-    counts = repo.profile_counts_by_endpoint(account_id: account_id, endpoints: %w[e1 e2 e3])
+    counts = repo.profile_counts_by_endpoint(profile_ids: [profile_a, profile_b], endpoints: %w[e1 e2 e3])
 
     expect(counts).to eq("e1" => 2, "e2" => 1)
+    expect(repo.profile_counts_by_endpoint(profile_ids: [profile_a], endpoints: %w[e1 e2])).to eq("e1" => 1, "e2" => 1)
   end
 
-  it "returns an empty hash when no endpoints are given" do
-    expect(repo.profile_counts_by_endpoint(account_id: account_id, endpoints: [])).to eq({})
+  it "returns an empty hash when no profiles or endpoints are given" do
+    upsert(profile_id: profile_a, endpoint: "e1")
+
+    expect(repo.profile_counts_by_endpoint(profile_ids: [profile_a], endpoints: [])).to eq({})
+    expect(repo.profile_counts_by_endpoint(profile_ids: [], endpoints: ["e1"])).to eq({})
   end
 
   it "releases the rows of other accounts on the endpoint and keeps the rest" do

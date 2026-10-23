@@ -29,11 +29,11 @@ module Notifications
         push_subscription_records.where(profile_id: profile_id).order { [created_at.asc, id.asc] }.to_a
       end
 
-      def profile_counts_by_endpoint(account_id:, endpoints:)
-        return {} if endpoints.empty?
+      def profile_counts_by_endpoint(profile_ids:, endpoints:)
+        return {} if profile_ids.empty? || endpoints.empty?
 
         push_subscription_records.dataset
-          .where(account_id: account_id, endpoint: endpoints)
+          .where(profile_id: profile_ids, endpoint: endpoints)
           .unordered
           .group_and_count(:endpoint)
           .to_h { |row| [row[:endpoint], row[:count]] }

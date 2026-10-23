@@ -118,6 +118,17 @@ RSpec.describe Notifications::UseCases::SendPush, type: :database do
     expect(shared_flags).to contain_exactly(true, false)
   end
 
+  it "does not name the recipient profile when the other profile on the device is disabled" do
+    sibling = create_account_with_profile(account_id: account_of(recipient), display_name: "別名")
+    subscribe(recipient, "phone")
+    subscribe(sibling, "phone")
+    db[:profile__profiles].where(id: sibling).update(disabled_at: Time.now)
+
+    push
+
+    expect(sender.sent.map { |d| d[:payload]["title"] }).to eq(["りん"])
+  end
+
   it "sends nothing for a kind the profile turned off, using the follow setting for both follow kinds" do
     subscribe(recipient, "phone")
     update_preferences.call(profile_id: recipient, preferences: defaults.merge(like: false, follow: false))
@@ -159,6 +170,18 @@ RSpec.describe Notifications::UseCases::SendPush, type: :database do
     push
 
     expect(subscriptions.list_by_profile(recipient).map(&:endpoint)).to eq([endpoint("laptop")])
+  end
+
+  it "drops the rows of every profile of the account on a gone endpoint" do
+    sibling = create_account_with_profile(account_id: account_of(recipient), display_name: "別名")
+    subscribe(recipient, "phone")
+    subscribe(sibling, "phone")
+    sender.outcomes = { endpoint("phone") => :gone }
+
+    push
+
+    expect(subscriptions.list_by_profile(recipient)).to be_empty
+    expect(subscriptions.list_by_profile(sibling)).to be_empty
   end
 
   it "raises nothing when a device fails unexpectedly" do
