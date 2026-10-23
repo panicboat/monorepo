@@ -75,4 +75,11 @@ describe("profileInitial", () => {
     expect(profileInitial(null)).toBe("?");
     expect(profileInitial(null, MISSING_CAST)).toBe("?");
   });
+
+  it("is a question mark for a summary without a display name or a username", () => {
+    const nameless = profile({ displayName: "", username: "" });
+
+    expect(profileInitial(nameless)).toBe("?");
+    expect(profileInitial(nameless, MISSING_CAST)).toBe("?");
+  });
 });

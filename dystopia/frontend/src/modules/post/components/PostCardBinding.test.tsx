@@ -69,6 +69,13 @@ describe("PostCardBinding", () => {
     expect(html).not.toContain("名無し");
   });
 
+  it("uses a question mark as the avatar initial for a deleted author and the first character otherwise", () => {
+    const initialOf = (html: string) => html.match(/rounded-full[^>]*>(?:<img[^>]*>)?<span[^>]*>([^<]*)<\/span>/)?.[1];
+
+    expect(initialOf(renderToStaticMarkup(<PostCardBinding post={{ ...basePost, author: null }} />))).toBe("?");
+    expect(initialOf(renderToStaticMarkup(<PostCardBinding post={basePost} />))).toBe("テ");
+  });
+
   it("names a deleted author without a handle", () => {
     const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, author: null }} />);
 

@@ -2,7 +2,7 @@
 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import { ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { useFollowRequests } from "../hooks/useFollowRequests";
 
 export function FollowRequestsList() {
@@ -30,7 +30,7 @@ export function FollowRequestsList() {
         const href = r.username ? `/u/${encodeURIComponent(r.username)}` : undefined;
         return (
           <div key={r.profileId} className="flex items-center gap-3 border-b border-border px-4 py-3">
-            <Avatar src={r.avatarUrl || undefined} fallback={profileDisplayName(r).replace("@", "").slice(0, 1) || "?"} size="md" href={href} />
+            <Avatar src={r.avatarUrl || undefined} fallback={profileInitial(r)} size="md" href={href} />
             <div className="min-w-0 flex-1">
               <p className="flex min-w-0">
                 <ProfileName profile={r} link />

@@ -21,7 +21,8 @@ export function profileDisplayName(profile: ProfileSummaryView | null, missing: 
 
 export function profileInitial(profile: ProfileSummaryView | null, missing: string = MISSING_USER): string {
   if (!profile) return "?";
-  return profileDisplayName(profile, missing).replace("@", "").slice(0, 1) || "?";
+  const name = profileDisplayName(profile, missing);
+  return name === missing ? "?" : name.replace("@", "").slice(0, 1) || "?";
 }
 
 export function ProfileName({ profile, link = false, className, missing = MISSING_USER }: ProfileNameProps) {
