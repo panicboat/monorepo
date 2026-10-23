@@ -95,6 +95,29 @@ describe("TERMS", () => {
     expect(operator).toContain(OPERATOR.contact);
   });
 
+  it("lets karte and reviews be written without breaking the ban on reposting personal information", () => {
+    expect(article(9)).toMatch(/第10条と第11条.*カルテやクチコミを書くことは、前項第2号の行為に当たりません/);
+  });
+
+  it("allows guiding to the store's booking method in DMs but no other outside service", () => {
+    expect(article(13)).toContain("外部の SNS や通話アプリへ誘導すること（第8条第2項の予約の方法の案内を除きます）");
+  });
+
+  it("lets the operator read DMs for any request including rights infringement", () => {
+    expect(article(13)).toContain("利用者その他の方からの申出（第17条の申出を含みます）");
+  });
+
+  it("states what a lock does not hide", () => {
+    const profile = article(6);
+
+    expect(profile).toContain("コメント");
+    expect(profile).toMatch(/承認制にしていない場合は、誰でもフォローしてすぐにフォロワー/);
+  });
+
+  it("keeps a deactivated guest's review rating in the cast's average until deletion", () => {
+    expect(article(18)).toMatch(/退会したゲストが書いたクチコミの評価は、削除が済むまで、対象のキャストの評価の平均と件数に含まれます/);
+  });
+
   it("keeps to the app's words", () => {
     expect(all).not.toContain("出勤");
     expect(all).not.toContain("通報");
