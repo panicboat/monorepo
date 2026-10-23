@@ -22,5 +22,3 @@ manifest をサービスごとに分けると、release PR が編集するのは
 1. サービスのディレクトリに `release-please-config.json` を作る。既存サービスのものを複製し、`label` と `packages` を書き換える。
 2. 同じディレクトリに `release-please-manifest.json` を作る。リリース済みなら `{"<path>": "<現在のバージョン>"}`、未リリースなら `{}` を書く。
 3. サービスの `.dockerignore` に両ファイルを追加する。追加しないと release のたびに build context が変わる。
-
-`release.yml` の変更は不要。
