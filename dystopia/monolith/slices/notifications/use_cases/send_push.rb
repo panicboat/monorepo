@@ -28,23 +28,28 @@ module Notifications
         return nil unless web_push_sender.enabled?
 
         preferences = get_preferences.call(profile_id: recipient_profile_id)
-        return nil unless preferences[:push_enabled] && preferences[PREFERENCE_FIELD_BY_KIND.fetch(kind)]
+        return nil unless preferences[PREFERENCE_FIELD_BY_KIND.fetch(kind)]
 
         recipient = profile_adapter.find(recipient_profile_id)
         actor = profile_adapter.find(actor_profile_id)
         return nil unless recipient && actor
 
-        subscriptions = push_subscription_repo.list_by_account(recipient.account_id)
+        subscriptions = push_subscription_repo.list_by_profile(recipient_profile_id)
         return nil if subscriptions.empty?
 
-        payload = JSON.generate(
-          build_push_message.call(
-            kind: kind, actor: actor, recipient: recipient,
-            shared_device: profile_adapter.visible_count(recipient.account_id) > 1,
-            post_id: post_id, thread_id: thread_id, excerpt: excerpt
+        counts = push_subscription_repo.profile_counts_by_endpoint(account_id: recipient.account_id, endpoints: subscriptions.map(&:endpoint))
+        payloads = {}
+        deliveries = subscriptions.map do |subscription|
+          shared_device = counts.fetch(subscription.endpoint, 0) > 1
+          payloads[shared_device] ||= JSON.generate(
+            build_push_message.call(
+              kind: kind, actor: actor, recipient: recipient, shared_device: shared_device,
+              post_id: post_id, thread_id: thread_id, excerpt: excerpt
+            )
           )
-        )
-        deliver_all(subscriptions, payload, kind == "message" ? "high" : "normal")
+          [subscription, payloads[shared_device]]
+        end
+        deliver_all(deliveries, kind == "message" ? "high" : "normal")
         nil
       rescue StandardError => e
         Hanami.logger.warn("Notifications::SendPush failed: #{e.class}: #{e.message}")
@@ -55,14 +60,14 @@ module Notifications
       private
 
       # Database work stays on this thread; the worker threads only wait on the push services.
-      def deliver_all(subscriptions, payload, urgency)
-        outcomes = subscriptions.map do |subscription|
+      def deliver_all(deliveries, urgency)
+        outcomes = deliveries.map do |subscription, payload|
           Thread.new do
             web_push_sender.deliver(endpoint: subscription.endpoint, p256dh: subscription.p256dh, auth: subscription.auth, payload: payload, urgency: urgency)
           end
         end.map(&:value)
 
-        subscriptions.zip(outcomes).each do |subscription, outcome|
+        deliveries.zip(outcomes).each do |(subscription, _payload), outcome|
           push_subscription_repo.delete_by_endpoint(subscription.endpoint) if outcome == :gone
         end
       end

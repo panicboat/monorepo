@@ -100,7 +100,6 @@ module Notifications
         authenticate_user!
         input = request.message.preferences
         attrs = {
-          push_enabled: input.push_enabled,
           comment: input.comment,
           like: input.like,
           reply: input.reply,
@@ -156,7 +155,6 @@ module Notifications
 
       def preferences_to_proto(prefs)
         ::Notifications::V1::NotificationPreferences.new(
-          push_enabled: prefs[:push_enabled],
           comment: prefs[:comment],
           like: prefs[:like],
           reply: prefs[:reply],

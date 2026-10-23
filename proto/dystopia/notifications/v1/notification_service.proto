@@ -70,10 +70,9 @@ message MarkAllReadResponse {
 }
 
 message NotificationPreferences {
-  reserved 4, 5, 10;
-  reserved "repost", "quote", "oshi";
+  reserved 1, 4, 5, 10;
+  reserved "push_enabled", "repost", "quote", "oshi";
 
-  bool push_enabled = 1;
   bool comment = 2;
   bool like = 3;
   bool reply = 6;

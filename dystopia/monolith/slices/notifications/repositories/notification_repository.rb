@@ -55,7 +55,7 @@ module Notifications
 
 
       PREFERENCE_COLUMNS = %i[
-        push_enabled comment like reply follow mention message footprint_unread_badge footprints_record_my_visits
+        comment like reply follow mention message footprint_unread_badge footprints_record_my_visits
       ].freeze
 
       def get_preferences(profile_id:)

@@ -5,7 +5,6 @@ module Notifications
     class Preferences < ::Notifications::DB::Relation
       schema(:"notifications__preferences", as: :preference_records, infer: false) do
         attribute :profile_id, Types::String
-        attribute :push_enabled, Types::Bool
         attribute :comment, Types::Bool
         attribute :like, Types::Bool
         attribute :reply, Types::Bool
