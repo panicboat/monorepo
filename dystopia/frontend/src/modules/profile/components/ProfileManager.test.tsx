@@ -136,7 +136,7 @@ describe("ProfileManager", () => {
     await click(row(view.container, "third"), "削除する");
     expect(log).toEqual([]);
     expect(document.body.textContent).toContain("@third を削除しますか？");
-    expect(document.body.textContent).toContain("カルテの記録は残ります");
+    expect(document.body.textContent).toContain("カルテの記録も残ります");
 
     const dialog = document.body.querySelector('[role="dialog"]');
     if (!dialog) throw new Error("the confirmation did not open");

@@ -71,7 +71,7 @@ export function NotificationSettings() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-text-secondary">端末に送る通知</h2>
-        <p className="text-xs text-text-muted">アプリ内の通知一覧には、設定に関係なくすべて表示されます</p>
+        <p className="text-xs text-text-muted">アプリ内の通知一覧には、設定に関係なくすべて表示されます。メッセージは通知一覧には載らず、「メッセージ」の未読件数でお知らせします</p>
         {PUSH_TYPE_ROWS.map((row) => (
           <ToggleRow
             key={row.field}
