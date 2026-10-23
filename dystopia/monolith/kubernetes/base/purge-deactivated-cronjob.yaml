@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: monolith-purge-deactivated
+  labels:
+    app: monolith
+spec:
+  schedule: "0 4 * * *"
+  timeZone: Asia/Tokyo
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      # The purge is idempotent and the next day's run retries any failure.
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: monolith-purge-deactivated
+        spec:
+          restartPolicy: Never
+          serviceAccountName: monolith
+          containers:
+            - name: purge-deactivated
+              image: ghcr.io/panicboat/monorepo/monolith:latest
+              imagePullPolicy: IfNotPresent
+              command: ["bundle", "exec", "rake", "account:purge_deactivated"]
+              envFrom:
+                - configMapRef:
+                    name: monolith
+                - secretRef:
+                    name: monolith-database
+                - secretRef:
+                    name: monolith-billing

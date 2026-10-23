@@ -1,0 +1,12 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: monolith-purge-deactivated
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: purge-deactivated
+              image: ghcr.io/panicboat/monorepo/monolith:v0.8.0 # {"$imagepolicy": "flux-system:monolith"}

@@ -8,6 +8,7 @@ patches:
   - path: configmap.yaml
   - path: deployment.yaml
   - path: migrate-job.yaml
+  - path: purge-deactivated-cronjob.yaml
 replacements:
   - source:
       kind: Job
