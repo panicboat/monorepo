@@ -116,7 +116,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
         <p className="text-xs font-bold tracking-wide text-text-secondary">KARTE</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <Avatar src={karte.target?.avatarUrl || undefined} fallback={profileInitial(karte.target, MISSING_GUEST)} size="sm" />
+            <Avatar src={karte.target?.avatarUrl || undefined} fallback={profileInitial(karte.target)} size="sm" />
             <div className="min-w-0">
               <p className="truncate"><ProfileName profile={karte.target} missing={MISSING_GUEST} /></p>
               <p className="truncate text-xs text-text-secondary">

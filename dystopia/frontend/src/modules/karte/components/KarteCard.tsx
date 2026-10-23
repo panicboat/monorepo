@@ -31,7 +31,7 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
       <div className="flex gap-3">
         <Avatar
           src={karte.author?.avatarUrl || undefined}
-          fallback={profileInitial(karte.author, MISSING_CAST)}
+          fallback={profileInitial(karte.author)}
           href={authorHref}
         />
         <div className="min-w-0 flex-1">

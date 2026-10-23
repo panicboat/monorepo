@@ -48,7 +48,7 @@ export function KarteEventForm({ guest, value, onChange, rating, submitLabel, su
     >
       <ActingProfileLabel />
       <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
-        <Avatar src={guest?.avatarUrl || undefined} fallback={profileInitial(guest, MISSING_GUEST)} size="sm" />
+        <Avatar src={guest?.avatarUrl || undefined} fallback={profileInitial(guest)} size="sm" />
         <div className="min-w-0">
           <p className="flex min-w-0 text-sm"><ProfileName profile={guest} missing={MISSING_GUEST} /></p>
           <p className="truncate text-xs text-text-secondary">{guest?.username ? `@${guest.username} · ` : ""}すべてのキャストに共有</p>

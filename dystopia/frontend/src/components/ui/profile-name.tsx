@@ -19,10 +19,9 @@ export function profileDisplayName(profile: ProfileSummaryView | null, missing: 
   return profile.displayName || (profile.username ? `@${profile.username}` : missing);
 }
 
-export function profileInitial(profile: ProfileSummaryView | null, missing: string = MISSING_USER): string {
-  if (!profile) return "?";
-  const name = profileDisplayName(profile, missing);
-  return name === missing ? "?" : name.replace("@", "").slice(0, 1) || "?";
+export function profileInitial(profile: ProfileSummaryView | null): string {
+  const name = profile?.displayName || profile?.username;
+  return name?.replace("@", "").slice(0, 1) || "?";
 }
 
 export function ProfileName({ profile, link = false, className, missing = MISSING_USER }: ProfileNameProps) {

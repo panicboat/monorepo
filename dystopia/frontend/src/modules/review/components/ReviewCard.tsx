@@ -31,7 +31,7 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
       <div className="flex gap-3">
         <Avatar
           src={review.author?.avatarUrl || undefined}
-          fallback={profileInitial(review.author, MISSING_GUEST)}
+          fallback={profileInitial(review.author)}
           href={authorHref}
         />
         <div className="min-w-0 flex-1">

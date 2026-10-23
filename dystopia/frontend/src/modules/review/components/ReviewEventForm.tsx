@@ -48,7 +48,7 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
     >
       <ActingProfileLabel />
       <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
-        <Avatar src={cast?.avatarUrl || undefined} fallback={profileInitial(cast, MISSING_CAST)} size="sm" />
+        <Avatar src={cast?.avatarUrl || undefined} fallback={profileInitial(cast)} size="sm" />
         <div className="min-w-0">
           <p className="flex min-w-0 text-sm"><ProfileName profile={cast} missing={MISSING_CAST} /></p>
           <p className="truncate text-xs text-text-secondary">{cast?.username ? `@${cast.username} · ` : ""}全員に公開</p>

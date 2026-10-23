@@ -116,7 +116,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
         <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <Avatar src={review.target?.avatarUrl || undefined} fallback={profileInitial(review.target, MISSING_CAST)} size="sm" />
+            <Avatar src={review.target?.avatarUrl || undefined} fallback={profileInitial(review.target)} size="sm" />
             <div className="min-w-0">
               <p className="truncate"><ProfileName profile={review.target} missing={MISSING_CAST} /></p>
               <p className="truncate text-xs text-text-secondary">

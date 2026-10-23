@@ -71,15 +71,11 @@ describe("profileInitial", () => {
     expect(profileInitial(profile({ displayName: "" }))).toBe("r");
   });
 
-  it("is a question mark for a missing profile whatever the role label is", () => {
+  it("is a question mark for a missing profile", () => {
     expect(profileInitial(null)).toBe("?");
-    expect(profileInitial(null, MISSING_CAST)).toBe("?");
   });
 
   it("is a question mark for a summary without a display name or a username", () => {
-    const nameless = profile({ displayName: "", username: "" });
-
-    expect(profileInitial(nameless)).toBe("?");
-    expect(profileInitial(nameless, MISSING_CAST)).toBe("?");
+    expect(profileInitial(profile({ displayName: "", username: "" }))).toBe("?");
   });
 });
