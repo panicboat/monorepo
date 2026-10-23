@@ -22,7 +22,7 @@ resource "aws_iam_policy" "monolith_cognito_admin_delete" {
     Version = "2012-10-17"
     Statement = [{
       Effect   = "Allow"
-      Action   = ["cognito-idp:AdminDeleteUser"]
+      Action   = ["cognito-idp:AdminDeleteUser", "cognito-idp:ListUsers"]
       Resource = aws_cognito_user_pool.this.arn
     }]
   })
