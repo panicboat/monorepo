@@ -29,13 +29,16 @@ const MAX_LENGTH = 1000;
 export function PostComposer({
   onSubmit,
   initialContent = "",
-  initialVisibility = "public",
+  initialVisibility,
   className,
 }: PostComposerProps) {
   const { profile } = useProfile();
   const accountPrivate = !!profile?.isPrivate;
   const [content, setContent] = useState(initialContent);
-  const [isPrivate, setIsPrivate] = useState(initialVisibility === "private");
+  const [chosenPrivate, setChosenPrivate] = useState<boolean | null>(
+    initialVisibility ? initialVisibility === "private" : null
+  );
+  const isPrivate = chosenPrivate ?? accountPrivate;
   const [windowEnabled, setWindowEnabled] = useState(false);
   const [windowStart, setWindowStart] = useState("");
   const [windowEnd, setWindowEnd] = useState("");
@@ -147,7 +150,7 @@ export function PostComposer({
       </div>
       <div className="mt-2 flex items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm text-text-secondary">
-          <Toggle checked={isPrivate} onCheckedChange={setIsPrivate} aria-label="フォロワーのみ" />
+          <Toggle checked={isPrivate} onCheckedChange={setChosenPrivate} aria-label="フォロワーのみ" />
           <span>{isPrivate ? "フォロワーのみ" : "全員"}</span>
         </label>
         <div className="flex items-center gap-3">

@@ -31,6 +31,20 @@ describe("PostComposer visibility", () => {
   };
   const noteOf = (html: string) => /<p class="mt-1 text-xs text-text-secondary">(.*?)<\/p>/.exec(html)?.[1];
 
+  it("starts with followers only for a locked profile", () => {
+    profileMock.profile = { isPrivate: true };
+    const html = renderToStaticMarkup(<PostComposer onSubmit={async () => {}} />);
+
+    expect(html).toContain(">フォロワーのみ<");
+  });
+
+  it("starts with everyone for an open profile", () => {
+    profileMock.profile = { isPrivate: false };
+    const html = renderToStaticMarkup(<PostComposer onSubmit={async () => {}} />);
+
+    expect(html).toContain(">全員<");
+  });
+
   it("labels the switch with followers only", () => {
     const html = render(false, "private");
 
