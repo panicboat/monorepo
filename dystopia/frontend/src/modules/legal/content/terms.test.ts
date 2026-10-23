@@ -111,7 +111,7 @@ describe("TERMS", () => {
     const profile = article(6);
 
     expect(profile).toContain("コメント");
-    expect(profile).toMatch(/承認制にしていなければ、ブロックの関係にあるプロフィールを除き、どのプロフィールもすぐにフォロワーになり/);
+    expect(profile).toMatch(/承認制にしていなければ、ブロックの関係にあるプロフィールを除き、どのプロフィールも、フォローするとすぐにフォロワーになり/);
     expect(profile).toContain("「フォロー中」と「フォロワー」の一覧");
   });
 
@@ -121,12 +121,12 @@ describe("TERMS", () => {
   });
 
   it("describes follows and blocks per profile", () => {
-    expect(article(2)).toContain("自分のプロフィールで、特定のプロフィールとの間のやり取りを制限する設定");
-    expect(article(14)).toContain("ブロックは、この2つのプロフィールの間でだけ効きます");
+    expect(article(2)).toContain("利用者が自分のプロフィールで、他の利用者の特定のプロフィールとの間のやり取りを制限する設定");
+    expect(article(14)).toContain("ブロックは、その2つのプロフィールの間でだけ効きます");
   });
 
   it("keeps a deactivated guest's review rating in the cast's average until deletion", () => {
-    expect(article(18)).toMatch(/退会したゲストが書いたクチコミの評価は、第4項の削除が済むまで、対象のキャストの評価の平均、評価した人数および評価済みのクチコミの件数に含まれます/);
+    expect(article(18)).toMatch(/退会したゲストが書いたクチコミは、第4項の削除が済むまで、対象のキャストの評価の平均、評価した人数および評価済みのクチコミの件数の集計に含まれます/);
   });
 
   it("keeps to the app's words", () => {
