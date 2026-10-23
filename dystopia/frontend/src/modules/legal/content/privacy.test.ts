@@ -55,6 +55,11 @@ describe("PRIVACY", () => {
     expect(collected).toContain("本人であることや代理の権限を確認するために提出された書類に書かれた情報");
   });
 
+  it("says the app removes location and device metadata from uploaded images and videos on the device", () => {
+    expect(section(2)).toContain("利用者の端末で取り除きます");
+    expect(section(2)).toContain("取り除けない場合があります");
+  });
+
   it("uses information to send notices about the service", () => {
     expect(PRIVACY.sections[2].paragraphs[0].items).toContain("本サービスに関するお知らせ（利用規約や本ポリシーの変更、本サービスの終了などを含みます）を伝えること");
   });

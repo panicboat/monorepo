@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { UploadedMedia, MediaType, MediaUploadOptions } from "../types";
 import { getMediaTypeFromMime, toProtoMediaType } from "../lib/mappers";
 import { isResizableImage, MAIN_MAX_EDGE, MAIN_QUALITY, resizeImage, THUMBNAIL_MAX_EDGE, THUMBNAIL_QUALITY } from "../lib/resize";
+import { isStrippableVideo, stripVideoMetadata } from "../lib/video-metadata";
 
 interface PreparedUpload {
   main: Blob;
@@ -15,18 +16,25 @@ interface PreparedUpload {
 }
 
 async function prepareUpload(file: File): Promise<PreparedUpload> {
-  const original = { main: file, thumbnail: null, filename: file.name, contentType: file.type };
-  if (!isResizableImage(file.type)) return original;
-  try {
-    const [main, thumbnail] = await Promise.all([
-      resizeImage(file, MAIN_MAX_EDGE, MAIN_QUALITY),
-      resizeImage(file, THUMBNAIL_MAX_EDGE, THUMBNAIL_QUALITY),
-    ]);
-    return { main, thumbnail, filename: `${file.name.replace(/\.[^.]+$/, "")}.jpg`, contentType: "image/jpeg" };
-  } catch {
-    // FALLBACK: Upload the original when the browser cannot decode or encode the image.
-    return original;
+  if (isResizableImage(file.type)) {
+    try {
+      const [main, thumbnail] = await Promise.all([
+        resizeImage(file, MAIN_MAX_EDGE, MAIN_QUALITY),
+        resizeImage(file, THUMBNAIL_MAX_EDGE, THUMBNAIL_QUALITY),
+      ]);
+      return { main, thumbnail, filename: `${file.name.replace(/\.[^.]+$/, "")}.jpg`, contentType: "image/jpeg" };
+    } catch {
+      throw new Error("画像を読み込めませんでした。別の画像を選んでください");
+    }
   }
+  if (isStrippableVideo(file.type)) {
+    try {
+      return { main: await stripVideoMetadata(file), thumbnail: null, filename: file.name, contentType: file.type };
+    } catch {
+      throw new Error("動画を読み込めませんでした。別の動画を選んでください");
+    }
+  }
+  return { main: file, thumbnail: null, filename: file.name, contentType: file.type };
 }
 
 async function putObject(body: Blob, filename: string, contentType: string, mediaType: MediaType) {

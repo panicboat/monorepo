@@ -6,10 +6,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const resizeMocks = vi.hoisted(() => ({ resizeImage: vi.fn() }));
+const videoMocks = vi.hoisted(() => ({ stripVideoMetadata: vi.fn() }));
 
 vi.mock("../lib/resize", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../lib/resize")>()),
   resizeImage: resizeMocks.resizeImage,
+}));
+vi.mock("../lib/video-metadata", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../lib/video-metadata")>()),
+  stripVideoMetadata: videoMocks.stripVideoMetadata,
 }));
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: Object.assign(() => null, { getState: () => ({ activeProfileId: "p-1" }) }),
@@ -34,6 +39,7 @@ beforeEach(async () => {
   resizeMocks.resizeImage.mockReset().mockImplementation(async (_file: Blob, maxEdge: number) =>
     new Blob(["x".repeat(maxEdge === 640 ? 10 : 100)], { type: "image/jpeg" })
   );
+  videoMocks.stripVideoMetadata.mockReset().mockImplementation(async (file: Blob) => new Blob(["stripped"], { type: file.type }));
   vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: () => "blob:local" }));
   vi.stubGlobal(
     "fetch",
@@ -87,7 +93,6 @@ describe("useMediaUpload", () => {
 
   it.each([
     ["an animated GIF", new File(["gif"], "loop.gif", { type: "image/gif" })],
-    ["a video", new File(["mp4"], "clip.mp4", { type: "video/mp4" })],
   ])("uploads %s as it is without a thumbnail", async (_label, file) => {
     await upload(file);
 
@@ -97,13 +102,45 @@ describe("useMediaUpload", () => {
     expect(registered()).toMatchObject({ filename: file.name, contentType: file.type });
   });
 
-  it("falls back to the original file when the browser cannot shrink it", async () => {
+  it("rejects without requesting an upload URL when the browser cannot shrink the photo", async () => {
     resizeMocks.resizeImage.mockRejectedValue(new Error("decode failed"));
-    const file = new File(["original"], "photo.png", { type: "image/png" });
+
+    await expect(upload(new File(["original"], "photo.png", { type: "image/png" }))).rejects.toThrow(
+      "画像を読み込めませんでした。別の画像を選んでください"
+    );
+
+    expect(calls).toEqual([]);
+  });
+
+  it("strips the metadata boxes of an MP4 before the upload", async () => {
+    const stripped = new Blob(["stripped"], { type: "video/mp4" });
+    videoMocks.stripVideoMetadata.mockResolvedValue(stripped);
+    const file = new File(["mp4"], "clip.mp4", { type: "video/mp4" });
 
     await upload(file);
 
-    expect(puts().map((call) => [call.contentType, call.body])).toEqual([["image/png", file]]);
+    expect(videoMocks.stripVideoMetadata).toHaveBeenCalledWith(file);
+    expect(puts().map((call) => [call.contentType, call.body])).toEqual([["video/mp4", stripped]]);
     expect(registered()).not.toHaveProperty("thumbnailKey");
+    expect(registered()).toMatchObject({ filename: "clip.mp4", contentType: "video/mp4", sizeBytes: stripped.size });
+  });
+
+  it("rejects a video whose structure cannot be read", async () => {
+    videoMocks.stripVideoMetadata.mockRejectedValue(new Error("bad structure"));
+
+    await expect(upload(new File(["mp4"], "clip.mp4", { type: "video/mp4" }))).rejects.toThrow(
+      "動画を読み込めませんでした。別の動画を選んでください"
+    );
+
+    expect(calls).toEqual([]);
+  });
+
+  it("uploads a WebM video as it is", async () => {
+    const file = new File(["webm"], "clip.webm", { type: "video/webm" });
+
+    await upload(file);
+
+    expect(videoMocks.stripVideoMetadata).not.toHaveBeenCalled();
+    expect(puts().map((call) => [call.contentType, call.body])).toEqual([["video/webm", file]]);
   });
 });
