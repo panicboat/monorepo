@@ -103,6 +103,13 @@ describe("TERMS", () => {
     expect(article(13)).toContain("外部の SNS や通話アプリへ誘導すること（第8条第2項の予約の方法の案内を除きます）");
   });
 
+  it("lets a cast promote her own work at her store while banning promotion by stores, scouts and agencies", () => {
+    expect(article(8)).toContain("前項の規定は、キャストが、自分の予定や在籍する店舗にいることを載せること、その店舗への来店や自分の指名を呼びかけること、およびその店舗が公表している予約の方法を案内することを禁止するものではありません");
+    expect(article(15)).toContain("キャスト本人が第8条第2項に定める範囲で自分の仕事を宣伝することなど本規約で認めるものを除き、営利を目的とする宣伝や勧誘をすること");
+    expect(article(12)).toContain("利用者は、店舗、スカウト、代理店などとして、またはそれらの者に代わって、予定その他の投稿等を使って宣伝、募集または営業をしてはいけません（第8条第2項に定めるものを除きます）");
+    expect(TERMS.sections[7].paragraphs[0].items).toContain("店舗を介さない個人的な接触、面会または交渉に誘うこと");
+  });
+
   it("lets the operator read DMs for any request including rights infringement", () => {
     expect(article(13)).toContain("利用者その他の方からの申出（第17条の申出を含みます）");
   });

@@ -55,6 +55,10 @@ describe("PRIVACY", () => {
     expect(collected).toContain("本人であることや代理の権限を確認するために提出された書類に書かれた情報");
   });
 
+  it("uses information to send notices about the service", () => {
+    expect(PRIVACY.sections[2].paragraphs[0].items).toContain("本サービスに関するお知らせ（利用規約や本ポリシーの変更、本サービスの終了などを含みます）を伝えること");
+  });
+
   it("names the processors and the push services abroad", () => {
     const processors = section(6);
 
@@ -108,6 +112,11 @@ describe("PRIVACY", () => {
       .filter((paragraph) => paragraph.includes("退会"));
     expect(deactivation.length).toBeGreaterThan(0);
     for (const paragraph of deactivation) expect(paragraph).not.toMatch(/30\s*日/);
+  });
+
+  it("keeps posts until the user deletes them, except DMs that cannot be deleted", () => {
+    expect(section(9)).toContain("投稿等（DM を除きます）は、利用者が削除するまで保存します。");
+    expect(section(9)).toContain("DM は、送った利用者も受け取った利用者も削除できません。");
   });
 
   it("says reviews go with a deleted profile and that karte and DMs stay after deactivation", () => {
