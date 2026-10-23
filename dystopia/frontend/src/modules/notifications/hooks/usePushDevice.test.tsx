@@ -79,6 +79,20 @@ describe("usePushDevice", () => {
     expect(latest.state).toBe("off");
   });
 
+  it("is loading from the profile change until the new profile's status arrives", async () => {
+    push.isSubscribedHere.mockResolvedValue(true);
+    await mount();
+    expect(latest.state).toBe("on");
+
+    let resolveStatus: (subscribed: boolean) => void = () => {};
+    push.isSubscribedHere.mockReturnValue(new Promise<boolean>((resolve) => (resolveStatus = resolve)));
+    await act(async () => useAuthStore.setState({ activeProfileId: "profile-B" }));
+    expect(latest.state).toBe("loading");
+
+    await act(async () => resolveStatus(false));
+    expect(latest.state).toBe("off");
+  });
+
   it("turns on with the fetched key, and reports a refused permission", async () => {
     await mount();
     expect(latest.state).toBe("off");

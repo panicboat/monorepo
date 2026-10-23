@@ -24,6 +24,8 @@ export function usePushDevice() {
 
   useEffect(() => {
     let cancelled = false;
+    setState("loading");
+    setFailed(false);
     void (async () => {
       const support = detectPushSupport(readPushEnvironment());
       if (support !== "available") {
