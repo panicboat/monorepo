@@ -49,7 +49,7 @@ PR ラベルおよび `main` への push を起点とした CI が GHCR にコ�
 flowchart LR
   PR[PR / push main] --> Resolver[label-resolver]
   Resolver -->|stack: container| Builder[container-builder]
-  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-executor<br/>plan on PR / apply on main]
+  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-runner<br/>plan on PR / apply on main]
   Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
   Terragrunt --> AWS[(AWS)]
@@ -73,7 +73,7 @@ flowchart LR
 | Stack | Workflow | PR | `main` への push |
 | --- | --- | --- | --- |
 | `container` | [`reusable--container-builder.yaml`](.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push |
-| `terragrunt` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) | `terragrunt plan` | `terragrunt apply` |
+| `terragrunt` | [`reusable--terragrunt-runner.yaml`](.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` |
 | `kubernetes` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない |
 
 #### Versioning
