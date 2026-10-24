@@ -23,6 +23,7 @@
   - `aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0`
   - `anthropics/claude-code-action@16f9f71ab9c490faf367f94dd294897edc25be33 # v1.0.261`
   - `thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1`
+  - `actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2`（panicboat の他の workflow と同じ pin）
 - 固定値
   - status context: `Docs Sync Check`
   - workflow 名: `Docs Sync Check`（status context と同じ名前だが、job 名は `Scope`・`Judge`・`Report` にして衝突させない）
@@ -252,6 +253,7 @@ concurrency:
     - `use_bedrock: 'true'`、`github_token: ${{ github.token }}`、env `ANTHROPIC_DEFAULT_HAIKU_MODEL: global.anthropic.claude-sonnet-4-6`
     - prompt: `Read \`.github/prompts/docs-sync-check.md\` and follow it.` と `Pull request number: <N>`
     - `claude_args`: `--model global.anthropic.claude-sonnet-4-6`、`--json-schema '{"type":"object","properties":{"passed":{"type":"boolean"},"body":{"type":"string","minLength":1,"maxLength":60000}},"required":["passed","body"]}'`、`--allowedTools "Read,Glob,Grep,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*)"`
+  - claude-code-action の後に、`steps.claude.outputs.execution_file` を artifact `docs-sync-check-execution` として upload する（`if: ${{ !cancelled() && steps.claude.outputs.execution_file != '' }}`、`retention-days: 7`）。判定ごとの token 数と、Claude が読んだファイルを後から数えるため
   - outputs: `passed`・`body`（`structured_output` から。platform の書き方に合わせる）
 - job `report`（name `Report`）
   - `needs: [scope, judge]`、`if: ${{ !cancelled() && needs.scope.outputs.mode == 'judge' }}`
@@ -338,7 +340,15 @@ branch 名は `test/docs-sync-<case>-base` と `test/docs-sync-<case>`。PR タ�
 
 - [ ] **Step 4: Record the results**
 
-各 PR の status と sticky comment を読み、expected と一致するかを記録する。1 回の判定の token 数と費用を Judge job のログ（claude-code-action の実行結果の `usage`・`total_cost_usd`）から記録する。一致しないケースがあれば、Task 3 の prompt を直して再生し直す（3 回まで。超えたらユーザーに報告して止まる）。
+各 PR の status と sticky comment を読み、expected と一致するかを記録する。
+
+判定を「規約・ポリシー」と「ドキュメント」の 2 つに分けるかを決めるため、各ケースで artifact `docs-sync-check-execution`（`gh run download <run_id> -n docs-sync-check-execution`）から次を数えて表にする。
+
+- 入力 token（`input_tokens`・`cache_creation_input_tokens`・`cache_read_input_tokens`）、出力 token、`total_cost_usd`、`num_turns`
+- Claude が読んだファイル（Read の対象と `gh pr diff` の呼び出し）を、diff・`dystopia/docs/`・規約・ポリシー・その他のコードに分けた一覧
+- その PR の diff の大きさ（`gh pr diff <N> | wc -c`）
+
+この数から、2 つに分けたときの費用を見積もる（diff と PR 本文を 2 回読む分が増え、それぞれが読まない文書の分が減る）。見積もりと、取りこぼし（expected と違ったケース）が規約・ポリシー側かドキュメント側かを、PR 本文の Verification に書く。一致しないケースがあれば、Task 3 の prompt を直して再生し直す（3 回まで。超えたらユーザーに報告して止まる）。
 
 - [ ] **Step 5: Verify the approval label (needs the user)**
 
