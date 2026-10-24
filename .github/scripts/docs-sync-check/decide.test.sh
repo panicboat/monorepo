@@ -6,10 +6,10 @@ decide="${script_dir}/decide.sh"
 failed=0
 
 check() {
-  local name="$1" action="$2" label="$3" approved="$4" author="$5" files="$6" expected_mode="$7" expected_remove="$8"
+  local name="$1" action="$2" label="$3" approved="$4" author="$5" changed="$6" files="$7" expected_mode="$8" expected_remove="$9"
   local expected actual
   expected="$(printf 'mode=%s\nremove_label=%s' "$expected_mode" "$expected_remove")"
-  actual="$(printf '%s' "$files" | EVENT_ACTION="$action" EVENT_LABEL="$label" APPROVED="$approved" AUTHOR_TYPE="$author" bash "$decide" 2>&1)"
+  actual="$(printf '%s' "$files" | EVENT_ACTION="$action" EVENT_LABEL="$label" APPROVED="$approved" AUTHOR_TYPE="$author" BODY_OR_BASE_CHANGED="$changed" bash "$decide" 2>&1)"
   if [ "$actual" = "$expected" ]; then
     echo "PASS ${name}"
   else
@@ -20,16 +20,22 @@ check() {
   fi
 }
 
-check ignores_other_labels labeled deploy:frontend false User $'dystopia/a.rb' ignore false
-check ignores_other_labels_even_when_approved labeled deploy:frontend true User $'dystopia/a.rb' ignore false
-check skips_bots opened '' false Bot $'dystopia/a.rb' skip-bot false
-check skips_without_dystopia_changes opened '' false User $'platform/a.tf' skip-unchanged false
-check skips_empty_diff opened '' false User '' skip-unchanged false
-check judges_dystopia_changes opened '' false User $'README.md\ndystopia/docs/x.md' judge false
-check does_not_match_prefix_only opened '' false User $'dystopia-old/a.rb' skip-unchanged false
-check passes_on_approval_label labeled docs-check-approved true User $'dystopia/a.rb' approved false
-check passes_on_edit_while_approved edited '' true User $'dystopia/a.rb' approved false
-check push_after_approval_rejudges synchronize '' true User $'dystopia/a.rb' judge true
-check push_after_approval_without_dystopia synchronize '' true User $'platform/a.tf' skip-unchanged true
+check ignores_other_labels labeled deploy:frontend false User false $'dystopia/a.rb' ignore false
+check ignores_other_labels_even_when_approved labeled deploy:frontend true User false $'dystopia/a.rb' ignore false
+check ignores_other_label_removed unlabeled deploy:frontend false User false $'dystopia/a.rb' ignore false
+check skips_bots opened '' false Bot false $'dystopia/a.rb' skip-bot false
+check skips_without_dystopia_changes opened '' false User false $'platform/a.tf' skip-unchanged false
+check skips_empty_diff opened '' false User false '' skip-unchanged false
+check judges_dystopia_changes opened '' false User false $'README.md\ndystopia/docs/x.md' judge false
+check does_not_match_prefix_only opened '' false User false $'dystopia-old/a.rb' skip-unchanged false
+check passes_on_approval_label labeled docs-check-approved true User false $'dystopia/a.rb' approved false
+check ignores_edit_while_approved edited '' true User true $'dystopia/a.rb' ignore false
+check ignores_reopen_while_approved reopened '' true User false $'dystopia/a.rb' ignore false
+check ignores_title_only_edit edited '' false User false $'dystopia/a.rb' ignore false
+check judges_body_edit edited '' false User true $'dystopia/a.rb' judge false
+check rejudges_when_approval_removed unlabeled docs-check-approved false User false $'dystopia/a.rb' judge false
+check opened_with_approval_rejudges opened '' true User false $'dystopia/a.rb' judge true
+check push_after_approval_rejudges synchronize '' true User false $'dystopia/a.rb' judge true
+check push_after_approval_without_dystopia synchronize '' true User false $'platform/a.tf' skip-unchanged true
 
 exit "$failed"

@@ -2,13 +2,13 @@ name: 'Docs Sync Check'
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited, labeled]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
 
 permissions: {}
 
 concurrency:
-  # Runs for unrelated labels get their own group so adding such a label does not cancel a judge in progress.
-  group: ${{ (github.event.action == 'labeled' && github.event.label.name != 'docs-check-approved') && format('docs-sync-check-ignored-{0}', github.run_id) || format('docs-sync-check-{0}', github.event.pull_request.number) }}
+  # Runs for unrelated labels get their own group so adding or removing such a label does not cancel a judge in progress.
+  group: ${{ ((github.event.action == 'labeled' || github.event.action == 'unlabeled') && github.event.label.name != 'docs-check-approved') && format('docs-sync-check-ignored-{0}', github.run_id) || format('docs-sync-check-{0}', github.event.pull_request.number) }}
   cancel-in-progress: true
 
 jobs:
@@ -45,14 +45,23 @@ jobs:
           EVENT_LABEL: ${{ github.event.label.name }}
           APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'docs-check-approved') }}
           AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
-        run: gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[].filename' | bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
+          BODY_OR_BASE_CHANGED: ${{ (github.event.changes.body || github.event.changes.base) && 'true' || 'false' }}
+        run: gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)' | bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
 
       - name: Remove approval label
         if: steps.decide.outputs.remove_label == 'true'
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: gh pr edit "$PR_NUMBER" --remove-label docs-check-approved
+        run: |
+          if ! output="$(gh api -X DELETE "repos/${REPOSITORY}/issues/${PR_NUMBER}/labels/docs-check-approved" 2>&1)"; then
+            # SILENT: a 404 means someone already removed the label, which is the state this step wants.
+            if grep -q 'HTTP 404' <<<"$output"; then exit 0; fi
+            echo "$output" >&2
+            exit 1
+          fi
 
       - name: Write status
         if: steps.decide.outputs.mode != 'ignore'
