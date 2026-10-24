@@ -95,15 +95,21 @@ describe("cross-references in the terms and the privacy policy", () => {
         "利用規約 第13条: 第8条第2項",
         "利用規約 第15条: 前項第7号から第10号",
         "利用規約 第18条: 第5項から第7項",
-        "プライバシーポリシー 第1節: 第11節",
-        "プライバシーポリシー 第9節: 利用規約第18条第2項",
-        "プライバシーポリシー 第11節: 利用規約第10条第5項および第11条第5項",
       ]),
     );
   });
 
   it("points every reference at an existing article, paragraph, item or section", () => {
     expect(all.filter((reference) => !reference.resolved).map((reference) => reference.label)).toEqual([]);
+  });
+
+  it("refers to articles and sections by heading, not by number", () => {
+    const NUMBER = /前項|次項|第[0-9０-９一二三四五六七八九十]+[条項号節]/;
+    const texts = [PRIVACY].flatMap((document) =>
+      document.sections.flatMap((section) => section.paragraphs.flatMap((paragraph) => [paragraph.text, ...(paragraph.items ?? [])])),
+    );
+
+    expect(texts.filter((text) => NUMBER.test(text))).toEqual([]);
   });
 });
 
