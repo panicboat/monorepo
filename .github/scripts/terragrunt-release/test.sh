@@ -333,6 +333,35 @@ test_check_configs_rejects_duplicate_service() {
     assert_stderr_contains "component monolith is used by more than one package: dystopia/monolith system-components/monolith"
 }
 
+repo_root="$(cd "${script_dir}/../../.." && pwd)"
+
+terragrunt_stack() {
+    yq -o=json '.stacks[] | select(.name == "terragrunt")' "${repo_root}/workflow-config.yaml"
+}
+
+test_repository_config_is_valid() {
+    bash "${script_dir}/validate-apply-trigger.sh" "${repo_root}/workflow-config.yaml"
+}
+
+test_repository_config_never_merges_production() {
+    assert_eq "release" "$(terragrunt_stack | jq -r '.environments.production.apply_trigger')"
+}
+
+test_repository_config_excludes_production() {
+    assert_eq "true" "$(terragrunt_stack | jq '.exclude | any(. == {"environment": "production"})')"
+}
+
+test_repository_terragrunt_paths() {
+    assert_eq '["{product}/{service}/infrastructure/aws/{environment}"]' "$(terragrunt_stack | jq -c '.paths')"
+}
+
+test_resolver_applies_only_merge_targets() {
+    local expected="\${{ matrix.target.stack == 'terragrunt' && (github.event_name == 'pull_request' && 'plan' || (matrix.target.apply_trigger == 'merge' && 'apply' || '')) || '' }}"
+    local actual
+    actual="$(yq '.jobs["deploy-terragrunt"].with["action-type"]' "${repo_root}/.github/workflows/label-base-deploy--resolver.yaml")"
+    assert_eq "${expected}" "${actual}"
+}
+
 failed=0
 for test_name in $(compgen -A function test_); do
     fixture="$(mktemp -d "${work_root}/fixture.XXXXXX")"
