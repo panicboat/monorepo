@@ -200,9 +200,12 @@ bundle exec rspec
 
 ## Infrastructure
 
-monolith has no Terragrunt stack of its own. Its AWS resources (RDS, Cognito Pod
-Identity, IAM policies) live in `dystopia/infrastructure/aws/production/`, shared
-with `dystopia/frontend` (Cognito).
+monolith has an empty Terragrunt stack at
+`dystopia/monolith/infrastructure/aws/{develop,production}`. develop is applied
+on merge and production on the monolith release ([Deployment](../../README.md)).
+Its AWS resources (RDS, Cognito Pod Identity, IAM policies) live in
+[dystopia/infrastructure/aws/production/](../infrastructure/aws/production/),
+shared with [dystopia/frontend](../frontend) (Cognito).
 
 ## Useful links
 

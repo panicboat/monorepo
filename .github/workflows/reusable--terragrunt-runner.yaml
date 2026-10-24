@@ -1,3 +1,4 @@
+# Runs terragrunt plan or apply in one working directory and reports the result with tfcmt.
 name: 'Reusable - Terragrunt Runner'
 
 on:
@@ -31,6 +32,16 @@ on:
         required: true
         type: string
         description: 'GitHub App ID for authentication'
+      ref:
+        required: false
+        type: string
+        default: ''
+        description: 'Git ref to check out (defaults to the triggering ref)'
+      github-environment:
+        required: false
+        type: string
+        default: ''
+        description: 'GitHub environment the job runs in (none when empty)'
     secrets:
       private-key:
         required: true
@@ -41,6 +52,7 @@ jobs:
     name: 'Run Terragrunt'
     if: inputs.action-type != ''
     runs-on: ubuntu-latest
+    environment: ${{ inputs.github-environment }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -52,6 +64,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0

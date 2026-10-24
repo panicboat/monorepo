@@ -78,6 +78,6 @@ bundle exec hanami server
 
 ## Infrastructure
 
-monolith 自身の Terragrunt stack は無い。AWS リソース（RDS、Cognito Pod Identity、
-IAM ポリシー）は `dystopia/infrastructure/aws/production/` にあり、`dystopia/frontend`
-（Cognito）と共有している。
+monolith は `dystopia/monolith/infrastructure/aws/{develop,production}` に空の Terragrunt stack を持つ。
+develop は merge 時に、production は monolith の release 時に apply される（[Deployment](../../README-ja.md)）。
+AWS リソース（RDS、Cognito Pod Identity、IAM ポリシー）は [dystopia/infrastructure/aws/production/](../infrastructure/aws/production/) にあり、[dystopia/frontend](../frontend)（Cognito）と共有している。

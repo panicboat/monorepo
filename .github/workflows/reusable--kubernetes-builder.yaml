@@ -1,3 +1,4 @@
+# Posts the kustomize diff of one overlay as a pull request comment.
 name: 'Reusable - Kubernetes Builder'
 
 on:
