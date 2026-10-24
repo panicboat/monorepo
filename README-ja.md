@@ -56,7 +56,7 @@ flowchart LR
   Published --> Build[release--build]
   Published --> Deploy[release--deploy]
   Resolver -->|stack: container| Builder[container-builder]
-  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-executor]
+  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-runner]
   Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
   Deploy -->|"apply (release)"| Terragrunt
@@ -105,7 +105,7 @@ flowchart LR
 | Stack | Workflow | PR | `main` への push | release の公開 |
 | --- | --- | --- | --- | --- |
 | `container` | [reusable--container-builder.yaml](.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` の tag で GHCR に push |
-| `terragrunt` | [reusable--terragrunt-executor.yaml](.github/workflows/reusable--terragrunt-executor.yaml) | `terragrunt plan` | `apply_trigger: merge` の environment を `terragrunt apply` | `apply_trigger: release` の environment を `terragrunt apply` |
+| `terragrunt` | [reusable--terragrunt-runner.yaml](.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `apply_trigger: merge` の environment を `terragrunt apply` | `apply_trigger: release` の environment を `terragrunt apply` |
 | `kubernetes` | [reusable--kubernetes-builder.yaml](.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない | 何もしない |
 
 `terragrunt` stack の environment は、それぞれ `apply_trigger` を持つ。`merge` は `main` への push で apply し、`release` は service の release が公開されたときに apply する。

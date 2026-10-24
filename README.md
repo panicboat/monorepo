@@ -56,7 +56,7 @@ flowchart LR
   Published --> Build[release--build]
   Published --> Deploy[release--deploy]
   Resolver -->|stack: container| Builder[container-builder]
-  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-executor]
+  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-runner]
   Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
   Deploy -->|"apply (release)"| Terragrunt
@@ -105,7 +105,7 @@ The paths each stack covers are defined in `stacks` in [workflow-config.yaml](wo
 | Stack | Workflow | On a PR | On push to `main` | On release published |
 | --- | --- | --- | --- | --- |
 | `container` | [reusable--container-builder.yaml](.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` |
-| `terragrunt` | [reusable--terragrunt-executor.yaml](.github/workflows/reusable--terragrunt-executor.yaml) | `terragrunt plan` | `terragrunt apply` of `apply_trigger: merge` environments | `terragrunt apply` of `apply_trigger: release` environments |
+| `terragrunt` | [reusable--terragrunt-runner.yaml](.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` of `apply_trigger: merge` environments | `terragrunt apply` of `apply_trigger: release` environments |
 | `kubernetes` | [reusable--kubernetes-builder.yaml](.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` | Nothing |
 
 Each environment of the `terragrunt` stack sets `apply_trigger`: `merge` applies on push to `main`, `release` applies when the service release is published.

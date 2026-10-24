@@ -30,7 +30,7 @@ jobs:
       id-token: write
       contents: read
       pull-requests: write
-    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
+    uses: ./.github/workflows/reusable--terragrunt-runner.yaml
     with:
       service-name: lambda
       environment: production
