@@ -104,8 +104,8 @@ describe("PRIVACY", () => {
     expect(section(4)).not.toContain("投稿した本人");
   });
 
-  it("hides the comments of profiles that the viewer blocks", () => {
-    expect(section(4)).toContain("ただし、利用者がその時に使っているプロフィールでブロックしているプロフィールのコメントは、その利用者には表示されません。");
+  it("hides the comments of profiles that the viewer blocks from a post's comments and replies", () => {
+    expect(section(4)).toContain("ただし、利用者がその時に使っているプロフィールでブロックしているプロフィールのコメントは、投稿に付いたコメントと返信の一覧には表示されません。");
   });
 
   it("leaves casts in a block relation out of the schedule search", () => {
@@ -115,15 +115,23 @@ describe("PRIVACY", () => {
   it("shows every cast the rating summary of the karte about a guest", () => {
     const karte = PRIVACY.sections[3].paragraphs.find((paragraph) => paragraph.text === "カルテの次の情報は、すべてのキャストに表示されます。");
 
-    expect(karte?.items).toContain("対象のゲストについてのカルテの評価の集計（評価の平均、評価した人数および評価済みのカルテの件数）");
+    expect(karte?.items).toContain("対象のゲストについてのカルテの評価の集計（評価の平均、評価したプロフィールの数および評価済みのカルテの件数）");
   });
 
   it("shows a cast's rating summary to every signed-in user, including ratings from guests in a block relation", () => {
     expect(section(4)).toContain("キャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）は、キャストがプロフィールに鍵をかけていても、ログインしているすべての利用者に表示されます。この集計には、ブロックの関係にあるゲストの評価も含まれます。");
   });
 
-  it("lets each profile stop leaving footprints", () => {
-    expect(section(4)).toContain("利用者は、プロフィールごとに、通知設定の「他人のプロフィール訪問時に足跡を残す」をオフにして、そのプロフィールで訪れたときに足跡を残さないようにできます（初期設定ではオンです）。");
+  it("lets each profile stop leaving footprints and records none between profiles in a block relation", () => {
+    expect(section(4)).toContain("利用者は、プロフィールごとに、通知設定の「他人のプロフィール訪問時に足跡を残す」をオフにして、そのプロフィールで訪れたときに足跡を残さないようにできます（初期設定ではオンです）。ブロックの関係にあるプロフィールの間では、足跡は記録されません。");
+  });
+
+  it("shows a schedule's date and time on its announcement post under the rules for posts open to everyone", () => {
+    expect(section(4)).toContain("予定にお知らせを付けた場合は、お知らせの投稿にも予定の日付と時刻が表示されます。お知らせの投稿は、「全員」を選んだ投稿と同じ規則で表示されます。");
+  });
+
+  it("sends the selected profile ID with every request except sign-in requests and direct transfers of images and videos", () => {
+    expect(section(8)).toContain("ただし、選んでいるプロフィールの ID は、どのプロフィールで操作しているかを示すため、本サービスへの通信（登録、ログイン、パスワードの再設定およびログインの状態の確認のための通信と、画像と動画を保存先と直接やり取りする通信を除きます）のたびに送ります。");
   });
 
   it("uses the app's word for the note of a karte or review event", () => {
@@ -136,7 +144,7 @@ describe("PRIVACY", () => {
 
     expect(display?.text).toBe(
       "クチコミの内容（評価、段階、結果、タグ、補足および日付）と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。" +
-        "ただし、利用者がその時に使っているプロフィールと、書いたゲストまたは対象のキャストとの間にブロックの関係があるクチコミは、その利用者には表示されません。対象のキャストは自分へのクチコミを、書いたゲストは自分が書いたクチコミを、ブロックの関係にかかわらず見ることができます。" +
+        "ただし、利用者がその時に使っているプロフィールと、書いたゲストまたは対象のキャストとの間にブロックの関係があるクチコミは、その利用者には表示されません。プロフィールのクチコミの一覧では、対象のキャストは自分へのクチコミを、書いたゲストは自分が書いたクチコミを、ブロックの関係にかかわらず見ることができます。" +
         "書いたゲストまたは対象のキャストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、そのプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストの投稿を見ることができる利用者に表示されます。",
     );
   });

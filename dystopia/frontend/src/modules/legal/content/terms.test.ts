@@ -192,6 +192,18 @@ describe("TERMS", () => {
     expect(article(10)).toContain("本サービス上でカルテを見ることができるのは、キャストだけです");
   });
 
+  it("explains what disabling a profile does and that only a disabled profile can be deleted", () => {
+    expect(article(6)).toContain("利用者は、有効なプロフィールを無効にできます。ただし、有効なプロフィールが1つだけの場合は、無効にできません。無効にしたプロフィールは、他の利用者に表示されず、利用することもできませんが、いつでも有効に戻せます。無効にしたプロフィールだけを削除できます。削除したプロフィールは、元に戻せません。");
+  });
+
+  it("lets only the cast who wrote a karte change its events and rating", () => {
+    expect(article(10)).toContain("カルテの出来事の追加、編集および削除と、評価の設定も、そのカルテを書いたキャストだけができます。");
+  });
+
+  it("keeps a karte when a party disables, deactivates or deletes the profile", () => {
+    expect(article(10)).toContain("カルテを書いたキャストまたは対象のゲストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、カルテは残ります。この場合、退会した利用者、無効にしたプロフィールまたは削除されたプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。");
+  });
+
   it("uses the app's word for the note of a karte event", () => {
     expect(all).not.toContain("メモ");
     expect(article(10)).toContain("カルテに記録できるのは、段階、結果、日付、評価（5段階）、タグおよび補足です。");
@@ -209,6 +221,8 @@ describe("TERMS", () => {
   it("limits restricted posts to the posting profile and its followers, not the account's other profiles", () => {
     expect(article(14)).toContain("鍵をかけたプロフィールの投稿と、「フォロワーのみ」を選んだ投稿は、投稿したプロフィールとそのプロフィールのフォロワーにだけ表示されます。同じアカウントの別のプロフィールであっても、フォロワーでなければ表示されません。");
     expect(article(14)).not.toContain("投稿した本人とフォロワー");
+    expect(article(6)).toContain("鍵をかけると、そのプロフィールの投稿は、そのプロフィールとそのプロフィールのフォロワーにだけ表示されます。");
+    expect(all).not.toContain("本人とフォロワーにだけ");
   });
 
   it("lets settings stop only the device notifications, not the notification list", () => {
