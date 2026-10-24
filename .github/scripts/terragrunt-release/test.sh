@@ -355,6 +355,10 @@ test_repository_terragrunt_paths() {
     assert_eq '["{product}/{service}/infrastructure/aws/{environment}"]' "$(terragrunt_stack | jq -c '.paths')"
 }
 
+test_repository_release_configs_are_valid() {
+    (cd "${repo_root}" && bash "${script_dir}/check-release-configs.sh")
+}
+
 test_resolver_applies_only_merge_targets() {
     local expected="\${{ matrix.target.stack == 'terragrunt' && (github.event_name == 'pull_request' && 'plan' || (matrix.target.apply_trigger == 'merge' && 'apply' || '')) || '' }}"
     local actual
