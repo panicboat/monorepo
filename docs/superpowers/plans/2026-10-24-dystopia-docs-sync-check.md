@@ -332,7 +332,8 @@ Expected: `success dystopia に変更がありません`
 | `1705-no-docs` | `c7ef32a8` | `-- dystopia ':!dystopia/docs' ':!dystopia/frontend/src/modules/legal/content'` | failure。規約第11条・`reviews.md` の食い違いを指摘する |
 | `1702-full` | `3bad26e3` | `-- dystopia` | success |
 | `1702-no-docs` | `3bad26e3` | `-- dystopia ':!dystopia/docs'` | failure |
-| `1689-full` | `669de136` | `-- dystopia` | success |
+| `1689-full` | `669de136` | `-- dystopia` | failure。`data-model.md` の `notifications_preferences` の `push_enabled` を指摘する |
+| `1683-full` | `df5c85cf` | `-- dystopia` | success |
 
 PR を作る前に `auto-label--label-dispatcher.yaml` と `auto-label--deploy-trigger.yaml` を読み、PR の run が apply・本番デプロイ・image の push をしないことを確かめる。する場合は止まってユーザーに伝える。
 
@@ -348,11 +349,13 @@ branch 名は `test/docs-sync-<case>-base` と `test/docs-sync-<case>`。PR タ�
 - Claude が読んだファイル（Read の対象と `gh pr diff` の呼び出し）を、diff・`dystopia/docs/`・規約・ポリシー・その他のコードに分けた一覧
 - その PR の diff の大きさ（`gh pr diff <N> | wc -c`）
 
-この数から、2 つに分けたときの費用を見積もる（diff と PR 本文を 2 回読む分が増え、それぞれが読まない文書の分が減る）。見積もりと、取りこぼし（expected と違ったケース）が規約・ポリシー側かドキュメント側かを、PR 本文の Verification に書く。一致しないケースがあれば、Task 3 の prompt を直して再生し直す（3 回まで。超えたらユーザーに報告して止まる）。
+この数から、2 つに分けたときの費用を見積もる（diff と PR 本文を 2 回読む分が増え、それぞれが読まない文書の分が減る）。見積もりと、取りこぼし（expected と違ったケース）が規約・ポリシー側かドキュメント側かを、PR 本文の Verification に書く。一致しないケースがあれば、まず判定が正しかったかを、元 PR の merge commit の親の文書（`git show <merge>^:<path>`）で確かめる。判定が正しく expected が誤っていたら、expected を直して記録する。判定が誤っていたときだけ、Task 3 の prompt を直して再生し直す（3 回まで。超えたらユーザーに報告して止まる）。
 
 - [ ] **Step 5: Verify the approval label (needs the user)**
 
 `1705-no-docs` の PR に `docs-check-approved` を付けるようユーザーに依頼する（agent は付けない）。付いたら status が `success`・`docs-check-approved ラベルで承認されています` になることを確かめる。次に head に空 commit を push し（`git commit -s --allow-empty -m "test: push after approval"`）、ラベルが外れて status が `pending` → `failure` になることを確かめる。
+
+続けて、もう一度ラベルを付けてもらい、空 commit の push の直後（10 秒以内）に `gh pr edit <N> --body-file <同じ本文に 1 行足したもの>` で本文を編集する。新しい head の status が `success` にならない（`pending`・`failure`・status なしのいずれか）ことを確かめる。最後に、ラベルが付いた状態でユーザーにラベルを外してもらい、判定し直されることを確かめる。
 
 - [ ] **Step 6: Clean up**
 
