@@ -83,12 +83,12 @@ describe("ReviewEventForm", () => {
     expect(publicHtml).not.toContain("鍵付き");
   });
 
-  it("shows a deleted cast profile without a username or a name", async () => {
+  it("shows a missing cast profile as an invalid cast without a username", async () => {
     cast = null;
     const container = await mount(emptyReviewEvent("2026-10-16"));
     cast = base;
 
-    expect(container.textContent).toContain("削除したプロフィール");
+    expect(container.textContent).toContain("（無効なキャスト）");
     expect(container.textContent).toContain("全員に公開");
     expect(container.textContent).not.toContain("@");
   });

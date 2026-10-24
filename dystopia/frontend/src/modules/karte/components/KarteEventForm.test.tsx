@@ -83,12 +83,12 @@ describe("KarteEventForm", () => {
     expect(publicHtml).not.toContain("鍵付き");
   });
 
-  it("shows a deleted guest profile without a username or a name", async () => {
+  it("shows a missing guest profile as an invalid guest without a username", async () => {
     guest = null;
     const container = await mount(emptyKarteEvent("2026-10-16"));
     guest = base;
 
-    expect(container.textContent).toContain("削除したプロフィール");
+    expect(container.textContent).toContain("（無効なゲスト）");
     expect(container.textContent).toContain("すべてのキャストに共有");
     expect(container.textContent).not.toContain("@");
   });

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Avatar } from "@/components/ui/avatar";
-import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import { ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { cn } from "@/lib/utils";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 
@@ -15,7 +15,6 @@ interface EntryCardProps {
 }
 
 export function EntryCard({ profile, meta, unread = false, href, onClick, children }: EntryCardProps) {
-  const name = profileDisplayName(profile);
   const profileHref = profile?.username ? `/u/${encodeURIComponent(profile.username)}` : undefined;
   const cardClass = cn(
     "mt-2 block w-full rounded-xl border bg-surface p-3 text-left",
@@ -26,7 +25,7 @@ export function EntryCard({ profile, meta, unread = false, href, onClick, childr
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex gap-3">
-        <Avatar src={profile?.avatarUrl || undefined} fallback={name.replace("@", "").slice(0, 1) || "?"} href={profileHref} />
+        <Avatar src={profile?.avatarUrl || undefined} fallback={profileInitial(profile)} href={profileHref} />
         <div className="min-w-0 flex-1">
           <p className="flex min-w-0 items-center gap-1 text-sm">
             <ProfileName profile={profile} link className="text-sm" />

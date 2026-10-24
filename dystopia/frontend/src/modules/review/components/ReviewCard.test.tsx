@@ -110,7 +110,7 @@ describe("ReviewCard", () => {
     const current = await mount({ review: review(), variant: "mine" });
 
     expect(other.textContent).toContain("@yuna_osaka として記録");
-    expect(deleted.textContent).toContain("削除したプロフィールで記録");
+    expect(deleted.textContent).toContain("（無効なゲスト）として記録");
     expect(current.textContent).not.toContain("として記録");
   });
 
@@ -126,7 +126,24 @@ describe("ReviewCard", () => {
     const container = await mount({ review: review({ author: null }), variant: "feed" });
 
     expect(Array.from(container.querySelectorAll("a")).some((link) => link.getAttribute("href") === "/u/")).toBe(false);
-    expect(container.textContent).toContain("削除したプロフィール");
+    expect(container.textContent).toContain("（無効なゲスト）");
+  });
+
+  it("shows a question mark as the avatar initial when the author is missing", async () => {
+    const missing = await mount({ review: review({ author: null }), variant: "feed" });
+    const present = await mount({ review: review(), variant: "feed" });
+
+    expect(missing.querySelector(".rounded-full")?.textContent).toBe("?");
+    expect(present.querySelector(".rounded-full")?.textContent).toBe("ゆ");
+  });
+
+  it("names a missing target as an invalid cast without the handle or a link to the cast", async () => {
+    const container = await mount({ review: review({ target: null }), variant: "feed" });
+
+    expect(container.querySelector("button")?.textContent).toContain("（無効なキャスト）");
+    expect(container.textContent).not.toContain("@");
+    expect(container.textContent).not.toContain("キャストのプロフィールを見る");
+    expect(container.querySelector("a[href^='/u/']:not([href='/u/yuna'])")).toBeNull();
   });
 
   it("marks a private author next to the author name only", async () => {

@@ -46,6 +46,13 @@ describe("FollowRequestsList", () => {
     expect(html).toContain("@rin");
   });
 
+  it("uses a question mark as the avatar initial for a requester without a name or a handle", () => {
+    state.requests = [requester({ displayName: "", username: "" })];
+    const html = renderToStaticMarkup(<FollowRequestsList />);
+
+    expect(html.match(/rounded-full[^>]*>(?:<img[^>]*>)?<span[^>]*>([^<]*)<\/span>/)?.[1]).toBe("?");
+  });
+
   it("says so when there are no requests", () => {
     state.requests = [];
 

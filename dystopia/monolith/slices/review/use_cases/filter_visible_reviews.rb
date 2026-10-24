@@ -14,7 +14,6 @@ module Review
       end
 
       def call(viewer_profile_id:, page_owner_profile_id:, reviews:)
-        reviews = own(reviews: reviews)
         return reviews if reviews.empty? || viewer_profile_id == page_owner_profile_id
         return [] unless reachable_ids(viewer_profile_id, [page_owner_profile_id]).include?(page_owner_profile_id)
 
@@ -23,31 +22,30 @@ module Review
         authored = reviews.select { |review| review.author_profile_id == page_owner_profile_id }
         return reviews if authored.empty?
 
-        reachable = reachable_ids(viewer_profile_id, authored.map(&:target_profile_id).uniq)
-        reviews.select { |review| review.author_profile_id != page_owner_profile_id || reachable.include?(review.target_profile_id) }
+        active = active_ids(authored.map(&:target_profile_id))
+        reachable = reachable_ids(viewer_profile_id, active.to_a)
+        reviews.select do |review|
+          review.author_profile_id != page_owner_profile_id || !active.include?(review.target_profile_id) || reachable.include?(review.target_profile_id)
+        end
       end
 
       def recent(viewer_profile_id:, reviews:)
-        reviews = own(reviews: reviews)
         return [] if reviews.empty?
 
         blocked = blocked_ids(viewer_profile_id)
         reviews = reviews.reject { |review| parties(review).any? { |id| blocked.include?(id) } }
         return [] if reviews.empty?
 
-        reachable = reachable_ids(viewer_profile_id, reviews.map(&:target_profile_id).uniq)
+        reachable = reachable_ids(viewer_profile_id, active_ids(reviews.map(&:target_profile_id)).to_a)
         reviews.select { |review| reachable.include?(review.target_profile_id) }
       end
 
-      def own(reviews:)
-        return [] if reviews.empty?
-
-        visible = list_visible_profile_ids.call(profile_ids: reviews.flat_map { |review| parties(review) }).to_set
-        reviews.select { |review| parties(review).all? { |id| visible.include?(id) } }
-      end
-
-      def parties_visible?(review)
-        own(reviews: [review]).any?
+      def readable?(viewer_profile_id:, review:)
+        active = active_ids(parties(review))
+        [review.target_profile_id, review.author_profile_id].any? do |page_owner_profile_id|
+          active.include?(page_owner_profile_id) &&
+            call(viewer_profile_id: viewer_profile_id, page_owner_profile_id: page_owner_profile_id, reviews: [review]).any?
+        end
       end
 
       private
@@ -58,6 +56,10 @@ module Review
 
       def other_party_id(review, page_owner_profile_id)
         review.author_profile_id == page_owner_profile_id ? review.target_profile_id : review.author_profile_id
+      end
+
+      def active_ids(profile_ids)
+        list_visible_profile_ids.call(profile_ids: profile_ids).to_set
       end
 
       def reachable_ids(viewer_profile_id, profile_ids)

@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
-import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import { MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,9 +48,9 @@ export function KarteEventForm({ guest, value, onChange, rating, submitLabel, su
     >
       <ActingProfileLabel />
       <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
-        <Avatar src={guest?.avatarUrl || undefined} fallback={profileDisplayName(guest).replace("@", "").slice(0, 1) || "?"} size="sm" />
+        <Avatar src={guest?.avatarUrl || undefined} fallback={profileInitial(guest)} size="sm" />
         <div className="min-w-0">
-          <p className="flex min-w-0 text-sm"><ProfileName profile={guest} /></p>
+          <p className="flex min-w-0 text-sm"><ProfileName profile={guest} missing={MISSING_GUEST} /></p>
           <p className="truncate text-xs text-text-secondary">{guest?.username ? `@${guest.username} · ` : ""}すべてのキャストに共有</p>
         </div>
       </div>

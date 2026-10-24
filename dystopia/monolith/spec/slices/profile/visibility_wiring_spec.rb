@@ -166,17 +166,16 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       expect(db[:footprints__visits].where(visited_profile_id: ghost).count).to eq(0)
     end
 
-    it "has no reviews as author or target and cannot be reviewed" do
+    it "has no review pages of its own and cannot be reviewed" do
       act_as(stranger)
       by_target = ->(profile_id) { rpc(Review::Grpc::ReviewHandler, :list_reviews_by_target, Review::V1::ListReviewsByTargetRequest.new(target_profile_id: profile_id)).reviews }
       by_author = ->(profile_id) { rpc(Review::Grpc::ReviewHandler, :list_reviews_by_author, Review::V1::ListReviewsByAuthorRequest.new(author_profile_id: profile_id)).reviews }
       recent = rpc(Review::Grpc::ReviewHandler, :list_recent_reviews, Review::V1::ListRecentReviewsRequest.new).reviews
 
-      expect(by_target.call(shown).map(&:author_profile_id)).to eq([viewer])
       expect(by_target.call(ghost)).to be_empty
       expect(by_author.call(ghost)).to be_empty
-      expect(by_author.call(viewer).map(&:target_profile_id)).to eq([shown])
-      expect(recent.map { |review| [review.author_profile_id, review.target_profile_id] }).to eq([[viewer, shown]])
+      expect(recent.map { |review| [review.author_profile_id, review.target_profile_id] }).to contain_exactly([viewer, shown], [ghost, shown])
+      expect(recent.find { |review| review.author_profile_id == ghost }.author).to be_nil
       expect {
         rpc(Review::Grpc::ReviewHandler, :create_review, Review::V1::CreateReviewRequest.new(target_profile_id: ghost, event: Review::V1::ReviewEventInput.new(stage: :REVIEW_STAGE_SERVICE, outcome: "satisfied", occurred_on: "2026-10-01")))
       }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
@@ -206,25 +205,25 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       expect(answers.call(ghost)).to eq(answers.call(SecureRandom.uuid_v7))
     end
 
-    it "is absent from the reviews on the other party's own page" do
-      act_as(shown)
+    it "stays on the other party's review pages without its summary" do
+      act_as(stranger)
       received = rpc(Review::Grpc::ReviewHandler, :list_reviews_by_target, Review::V1::ListReviewsByTargetRequest.new(target_profile_id: shown)).reviews
-      act_as(viewer)
       written = rpc(Review::Grpc::ReviewHandler, :list_reviews_by_author, Review::V1::ListReviewsByAuthorRequest.new(author_profile_id: viewer)).reviews
 
-      expect(received.map(&:author_profile_id)).to eq([viewer])
-      expect(written.map(&:target_profile_id)).to eq([shown])
+      expect(received.map(&:author_profile_id)).to contain_exactly(viewer, ghost)
+      expect(received.find { |review| review.author_profile_id == ghost }.author).to be_nil
+      expect(written.map(&:target_profile_id)).to contain_exactly(shown, ghost)
+      expect(written.find { |review| review.target_profile_id == ghost }.target).to be_nil
     end
 
-    it "leaves a review with it out of reach for the other party" do
+    it "leaves a review about it to its author to read, rate and delete" do
       about_ghost = db[:review__reviews].where(author_profile_id: viewer, target_profile_id: ghost).get(:id)
-      invalid = GRPC::Core::StatusCodes::INVALID_ARGUMENT
 
       act_as(viewer)
-      expect { rpc(Review::Grpc::ReviewHandler, :get_review, Review::V1::GetReviewRequest.new(review_id: about_ghost)) }.to status(invalid)
-      expect { rpc(Review::Grpc::ReviewHandler, :update_review_rating, Review::V1::UpdateReviewRatingRequest.new(review_id: about_ghost, rating: 1)) }.to status(invalid)
-      expect { rpc(Review::Grpc::ReviewHandler, :delete_review, Review::V1::DeleteReviewRequest.new(review_id: about_ghost)) }.to status(invalid)
-      expect(db[:review__reviews].where(id: about_ghost).count).to eq(1)
+      expect(rpc(Review::Grpc::ReviewHandler, :get_review, Review::V1::GetReviewRequest.new(review_id: about_ghost)).review.target).to be_nil
+      expect(rpc(Review::Grpc::ReviewHandler, :update_review_rating, Review::V1::UpdateReviewRatingRequest.new(review_id: about_ghost, rating: 1)).review.rating).to eq(1)
+      rpc(Review::Grpc::ReviewHandler, :delete_review, Review::V1::DeleteReviewRequest.new(review_id: about_ghost))
+      expect(db[:review__reviews].where(id: about_ghost).count).to eq(0)
     end
 
     it "leaves its posts and comments out of reach for likes, comments and their lists" do

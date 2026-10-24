@@ -5,7 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
-import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import { MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
 import { useReview } from "../hooks/useReview";
@@ -116,11 +116,11 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
         <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <Avatar src={review.target?.avatarUrl || undefined} fallback={profileDisplayName(review.target).replace("@", "").slice(0, 1) || "?"} size="sm" />
+            <Avatar src={review.target?.avatarUrl || undefined} fallback={profileInitial(review.target)} size="sm" />
             <div className="min-w-0">
-              <p className="truncate"><ProfileName profile={review.target} /></p>
+              <p className="truncate"><ProfileName profile={review.target} missing={MISSING_CAST} /></p>
               <p className="truncate text-xs text-text-secondary">
-                {review.target?.username ? `@${review.target?.username} · ` : ""}書いた人 <ProfileName profile={review.author} className="font-normal" />
+                {review.target?.username ? `@${review.target?.username} · ` : ""}書いた人 <ProfileName profile={review.author} className="font-normal" missing={MISSING_GUEST} />
               </p>
             </div>
           </div>

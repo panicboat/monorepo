@@ -39,7 +39,7 @@ describe("FootprintRow", () => {
   it("shows a deleted-profile label and no link when the visitor is gone", () => {
     const html = renderToStaticMarkup(<FootprintRow footprint={{ ...footprint, visitor: null }} />);
 
-    expect(html).toContain("削除したプロフィール");
+    expect(html).toContain("（無効なユーザー）");
     expect(html).not.toContain("<a ");
   });
 
