@@ -192,6 +192,30 @@ describe("TERMS", () => {
     expect(article(10)).toContain("本サービス上でカルテを見ることができるのは、キャストだけです");
   });
 
+  it("uses the app's word for the note of a karte event", () => {
+    expect(all).not.toContain("メモ");
+    expect(article(10)).toContain("カルテに記録できるのは、段階、結果、日付、評価（5段階）、タグおよび補足です。");
+  });
+
+  it("shows a schedule's announcement as a post open to everyone and deletes schedules with the profile", () => {
+    expect(article(12)).toContain("キャストが予定にお知らせを付けると、お知らせは、「全員」を選んだ投稿として、お知らせの時刻（保存した時刻のほうが遅い場合は保存した時刻）から予定の終了時刻まで表示されます。");
+    expect(article(12)).toContain("プロフィールを削除すると、そのプロフィールの予定と、予定に付けたお知らせも削除されます。");
+  });
+
+  it("does not let DMs reach profiles that are disabled, deactivated or deleted", () => {
+    expect(TERMS.sections[12].paragraphs[0].items).toContain("無効にされたプロフィール、退会したアカウントのプロフィールおよび削除されたプロフィールには、DM を送ることができません。");
+  });
+
+  it("limits restricted posts to the posting profile and its followers, not the account's other profiles", () => {
+    expect(article(14)).toContain("鍵をかけたプロフィールの投稿と、「フォロワーのみ」を選んだ投稿は、投稿したプロフィールとそのプロフィールのフォロワーにだけ表示されます。同じアカウントの別のプロフィールであっても、フォロワーでなければ表示されません。");
+    expect(article(14)).not.toContain("投稿した本人とフォロワー");
+  });
+
+  it("lets settings stop only the device notifications, not the notification list", () => {
+    expect(article(14)).toContain("ただし、投稿の状態によっては、知らせない場合があります。");
+    expect(article(14)).not.toContain("設定や投稿の状態によっては");
+  });
+
   it("keeps to the app's words", () => {
     expect(all).not.toContain("出勤");
     expect(all).not.toContain("通報");

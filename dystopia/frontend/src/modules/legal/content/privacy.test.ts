@@ -98,11 +98,45 @@ describe("PRIVACY", () => {
     expect(section(4)).toContain("ゲストには、本サービス上では、自分についてのカルテも表示されません");
   });
 
-  it("shows a review of a party who left the way the terms do", () => {
-    const display = PRIVACY.sections[3].paragraphs.find((paragraph) => paragraph.text.startsWith("クチコミの内容（評価、段階、結果、タグ、メモおよび日付）"));
+  it("limits restricted posts to the posting profile and its followers, not the account's other profiles", () => {
+    expect(section(4)).toContain("鍵をかけたプロフィールの投稿と、「フォロワーのみ」を選んだ投稿は、投稿したプロフィールとそのプロフィールのフォロワーにだけ表示されます。同じアカウントの別のプロフィールであっても、フォロワーでなければ表示されません。");
+    expect(section(4)).toContain("表示する期間を指定した投稿は、その期間の外では、投稿したプロフィールにだけ表示されます。");
+    expect(section(4)).not.toContain("投稿した本人");
+  });
+
+  it("hides the comments of profiles that the viewer blocks", () => {
+    expect(section(4)).toContain("ただし、利用者がその時に使っているプロフィールでブロックしているプロフィールのコメントは、その利用者には表示されません。");
+  });
+
+  it("leaves casts in a block relation out of the schedule search", () => {
+    expect(section(4)).toContain("ただし、利用者がその時に使っているプロフィールとブロックの関係にあるキャストの予定は、予定検索には表示されません。");
+  });
+
+  it("shows every cast the rating summary of the karte about a guest", () => {
+    const karte = PRIVACY.sections[3].paragraphs.find((paragraph) => paragraph.text === "カルテの次の情報は、すべてのキャストに表示されます。");
+
+    expect(karte?.items).toContain("対象のゲストについてのカルテの評価の集計（評価の平均、評価した人数および評価済みのカルテの件数）");
+  });
+
+  it("shows a cast's rating summary to every signed-in user, including ratings from guests in a block relation", () => {
+    expect(section(4)).toContain("キャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）は、キャストがプロフィールに鍵をかけていても、ログインしているすべての利用者に表示されます。この集計には、ブロックの関係にあるゲストの評価も含まれます。");
+  });
+
+  it("lets each profile stop leaving footprints", () => {
+    expect(section(4)).toContain("利用者は、プロフィールごとに、通知設定の「他人のプロフィール訪問時に足跡を残す」をオフにして、そのプロフィールで訪れたときに足跡を残さないようにできます（初期設定ではオンです）。");
+  });
+
+  it("uses the app's word for the note of a karte or review event", () => {
+    expect(all).not.toContain("メモ");
+    expect(section(2)).toContain("カルテとクチコミ（対象、評価、段階、結果、タグ、補足および日付を含みます）");
+  });
+
+  it("shows a review of a party who left the way the terms do and hides reviews in a block relation", () => {
+    const display = PRIVACY.sections[3].paragraphs.find((paragraph) => paragraph.text.startsWith("クチコミの内容（評価、段階、結果、タグ、補足および日付）"));
 
     expect(display?.text).toBe(
-      "クチコミの内容（評価、段階、結果、タグ、メモおよび日付）と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。" +
+      "クチコミの内容（評価、段階、結果、タグ、補足および日付）と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。" +
+        "ただし、利用者がその時に使っているプロフィールと、書いたゲストまたは対象のキャストとの間にブロックの関係があるクチコミは、その利用者には表示されません。対象のキャストは自分へのクチコミを、書いたゲストは自分が書いたクチコミを、ブロックの関係にかかわらず見ることができます。" +
         "書いたゲストまたは対象のキャストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、そのプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストの投稿を見ることができる利用者に表示されます。",
     );
   });
@@ -142,6 +176,22 @@ describe("PRIVACY", () => {
   it("keeps posts until the user deletes them, except DMs that cannot be deleted", () => {
     expect(section(9)).toContain("投稿等（DM を除きます）は、利用者が削除するまで保存します。");
     expect(section(9)).toContain("DM は、送った利用者も受け取った利用者も削除できません。");
+  });
+
+  it("deletes the replies to a deleted comment, including replies by other users", () => {
+    expect(section(9)).toContain("コメントを削除すると、そのコメントへの返信も、他の利用者が書いたものを含めて削除されます。");
+  });
+
+  it("keeps footprints and notification history until a related profile is deleted", () => {
+    expect(section(9)).toContain("足跡と通知の履歴は、利用者が削除することはできず、関係するプロフィールが削除されるまで残ります。");
+  });
+
+  it("keeps uploaded files until the profile is deleted and lists what deleting a profile removes", () => {
+    const files = PRIVACY.sections[8].paragraphs.find((paragraph) => paragraph.text.startsWith("アップロードされた画像と動画のファイル"));
+
+    expect(files?.text).toContain("そのファイルを使った投稿やコメントを削除し、またはアバターやカバー画像を変更した後も残ります。");
+    expect(files?.text).not.toContain("残る場合があります");
+    expect(files?.text).toContain("プロフィールを削除したときはそのプロフィールで、退会したアカウントの情報を削除するときはそのアカウントのすべてのプロフィールで、投稿、コメント、いいね、ブックマーク、予定、足跡、フォロー、ブロック、通知などの情報を削除し、アップロードしたファイルも削除します。");
   });
 
   it("says karte, DMs and reviews stay after deactivation and that a review's rating stays in the cast's average", () => {
