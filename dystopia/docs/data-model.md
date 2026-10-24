@@ -148,7 +148,7 @@ erDiagram
   - 公開範囲（`visibility`）と表示期間（`published_at` から `expires_at` まで）を持つ。
 - `post.post_media`: 投稿に添付したメディア。
   - メディアを削除しても、そのメディアを指す添付の行は消えない。
-    - 行は残り、配信 URL は空になる。
+    - 配信 URL は空になる。
 - `post.hashtags`: 投稿のハッシュタグ。
 - `post.post_mentions`: 投稿本文中のメンション（対象プロフィール）。
 - `post.likes`: 投稿へのいいね。
@@ -242,7 +242,7 @@ erDiagram
 
 ## Footprints
 
-足あと（訪問の記録）と、足あとの既読状態。
+足跡（訪問の記録）と、足跡の既読状態。
 
 ```mermaid
 erDiagram
@@ -261,9 +261,9 @@ erDiagram
 
 - `footprints.visits`: 訪問者と訪問先の組ごとに 1 件。
   - 最終訪問日時と訪問回数を持つ。
-- `footprints.read_states`: プロフィールごとの足あとの既読位置。
+- `footprints.read_states`: プロフィールごとの足跡の既読位置。
 
-[足あと](features/footprints.md)
+[足跡](features/footprints.md)
 
 ## Messaging
 
@@ -338,7 +338,7 @@ erDiagram
 - `notifications.notifications`: 受信者ごとの通知。
   - 同じ種類・対象の通知は 1 件にまとめられ、`actor_count` で件数を持つ。
     - 同じプロフィールによる繰り返しの発火も件数に含まれる。
-- `notifications.preferences`: プロフィールごとの通知の設定と足あとの設定。
+- `notifications.preferences`: プロフィールごとの通知の設定と足跡の設定。
   - 種類別の設定はプッシュ通知の送信だけを制御する。
 - `notifications.push_subscriptions`: プロフィールごと・ブラウザごとのプッシュ通知の購読先。
   - endpoint とプロフィールの組で 1 件。
