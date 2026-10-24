@@ -116,6 +116,41 @@ RSpec.describe Storage::LocalAdapter do
     end
   end
 
+  describe "#delete_prefix" do
+    let(:directory) { "public/uploads/test_prefix" }
+    let(:sibling) { "public/uploads/test_prefix_sibling" }
+
+    before do
+      FileUtils.mkdir_p(directory)
+      FileUtils.mkdir_p(sibling)
+      File.write("#{directory}/a.txt", "a")
+      File.write("#{directory}/b.txt", "b")
+      File.write("#{sibling}/c.txt", "c")
+    end
+
+    after do
+      FileUtils.rm_rf(directory)
+      FileUtils.rm_rf(sibling)
+    end
+
+    it "deletes every file whose key starts with the prefix and keeps the others" do
+      result = adapter.delete_prefix(prefix: "test_prefix/")
+
+      expect(result).to be(true)
+      expect(Dir.children(directory)).to be_empty
+      expect(File.exist?("#{sibling}/c.txt")).to be(true)
+    end
+
+    it "returns true when nothing is under the prefix" do
+      expect(adapter.delete_prefix(prefix: "test_prefix_absent/")).to be(true)
+    end
+
+    it "returns false for an empty prefix" do
+      expect(adapter.delete_prefix(prefix: "")).to be(false)
+      expect(File.exist?("#{directory}/a.txt")).to be(true)
+    end
+  end
+
   describe "custom configuration" do
     it "allows custom base_url" do
       adapter = described_class.new(base_url: "https://custom.example.com")

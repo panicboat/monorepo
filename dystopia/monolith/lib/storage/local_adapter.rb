@@ -39,6 +39,13 @@ module Storage
       keys.map { |key| delete(key: key) }.all?
     end
 
+    def delete_prefix(prefix:)
+      return false if prefix.to_s.empty?
+
+      root = File.join("public", "uploads")
+      delete_many(keys: Dir.glob("**/*", base: root).select { |key| key.start_with?(prefix) && File.file?(File.join(root, key)) })
+    end
+
     # Local files carry no tags, so the owner is kept in the database row alone.
     def tag(key:, tags:)
       File.exist?(File.join("public", "uploads", key.to_s))

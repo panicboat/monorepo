@@ -34,6 +34,10 @@ module Storage
       adapter.delete_many(keys: keys)
     end
 
+    def delete_prefix(prefix:)
+      adapter.delete_prefix(prefix: prefix)
+    end
+
     def tag(key:, tags:)
       adapter.tag(key: key, tags: tags)
     end

@@ -91,6 +91,12 @@ resource "aws_iam_role_policy" "lambda_app" {
         Effect   = "Allow"
         Action   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:PutObjectTagging", "s3:GetObjectTagging"]
         Resource = "${aws_s3_bucket.media.arn}/*"
+      },
+      {
+        Effect    = "Allow"
+        Action    = ["s3:ListBucket"]
+        Resource  = aws_s3_bucket.media.arn
+        Condition = { StringLike = { "s3:prefix" = ["media/*"] } }
       }
     ]
   })

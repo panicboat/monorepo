@@ -38,6 +38,14 @@ RSpec.describe Storage::Adapter do
     end
   end
 
+  describe "#delete_prefix" do
+    it "raises NotImplementedError" do
+      expect {
+        adapter.delete_prefix(prefix: "media/p1/")
+      }.to raise_error(NotImplementedError, /delete_prefix must be implemented/)
+    end
+  end
+
   describe "#tag" do
     it "raises NotImplementedError" do
       expect {

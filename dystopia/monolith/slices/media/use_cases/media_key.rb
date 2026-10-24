@@ -7,6 +7,12 @@ module Media
         "media/#{profile_id}/#{media_id}#{extension}"
       end
 
+      def self.prefix_for(profile_id:)
+        raise ArgumentError, "profile_id is required" if profile_id.to_s.empty?
+
+        "media/#{profile_id}/"
+      end
+
       def self.owned_by?(media_key, profile_id:)
         return false if profile_id.to_s.empty?
 
