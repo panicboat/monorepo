@@ -366,6 +366,18 @@ test_resolver_applies_only_merge_targets() {
     assert_eq "${expected}" "${actual}"
 }
 
+test_release_workflows_skip_empty_targets() {
+    local guard="needs.resolve.outputs.targets != '[]'"
+    assert_eq "${guard}" "$(yq '.jobs.plan.if' "${repo_root}/.github/workflows/release--plan.yaml")"
+    assert_eq "${guard}" "$(yq '.jobs.apply.if' "${repo_root}/.github/workflows/release--deploy.yaml")"
+}
+
+test_release_deploy_declares_environment() {
+    local workflow="${repo_root}/.github/workflows/release--deploy.yaml"
+    assert_eq '${{ matrix.target.environment }}' "$(yq '.jobs.apply.with["github-environment"]' "${workflow}")"
+    assert_eq '${{ needs.resolve.outputs.tag }}' "$(yq '.jobs.apply.with.ref' "${workflow}")"
+}
+
 failed=0
 for test_name in $(compgen -A function test_); do
     fixture="$(mktemp -d "${work_root}/fixture.XXXXXX")"
