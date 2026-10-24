@@ -1,4 +1,4 @@
-# Resolves deploy labels, plans every target on pull requests, and on push applies only apply_trigger: merge terragrunt targets.
+# Resolves deploy labels into targets; plans terragrunt, builds containers, and diffs kubernetes on pull requests, and on push builds containers and applies apply_trigger: merge terragrunt targets.
 name: 'Label Base Deploy - Resolver'
 
 on:
