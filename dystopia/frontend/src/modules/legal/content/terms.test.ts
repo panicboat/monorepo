@@ -51,7 +51,7 @@ describe("TERMS", () => {
   });
 
   it("leaves out implementation values and words the app does not use", () => {
-    expect(all).not.toMatch(/[0-9０-９]+\s*(?:日|時間|字)/);
+    expect(all.replace("1か月前", "")).not.toMatch(/[0-9０-９一二三四五六七八九十百千]+\s*(?:日|時間|字|週間|か月|ヶ月|カ月|年|件|回|枚)/);
     for (const word of ["出勤", "通報", "メモ", "非表示", "個別のお知らせ", "別に定めるルール"]) {
       expect(all).not.toContain(word);
     }

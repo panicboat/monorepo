@@ -61,7 +61,7 @@ describe("PRIVACY", () => {
   });
 
   it("leaves out implementation values, setting and infrastructure names, and words the app does not use", () => {
-    expect(all).not.toMatch(/[0-9０-９]+\s*(?:日|時間|字)/);
+    expect(all).not.toMatch(/[0-9０-９一二三四五六七八九十百千]+\s*(?:日|時間|字|週間|か月|ヶ月|カ月|年|件|回|枚)/);
     for (const word of ["出勤", "通報", "メモ", "非表示", "個別のお知らせ", "この端末で受け取る", "他人のプロフィール訪問時に足跡を残す", "localStorage", "AWS", "Amazon", "東京リージョン"]) {
       expect(all).not.toContain(word);
     }
