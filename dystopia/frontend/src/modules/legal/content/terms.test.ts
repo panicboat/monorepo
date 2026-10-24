@@ -132,6 +132,12 @@ describe("TERMS", () => {
     expect(article(14)).toContain("ブロックは、その2つのプロフィールの間でだけ効きます");
   });
 
+  it("sends device notifications per profile and names the receiving profile only on a device shared by several profiles", () => {
+    expect(article(14)).toContain("利用者が、プロフィールごとに、端末で通知を受け取る設定をした場合は、これらに加えて、ブラウザの通知機能を使って、そのプロフィール宛ての通知をその端末にも送ります");
+    expect(article(14)).toContain("1つの端末で、同じアカウントの複数のプロフィールについて通知を受け取る設定をしている場合は、通知を受け取ったプロフィールの表示名も表示されます");
+    expect(article(14)).not.toContain("1つのアカウントで複数のプロフィールを使っている場合");
+  });
+
   it("keeps reviews after either party deactivates and keeps a deactivated guest's rating in the cast's average", () => {
     const deactivation = article(18);
 
@@ -158,8 +164,9 @@ describe("TERMS", () => {
     expect(article(18)).not.toContain("そのアカウントでアップロードされた画像と動画のファイル（アバターとカバー画像を含みます）も、残る場合があります");
   });
 
-  it("says a minor's uploaded files may remain, as after deactivation", () => {
-    expect(article(3)).toContain("その利用者の情報を削除します。ただし、その利用者のアカウントでアップロードされた画像と動画のファイル（アバターとカバー画像を含みます）は、残る場合があります");
+  it("deletes a minor's account the way deactivation does and keeps the karte, DMs and reviews", () => {
+    expect(article(3)).toContain("その利用者による本サービスの利用を停止し、その利用者のアカウントの情報を削除します。ただし、退会した場合と同じく、第18条第5項から第7項までに定めるカルテ、DM およびクチコミは残ります");
+    expect(article(3)).not.toContain("残る場合があります");
   });
 
   it("ends the chance to undo a deactivation at the deletion in article 18 paragraph 4", () => {

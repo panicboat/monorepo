@@ -26,6 +26,7 @@ erDiagram
     profile_profiles ||..o{ footprints_visits : "visitor / visited"
     profile_profiles ||..o{ messaging_threads : "profile_a / profile_b"
     profile_profiles ||..o{ notifications_notifications : "recipient_profile_id"
+    profile_profiles ||..o{ notifications_push_subscriptions : "profile_id"
     post_posts |o..o| schedule_schedules : "post_id"
     post_posts ||..o{ notifications_notifications : "target_post_id"
     profile_profiles ||..o{ karte_kartes : "author / target profile"
@@ -297,7 +298,6 @@ erDiagram
     }
     notifications_preferences {
         uuid profile_id PK "参照（FK なし）"
-        boolean push_enabled
         boolean comment
         boolean follow
         boolean mention
@@ -306,13 +306,14 @@ erDiagram
     notifications_push_subscriptions {
         uuid id PK
         uuid account_id "参照（FK なし）"
-        text endpoint UK
+        uuid profile_id UK "参照（FK なし）、endpoint と組で一意"
+        text endpoint UK "profile_id と組で一意"
     }
 ```
 
 - `notifications.notifications`: 受信者ごとの通知。同じ種類・対象の通知は 1 件にまとめられ、`actor_count` で人数を持つ。
 - `notifications.preferences`: プロフィールごとの通知の受け取り設定。
-- `notifications.push_subscriptions`: アカウントのブラウザごとのプッシュ通知の購読先（endpoint 単位）。
+- `notifications.push_subscriptions`: プロフィールごと・ブラウザごとのプッシュ通知の購読先。endpoint とプロフィールの組で 1 件。`account_id` は、別のアカウントが同じ端末を使い始めたときと、アカウントの削除処理で購読を消すのに使う。
 
 [通知](features/notifications.md)
 
