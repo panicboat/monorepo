@@ -1,4 +1,5 @@
-name: 'Auto Release - Trigger'
+# Builds the container image of a published service release or a dispatched tag and tags it with the release version.
+name: 'Release - Build'
 
 on:
   release:
@@ -15,7 +16,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: auto-release-trigger-${{ github.event.release.tag_name || inputs.tag }}
+  group: release-build-${{ github.event.release.tag_name || inputs.tag }}
   cancel-in-progress: false
 
 jobs:

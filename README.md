@@ -8,7 +8,7 @@
 
 ```
 .
-├── .github/workflows/        # CI: auto-label, deploy trigger, reusable builders
+├── .github/workflows/        # CI: label base deploy, release, reusable builders
 ├── clusters/{environment}/   # Flux CD sources (Kustomization, ImagePolicy)
 ├── docs/                     # Architecture & access policy
 ├── proto/{product}/          # gRPC contracts shared between the product's services
@@ -47,14 +47,24 @@ A PR-label / push-driven CI pipeline produces container images; Flux pulls them 
 
 ```mermaid
 flowchart LR
-  PR[PR / push main] --> Resolver[label-resolver]
+  PR[PR opened / updated] --> Dispatcher[label-base-deploy--dispatcher<br/>label-dispatcher]
+  Dispatcher -->|deploy label| Resolver[label-base-deploy--resolver<br/>label-resolver]
+  Main[push main] --> Resolver
+  Main --> Please[release--please]
+  Please -->|release PR opened / updated| Plan[release--plan]
+  Please -->|release PR merged| Published[release published]
+  Published --> Build[release--build]
+  Published --> Deploy[release--deploy]
   Resolver -->|stack: container| Builder[container-builder]
-  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-runner<br/>plan on PR / apply on main]
+  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-runner]
   Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
+  Plan -->|"plan (release)"| Terragrunt
+  Deploy -->|"apply (release)"| Terragrunt
+  Build -->|tag vX.Y.Z| Builder
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
   Terragrunt --> AWS[(AWS)]
   GHCR --> Flux[Flux CD]
-  Main[Commit on main] --> Flux
+  Main --> Flux
   Flux --> K8s[(Kubernetes)]
 ```
 
@@ -62,34 +72,57 @@ flowchart LR
 
 #### Trigger
 
-1. [`auto-label--label-dispatcher.yaml`](.github/workflows/auto-label--label-dispatcher.yaml) runs [`label-dispatcher`](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) on every PR update and puts a `deploy:<service>` label on the PR for each service the diff touches.
-2. [`auto-label--deploy-trigger.yaml`](.github/workflows/auto-label--deploy-trigger.yaml) runs when a PR is labeled and on every push to `main`. [`label-resolver`](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) reads `stacks` in [`workflow-config.yaml`](workflow-config.yaml) and turns the labels into deploy targets.
-3. Each target goes to the reusable workflow of its stack.
+| Event | Workflow | Action |
+| --- | --- | --- |
+| `deploy:{service}` label added to a PR | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Plan every `terragrunt` target, build the container image, and post the kustomize diff |
+| Push to `main` | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Apply `terragrunt` targets with `apply_trigger: merge` and build the container image |
+| Release PR opened / updated | [release--plan.yaml](.github/workflows/release--plan.yaml) | Plan the service's `apply_trigger: release` environments |
+| Release published | [release--build.yaml](.github/workflows/release--build.yaml) | Build the container image and tag it `vX.Y.Z` |
+| Release published | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | Apply the service's `apply_trigger: release` environments |
+
+##### Targets
+
+- [label-base-deploy--dispatcher.yaml](.github/workflows/label-base-deploy--dispatcher.yaml) runs [label-dispatcher](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) on every PR update and puts a `deploy:{service}` label on the PR for each service the diff touches.
+- [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) runs when a PR is labeled and on every push to `main`. [label-resolver](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) reads `stacks` in [workflow-config.yaml](workflow-config.yaml) and turns the labels into deploy targets.
+- Each target goes to the reusable workflow of its stack.
+- A `{service}/{environment}` pair matched by `exclude` of the `terragrunt` stack is never planned or applied, including by releases.
+  - A rule with only `environment` covers every service.
+
+##### Releases
+
+- Each service that has an `apply_trigger: release` environment directory has its own release-please config (`release-please-config.json` / `release-please-manifest.json`).
+  - [check-release-configs.sh](.github/scripts/terragrunt-release/check-release-configs.sh) fails CI when a config is missing.
+- Commits that touch only `apply_trigger: merge` environment directories do not create a release (`exclude-paths`).
+- A service with no `apply_trigger: release` environment directory, such as [dystopia/frontend](dystopia/frontend), has no `terragrunt` target, so `Release - Plan` and `Release - Deploy` skip it. `Release - Build` still builds its image.
+- While every `apply_trigger: release` environment is excluded, the release PR is still created, but nothing is planned or applied.
+- To re-plan, use "Re-run all jobs" on the `Release - Plan` run.
+- To re-apply, run `gh workflow run release--deploy.yaml --ref {service}-vX.Y.Z -f tag={service}-vX.Y.Z`.
 
 #### Stacks
 
-The paths each stack covers are defined in `stacks` in [`workflow-config.yaml`](workflow-config.yaml).
+The paths each stack covers are defined in `stacks` in [workflow-config.yaml](workflow-config.yaml).
 
-| Stack | Workflow | On a PR | On push to `main` |
-| --- | --- | --- | --- |
-| `container` | [`reusable--container-builder.yaml`](.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR |
-| `terragrunt` | [`reusable--terragrunt-runner.yaml`](.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` |
-| `kubernetes` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` |
+| Stack | Workflow | On a PR | On push to `main` | On release published |
+| --- | --- | --- | --- | --- |
+| `container` | [reusable--container-builder.yaml](.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` |
+| `terragrunt` | [reusable--terragrunt-runner.yaml](.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` of `apply_trigger: merge` environments | `terragrunt apply` of `apply_trigger: release` environments |
+| `kubernetes` | [reusable--kubernetes-builder.yaml](.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` | Nothing |
+
+Each environment of the `terragrunt` stack sets `apply_trigger`: `merge` applies on push to `main`, `release` applies when the service release is published.
 
 #### Versioning
 
-1. [`release.yml`](.github/workflows/release.yml) runs release-please once for every `release-please-config.json` (e.g. [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)) and raises one release PR per service.
-2. Merging a release PR publishes the release `<service>-vX.Y.Z`.
-3. [`auto-release--trigger.yaml`](.github/workflows/auto-release--trigger.yaml) builds the container for that release and tags the image `vX.Y.Z`.
-
-[`docs/RELEASE_PLEASE.md`](docs/RELEASE_PLEASE.md) explains why each service has its own config.
+1. [release--please.yaml](.github/workflows/release--please.yaml) runs release-please once for every `release-please-config.json` (e.g. [dystopia/monolith/release-please-config.json](dystopia/monolith/release-please-config.json)) and raises one release PR per service.
+2. Merging a release PR publishes the release `{service}-vX.Y.Z`.
+3. [release--build.yaml](.github/workflows/release--build.yaml) builds the container for that release and tags the image `vX.Y.Z`.
+4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) applies the service's `apply_trigger: release` environments.
 
 #### GitOps
 
-Each service has a directory under `clusters/<environment>/` (e.g. [`clusters/production/dystopia/monolith`](clusters/production/dystopia/monolith)).
+Each service has a directory under `clusters/<environment>/` (e.g. [clusters/production/dystopia/monolith](clusters/production/dystopia/monolith)).
 
-- [`image-policy.yaml`](clusters/production/dystopia/monolith/image-policy.yaml) selects the highest `vX.Y.Z` tag on GHCR.
-- [`image-automation.yaml`](clusters/production/dystopia/monolith/image-automation.yaml) commits that tag into the service's overlay (e.g. [`dystopia/monolith/kubernetes/overlays/production`](dystopia/monolith/kubernetes/overlays/production)), so what runs in the cluster is what is checked in.
+- [image-policy.yaml](clusters/production/dystopia/monolith/image-policy.yaml) selects the highest `vX.Y.Z` tag on GHCR.
+- [image-automation.yaml](clusters/production/dystopia/monolith/image-automation.yaml) commits that tag into the service's overlay (e.g. [dystopia/monolith/kubernetes/overlays/production](dystopia/monolith/kubernetes/overlays/production)), so what runs in the cluster is what is checked in.
 
 ### Related Repositories
 

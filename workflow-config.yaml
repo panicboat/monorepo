@@ -9,15 +9,20 @@ stacks:
   - name: terragrunt
     id: aws
     paths:
-      - "dystopia/{service}/aws/{environment}"
-      - "system-components/{service}/infrastructure/aws/{environment}"
+      - "{product}/{service}/infrastructure/aws/{environment}"
     environments:
+      develop:
+        aws_region: ap-northeast-1
+        iam_role_plan: arn:aws:iam::270242382571:role/github-oidc-auth-develop-github-actions-plan-role
+        iam_role_apply: arn:aws:iam::270242382571:role/github-oidc-auth-develop-github-actions-apply-role
+        apply_trigger: merge
       production:
         aws_region: ap-northeast-1
         iam_role_plan: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-plan-role
         iam_role_apply: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-apply-role
+        apply_trigger: release
     exclude:
-      # eks-production teardown 中のため無効化 (Renovate PR の CI auto-apply で destroy 済 stack への再作成を防ぐ)
+      # Keep production excluded until the release workflow is enabled
       - environment: production
 
   - name: kubernetes

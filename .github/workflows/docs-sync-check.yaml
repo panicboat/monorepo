@@ -1,3 +1,4 @@
+# Judges with Claude whether a pull request keeps the dystopia docs in sync and reports the verdict as the Docs Sync Check commit status.
 name: 'Docs Sync Check'
 
 on:

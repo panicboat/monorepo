@@ -1,3 +1,4 @@
+# Deletes stale pr- and sha- tags and untagged images of the service containers in ghcr.io every day.
 name: 'Cleanup Container Images'
 
 on:

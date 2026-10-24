@@ -1,4 +1,5 @@
-name: 'Auto Label - Deploy Trigger'
+# Resolves deploy labels into targets; plans terragrunt, builds containers, and diffs kubernetes on pull requests, and on push builds containers and applies apply_trigger: merge terragrunt targets.
+name: 'Label Base Deploy - Resolver'
 
 on:
   pull_request:
@@ -16,17 +17,23 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: deploy-trigger-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  group: label-base-deploy-resolver-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  deploy-trigger:
-    name: 'Deployment Trigger'
+  resolve:
+    name: 'Resolve Targets'
     runs-on: ubuntu-latest
     outputs:
       targets: ${{ steps.resolver.outputs.targets }}
       has-targets: ${{ steps.resolver.outputs.has-targets }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate apply_trigger
+        run: bash .github/scripts/terragrunt-release/validate-apply-trigger.sh
+
       - name: Generate GitHub App token
         id: app-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
@@ -54,19 +61,19 @@ jobs:
 
   deploy-terragrunt:
     name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
-    needs: deploy-trigger
+    needs: resolve
     if: |
-      needs.deploy-trigger.outputs.has-targets == 'true' &&
-      contains(needs.deploy-trigger.outputs.targets, '"stack":"terragrunt"')
+      needs.resolve.outputs.has-targets == 'true' &&
+      contains(needs.resolve.outputs.targets, '"stack":"terragrunt"')
     strategy:
       matrix:
-        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
+        target: ${{ fromJson(needs.resolve.outputs.targets) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--terragrunt-runner.yaml
     with:
       service-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
-      action-type: ${{ matrix.target.stack == 'terragrunt' && (github.event_name == 'pull_request' && 'plan' || 'apply') || '' }}
+      action-type: ${{ matrix.target.stack == 'terragrunt' && (github.event_name == 'pull_request' && 'plan' || (matrix.target.apply_trigger == 'merge' && 'apply' || '')) || '' }}
       iam-role: ${{ github.event_name == 'pull_request' && matrix.target.iam_role_plan || matrix.target.iam_role_apply }}
       aws-region: ${{ matrix.target.aws_region }}
       working-directory: ${{ matrix.target.working_directory }}
@@ -76,13 +83,13 @@ jobs:
 
   deploy-container:
     name: 'Deploy Container (${{ matrix.target.service }})'
-    needs: deploy-trigger
+    needs: resolve
     if: |
-      needs.deploy-trigger.outputs.has-targets == 'true' &&
-      contains(needs.deploy-trigger.outputs.targets, '"stack":"container"')
+      needs.resolve.outputs.has-targets == 'true' &&
+      contains(needs.resolve.outputs.targets, '"stack":"container"')
     strategy:
       matrix:
-        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
+        target: ${{ fromJson(needs.resolve.outputs.targets) }}
       fail-fast: false
     concurrency:
       group: image-build-${{ matrix.target.stack_id }}-${{ matrix.target.service }}-${{ github.sha }}
@@ -97,14 +104,14 @@ jobs:
 
   deploy-kubernetes:
     name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
-    needs: deploy-trigger
+    needs: resolve
     if: |
       github.event_name == 'pull_request' &&
-      needs.deploy-trigger.outputs.has-targets == 'true' &&
-      contains(needs.deploy-trigger.outputs.targets, '"stack":"kubernetes"')
+      needs.resolve.outputs.has-targets == 'true' &&
+      contains(needs.resolve.outputs.targets, '"stack":"kubernetes"')
     strategy:
       matrix:
-        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
+        target: ${{ fromJson(needs.resolve.outputs.targets) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--kubernetes-builder.yaml
     with:
@@ -117,8 +124,8 @@ jobs:
 
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [deploy-trigger, deploy-terragrunt, deploy-container, deploy-kubernetes]
-    if: always() && needs.deploy-trigger.outputs.has-targets == 'true'
+    needs: [resolve, deploy-terragrunt, deploy-container, deploy-kubernetes]
+    if: always() && needs.resolve.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Summary
@@ -126,9 +133,9 @@ jobs:
           echo "📊 Deployment Summary"
           echo "Event: ${{ github.event_name }}"
           echo "Branch: ${{ github.ref_name }}"
-          echo "Environment: ${{ needs.deploy-trigger.outputs.target-environment }}"
-          echo "Safety Status: ${{ needs.deploy-trigger.outputs.safety-status }}"
-          echo "Targets: ${{ needs.deploy-trigger.outputs.targets }}"
+          echo "Environment: ${{ needs.resolve.outputs.target-environment }}"
+          echo "Safety Status: ${{ needs.resolve.outputs.safety-status }}"
+          echo "Targets: ${{ needs.resolve.outputs.targets }}"
           echo "Terragrunt Job Status: ${{ needs.deploy-terragrunt.result }}"
           echo "Container Job Status: ${{ needs.deploy-container.result }}"
           echo "Kubernetes Job Status: ${{ needs.deploy-kubernetes.result }}"
