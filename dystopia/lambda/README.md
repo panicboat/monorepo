@@ -40,8 +40,8 @@ Browser → CloudFront → Lambda Function URL → Lambda Web Adapter → Next.j
 |---|---|
 | `image/Dockerfile` | 統合イメージ。ビルドコンテキストは `dystopia/` |
 | `image/start` | アプリ用関数の起動スクリプト。gRPC と Next.js を起動し、片方が終了したら全体を終了する |
-| `image/task.mjs` | task 用関数の HTTP サーバー。migration と SQL の実行を受ける |
-| `aws/modules` | Terraform。VPC、RDS、Cognito、S3、ECR、Lambda、CloudFront |
+| `image/task.mjs` | task 用関数の HTTP サーバー。migration、SQL、退会したアカウントの削除処理の実行を受ける |
+| `aws/modules` | Terraform。VPC、RDS、Cognito、S3、ECR、Lambda、CloudFront、EventBridge Scheduler |
 | `aws/production` | Terragrunt の production 設定 |
 
 `dystopia/infrastructure` は EKS 向けの構成で、この構成とは同じ名前のリソースを定義している。2 つを同時に apply することはできない。
@@ -71,7 +71,7 @@ migration が失敗すると 5 は実行されない。成否は invoke のエ�
 
 ## Operations
 
-task 用関数 `dystopia-production-task` は IAM で `lambda:InvokeFunction` を持つ利用者だけが呼べる。
+task 用関数 `dystopia-production-task` を呼べるのは、IAM で `lambda:InvokeFunction` を持つ利用者と、削除処理を呼ぶ EventBridge Scheduler だけ。
 
 migration を手動で実行する。
 
@@ -87,6 +87,28 @@ SQL を実行する。
 aws lambda invoke --function-name dystopia-production-task \
   --cli-binary-format raw-in-base64-out \
   --payload "$(jq -nc --arg sql 'select count(*) from identity.accounts' '{task:"psql",sql:$sql}')" /dev/stdout
+```
+
+退会したアカウントの削除処理は、EventBridge Scheduler が毎日 04:00（日本時間）に task 用関数を `{"task":"purge_deactivated"}` で呼ぶ。削除処理は冪等で翌日の実行がやり直すため、失敗しても再試行しない（既定の再試行は 24 時間続く）。手動で実行する。
+
+```bash
+aws lambda invoke --function-name dystopia-production-task \
+  --cli-binary-format raw-in-base64-out --cli-read-timeout 900 \
+  --payload '{"task":"purge_deactivated"}' /dev/stdout
+```
+
+特定のアカウントを、猶予を待たずに削除する（18 歳未満と分かった利用者。規約第3条第3項）。ユーザー名からアカウントの ID を引き、退会日時を 90 日より前にしてから削除処理を実行する。消える範囲は退会したアカウントと同じ（[アカウント](../docs/features/account.md)）。同じ実行で、猶予を過ぎた他のアカウントも消える。
+
+```bash
+aws lambda invoke --function-name dystopia-production-task \
+  --cli-binary-format raw-in-base64-out \
+  --payload "$(jq -nc --arg sql "select account_id from profile.profiles where lower(username) = lower('<ユーザー名>')" '{task:"psql",sql:$sql}')" /dev/stdout
+aws lambda invoke --function-name dystopia-production-task \
+  --cli-binary-format raw-in-base64-out \
+  --payload "$(jq -nc --arg sql "update identity.accounts set deactivated_at = now() - interval '91 days' where id = '<アカウントの ID>'" '{task:"psql",sql:$sql}')" /dev/stdout
+aws lambda invoke --function-name dystopia-production-task \
+  --cli-binary-format raw-in-base64-out --cli-read-timeout 900 \
+  --payload '{"task":"purge_deactivated"}' /dev/stdout
 ```
 
 応答の `exitCode` が 0 以外のとき、invoke の結果に `FunctionError` が付く。`output` は末尾 256 KiB までを返す。
