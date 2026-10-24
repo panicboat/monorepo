@@ -115,10 +115,16 @@ describe("name references", () => {
   it("resolves a reference by heading and rejects a missing heading or the wrong document", () => {
     const terms = fixture("利用規約", "article", [
       { heading: "退会", paragraphs: [{ text: "残る情報は、プライバシーポリシーの「保存期間と削除」の節に定めます。" }] },
-      { heading: "利用資格", paragraphs: [{ text: "退会した場合と同じです（「退会」の条）。「存在しない」の条も見ます。「保存期間と削除」の節も見ます。" }] },
+      { heading: "利用資格", paragraphs: [{ text: "退会した場合と同じです（「退会」の条）。「存在しない」の条も見ます。「保存期間と削除」の節も見ます。「退会」の節と利用規約の「退会」の節も見ます。" }] },
     ]);
     const privacy = fixture("プライバシーポリシー", "section", [
-      { heading: "保存期間と削除", paragraphs: [{ text: "利用規約の「退会」の条に定めるとおりです。" }] },
+      {
+        heading: "保存期間と削除",
+        paragraphs: [
+          { text: "利用規約の「退会」の条に定めるとおりです。" },
+          { text: "プライバシーポリシーの「保存期間と削除」の条も見ます。", items: ["「保存期間と削除」の節"] },
+        ],
+      },
     ]);
     const documents = { terms, privacy };
 
@@ -127,9 +133,13 @@ describe("name references", () => {
       { label: "利用規約 利用資格: 「退会」の条", resolved: true },
       { label: "利用規約 利用資格: 「存在しない」の条", resolved: false },
       { label: "利用規約 利用資格: 「保存期間と削除」の節", resolved: false },
+      { label: "利用規約 利用資格: 「退会」の節", resolved: false },
+      { label: "利用規約 利用資格: 利用規約の「退会」の節", resolved: false },
     ]);
     expect(nameReferences(privacy, documents)).toEqual([
       { label: "プライバシーポリシー 保存期間と削除: 利用規約の「退会」の条", resolved: true },
+      { label: "プライバシーポリシー 保存期間と削除: プライバシーポリシーの「保存期間と削除」の条", resolved: false },
+      { label: "プライバシーポリシー 保存期間と削除: 「保存期間と削除」の節", resolved: true },
     ]);
   });
 
