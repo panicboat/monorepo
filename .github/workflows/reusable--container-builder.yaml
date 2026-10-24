@@ -1,3 +1,4 @@
+# Builds the container image of one service and pushes it to ghcr.io.
 name: Reusable Container Builder
 
 on:

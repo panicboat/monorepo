@@ -8,7 +8,7 @@
 
 ```
 .
-├── .github/workflows/        # CI: auto-label, deploy trigger, reusable builders
+├── .github/workflows/        # CI: label base deploy, release, reusable builders
 ├── clusters/{environment}/   # Flux CD sources (Kustomization, ImagePolicy)
 ├── docs/                     # Architecture & access policy
 ├── proto/{product}/          # gRPC contracts shared between the product's services
@@ -62,8 +62,8 @@ flowchart LR
 
 #### Trigger
 
-1. [`auto-label--label-dispatcher.yaml`](.github/workflows/auto-label--label-dispatcher.yaml) runs [`label-dispatcher`](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) on every PR update and puts a `deploy:<service>` label on the PR for each service the diff touches.
-2. [`auto-label--deploy-trigger.yaml`](.github/workflows/auto-label--deploy-trigger.yaml) runs when a PR is labeled and on every push to `main`. [`label-resolver`](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) reads `stacks` in [`workflow-config.yaml`](workflow-config.yaml) and turns the labels into deploy targets.
+1. [`label-base-deploy--dispatcher.yaml`](.github/workflows/label-base-deploy--dispatcher.yaml) runs [`label-dispatcher`](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) on every PR update and puts a `deploy:<service>` label on the PR for each service the diff touches.
+2. [`label-base-deploy--resolver.yaml`](.github/workflows/label-base-deploy--resolver.yaml) runs when a PR is labeled and on every push to `main`. [`label-resolver`](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) reads `stacks` in [`workflow-config.yaml`](workflow-config.yaml) and turns the labels into deploy targets.
 3. Each target goes to the reusable workflow of its stack.
 
 #### Stacks
@@ -78,9 +78,9 @@ The paths each stack covers are defined in `stacks` in [`workflow-config.yaml`](
 
 #### Versioning
 
-1. [`release.yml`](.github/workflows/release.yml) runs release-please once for every `release-please-config.json` (e.g. [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)) and raises one release PR per service.
+1. [`release--please.yaml`](.github/workflows/release--please.yaml) runs release-please once for every `release-please-config.json` (e.g. [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)) and raises one release PR per service.
 2. Merging a release PR publishes the release `<service>-vX.Y.Z`.
-3. [`auto-release--trigger.yaml`](.github/workflows/auto-release--trigger.yaml) builds the container for that release and tags the image `vX.Y.Z`.
+3. [`release--build.yaml`](.github/workflows/release--build.yaml) builds the container for that release and tags the image `vX.Y.Z`.
 
 [`docs/RELEASE_PLEASE.md`](docs/RELEASE_PLEASE.md) explains why each service has its own config.
 

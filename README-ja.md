@@ -8,7 +8,7 @@
 
 ```
 .
-├── .github/workflows/        # CI ワークフロー（auto-label / deploy trigger / reusable builders）
+├── .github/workflows/        # CI ワークフロー（label base deploy / release / reusable builders）
 ├── clusters/{environment}/   # Flux CD ソース（Kustomization / ImagePolicy）
 ├── docs/                     # アーキテクチャ・アクセスポリシー
 ├── proto/{product}/          # product 内のサービス間で共有する gRPC コントラクト
@@ -62,8 +62,8 @@ flowchart LR
 
 #### Trigger
 
-1. [`auto-label--label-dispatcher.yaml`](.github/workflows/auto-label--label-dispatcher.yaml) が PR の更新ごとに [`label-dispatcher`](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) を実行し、差分が触れたサービスごとに `deploy:<service>` ラベルを PR に付ける。
-2. [`auto-label--deploy-trigger.yaml`](.github/workflows/auto-label--deploy-trigger.yaml) が PR へのラベル付与と `main` への push で起動する。[`label-resolver`](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) が [`workflow-config.yaml`](workflow-config.yaml) の `stacks` を読み、ラベルをデプロイ対象に変換する。
+1. [`label-base-deploy--dispatcher.yaml`](.github/workflows/label-base-deploy--dispatcher.yaml) が PR の更新ごとに [`label-dispatcher`](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) を実行し、差分が触れたサービスごとに `deploy:<service>` ラベルを PR に付ける。
+2. [`label-base-deploy--resolver.yaml`](.github/workflows/label-base-deploy--resolver.yaml) が PR へのラベル付与と `main` への push で起動する。[`label-resolver`](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) が [`workflow-config.yaml`](workflow-config.yaml) の `stacks` を読み、ラベルをデプロイ対象に変換する。
 3. 各デプロイ対象は、その stack の reusable workflow に渡される。
 
 #### Stacks
@@ -78,9 +78,9 @@ flowchart LR
 
 #### Versioning
 
-1. [`release.yml`](.github/workflows/release.yml) が `release-please-config.json`（例: [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)）ごとに release-please を実行し、サービスごとに release PR を起票する。
+1. [`release--please.yaml`](.github/workflows/release--please.yaml) が `release-please-config.json`（例: [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)）ごとに release-please を実行し、サービスごとに release PR を起票する。
 2. release PR をマージすると、release `<service>-vX.Y.Z` が公開される。
-3. [`auto-release--trigger.yaml`](.github/workflows/auto-release--trigger.yaml) がその release のコンテナをビルドし、イメージに `vX.Y.Z` の tag を付ける。
+3. [`release--build.yaml`](.github/workflows/release--build.yaml) がその release のコンテナをビルドし、イメージに `vX.Y.Z` の tag を付ける。
 
 サービスごとに config を分けている理由は [`docs/RELEASE_PLEASE.md`](docs/RELEASE_PLEASE.md) に書いてある。
 

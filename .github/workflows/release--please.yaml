@@ -1,4 +1,5 @@
-name: Release
+# Runs release-please for each release-please-config.json to open release pull requests and publish releases.
+name: 'Release - Please'
 
 on:
   push:
