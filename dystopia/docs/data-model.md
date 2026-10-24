@@ -6,7 +6,8 @@ FK 制約があるのは同一 slice 内の親子関係（`post` の投稿とそ
 
 ## Overview
 
-slice をまたぐ主要な参照を示す。点線は FK 制約のない参照、ルートテーブルは account と profile。
+slice をまたぐ主要な参照を示す。
+点線は FK 制約のない参照、ルートテーブルは account と profile。
 
 ```mermaid
 erDiagram
@@ -47,7 +48,9 @@ erDiagram
     }
 ```
 
-- `identity.accounts`: ログイン単位のアカウント。ロールと退会日時を持つ。退会から 90 日を過ぎると削除処理で消える。
+- `identity.accounts`: ログイン単位のアカウント。
+  - ロールと退会日時を持つ。
+  - 退会から 90 日を過ぎると削除処理で消える。
 
 [アカウント](features/account.md)
 
@@ -75,7 +78,8 @@ erDiagram
     profile_profiles ||..o| profile_casts : "profile_id"
 ```
 
-- `profile.profiles`: プロフィール本体。公開範囲（`is_private`）とフォロー承認の要否を持つ。
+- `profile.profiles`: プロフィール本体。
+  - 公開範囲（`is_private`）とフォロー承認の要否を持つ。
 - `profile.casts`: キャストのプロフィールだけが持つ補足情報（年齢、体型など）。
 
 [プロフィール](features/profiles.md)
@@ -139,12 +143,14 @@ erDiagram
     post_comments ||--o{ post_comment_mentions : "comment_id"
 ```
 
-- `post.posts`: 投稿本体。公開範囲（`visibility`）と表示期間（`published_at` から `expires_at` まで）を持つ。
+- `post.posts`: 投稿本体。
+  - 公開範囲（`visibility`）と表示期間（`published_at` から `expires_at` まで）を持つ。
 - `post.post_media`: 投稿に添付したメディア。
 - `post.hashtags`: 投稿のハッシュタグ。
 - `post.post_mentions`: 投稿本文中のメンション（対象プロフィール）。
 - `post.likes`: 投稿へのいいね。
-- `post.comments`: コメント。`parent_id` で返信を表す。
+- `post.comments`: コメント。
+  - `parent_id` で返信を表す。
 - `post.comment_media`: コメントに添付したメディア。
 - `post.comment_mentions`: コメント本文中のメンション。
 
@@ -152,7 +158,8 @@ erDiagram
 
 ## Social
 
-フォローとブロック。どちらもプロフィール同士の関係。
+フォローとブロック。
+どちらもプロフィール同士の関係。
 
 ```mermaid
 erDiagram
@@ -169,14 +176,16 @@ erDiagram
     }
 ```
 
-- `social.follows`: フォロー関係。`status` が `pending` の間は承認待ち、`approved` で成立する。
+- `social.follows`: フォロー関係。
+  - `status` が `pending` の間は承認待ち、`approved` で成立する。
 - `social.blocks`: ブロック関係。
 
 [フォロー・ブロック](features/follows-and-blocks.md)
 
 ## Schedule
 
-キャストの予定（日付と時間帯）。投稿と 1 対 1 で結べる。
+キャストの予定（日付と時間帯）。
+投稿と 1 対 1 で結べる。
 
 ```mermaid
 erDiagram
@@ -190,7 +199,9 @@ erDiagram
     }
 ```
 
-- `schedule.schedules`: 予定。プロフィールと営業日ごとに 1 件。`post_id` が入ると、その投稿を予定のお知らせとして扱う。
+- `schedule.schedules`: 予定。
+  - プロフィールと営業日ごとに 1 件。
+  - `post_id` が入ると、その投稿を予定のお知らせとして扱う。
 
 [予定](features/schedules.md)
 
@@ -242,7 +253,8 @@ erDiagram
     }
 ```
 
-- `footprints.visits`: 訪問者と訪問先の組ごとに 1 件。最終訪問日時と訪問回数を持つ。
+- `footprints.visits`: 訪問者と訪問先の組ごとに 1 件。
+  - 最終訪問日時と訪問回数を持つ。
 - `footprints.read_states`: プロフィールごとの足あとの既読位置。
 
 [足あと](features/footprints.md)
@@ -274,7 +286,8 @@ erDiagram
     messaging_threads ||..o{ messaging_read_states : "thread_id"
 ```
 
-- `messaging.threads`: 2 プロフィール間のスレッド。組ごとに 1 件。
+- `messaging.threads`: 2 プロフィール間のスレッド。
+  - 組ごとに 1 件。
 - `messaging.messages`: スレッド内のメッセージ。
 - `messaging.read_states`: スレッドごと、プロフィールごとの既読位置。
 
@@ -311,9 +324,12 @@ erDiagram
     }
 ```
 
-- `notifications.notifications`: 受信者ごとの通知。同じ種類・対象の通知は 1 件にまとめられ、`actor_count` で人数を持つ。
+- `notifications.notifications`: 受信者ごとの通知。
+  - 同じ種類・対象の通知は 1 件にまとめられ、`actor_count` で人数を持つ。
 - `notifications.preferences`: プロフィールごとの通知の受け取り設定。
-- `notifications.push_subscriptions`: プロフィールごと・ブラウザごとのプッシュ通知の購読先。endpoint とプロフィールの組で 1 件。`account_id` は、別のアカウントが同じ端末を使い始めたときと、アカウントの削除処理で購読を消すのに使う。
+- `notifications.push_subscriptions`: プロフィールごと・ブラウザごとのプッシュ通知の購読先。
+  - endpoint とプロフィールの組で 1 件。
+  - `account_id` は、別のアカウントが同じ端末を使い始めたときと、アカウントの削除処理で購読を消すのに使う。
 
 [通知](features/notifications.md)
 
@@ -333,13 +349,15 @@ erDiagram
     }
 ```
 
-- `media.files`: メディアファイル。アップロードしたプロフィールとアカウントを持つ。
+- `media.files`: メディアファイル。
+  - アップロードしたプロフィールとアカウントを持つ。
 
 [メディア](features/media.md)
 
 ## Karte
 
-カルテ。対象プロフィールに対する記録を持つ。
+カルテ。
+対象プロフィールに対する記録を持つ。
 
 ```mermaid
 erDiagram
@@ -362,14 +380,17 @@ erDiagram
     karte_kartes ||--o{ karte_events : "karte_id"
 ```
 
-- `karte.kartes`: カルテ 1 件。作成者（アカウントとプロフィール）と対象プロフィールを持つ。評価は `rating` に入る。
+- `karte.kartes`: カルテ 1 件。
+  - 作成者（アカウントとプロフィール）と対象プロフィールを持つ。
+  - 評価は `rating` に入る。
 - `karte.events`: カルテに記録した出来事（段階と結果）。
 
 [カルテ](features/karte.md)
 
 ## Review
 
-クチコミ。カルテと同じ構造で、評価は 1〜5 の整数。
+クチコミ。
+カルテと同じ構造で、評価は 1〜5 の整数。
 
 ```mermaid
 erDiagram
@@ -392,14 +413,16 @@ erDiagram
     review_reviews ||--o{ review_events : "review_id"
 ```
 
-- `review.reviews`: クチコミ 1 件。作成者（アカウントとプロフィール）と対象プロフィールを持つ。
+- `review.reviews`: クチコミ 1 件。
+  - 作成者（アカウントとプロフィール）と対象プロフィールを持つ。
 - `review.events`: クチコミに記録した出来事（段階と結果）。
 
 [クチコミ](features/reviews.md)
 
 ## Billing
 
-課金。アカウント単位で Stripe の顧客と契約を持つ。
+課金。
+アカウント単位で Stripe の顧客と契約を持つ。
 
 ```mermaid
 erDiagram
@@ -424,8 +447,12 @@ erDiagram
     }
 ```
 
-- `billing.customers`: アカウントと Stripe 顧客の対応。アカウントごとに 1 件。
-- `billing.subscriptions`: アカウントの契約。アカウントごとに 1 件。現在の期間の終了日時と期間末での解約予定を持つ。
-- `billing.stripe_events`: 受信した Stripe のイベント。処理日時とエラーを持つ。
+- `billing.customers`: アカウントと Stripe 顧客の対応。
+  - アカウントごとに 1 件。
+- `billing.subscriptions`: アカウントの契約。
+  - アカウントごとに 1 件。
+  - 現在の期間の終了日時と期間末での解約予定を持つ。
+- `billing.stripe_events`: 受信した Stripe のイベント。
+  - 処理日時とエラーを持つ。
 
 [課金](features/billing.md)
