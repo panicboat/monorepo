@@ -7,8 +7,17 @@ on:
 permissions: {}
 
 concurrency:
-  # Runs for unrelated labels get their own group so adding or removing such a label does not cancel a judge in progress.
-  group: ${{ ((github.event.action == 'labeled' || github.event.action == 'unlabeled') && github.event.label.name != 'docs-check-approved') && format('docs-sync-check-ignored-{0}', github.run_id) || format('docs-sync-check-{0}', github.event.pull_request.number) }}
+  # Runs that decide.sh ignores get their own group, so they cannot cancel a judge in progress and leave its status pending.
+  group: >-
+    ${{
+      (
+        ((github.event.action == 'labeled' || github.event.action == 'unlabeled') && github.event.label.name != 'docs-check-approved')
+        || (github.event.action == 'edited' && !github.event.changes.body && !github.event.changes.base)
+        || ((github.event.action == 'edited' || github.event.action == 'reopened') && contains(github.event.pull_request.labels.*.name, 'docs-check-approved'))
+      )
+      && format('docs-sync-check-ignored-{0}', github.run_id)
+      || format('docs-sync-check-{0}', github.event.pull_request.number)
+    }}
   cancel-in-progress: true
 
 jobs:
@@ -41,12 +50,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           EVENT_ACTION: ${{ github.event.action }}
           EVENT_LABEL: ${{ github.event.label.name }}
           APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'docs-check-approved') }}
           AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
           BODY_OR_BASE_CHANGED: ${{ (github.event.changes.body || github.event.changes.base) && 'true' || 'false' }}
-        run: gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)' | bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
+        run: |
+          prior_state="$(gh api "repos/$REPOSITORY/commits/$HEAD_SHA/status" --jq '[.statuses[] | select(.context == "Docs Sync Check") | .state][0] // ""')"
+          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)' | PRIOR_STATE="$prior_state" bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
 
       - name: Remove approval label
         if: steps.decide.outputs.remove_label == 'true'

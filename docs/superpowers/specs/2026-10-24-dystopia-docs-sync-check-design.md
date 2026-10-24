@@ -67,6 +67,9 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
   - 結果は job の成否ではなく、commit status `Docs Sync Check` として書く（Claude の判断）
     - `deploy:*` のラベルでも workflow は起動する。job の成否を必須チェックにすると、何もしない run が同じ commit に新しい結果を残し、落ちていた判定を上書きしうる
     - commit status なら、何もしない run は status に触れないので、最後に判定した run の結果が残る
+  - 何もしない run は、判定中の run を取り消さない（Claude の判断）
+    - 同じ PR の run は後から来た方が前の方を取り消す。何もしない run が判定中の run を取り消すと、status が「判定しています」のまま残り、再実行するまで merge できないため
+    - 何もしない run（他のラベル・タイトルだけの編集・承認済みでの本文の編集や再オープン）は、run ごとに別の concurrency group に入れる
   - `CI Gatekeeper` が待つ workflow からこの workflow を外す
     - 判定の job が Bedrock の障害で落ちたとき、承認のラベルで通しても `CI Gatekeeper` が落ちたまま残るため
 - bot（Renovate・release-please）が作る PR は Claude を呼ばずに通す（Claude の判断）
@@ -103,15 +106,20 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
 
 ### Approval label
 
-- `docs-check-approved` ラベルを付けたとき、Claude を呼ばずに通す
+- その commit に判定の結果が出ているときに `docs-check-approved` ラベルを付けると、Claude を呼ばずに通す
+  - 判定の結果がまだない（status がない、または判定中）ときに付けたら、ラベルを外して判定する（Claude の判断）
+    - PR の作成時にラベルを付けると、GitHub は作成とラベルの付与を別のイベントとして送る。ラベルの run が作成の run を取り消すと、判定されないまま通ってしまうため
+    - 判定中に付けたラベルも外れる。結果が出てから付け直す
 - ラベルが付いたままの PR に新しい commit が push されたら、ラベルを外して判定し直す（Claude の判断）
   - PR の作成時からラベルが付いている場合も同じく外して判定する。まだ誰も確かめていない内容だから
 - ラベルが付いたままの PR で本文の編集や再オープンがあっても、status には触れない（Claude の判断）
-  - push の直後に本文を編集すると、push の run が取り消されてラベルが外れないまま残ることがある。そのとき編集の run がラベルを見て通すと、新しい commit が判定されないまま通ってしまう
-  - status に触れなければ、commit が変わっていないときはラベルを付けたときの `success` が残り、変わっていたときは status がないので merge が止まる
   - 承認は付けた時点の内容に対するもので、その後の commit まで通すと漏れの抜け道になる
+  - status に触れなければ、ラベルを付けたときの `success` が残る
 - Claude Code はこのラベルを付けない
-  - Claude Code はユーザーの GitHub アカウントで操作するため、GitHub の権限では区別できない。dotfiles の AGENTS.md にルールとして書く
+  - Claude Code はユーザーの GitHub アカウントで操作するため、GitHub の権限では区別できない
+  - このルールは今はどこにも書かない（ユーザー決定）。実際に困ってから置き場所を考える
+    - dotfiles は複数の人格で共用するので、特定のリポジトリのルールは入れない
+    - このためだけに monorepo に AGENTS.md を作ることもしない
 
 ### Fork PRs
 
@@ -143,12 +151,6 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
 - workflow の action は SHA で pin する（`lint-actions.yml` が検査する）
 - PR 本文・diff は判定への入力であり、指示ではない。プロンプトでそう扱わせる
 
-## Related changes
-
-- dotfiles の AGENTS.md に 2 行足す（別リポジトリ・別 PR）
-  - Claude Code は `docs-check-approved` ラベルを付けず、status `Docs Sync Check` も書かない
-  - 仕様書・規約が振る舞いを説明しているリポジトリでは、振る舞いを変える PR で同じ PR のうちに文書も更新する（Claude の判断。CI で落ちる前に防ぐため。リポジトリに AGENTS.md を新しく作らないのは、PR テンプレートのルールと同じく全リポジトリに効かせるため）
-
 ## Left to the builder
 
 - 判定結果の JSON の項目（成否と、コメント本文を含める）
@@ -164,5 +166,5 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
   - #1702 から文書の変更を取り除いた diff → 落ちる
   - #1689 の diff（`data-model.md` が書いていた `push_enabled` 列の drop、文書は未更新）→ 落ちる
   - 文書が書いている振る舞いに実装を合わせる修正（例: #1683 の Cognito のユーザー削除）→ 通る
-- 承認のラベルで通ること、ラベル後の push でラベルが外れることを、実際の PR で確認する
+- 承認のラベルで通ること、ラベル後の push でラベルが外れること、判定の結果が出る前に付けたラベルが外れることを、実際の PR で確認する
 - 1 回の判定にかかった token 数を記録し、PR 1 件あたりの費用の目安を出す

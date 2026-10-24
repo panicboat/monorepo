@@ -16,7 +16,7 @@
 - コメントは 1 行の英語で、タスクや修正に言及しない
 - commit は `git commit -s`。`Co-Authored-By` は付けない
 - 新しいブランチの初回 push は `git push -u origin HEAD`。PR は `gh pr create --draft` だけ。タイトルは英語の Conventional Commits
-- PR 本文はリポジトリの `.github/pull_request_template.md` の見出しとコメントの指示に従う（monorepo にはある。platform・dotfiles は作成前に有無を確かめる）。1 文 1 行、`Closes #N` は先頭
+- PR 本文はリポジトリの `.github/pull_request_template.md` の見出しとコメントの指示に従う（monorepo にはある。platform は作成前に有無を確かめる）。1 文 1 行、`Closes #N` は先頭
 - 既存 PR の branch に push する前に `gh pr view <N> --json state` で OPEN を確かめる
 - action は commit SHA で pin する。新しく使う action は platform の `renovate-major-review.yaml` と同じ SHA を使う
   - `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1`
@@ -357,6 +357,8 @@ branch 名は `test/docs-sync-<case>-base` と `test/docs-sync-<case>`。PR タ�
 
 続けて、もう一度ラベルを付けてもらい、空 commit の push の直後（10 秒以内）に `gh pr edit <N> --body-file <同じ本文に 1 行足したもの>` で本文を編集する。新しい head の status が `success` にならない（`pending`・`failure`・status なしのいずれか）ことを確かめる。最後に、ラベルが付いた状態でユーザーにラベルを外してもらい、判定し直されることを確かめる。
 
+最後に、判定中（status が `pending`）にユーザーにラベルを付けてもらい、ラベルが外れて判定し直され、status が `success` にならないことを確かめる。PR の作成時に付けたラベルと同じ経路（`decide.sh` の `approval_label_while_judging_rejudges`）を通る。
+
 - [ ] **Step 6: Clean up**
 
 再生用の PR を `gh pr close <N> --delete-branch` で閉じ、base branch も `git push origin --delete test/docs-sync-<case>-base` で消す。
@@ -392,36 +394,3 @@ git push -u origin HEAD
 ```
 
 PR 本文に、merge 時点で開いている monorepo の PR のうち head に workflow がないもの（`gh pr list --repo panicboat/monorepo --state open`）は、main を取り込むまで merge できなくなることを書く。
-
----
-
-### Task 7: Add the rules to dotfiles
-
-**Files:**
-- Modify: `AGENTS.md`（dotfiles）
-
-作業場所: dotfiles の worktree `.worktrees/docs-docs-sync-rules`、branch `docs/docs-sync-rules`（origin/main から。#72 は merge 済み）
-
-- [ ] **Step 1: Add two lines to the Git section**
-
-既存の書き方（1 行 1 規則、日本語）に合わせ、`## Git` の末尾に足す。
-
-```markdown
-- Claude Code は `docs-check-approved` ラベルを付けず、status `Docs Sync Check` を書かない（人間が判定の誤りを確かめて通すための手段で、GitHub の権限では Claude Code とユーザーを区別できないため）
-- 仕様書・規約が振る舞いを説明しているリポジトリでは、振る舞いを変える PR の中で、仕様書・規約も同じ PR で更新する
-```
-
-- [ ] **Step 2: Verify**
-
-Run: `git diff --stat && grep -c 'docs-check-approved' AGENTS.md`
-Expected: `AGENTS.md` だけが 2 行増え、grep は `1`
-
-- [ ] **Step 3: Commit, push, Draft PR**
-
-```bash
-git add AGENTS.md
-git commit -s -m "docs: keep docs in sync and leave the docs sync approval to humans"
-git push -u origin HEAD
-```
-
-dotfiles のテンプレートの有無を確かめてから `gh pr create --draft`。
