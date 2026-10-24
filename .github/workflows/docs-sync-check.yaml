@@ -85,6 +85,20 @@ jobs:
             -f description="$description" \
             -f target_url="$RUN_URL"
 
+      - name: Write failure status
+        if: ${{ failure() && steps.decide.outputs.mode != 'ignore' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api "repos/${REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state=failure \
+            -f context='Docs Sync Check' \
+            -f description='判定できませんでした。再実行するか、確かめて docs-check-approved を付けてください' \
+            -f target_url="$RUN_URL"
+
   judge:
     name: 'Judge'
     needs: scope
@@ -144,7 +158,7 @@ jobs:
   report:
     name: 'Report'
     needs: [scope, judge]
-    # Runs after a failed judge too, so the pending status written by Scope is always replaced.
+    # Runs after a failed judge too so Scope's pending status gets a verdict; a cancelled run writes nothing and leaves it pending.
     if: ${{ !cancelled() && needs.scope.outputs.mode == 'judge' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -166,11 +180,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           JUDGE_RESULT: ${{ needs.judge.result }}
           PASSED: ${{ needs.judge.outputs.passed }}
+          HAS_BODY: ${{ needs.judge.outputs.body != '' }}
           REPOSITORY: ${{ github.repository }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ "$JUDGE_RESULT" != "success" ]; then
+          if [ "$JUDGE_RESULT" != "success" ] || [ "$HAS_BODY" != "true" ]; then
             state=failure
             description='判定できませんでした。再実行するか、確かめて docs-check-approved を付けてください'
           elif [ "$PASSED" = "true" ]; then

@@ -19,6 +19,6 @@ jobs:
         uses: int128/wait-for-workflows-action@b320164b37276db89a12829914d6eb6ef4973d2b # v1.108.0
         with:
           max-timeout-seconds: 1800
-          # The docs sync verdict blocks merges through its own commit status, so the Gatekeeper need not wait for it.
+          # A failed judge would keep the Gatekeeper red even after the approval label, so the verdict lives in its own commit status.
           exclude-workflow-names: |
             Docs Sync Check

@@ -79,7 +79,7 @@ Use these sections in this order:
 3. `### 確認してほしい点` — points you were unsure about. Omit the section when there are none.
 4. `### 確認した文書` — the documents you read to judge.
    When `passed` is true, add one or two sentences on why the documents match the change (for example, which behavior is described where, or that the change is internal only).
-5. As the last line, exactly:
+5. Only when `passed` is false, as the last line, exactly:
 
    ```
    判定が誤っている場合は、内容を確かめて `docs-check-approved` ラベルを付けると通ります。
