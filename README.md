@@ -49,7 +49,7 @@ A PR-label / push-driven CI pipeline produces container images; Flux pulls them 
 flowchart LR
   PR[PR / push main] --> Resolver[label-resolver]
   Resolver -->|stack: container| Builder[container-builder]
-  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-executor<br/>plan on PR / apply on main]
+  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-runner<br/>plan on PR / apply on main]
   Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
   Terragrunt --> AWS[(AWS)]
@@ -73,7 +73,7 @@ The paths each stack covers are defined in `stacks` in [`workflow-config.yaml`](
 | Stack | Workflow | On a PR | On push to `main` |
 | --- | --- | --- | --- |
 | `container` | [`reusable--container-builder.yaml`](.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR |
-| `terragrunt` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) | `terragrunt plan` | `terragrunt apply` |
+| `terragrunt` | [`reusable--terragrunt-runner.yaml`](.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` |
 | `kubernetes` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` |
 
 #### Versioning
