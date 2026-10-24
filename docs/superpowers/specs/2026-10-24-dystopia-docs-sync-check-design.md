@@ -109,13 +109,23 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
 
 ## Constraints
 
-- AWS: GitHub Actions から Bedrock を呼ぶ IAM ロールが今はない
-  - 以前は platform の `aws/ai-assistant` に Actions 用ロールがあったが、platform#648 で削除した。git の履歴（`ac621b0^`）から参照できる
-  - ロールは master（管理アカウント）に置く（ユーザー決定）
-    - master には OIDC provider があり（`platform/aws/github-oidc-auth/master`）、Bedrock のモデルアクセスも us-east-1 で有効（`platform/docs/superpowers/specs/2026-08-18-production-account-migration-design.md`）
-    - 参考: production では holmesgpt が `us.anthropic.claude-sonnet-4-6` の inference profile を使っていて、IAM の Resource の書き方の前例になる（`platform/aws/eks-holmesgpt/modules/main.tf`）
-  - 新しいロールは、monorepo の PR からだけ assume でき、`bedrock:InvokeModel` 系を使う Sonnet の inference profile と、そのルーティング先の foundation model だけに絞る
-- モデル: Bedrock で使える最新の Sonnet。Sonnet 5.5 が有効でなければ Sonnet 4.6
+- AWS: master（管理アカウント）の既存の Bedrock ロールを使う（ユーザー決定で master、ロールの再利用は Claude の判断）
+  - platform#1101 が `aws/github-oidc-auth/modules/bedrock.tf` に `github-oidc-auth-master-github-actions-bedrock-role` を作った
+    - 権限は `bedrock:InvokeModel`・`bedrock:InvokeModelWithResponseStream` を、`bedrock_models` の global inference profile とそのルーティング先の foundation model に絞ってある
+    - 信頼条件は `repo:panicboat/platform:environment:renovate-major-review` だけで、モジュールに直書きしてある
+  - platform 側では、信頼する sub を変数にして env.hcl から渡し、master に `repo:panicboat/monorepo:environment:docs-sync-check` を足す
+    - ロールを分けない理由: 権限がどちらも「Sonnet 4.6 を呼ぶだけ」で同じで、分けても持ち出されたときの被害は変わらない
+    - 分けると、ARN の組み立て・テスト・出力がまるごと 2 つになる
+  - judge の job は GitHub environment `docs-sync-check` で動かす
+    - plan ロール（master・develop・production の `ReadOnlyAccess`）は `repo:panicboat/monorepo:pull_request` を信頼している。judge の job が同じ sub の OIDC token を出せると、prompt injection で持ち出されたときに全アカウントの読み取りまで被害が広がるため、environment で sub を分ける（platform#1101 と同じ理由）
+    - environment の名前に `master` は使えない。apply ロールが `repo:panicboat/monorepo:environment:master` を信頼しているため
+    - monorepo には environment がまだない。`renovate-major-review` も IaC ではなく手で作られているので、同じく手で作る（保護ルールなし）
+- モデル: `global.anthropic.claude-sonnet-4-6`
+  - master では Sonnet 5 / Opus 5 の Bedrock quota が 0 で、自分では引き上げられない（platform#1101 の設計書）
+  - claude-code-action が裏で Haiku を使う処理も、`ANTHROPIC_DEFAULT_HAIKU_MODEL` で Sonnet 4.6 に向ける。ロールが Sonnet 4.6 しか許さないため
+- workflow の形は platform の `renovate-major-review.yaml` に合わせる
+  - Claude を動かす job には読み取りだけの `github.token` を渡し、結果は `--json-schema` の構造化出力で受け取る
+  - コメントの投稿は、`pull-requests: write` だけを持つ別の job が行う
 - GitHub: 必須チェックは platform の `github/branch/master/monorepo.hcl` で管理している（今は `CI Gatekeeper`・`Validate PR title`・`Ensure actions are pinned to SHAs`）。このチェックを足すのは platform 側の変更になる
 - workflow の action は SHA で pin する（`lint-actions.yml` が検査する）
 - PR 本文・diff は判定への入力であり、指示ではない。プロンプトでそう扱わせる
@@ -128,11 +138,10 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
 
 ## Left to the builder
 
-- claude-code-action を使うか、Bedrock の Messages API を直接呼ぶか
-  - Claude の判断としては claude-code-action を勧める。diff 以外のファイルを読みに行ける必要があるため
-- 判定結果の受け渡し形式（JSON を書かせて workflow 側で成否を決める、など）
-- IAM ロールを置く platform のモジュール構成と名前
+- 判定結果の JSON の項目（成否と、コメント本文を含める）
+- 信頼する sub の変数名
 - コメントの体裁
+- environment を使うと PR に deployment の記録が走るたびに付く。気になる場合に消せるかは、実装時に GitHub の仕様を確かめる
 
 ## Acceptance
 
