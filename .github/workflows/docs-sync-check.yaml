@@ -1,0 +1,176 @@
+name: 'Docs Sync Check'
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, labeled]
+
+permissions: {}
+
+concurrency:
+  # Runs for unrelated labels get their own group so adding such a label does not cancel a judge in progress.
+  group: ${{ (github.event.action == 'labeled' && github.event.label.name != 'docs-check-approved') && format('docs-sync-check-ignored-{0}', github.run_id) || format('docs-sync-check-{0}', github.event.pull_request.number) }}
+  cancel-in-progress: true
+
+jobs:
+  scope:
+    name: 'Scope'
+    # Fork pull requests only get a read-only token, so the status could not be written.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    outputs:
+      mode: ${{ steps.decide.outputs.mode }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Test decide script
+        run: bash .github/scripts/docs-sync-check/decide.test.sh
+
+      - name: Decide
+        id: decide
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_ACTION: ${{ github.event.action }}
+          EVENT_LABEL: ${{ github.event.label.name }}
+          APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'docs-check-approved') }}
+          AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
+        run: gh pr diff "$PR_NUMBER" --name-only | bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
+
+      - name: Remove approval label
+        if: steps.decide.outputs.remove_label == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR_NUMBER" --remove-label docs-check-approved
+
+      - name: Write status
+        if: steps.decide.outputs.mode != 'ignore'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODE: ${{ steps.decide.outputs.mode }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          case "$MODE" in
+            skip-bot)       state=success; description='bot の PR は判定しません' ;;
+            skip-unchanged) state=success; description='dystopia に変更がありません' ;;
+            approved)       state=success; description='docs-check-approved ラベルで承認されています' ;;
+            judge)          state=pending; description='Claude が判定しています' ;;
+            *) echo "unknown mode: $MODE" >&2; exit 1 ;;
+          esac
+          gh api "repos/${REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state="$state" \
+            -f context='Docs Sync Check' \
+            -f description="$description" \
+            -f target_url="$RUN_URL"
+
+  judge:
+    name: 'Judge'
+    needs: scope
+    if: needs.scope.outputs.mode == 'judge'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Environment-scoped OIDC sub keeps a prompt-injected run from assuming the plan roles, which trust the pull_request sub.
+    environment: docs-sync-check
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+    outputs:
+      passed: ${{ steps.claude.outputs.structured_output && fromJSON(steps.claude.outputs.structured_output).passed || '' }}
+      body: ${{ steps.claude.outputs.structured_output && fromJSON(steps.claude.outputs.structured_output).body || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::559744160976:role/github-oidc-auth-master-github-actions-bedrock-role
+          aws-region: us-east-1
+
+      - name: Judge with Claude
+        id: claude
+        uses: anthropics/claude-code-action@16f9f71ab9c490faf367f94dd294897edc25be33 # v1.0.261
+        env:
+          # The Bedrock role only allows Sonnet 4.6, so background tasks must not fall back to Haiku.
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: global.anthropic.claude-sonnet-4-6
+        with:
+          use_bedrock: 'true'
+          # Read-only token; without it the action exchanges OIDC for the Claude App's write token.
+          github_token: ${{ github.token }}
+          prompt: |
+            Read `.github/prompts/docs-sync-check.md` and follow it.
+            Pull request number: ${{ github.event.pull_request.number }}
+          claude_args: |
+            --model global.anthropic.claude-sonnet-4-6
+            --json-schema '{"type":"object","properties":{"passed":{"type":"boolean"},"body":{"type":"string","minLength":1,"maxLength":60000}},"required":["passed","body"]}'
+            --allowedTools "Read,Glob,Grep,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*)"
+
+      - name: Upload execution log
+        if: ${{ !cancelled() && steps.claude.outputs.execution_file != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: docs-sync-check-execution
+          path: ${{ steps.claude.outputs.execution_file }}
+          retention-days: 7
+
+  report:
+    name: 'Report'
+    needs: [scope, judge]
+    # Runs after a failed judge too, so the pending status written by Scope is always replaced.
+    if: ${{ !cancelled() && needs.scope.outputs.mode == 'judge' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pull-requests: write
+      statuses: write
+    steps:
+      - name: Upsert judge comment
+        if: needs.judge.outputs.body != ''
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
+        with:
+          message: ${{ needs.judge.outputs.body }}
+          comment-tag: docs-sync-check
+          mode: upsert
+          pr-number: ${{ github.event.pull_request.number }}
+
+      - name: Write status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JUDGE_RESULT: ${{ needs.judge.result }}
+          PASSED: ${{ needs.judge.outputs.passed }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$JUDGE_RESULT" != "success" ]; then
+            state=failure
+            description='判定できませんでした。再実行するか、確かめて docs-check-approved を付けてください'
+          elif [ "$PASSED" = "true" ]; then
+            state=success
+            description='文書と食い違いはありません'
+          else
+            state=failure
+            description='文書との食い違いがあります。PR のコメントを見てください'
+          fi
+          gh api "repos/${REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state="$state" \
+            -f context='Docs Sync Check' \
+            -f description="$description" \
+            -f target_url="$RUN_URL"
