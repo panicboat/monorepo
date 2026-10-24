@@ -62,6 +62,11 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
 - このチェックを main の ruleset の必須チェックに足す（Claude の判断）
   - `CI Gatekeeper` は作成・push・再オープンでしか動かない。ラベルや本文の編集でこのチェックをやり直して通っても、一度落ちた `CI Gatekeeper` はそのままで merge できないため
   - 必須チェックは、出ないと待ち続けになる。そのため workflow はすべての PR で動き、`dystopia/**` に変更がなければすぐに通す
+  - 結果は job の成否ではなく、commit status `Docs Sync Check` として書く（Claude の判断）
+    - `deploy:*` のラベルでも workflow は起動する。job の成否を必須チェックにすると、何もしない run が同じ commit に新しい結果を残し、落ちていた判定を上書きしうる
+    - commit status なら、何もしない run は status に触れないので、最後に判定した run の結果が残る
+  - `CI Gatekeeper` が待つ workflow からこの workflow を外す
+    - 判定の job が Bedrock の障害で落ちたとき、承認のラベルで通しても `CI Gatekeeper` が落ちたまま残るため
 - bot（Renovate・release-please）が作る PR は Claude を呼ばずに通す（Claude の判断）
   - 直近 100 件の merge 済み PR のうち 52 件が Renovate で、依存の更新は文書が書く振る舞いをほぼ変えない。判定すると費用が倍近くになり、自動 merge も止まる
 
@@ -104,7 +109,9 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
 
 ### Fork PRs
 
-- fork からの PR には OIDC のトークンが渡らないので、Claude を呼べない。判定できないものとして落とし、承認のラベルで通す（Claude の判断）
+- fork からの PR では workflow は何もしない（Claude の判断）
+  - fork の PR には OIDC のトークンも、status を書ける権限も渡らない。承認のラベルを付けても status を書けないので、ラベルでは通せない
+  - status `Docs Sync Check` が出ないので merge できない。通すときは、人間が内容を確かめて `gh api` で status を `success` にする
   - public リポジトリなので外部の PR はあり得るが、今のところ来ていない
 
 ## Constraints
@@ -133,7 +140,7 @@ AI にコーディングを任せると、仕様書・利用規約・プライ�
 ## Related changes
 
 - dotfiles の AGENTS.md に 2 行足す（別リポジトリ・別 PR）
-  - Claude Code は `docs-check-approved` ラベルを付けない
+  - Claude Code は `docs-check-approved` ラベルを付けず、status `Docs Sync Check` も書かない
   - 仕様書・規約が振る舞いを説明しているリポジトリでは、振る舞いを変える PR で同じ PR のうちに文書も更新する（Claude の判断。CI で落ちる前に防ぐため。リポジトリに AGENTS.md を新しく作らないのは、PR テンプレートのルールと同じく全リポジトリに効かせるため）
 
 ## Left to the builder
