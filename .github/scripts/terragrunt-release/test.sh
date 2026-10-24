@@ -211,18 +211,24 @@ JSON
     echo "{\"${package}\":\"0.1.0\"}" > "${package}/release-please-manifest.json"
 }
 
+check_configs() {
+    git init -q
+    git add -A
+    bash "${script_dir}/check-release-configs.sh" "$@"
+}
+
 test_check_configs_accepts_matching_set() {
     write_release_config
     mkdir -p dystopia/monolith/infrastructure/aws/production
     write_service_release_config dystopia/monolith
     write_service_release_config dystopia/frontend
-    assert_eq "" "$(bash "${script_dir}/check-release-configs.sh" 2>&1)"
+    assert_eq "" "$(check_configs 2>&1)"
 }
 
 test_check_configs_rejects_missing_config() {
     write_release_config
     mkdir -p system-components/pennyworth/infrastructure/aws/production
-    assert_fails bash "${script_dir}/check-release-configs.sh"
+    assert_fails check_configs
     assert_stderr_contains "system-components/pennyworth/release-please-config.json"
 }
 
@@ -230,7 +236,7 @@ test_check_configs_rejects_wrong_component() {
     write_release_config
     mkdir -p dystopia/monolith/infrastructure/aws/production
     write_service_release_config dystopia/monolith frontend
-    assert_fails bash "${script_dir}/check-release-configs.sh"
+    assert_fails check_configs
     assert_stderr_contains "dystopia/monolith: component must be monolith (got 'frontend')"
 }
 
@@ -239,10 +245,10 @@ test_check_configs_rejects_manifest_without_package() {
     mkdir -p dystopia/monolith/infrastructure/aws/production
     write_service_release_config dystopia/monolith
     echo '{}' > dystopia/monolith/release-please-manifest.json
-    assert_fails bash "${script_dir}/check-release-configs.sh"
+    assert_fails check_configs
     assert_stderr_contains "dystopia/monolith/release-please-manifest.json"
     rm dystopia/monolith/release-please-manifest.json
-    assert_fails bash "${script_dir}/check-release-configs.sh"
+    assert_fails check_configs
     assert_stderr_contains "dystopia/monolith/release-please-manifest.json"
 }
 
@@ -258,7 +264,7 @@ stacks:
 YAML
     mkdir -p dystopia/monolith/infrastructure/aws/production
     write_service_release_config dystopia/monolith monolith '[]'
-    assert_fails bash "${script_dir}/check-release-configs.sh"
+    assert_fails check_configs
     assert_stderr_contains "dystopia/monolith/infrastructure/aws/production"
     assert_stderr_contains "aws_region"
     assert_stderr_contains "iam_role_plan"
@@ -271,7 +277,7 @@ test_check_configs_rejects_missing_exclude_paths() {
     write_service_release_config dystopia/monolith
     jq -c 'del(.packages["dystopia/monolith"]["exclude-paths"])' dystopia/monolith/release-please-config.json > config.tmp
     mv config.tmp dystopia/monolith/release-please-config.json
-    assert_fails bash "${script_dir}/check-release-configs.sh"
+    assert_fails check_configs
     assert_stderr_contains '::error::dystopia/monolith: exclude-paths must be ["dystopia/monolith/infrastructure/aws/develop"] (got null)'
 }
 
@@ -280,23 +286,51 @@ test_check_configs_accepts_exclude_paths_in_any_order() {
     yq -i '(.stacks[] | select(.name == "terragrunt") | .environments.staging) = {"apply_trigger": "merge"}' workflow-config.yaml
     mkdir -p dystopia/monolith/infrastructure/aws/production
     write_service_release_config dystopia/monolith monolith '["dystopia/monolith/infrastructure/aws/staging","dystopia/monolith/infrastructure/aws/develop"]'
-    assert_eq "" "$(bash "${script_dir}/check-release-configs.sh" 2>&1)"
+    assert_eq "" "$(check_configs 2>&1)"
 }
 
 test_check_configs_checks_configs_without_infra() {
     write_release_config
     write_service_release_config dystopia/frontend frontend '["dystopia/frontend/develop"]'
-    assert_fails bash "${script_dir}/check-release-configs.sh"
+    assert_fails check_configs
     assert_stderr_contains 'dystopia/frontend: exclude-paths must be ["dystopia/frontend/infrastructure/aws/develop"]'
 }
 
 test_check_configs_requires_config_for_excluded_env() {
     write_release_config '[{environment: production}]'
     mkdir -p dystopia/monolith/infrastructure/aws/production
-    assert_fails bash "${script_dir}/check-release-configs.sh"
+    assert_fails check_configs
     assert_stderr_contains "dystopia/monolith/release-please-config.json"
     write_service_release_config dystopia/monolith
+    assert_eq "" "$(check_configs 2>&1)"
+}
+
+test_check_configs_finds_configs_at_any_depth() {
+    write_release_config
+    write_service_release_config tools tools '[]'
+    assert_fails check_configs
+    assert_stderr_contains 'tools: exclude-paths must be ["tools/infrastructure/aws/develop"]'
+    rm -r tools
+    write_service_release_config x/y/z z '[]'
+    assert_fails check_configs
+    assert_stderr_contains 'x/y/z: exclude-paths must be ["x/y/z/infrastructure/aws/develop"]'
+}
+
+test_check_configs_ignores_untracked_configs() {
+    write_release_config
+    write_service_release_config dystopia/frontend
+    git init -q
+    git add -A
+    write_service_release_config node_modules/pkg pkg '[]'
     assert_eq "" "$(bash "${script_dir}/check-release-configs.sh" 2>&1)"
+}
+
+test_check_configs_rejects_duplicate_service() {
+    write_release_config
+    write_service_release_config dystopia/monolith
+    write_service_release_config system-components/monolith
+    assert_fails check_configs
+    assert_stderr_contains "component monolith is used by more than one package: dystopia/monolith system-components/monolith"
 }
 
 failed=0

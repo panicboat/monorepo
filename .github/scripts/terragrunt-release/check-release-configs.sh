@@ -51,11 +51,16 @@ while IFS=$'\t' read -r service package; do
     fi
 done <<<"${release_packages}"
 
-shopt -s nullglob
-for config_file in */*/release-please-config.json; do
-    packages="$(jq -r '.packages // {} | keys[]' "${config_file}")"
-    while IFS= read -r package; do
+components=""
+config_files="$(git ls-files '*/release-please-config.json')"
+while IFS= read -r config_file; do
+    [ -n "${config_file}" ] || continue
+    packages="$(jq -r '.packages // {} | to_entries[] | [.key, (.value.component // "")] | @tsv' "${config_file}")"
+    while IFS=$'\t' read -r package component; do
         [ -n "${package}" ] || continue
+        if [ -n "${component}" ]; then
+            components+="${component}"$'\t'"${package}"$'\n'
+        fi
         expected_exclude_paths="$(jq -c --arg package "${package}" 'map("\($package)/infrastructure/aws/\(.)")' <<<"${merge_environments}")"
         actual_exclude_paths="$(jq -c --arg package "${package}" '.packages[$package]["exclude-paths"]' "${config_file}")"
         if ! jq -ne --argjson expected "${expected_exclude_paths}" --argjson actual "${actual_exclude_paths}" '
@@ -64,6 +69,17 @@ for config_file in */*/release-please-config.json; do
             report "${package}: exclude-paths must be ${expected_exclude_paths} (got ${actual_exclude_paths})"
         fi
     done <<<"${packages}"
-done
+done <<<"${config_files}"
+
+# A release tag names only the component, so a component shared by two packages would release both.
+duplicates="$(jq -R -s -r '
+    split("\n") | map(select(. != "") | split("\t")) | group_by(.[0])[]
+    | select(length > 1)
+    | "::error::component \(.[0][0]) is used by more than one package: \(map(.[1]) | join(" "))"
+' <<<"${components}")"
+if [ -n "${duplicates}" ]; then
+    echo "${duplicates}" >&2
+    failed=1
+fi
 
 exit "${failed}"
