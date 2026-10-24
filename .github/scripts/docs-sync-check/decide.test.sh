@@ -32,6 +32,7 @@ check passes_on_approval_label_after_failure labeled docs-check-approved true Us
 check passes_on_approval_label_after_success labeled docs-check-approved true User false success $'dystopia/a.rb' approved false
 check approval_label_before_any_verdict_rejudges labeled docs-check-approved true User false '' $'dystopia/a.rb' judge true
 check approval_label_while_judging_rejudges labeled docs-check-approved true User false pending $'dystopia/a.rb' judge true
+check approval_label_already_removed_rejudges labeled docs-check-approved false User false failure $'dystopia/a.rb' judge false
 check approval_label_before_any_verdict_without_dystopia labeled docs-check-approved true User false '' $'platform/a.tf' skip-unchanged true
 check ignores_edit_while_approved edited '' true User true '' $'dystopia/a.rb' ignore false
 check ignores_reopen_while_approved reopened '' true User false '' $'dystopia/a.rb' ignore false

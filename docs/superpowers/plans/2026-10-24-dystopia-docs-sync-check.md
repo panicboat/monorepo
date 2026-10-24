@@ -357,7 +357,7 @@ branch 名は `test/docs-sync-<case>-base` と `test/docs-sync-<case>`。PR タ�
 
 続けて、もう一度ラベルを付けてもらい、空 commit の push の直後（10 秒以内）に `gh pr edit <N> --body-file <同じ本文に 1 行足したもの>` で本文を編集する。新しい head の status が `success` にならない（`pending`・`failure`・status なしのいずれか）ことを確かめる。最後に、ラベルが付いた状態でユーザーにラベルを外してもらい、判定し直されることを確かめる。
 
-最後に、判定中（status が `pending`）にユーザーにラベルを付けてもらい、ラベルが外れて判定し直され、status が `success` にならないことを確かめる。PR の作成時に付けたラベルと同じ経路（`decide.sh` の `approval_label_while_judging_rejudges`）を通る。
+さらに、判定中（status が `pending`）にユーザーにラベルを付けてもらい、ラベルが外れて判定し直され、status が `success` にならないことを確かめる。PR の作成時に付けたラベルと同じ経路（`decide.sh` の `approval_label_while_judging_rejudges`）を通る。
 
 - [ ] **Step 6: Clean up**
 

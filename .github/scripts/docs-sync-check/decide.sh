@@ -33,16 +33,12 @@ fi
 case "$EVENT_ACTION" in
   labeled)
     # Approval needs an existing verdict on the commit, since a label set at PR creation can cancel the opened run.
-    case "$PRIOR_STATE" in
-      "" | pending)
-        is_approved=false
-        remove_label=true
-        ;;
-      *)
-        emit approved
-        exit 0
-        ;;
-    esac
+    if [ "$is_approved" = "true" ] && [ "$PRIOR_STATE" != "" ] && [ "$PRIOR_STATE" != "pending" ]; then
+      emit approved
+      exit 0
+    fi
+    remove_label="$is_approved"
+    is_approved=false
     ;;
   unlabeled)
     is_approved=false

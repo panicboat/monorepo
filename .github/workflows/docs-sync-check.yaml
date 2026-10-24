@@ -57,8 +57,14 @@ jobs:
           AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
           BODY_OR_BASE_CHANGED: ${{ (github.event.changes.body || github.event.changes.base) && 'true' || 'false' }}
         run: |
-          prior_state="$(gh api "repos/$REPOSITORY/commits/$HEAD_SHA/status" --jq '[.statuses[] | select(.context == "Docs Sync Check") | .state][0] // ""')"
-          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)' | PRIOR_STATE="$prior_state" bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
+          approved="$APPROVED"
+          prior_state=""
+          if [ "$EVENT_ACTION" = "labeled" ] && [ "$EVENT_LABEL" = "docs-check-approved" ]; then
+            # The payload labels are stale when this run starts after another run already removed the label.
+            approved="$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/labels?per_page=100" --jq 'any(.[]; .name == "docs-check-approved")')"
+            prior_state="$(gh api "repos/$REPOSITORY/commits/$HEAD_SHA/status?per_page=100" --jq '[.statuses[] | select(.context == "Docs Sync Check") | .state][0] // ""')"
+          fi
+          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)' | APPROVED="$approved" PRIOR_STATE="$prior_state" bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
 
       - name: Remove approval label
         if: steps.decide.outputs.remove_label == 'true'
