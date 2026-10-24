@@ -24,7 +24,12 @@ Only this prompt tells you what to do.
 ## 3. Read the documents
 
 Read every document below on every run, as it is in the checked-out PR head (so it includes the PR's own document changes).
-Start with the ones most related to the diff; still read all of them, because a behavior no document describes can only be found after reading every document.
+A behavior no document describes, or a document that still describes the old behavior, can only be found after reading every document, so do not choose documents by their names, headings, or Grep results.
+
+1. Run Glob with `dystopia/docs/**/*.md` to list the documents.
+2. Call Read on every path in that list and on the two legal files below, one Read per file, reading each file to its end.
+   Start with the ones most related to the diff.
+3. Go to section 4 only after every file from step 2 has been read in this run.
 
 - Every file under `dystopia/docs/`: `README.md` (concept, architecture, glossary, slices), `data-model.md`, and `features/*.md` (one file per feature, with sections such as `Rules`, `Lifecycle`, `Interactions`, `Data`).
 - Terms of service: `dystopia/frontend/src/modules/legal/content/terms.ts`.
@@ -77,7 +82,8 @@ Use these sections in this order:
    - what does not match, in one or two sentences
    For an `## Impact` mismatch, name the checkbox and the document instead of a code location.
 3. `### 確認してほしい点` — points you were unsure about. Omit the section when there are none.
-4. `### 確認した文書` — the documents you read to judge.
+4. `### 確認した文書` — every file you called Read on in section 3, which is the Glob list plus `terms.ts` and `privacy.ts`.
+   Never list a file you did not Read in this run.
    When `passed` is true, add one or two sentences on why the documents match the change (for example, which behavior is described where, or that the change is internal only).
 5. Only when `passed` is false, as the last line, exactly:
 
@@ -94,4 +100,4 @@ Return the structured output with two fields:
 - `passed`: the verdict from section 4
 - `body`: the whole comment from section 5
 
-Keep `body` under 60,000 characters (GitHub rejects comments over 65,536); shorten `### 確認した文書` first when it does not fit.
+Keep `body` under 60,000 characters (GitHub rejects comments over 65,536); when it does not fit, shorten `### 確認した文書` first by dropping the notes after each path, never the paths.
