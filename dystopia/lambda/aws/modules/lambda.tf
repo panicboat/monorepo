@@ -84,7 +84,7 @@ resource "aws_iam_role_policy" "lambda_app" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["cognito-idp:AdminDeleteUser"]
+        Action   = ["cognito-idp:AdminDeleteUser", "cognito-idp:ListUsers"]
         Resource = aws_cognito_user_pool.this.arn
       },
       {
