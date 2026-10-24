@@ -39,12 +39,13 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           EVENT_ACTION: ${{ github.event.action }}
           EVENT_LABEL: ${{ github.event.label.name }}
           APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'docs-check-approved') }}
           AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
-        run: gh pr diff "$PR_NUMBER" --name-only | bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
+        run: gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[].filename' | bash .github/scripts/docs-sync-check/decide.sh >> "$GITHUB_OUTPUT"
 
       - name: Remove approval label
         if: steps.decide.outputs.remove_label == 'true'
@@ -124,6 +125,7 @@ jobs:
 
       - name: Upload execution log
         if: ${{ !cancelled() && steps.claude.outputs.execution_file != '' }}
+        continue-on-error: true
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docs-sync-check-execution
