@@ -67,7 +67,8 @@ erDiagram
         uuid cover_media_id "参照（FK なし）"
         boolean is_private "非公開プロフィール"
         boolean follow_approval_required "フォローに承認が必要"
-        text area "主要エリア"
+        varchar prefecture "主要エリア（都道府県）"
+        text area "都道府県内のエリア"
         timestamptz disabled_at "無効化日時"
     }
     profile_casts {
@@ -115,7 +116,7 @@ erDiagram
     post_likes {
         uuid id PK
         uuid post_id FK
-        uuid profile_id "参照（FK なし）"
+        uuid profile_id UK "参照（FK なし）、post_id と組で一意"
     }
     post_comments {
         uuid id PK
@@ -146,11 +147,16 @@ erDiagram
 - `post.posts`: 投稿本体。
   - 公開範囲（`visibility`）と表示期間（`published_at` から `expires_at` まで）を持つ。
 - `post.post_media`: 投稿に添付したメディア。
+  - メディアを削除しても、そのメディアを指す添付の行は消えない。
+    - 配信 URL は空になる。
 - `post.hashtags`: 投稿のハッシュタグ。
 - `post.post_mentions`: 投稿本文中のメンション（対象プロフィール）。
 - `post.likes`: 投稿へのいいね。
 - `post.comments`: コメント。
   - `parent_id` で返信を表す。
+  - 親コメントを削除すると、他のプロフィールの返信も削除される。
+    - 返信の添付とメンションも同時に削除される。
+  - 投稿のコメント数は、返信（`parent_id` のあるコメント）を含まない。
 - `post.comment_media`: コメントに添付したメディア。
 - `post.comment_mentions`: コメント本文中のメンション。
 
@@ -236,7 +242,7 @@ erDiagram
 
 ## Footprints
 
-足あと（訪問の記録）と、足あとの既読状態。
+足跡（訪問の記録）と、足跡の既読状態。
 
 ```mermaid
 erDiagram
@@ -255,9 +261,9 @@ erDiagram
 
 - `footprints.visits`: 訪問者と訪問先の組ごとに 1 件。
   - 最終訪問日時と訪問回数を持つ。
-- `footprints.read_states`: プロフィールごとの足あとの既読位置。
+- `footprints.read_states`: プロフィールごとの足跡の既読位置。
 
-[足あと](features/footprints.md)
+[足跡](features/footprints.md)
 
 ## Messaging
 
@@ -306,15 +312,20 @@ erDiagram
         uuid target_resource_id UK "通知対象のリソース"
         uuid target_post_id "参照（FK なし）"
         uuid latest_actor_profile_id "参照（FK なし）"
+        timestamptz latest_event_at "最新の発火時刻"
         integer actor_count
         timestamptz read_at
     }
     notifications_preferences {
         uuid profile_id PK "参照（FK なし）"
         boolean comment
+        boolean like
+        boolean reply
         boolean follow
         boolean mention
         boolean message
+        boolean footprint_unread_badge
+        boolean footprints_record_my_visits
     }
     notifications_push_subscriptions {
         uuid id PK
@@ -325,8 +336,10 @@ erDiagram
 ```
 
 - `notifications.notifications`: 受信者ごとの通知。
-  - 同じ種類・対象の通知は 1 件にまとめられ、`actor_count` で人数を持つ。
-- `notifications.preferences`: プロフィールごとの通知の受け取り設定。
+  - 同じ種類・対象の通知は 1 件にまとめられ、`actor_count` で件数を持つ。
+    - 同じプロフィールによる繰り返しの発火も件数に含まれる。
+- `notifications.preferences`: プロフィールごとの通知の設定と足跡の設定。
+  - 種類別の設定はプッシュ通知の送信だけを制御する。
 - `notifications.push_subscriptions`: プロフィールごと・ブラウザごとのプッシュ通知の購読先。
   - endpoint とプロフィールの組で 1 件。
   - `account_id` は、別のアカウントが同じ端末を使い始めたときと、アカウントの削除処理で購読を消すのに使う。
@@ -343,7 +356,7 @@ erDiagram
         uuid id PK
         uuid uploader_profile_id "参照（FK なし）"
         uuid owner_account_id "参照（FK なし）"
-        varchar media_type "image / video"
+        varchar media_type "image / video、それ以外は unknown"
         text media_key
         text thumbnail_key
     }
@@ -367,7 +380,7 @@ erDiagram
         uuid author_profile_id "参照（FK なし）"
         uuid target_profile_id "参照（FK なし）"
         smallint rating "1〜5、NULL は未評価"
-        timestamptz last_activity_at "最終更新日時"
+        timestamptz last_activity_at "活動日時（作成と出来事の追加で更新）"
         date last_occurred_on "最終の出来事の日付"
     }
     karte_events {
@@ -376,6 +389,8 @@ erDiagram
         text stage "reservation / service / aftercare"
         text outcome
         date occurred_on
+        text note
+        text[] tags
     }
     karte_kartes ||--o{ karte_events : "karte_id"
 ```
@@ -400,7 +415,7 @@ erDiagram
         uuid author_profile_id "参照（FK なし）"
         uuid target_profile_id "参照（FK なし）"
         smallint rating "1〜5、NULL は未評価"
-        timestamptz last_activity_at "最終更新日時"
+        timestamptz last_activity_at "活動日時（作成と出来事の追加で更新）"
         date last_occurred_on "最終の出来事の日付"
     }
     review_events {
@@ -409,6 +424,8 @@ erDiagram
         text stage "reservation / service / aftercare"
         text outcome
         date occurred_on
+        text note
+        text[] tags
     }
     review_reviews ||--o{ review_events : "review_id"
 ```
@@ -423,6 +440,7 @@ erDiagram
 
 課金。
 アカウント単位で Stripe の顧客と契約を持つ。
+課金の行は、アカウントの削除処理の対象にならず、削除後も残る。
 
 ```mermaid
 erDiagram
@@ -435,6 +453,7 @@ erDiagram
         uuid id PK
         uuid account_id UK "参照（FK なし）"
         text stripe_subscription_id UK
+        text stripe_price_id
         text status
         timestamptz current_period_end
         boolean cancel_at_period_end
@@ -444,6 +463,7 @@ erDiagram
         text stripe_event_id UK
         text event_type
         timestamptz processed_at
+        text error_message
     }
 ```
 
@@ -454,5 +474,6 @@ erDiagram
   - 現在の期間の終了日時と期間末での解約予定を持つ。
 - `billing.stripe_events`: 受信した Stripe のイベント。
   - 処理日時とエラーを持つ。
+  - 受信したイベントの全体を `payload` に保存する。
 
 [課金](features/billing.md)
