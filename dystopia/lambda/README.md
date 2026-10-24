@@ -97,7 +97,7 @@ aws lambda invoke --function-name dystopia-production-task \
   --payload '{"task":"purge_deactivated"}' /dev/stdout
 ```
 
-特定のアカウントを、猶予を待たずに削除する（18 歳未満または高校生と分かった利用者。規約第3条第3項）。ユーザー名からアカウントの ID を引き、退会日時を 90 日より前にしてから削除処理を実行する。消える範囲は退会したアカウントと同じ（[アカウント](../docs/features/account.md)）。同じ実行で、猶予を過ぎた他のアカウントも消える。
+特定のアカウントを、猶予を待たずに削除する（18 歳未満または高校生と分かった利用者。規約の「利用資格」の条）。ユーザー名からアカウントの ID を引き、退会日時を 90 日より前にしてから削除処理を実行する。消える範囲は退会したアカウントと同じ（[アカウント](../docs/features/account.md)）。同じ実行で、猶予を過ぎた他のアカウントも消える。
 
 ```bash
 aws lambda invoke --function-name dystopia-production-task \

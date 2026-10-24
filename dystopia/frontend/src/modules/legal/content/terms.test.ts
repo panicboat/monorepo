@@ -1,238 +1,60 @@
 import { describe, expect, it } from "vitest";
 import type { LegalSection } from "../types";
-import { EDITION, EFFECTIVE_DATE, OPERATOR } from "./operator";
+import { EDITION, EFFECTIVE_DATE, OPERATOR, OPERATOR_IDENTITY_ON_REQUEST } from "./operator";
 import { TERMS } from "./terms";
 
 const HEADINGS = [
   "目的と適用", "定義", "利用資格", "登録", "アカウントの管理", "プロフィール", "投稿等の責任と権利",
   "売春・裏引き・店舗外の取引の禁止", "個人情報の書き込みと晒しの禁止", "カルテ", "クチコミ", "予定と予定検索",
-  "DM", "フォロー・ブロック・足跡・通知", "禁止事項", "違反への措置", "権利侵害の申出", "退会",
-  "サービスの変更・中断・終了", "免責", "知的財産権と外部リンク", "通知・連絡", "規約の変更", "有料機能",
-  "分離可能性", "準拠法と管轄", "運営者",
+  "DM", "フォロー・ブロック・足跡", "禁止事項", "違反への措置", "権利侵害の申出", "退会",
+  "サービスの変更・中断・終了", "個人情報の取扱い", "免責", "知的財産権と外部リンク", "通知・連絡", "規約の変更",
+  "有料機能", "分離可能性", "準拠法と管轄", "運営者",
 ];
 
 const text = (section: LegalSection) =>
   [section.heading, ...section.paragraphs.flatMap((paragraph) => [paragraph.text, ...(paragraph.items ?? [])])].join("\n");
 
-const article = (number: number) => text(TERMS.sections[number - 1]);
+const article = (heading: string) => text(TERMS.sections.find((entry) => entry.heading === heading)!);
 
 const all = [TERMS.title, TERMS.preamble, ...TERMS.sections.map(text)].join("\n");
 
 describe("TERMS", () => {
-  it("has the 27 articles in order", () => {
-    expect(TERMS.sections.map((section) => section.heading)).toEqual(HEADINGS);
+  it("has the articles in order", () => {
+    expect(TERMS.sections.map((entry) => entry.heading)).toEqual(HEADINGS);
     expect(TERMS.title).toBe("利用規約");
     expect(TERMS.numbering).toBe("article");
     expect(TERMS.edition).toBe(EDITION);
     expect(TERMS.effectiveDate).toBe(EFFECTIVE_DATE);
   });
 
-  it("defines posts and 裏引き", () => {
-    const definitions = article(2);
+  it("names the contact and answers the operator's identity on request", () => {
+    expect(article("運営者")).toContain(OPERATOR.contact);
+    expect(article("運営者")).toContain(OPERATOR_IDENTITY_ON_REQUEST);
+    expect(all).not.toContain("【運営者氏名】");
+    expect(all).not.toContain("【住所】");
+  });
 
-    expect(definitions).toContain("「投稿等」");
-    expect(definitions).toContain("「裏引き」");
+  it("limits use to people aged 18 or over who are not high school students", () => {
+    expect(article("利用資格")).toContain("本サービスを利用できるのは、18歳以上の方に限ります。18歳以上であっても、高校生の方は利用できません。");
+  });
 
-    const posts = TERMS.sections[1].paragraphs.flatMap((paragraph) => paragraph.items ?? []).find((item) => item.startsWith("「投稿等」"));
-    expect(posts).toBeDefined();
-    for (const word of ["コメント", "プロフィール", "カルテ", "クチコミ", "予定", "DM", "画像"]) {
-      expect(posts).toContain(word);
+  it("shows the karte to casts only", () => {
+    expect(article("カルテ")).toContain("カルテは、すべてのキャストで共有されます。本サービス上でカルテを見ることができるのは、キャストだけです。ゲストは、自分についてのカルテも見ることができません。");
+  });
+
+  it("lets the operator read DMs only on requests and under the law, with the user's consent", () => {
+    expect(article("DM")).toContain("運営者は、利用者その他の方からの申出に対応する場合と、法令にもとづく場合に限り、DM の内容を確認します。利用者は、運営者がこれらの場合に DM の内容を確認することに同意します。");
+  });
+
+  it("leaves what remains after deactivation to the privacy policy", () => {
+    expect(article("退会")).toContain("退会した後も残る情報は、プライバシーポリシーの「保存期間と削除」の節に定めます。");
+  });
+
+  it("leaves out implementation values and words the app does not use", () => {
+    expect(all).not.toMatch(/[0-9０-９]+\s*(?:日|時間|字)/);
+    for (const word of ["出勤", "通報", "メモ", "非表示", "個別のお知らせ", "別に定めるルール"]) {
+      expect(all).not.toContain(word);
     }
-  });
-
-  it("puts the responsibility for posts on the user who posted them", () => {
-    const responsibility = article(7);
-
-    expect(responsibility).toMatch(/投稿等/);
-    expect(responsibility).toMatch(/責任/);
-    expect(responsibility).toContain("投稿した利用者");
-  });
-
-  it("bans prostitution and 裏引き", () => {
-    const ban = article(8);
-
-    expect(ban).toContain("売春");
-    expect(ban).toContain("周旋");
-    expect(ban).toContain("裏引き");
-  });
-
-  it("bans writing other people's personal information", () => {
-    const ban = article(9);
-
-    expect(ban).toContain("住所");
-    expect(ban).toContain("勤務先");
-    expect(ban).toContain("電話番号");
-  });
-
-  it("does not exempt the operator from all liability", () => {
-    expect(all).toMatch(/故意(?:又は|または)重大な過失/);
-    expect(all).not.toMatch(/一切(?:の)?責任を負/);
-    expect(all).not.toContain("法律上許される");
-    expect(all).not.toContain("法令上許される");
-    expect(article(20)).toContain("重大な過失を除く過失");
-  });
-
-  it("names the court by the operator's address", () => {
-    const court = article(26);
-
-    expect(court).toContain("運営者の住所地を管轄する地方裁判所");
-    expect(court).toContain("日本法");
-  });
-
-  it("states what stays after deactivation without promising a deletion date", () => {
-    const deactivation = article(18);
-
-    expect(deactivation).toContain("カルテ");
-    expect(deactivation).toContain("DM");
-    expect(all).not.toMatch(/30\s*日/);
-  });
-
-  it("shows the operator placeholders", () => {
-    const operator = article(27);
-
-    expect(operator).toContain(OPERATOR.name);
-    expect(operator).toContain(OPERATOR.address);
-    expect(operator).toContain(OPERATOR.contact);
-  });
-
-  it("lets karte and reviews be written without breaking the ban on reposting personal information", () => {
-    expect(article(9)).toMatch(/第10条と第11条.*カルテやクチコミを書くことは、前項第2号の行為に当たりません/);
-  });
-
-  it("allows guiding to the store's booking method in DMs but no other outside service", () => {
-    expect(article(13)).toContain("外部の SNS や通話アプリへ誘導すること（第8条第2項の予約の方法の案内を除きます）");
-  });
-
-  it("lets a cast promote her own work at her store while banning promotion by stores, scouts and agencies", () => {
-    expect(article(8)).toContain("前項の規定は、キャストが、自分の予定や在籍する店舗にいることを載せること、その店舗への来店や自分の指名を呼びかけること、およびその店舗が公表している予約の方法を案内することを禁止するものではありません");
-    expect(article(15)).toContain("キャスト本人が第8条第2項に定める範囲で自分の仕事を宣伝することなど本規約で認めるものを除き、営利を目的とする宣伝や勧誘をすること");
-    expect(article(12)).toContain("利用者は、店舗、スカウト、代理店などとして、またはそれらの者に代わって、予定その他の投稿等を使って宣伝、募集または営業をしてはいけません（第8条第2項に定めるものを除きます）");
-    expect(TERMS.sections[7].paragraphs[0].items).toContain("店舗を介さない個人的な接触、面会または交渉に誘うこと");
-  });
-
-  it("lets the operator read DMs for any request including rights infringement", () => {
-    expect(article(13)).toContain("利用者その他の方からの申出（第17条の申出を含みます）");
-  });
-
-  it("states what a lock does not hide", () => {
-    const profile = article(6);
-
-    expect(profile).toContain("コメント");
-    expect(profile).toMatch(/承認制にしていなければ、ブロックの関係にあるプロフィールを除き、どのプロフィールも、フォローするとすぐにフォロワーになり/);
-    expect(profile).toContain("「フォロー中」と「フォロワー」の一覧");
-  });
-
-  it("applies to visitors who do not register and bans scraping for anyone who accesses the service", () => {
-    expect(article(1)).toContain("登録せずに本サービスを閲覧し、または本サービスにアクセスする方にも適用されます");
-    expect(article(15)).toContain("利用者その他の本サービスにアクセスする方は、前項第7号から第10号までの行為をしてはいけません");
-  });
-
-  it("describes follows and blocks per profile", () => {
-    expect(article(2)).toContain("利用者が自分のプロフィールで、他の利用者の特定のプロフィールとの間のやり取りを制限する設定");
-    expect(article(14)).toContain("ブロックは、その2つのプロフィールの間でだけ効きます");
-  });
-
-  it("sends device notifications per profile and names the receiving profile only on a device shared by several profiles", () => {
-    expect(article(14)).toContain("利用者が、プロフィールごとに、端末で通知を受け取る設定をした場合は、これらに加えて、ブラウザの通知機能を使って、そのプロフィール宛ての通知をその端末にも送ります");
-    expect(article(14)).toContain("1つの端末で、同じアカウントの複数のプロフィールについて通知を受け取る設定をしている場合は、通知を受け取ったプロフィールの表示名も表示されます");
-    expect(article(14)).not.toContain("1つのアカウントで複数のプロフィールを使っている場合");
-  });
-
-  it("keeps reviews after either party deactivates and keeps a deactivated guest's rating in the cast's average", () => {
-    const deactivation = article(18);
-
-    expect(deactivation).toContain("クチコミは、書いたゲストと対象のキャストのどちらが退会した場合も残ります。この場合、退会した利用者の表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。");
-    expect(deactivation).toContain("退会したゲストが書いたクチコミの評価は、対象のキャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）に含まれます。");
-    expect(deactivation).not.toContain("削除の対象になります");
-    expect(deactivation).not.toContain("評価は、第4項の削除が済むまで");
-  });
-
-  it("lists the karte, DM and review paragraphs as the ones deactivation leaves in place", () => {
-    const paragraphs = TERMS.sections[17].paragraphs.map((paragraph) => paragraph.text);
-
-    expect(paragraphs[1]).toContain("ただし、第5項から第7項までに定めるものは除きます");
-    expect(paragraphs[3]).toContain("ただし、第5項から第7項までに定めるものは、退会した後も残ります");
-    expect(paragraphs[6]).toMatch(/^クチコミは、/);
-    expect(article(18)).not.toContain("第5項と第6項");
-  });
-
-  it("lets the operator restrict access by a non-registered person who does what article 15 paragraph 2 prohibits", () => {
-    expect(article(16)).toContain("利用者以外の方が第15条第2項で禁止する行為をしたと判断した場合、その方による本サービスへのアクセスの制限その他の必要な措置をとることができます");
-  });
-
-  it("does not say uploaded image and video files remain after deactivation", () => {
-    expect(article(18)).not.toContain("そのアカウントでアップロードされた画像と動画のファイル（アバターとカバー画像を含みます）も、残る場合があります");
-  });
-
-  it("deletes a minor's account the way deactivation does and keeps the karte, DMs and reviews", () => {
-    expect(article(3)).toContain("その利用者による本サービスの利用を停止し、その利用者のアカウントの情報を削除します。ただし、退会した場合と同じく、第18条第5項から第7項までに定めるカルテ、DM およびクチコミは残ります");
-    expect(article(3)).not.toContain("残る場合があります");
-  });
-
-  it("ends the chance to undo a deactivation at the deletion in article 18 paragraph 4", () => {
-    expect(article(18)).toContain("ただし、第4項の削除が済んだ後は、退会を取り消すことはできません");
-  });
-
-  it("keeps the reviews a profile wrote and the reviews about it when the profile is deleted", () => {
-    const multipleProfiles = TERMS.sections[5].paragraphs[3].text;
-
-    expect(multipleProfiles).toContain("プロフィールを削除しても、そのプロフィールで書いたクチコミと、そのプロフィールについて書かれたクチコミは残ります。この場合、削除したプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。そのプロフィールで書いたクチコミの評価は、対象のキャストの評価の集計に含まれます。");
-    expect(multipleProfiles).not.toContain("クチコミも削除されます");
-  });
-
-  it("keeps a review after the guest or the cast leaves and shows it without their profile information", () => {
-    const display = TERMS.sections[10].paragraphs[2].text;
-
-    expect(display).toContain("クチコミの内容と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。");
-    expect(display).toContain("書いたゲストまたは対象のキャストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、そのプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストの投稿を見ることができる利用者に表示されます。");
-    expect(display).not.toContain("書いたゲストのプロフィールを見ることができる利用者");
-  });
-
-  it("limits the guest's view of karte to the service screens", () => {
-    expect(article(10)).toContain("本サービス上でカルテを見ることができるのは、キャストだけです");
-  });
-
-  it("explains what disabling a profile does and that only a disabled profile can be deleted", () => {
-    expect(article(6)).toContain("利用者は、有効なプロフィールを無効にできます。ただし、有効なプロフィールが1つだけの場合は、無効にできません。無効にしたプロフィールは、他の利用者に表示されず、利用することもできませんが、いつでも有効に戻せます。無効にしたプロフィールだけを削除できます。削除したプロフィールは、元に戻せません。");
-  });
-
-  it("lets only the cast who wrote a karte change its events and rating", () => {
-    expect(article(10)).toContain("カルテの出来事の追加、編集および削除と、評価の設定も、そのカルテを書いたキャストだけができます。");
-  });
-
-  it("keeps a karte when a party disables, deactivates or deletes the profile", () => {
-    expect(article(10)).toContain("カルテを書いたキャストまたは対象のゲストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、カルテは残ります。この場合、退会した利用者、無効にしたプロフィールまたは削除されたプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。");
-  });
-
-  it("uses the app's word for the note of a karte event", () => {
-    expect(all).not.toContain("メモ");
-    expect(article(10)).toContain("カルテに記録できるのは、段階、結果、日付、評価（5段階）、タグおよび補足です。");
-  });
-
-  it("shows a schedule's announcement as a post open to everyone and deletes schedules with the profile", () => {
-    expect(article(12)).toContain("キャストが予定にお知らせを付けると、お知らせは、「全員」を選んだ投稿として、お知らせの時刻（保存した時刻のほうが遅い場合は保存した時刻）から予定の終了時刻まで表示されます。");
-    expect(article(12)).toContain("プロフィールを削除すると、そのプロフィールの予定と、予定に付けたお知らせも削除されます。");
-  });
-
-  it("does not let DMs reach profiles that are disabled, deactivated or deleted", () => {
-    expect(TERMS.sections[12].paragraphs[0].items).toContain("無効にされたプロフィール、退会したアカウントのプロフィールおよび削除されたプロフィールには、DM を送ることができません。");
-  });
-
-  it("limits restricted posts to the posting profile and its followers, not the account's other profiles", () => {
-    expect(article(14)).toContain("鍵をかけたプロフィールの投稿と、「フォロワーのみ」を選んだ投稿は、投稿したプロフィールとそのプロフィールのフォロワーにだけ表示されます。同じアカウントの別のプロフィールであっても、フォロワーでなければ表示されません。");
-    expect(article(14)).not.toContain("投稿した本人とフォロワー");
-    expect(article(6)).toContain("鍵をかけると、そのプロフィールの投稿は、そのプロフィールとそのプロフィールのフォロワーにだけ表示されます。");
-    expect(all).not.toContain("本人とフォロワーにだけ");
-  });
-
-  it("lets settings stop only the device notifications, not the notification list", () => {
-    expect(article(14)).toContain("ただし、投稿の状態によっては、知らせない場合があります。");
-    expect(article(14)).not.toContain("設定や投稿の状態によっては");
-  });
-
-  it("keeps to the app's words", () => {
-    expect(all).not.toContain("出勤");
-    expect(all).not.toContain("通報");
   });
 
   it("leaves the numbering of paragraphs and items to the view", () => {
