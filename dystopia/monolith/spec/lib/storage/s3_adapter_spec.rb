@@ -56,6 +56,55 @@ RSpec.describe Storage::S3Adapter do
     end
   end
 
+  describe "#delete_prefix" do
+    def requests(operation)
+      client.api_requests.select { |call| call[:operation_name] == operation }
+    end
+
+    it "lists the objects under the prefix page by page and deletes each page" do
+      client.stub_responses(:list_objects_v2, [
+        { contents: [{ key: "media/p1/a.png" }, { key: "media/p1/b.png" }], is_truncated: true, next_continuation_token: "page-2" },
+        { contents: [{ key: "media/p1/c.png" }], is_truncated: false }
+      ])
+
+      expect(adapter.delete_prefix(prefix: "media/p1/")).to be true
+
+      expect(requests(:list_objects_v2).map { |call| call[:params].slice(:bucket, :prefix, :continuation_token) }).to eq([
+        { bucket: "media-bucket", prefix: "media/p1/" },
+        { bucket: "media-bucket", prefix: "media/p1/", continuation_token: "page-2" }
+      ])
+      expect(requests(:delete_objects).map { |call| call[:params][:delete][:objects] }).to eq([
+        [{ key: "media/p1/a.png" }, { key: "media/p1/b.png" }],
+        [{ key: "media/p1/c.png" }]
+      ])
+    end
+
+    it "does not send a delete request when nothing is under the prefix" do
+      client.stub_responses(:list_objects_v2, { contents: [] })
+
+      expect(adapter.delete_prefix(prefix: "media/p1/")).to be true
+      expect(requests(:delete_objects)).to be_empty
+    end
+
+    it "reports failure when the objects cannot be listed" do
+      client.stub_responses(:list_objects_v2, "AccessDenied")
+
+      expect(adapter.delete_prefix(prefix: "media/p1/")).to be false
+    end
+
+    it "reports failure when an object is not deleted" do
+      client.stub_responses(:list_objects_v2, { contents: [{ key: "media/p1/a.png" }] })
+      client.stub_responses(:delete_objects, errors: [{ key: "media/p1/a.png", code: "AccessDenied", message: "Access Denied" }])
+
+      expect(adapter.delete_prefix(prefix: "media/p1/")).to be false
+    end
+
+    it "does not call the bucket for an empty prefix" do
+      expect(adapter.delete_prefix(prefix: "")).to be false
+      expect(client.api_requests).to be_empty
+    end
+  end
+
   describe "#tag" do
     it "puts the tags on the object and reports success" do
       tagged = adapter.tag(key: "media/p1/m1.png", tags: { "owner-account-id" => "account-1" })

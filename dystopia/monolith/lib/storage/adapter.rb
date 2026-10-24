@@ -18,6 +18,10 @@ module Storage
       raise NotImplementedError, "#{self.class}#delete_many must be implemented"
     end
 
+    def delete_prefix(prefix:)
+      raise NotImplementedError, "#{self.class}#delete_prefix must be implemented"
+    end
+
     def tag(key:, tags:)
       raise NotImplementedError, "#{self.class}#tag must be implemented"
     end

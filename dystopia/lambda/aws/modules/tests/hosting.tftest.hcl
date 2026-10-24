@@ -330,3 +330,15 @@ run "account_purge_runs_daily" {
     error_message = "Only schedules of this account may assume the scheduler role."
   }
 }
+
+run "purge_lists_only_media_keys" {
+  command = plan
+
+  assert {
+    condition = anytrue([
+      for statement in jsondecode(aws_iam_role_policy.lambda_app.policy).Statement :
+      try(statement.Action == ["s3:ListBucket"] && statement.Resource == aws_s3_bucket.media.arn && statement.Condition.StringLike["s3:prefix"] == ["media/*"], false)
+    ])
+    error_message = "The purge must list the objects under a profile's key prefix, and the listing must stay under media/."
+  }
+}

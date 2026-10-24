@@ -81,6 +81,18 @@ RSpec.describe Storage do
     end
   end
 
+  describe ".delete_prefix" do
+    it "delegates to adapter" do
+      described_class.adapter = mock_adapter
+      allow(mock_adapter).to receive(:delete_prefix).with(prefix: "media/p1/").and_return(true)
+
+      result = described_class.delete_prefix(prefix: "media/p1/")
+
+      expect(result).to be(true)
+      expect(mock_adapter).to have_received(:delete_prefix).with(prefix: "media/p1/")
+    end
+  end
+
   describe "integration with LocalAdapter" do
     it "generates local upload URL" do
       url = described_class.upload_url(key: "casts/123/photo.jpg", content_type: "image/jpeg")

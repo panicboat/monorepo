@@ -51,6 +51,13 @@ override_resource {
   }
 }
 
+override_resource {
+  target = aws_s3_bucket.media
+  values = {
+    arn = "arn:aws:s3:::dystopia-media-production"
+  }
+}
+
 variables {
   project_name         = "services"
   environment          = "production"
@@ -74,5 +81,17 @@ run "monolith_can_delete_a_cognito_user_by_sub" {
   assert {
     condition     = jsondecode(aws_iam_policy.monolith_cognito_admin_delete.policy).Statement[0].Resource == aws_cognito_user_pool.this.arn
     error_message = "The Cognito permissions must be limited to the user pool."
+  }
+}
+
+run "monolith_lists_only_media_keys" {
+  command = plan
+
+  assert {
+    condition = anytrue([
+      for statement in jsondecode(aws_iam_policy.monolith_media_s3.policy).Statement :
+      try(statement.Action == ["s3:ListBucket"] && statement.Resource == aws_s3_bucket.media.arn && statement.Condition.StringLike["s3:prefix"] == ["media/*"], false)
+    ])
+    error_message = "The purge must list the objects under a profile's key prefix, and the listing must stay under media/."
   }
 }

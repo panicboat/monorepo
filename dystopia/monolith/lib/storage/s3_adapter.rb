@@ -43,6 +43,16 @@ module Storage
       keys.each_slice(DELETE_BATCH_SIZE).map { |batch| delete_batch(batch) }.all?
     end
 
+    def delete_prefix(prefix:)
+      return false if prefix.to_s.empty?
+
+      @client.list_objects_v2(bucket: @bucket, prefix: prefix).each_page.map { |page| delete_many(keys: page.contents.map(&:key)) }.all?
+    rescue Aws::S3::Errors::ServiceError => e
+      warn "[Storage::S3Adapter] Failed to list objects under #{prefix}: #{e.message}"
+      # FALLBACK: Return false when the objects cannot be listed.
+      false
+    end
+
     def tag(key:, tags:)
       return false if key.to_s.empty?
 
