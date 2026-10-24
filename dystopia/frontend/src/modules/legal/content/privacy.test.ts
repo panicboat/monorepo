@@ -77,6 +77,12 @@ describe("PRIVACY", () => {
     expect(section(6)).toContain("他人と共有している端末では、通知の内容が他人に見えることがあります");
   });
 
+  it("records which profiles receive notifications on a device and names the receiving profile only on a device shared by several profiles", () => {
+    expect(section(2)).toContain("その端末の購読情報（通知の配信先と、通知を暗号化するための鍵）と、その端末でどのプロフィールの通知を受け取るかを取得します");
+    expect(section(6)).toContain("1つの端末で、同じアカウントの複数のプロフィールについて通知を受け取る設定をしている場合は、通知を受け取ったプロフィールの表示名も含みます");
+    expect(section(6)).not.toContain("1つのアカウントで複数のプロフィールを使っている場合");
+  });
+
   it("keeps data in Tokyo except what the push services hold for delivery", () => {
     expect(section(7)).toContain("東京");
     expect(section(7)).toMatch(/通知の配信サービスは、配信のために、暗号化した通知を一時的に保持します/);
@@ -103,6 +109,11 @@ describe("PRIVACY", () => {
 
   it("explains that there is no sign-out", () => {
     expect(section(8)).toMatch(/ログアウトの機能がありません/);
+  });
+
+  it("deletes only the selected profile's subscription when the device switch is turned off and keeps the browser's", () => {
+    expect(section(8)).toContain("「この端末で受け取る」をオフにすると、本サービスは、運営者が取得したその端末の購読情報のうち、選んでいるプロフィールの分を削除します。ブラウザが保存した購読情報は、同じ端末の他のプロフィールでも使うため、削除しません");
+    expect(section(8)).not.toContain("両方を削除します");
   });
 
   it("states both expiry cases of the refresh token cookie without nested parentheses", () => {
@@ -177,8 +188,9 @@ describe("PRIVACY", () => {
     expect(requests).toContain("カルテとクチコミについて内容の訂正を請求された場合、運営者は、削除または非表示によって対応することがあります");
   });
 
-  it("says a minor's uploaded files may remain, as after deactivation", () => {
-    expect(section(12)).toContain("その利用者の情報を削除します。ただし、その利用者のアカウントでアップロードされた画像と動画のファイル（アバターとカバー画像を含みます）は、残る場合があります");
+  it("deletes a minor's account the way deactivation does and keeps the karte, DMs and reviews", () => {
+    expect(section(12)).toContain("その利用者による本サービスの利用を停止し、その利用者のアカウントの情報を削除します。ただし、退会した場合と同じく、第9節に定めるカルテ、DM およびクチコミは残ります");
+    expect(section(12)).not.toContain("残る場合があります");
   });
 
   it("tells users individually about changes that greatly harm them", () => {
