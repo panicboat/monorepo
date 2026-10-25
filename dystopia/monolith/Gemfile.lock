@@ -667,7 +667,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  aws-sdk-cognitoidentityprovider (~> 1.156)
+  aws-sdk-cognitoidentityprovider (~> 1.157)
   aws-sdk-s3 (~> 1.235)
   capybara
   database_cleaner-sequel
