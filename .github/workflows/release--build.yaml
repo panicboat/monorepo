@@ -11,65 +11,17 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: read
-  packages: write
-
 concurrency:
   group: release-build-${{ github.event.release.tag_name || inputs.tag }}
   cancel-in-progress: false
 
 jobs:
-  detect-component:
-    runs-on: ubuntu-latest
-    outputs:
-      service: ${{ steps.parse.outputs.service }}
-      version: ${{ steps.parse.outputs.version }}
-      working-directory: ${{ steps.resolve-dir.outputs.working-directory }}
-    steps:
-      - name: Parse tag
-        id: parse
-        env:
-          TAG: ${{ github.event.release.tag_name || inputs.tag }}
-        run: |
-          set -euo pipefail
-          if [[ ! "$TAG" =~ ^([a-z-]+)-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            echo "::error::Tag '$TAG' does not match expected pattern <service>-v<X.Y.Z>"
-            exit 1
-          fi
-          SERVICE="${BASH_REMATCH[1]}"
-          VERSION="v${BASH_REMATCH[2]}"
-          echo "service=$SERVICE" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Resolve working directory
-        id: resolve-dir
-        env:
-          SERVICE: ${{ steps.parse.outputs.service }}
-        run: |
-          set -euo pipefail
-          # Use workflow-config.yaml as the source of truth for deployable stacks.
-          while IFS= read -r path_pattern; do
-            dir="${path_pattern//\{service\}/$SERVICE}"
-            if [ -d "$dir" ]; then
-              echo "working-directory=$dir" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          done < <(yq -r '.stacks[] | select(.name == "container") | .paths[]' workflow-config.yaml)
-          echo "::error::No directory found for service '$SERVICE' under any container stack path in workflow-config.yaml"
-          exit 1
-
-  container-build:
-    needs: detect-component
-    concurrency:
-      group: image-build-${{ needs.detect-component.outputs.service }}-${{ github.sha }}
-      cancel-in-progress: false
-    uses: ./.github/workflows/reusable--container-builder.yaml
+  release-build:
+    permissions:
+      contents: read
+      packages: write
+    uses: panicboat/.github/.github/workflows/reusable--release--build.yaml@d54532665675f1843914da4b324dc2a58dd37239 # v1.0.0
     with:
-      image-name: ${{ needs.detect-component.outputs.service }}
-      working-directory: ${{ needs.detect-component.outputs.working-directory }}
       app-id: ${{ vars.APP_ID }}
-      semver-tag: ${{ needs.detect-component.outputs.version }}
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}

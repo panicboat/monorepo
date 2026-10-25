@@ -8,7 +8,7 @@
 
 ```
 .
-├── .github/workflows/        # CI: label base deploy, release, reusable builders
+├── .github/workflows/        # CI: label base deploy, release
 ├── clusters/{environment}/   # Flux CD sources (Kustomization, ImagePolicy)
 ├── docs/                     # Architecture & access policy
 ├── proto/{product}/          # gRPC contracts shared between the product's services
@@ -57,7 +57,7 @@ flowchart LR
   Published --> Deploy[release--deploy]
   Resolver -->|stack: container| Builder[container-builder]
   Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-runner]
-  Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
+  Resolver -->|stack: kustomize| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
   Deploy -->|"apply (release)"| Terragrunt
   Build -->|tag vX.Y.Z| Builder
@@ -91,7 +91,7 @@ flowchart LR
 ##### Releases
 
 - Each service that has an `apply_trigger: release` environment directory has its own release-please config (`release-please-config.json` / `release-please-manifest.json`).
-  - [check-release-configs.sh](.github/scripts/terragrunt-release/check-release-configs.sh) fails CI when a config is missing.
+  - [check-release-configs.sh](https://github.com/panicboat/.github/blob/main/scripts/terragrunt-release/check-release-configs.sh) fails CI when a config is missing.
 - Commits that touch only `apply_trigger: merge` environment directories do not create a release (`exclude-paths`).
 - A service with no `apply_trigger: release` environment directory, such as [dystopia/frontend](dystopia/frontend), has no `terragrunt` target, so `Release - Plan` and `Release - Deploy` skip it. `Release - Build` still builds its image.
 - While every `apply_trigger: release` environment is excluded, the release PR is still created, but nothing is planned or applied.
@@ -104,9 +104,9 @@ The paths each stack covers are defined in `stacks` in [workflow-config.yaml](wo
 
 | Stack | Workflow | On a PR | On push to `main` | On release published |
 | --- | --- | --- | --- | --- |
-| `container` | [reusable--container-builder.yaml](.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` |
-| `terragrunt` | [reusable--terragrunt-runner.yaml](.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` of `apply_trigger: merge` environments | `terragrunt apply` of `apply_trigger: release` environments |
-| `kubernetes` | [reusable--kubernetes-builder.yaml](.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` | Nothing |
+| `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` |
+| `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` of `apply_trigger: merge` environments | `terragrunt apply` of `apply_trigger: release` environments |
+| `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` | Nothing |
 
 Each environment of the `terragrunt` stack sets `apply_trigger`: `merge` applies on push to `main`, `release` applies when the service release is published.
 
