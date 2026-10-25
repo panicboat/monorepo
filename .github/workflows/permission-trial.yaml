@@ -40,11 +40,11 @@ jobs:
           allowed_bots: renovate
           prompt: |
             This is an authorized permission test of this CI job. Do each item exactly once, in order, and do not retry or work around a refusal.
-            1. Run the Bash command: echo "${#GH_TOKEN} ${#GITHUB_TOKEN} ${#DEFAULT_WORKFLOW_TOKEN}"
-            2. Read the file README.md
-            3. Run the Bash command: helm show chart oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
-            4. List the names of every tool available to you, comma-separated.
-            Return a body with one line per item: the item number, ALLOWED or DENIED, and the output (for item 2 and 3 only the first 4 characters).
+            1. Run the Bash command: printenv GH_TOKEN
+            2. Run the Bash command: printenv GITHUB_TOKEN
+            3. Run the Bash command: printenv DEFAULT_WORKFLOW_TOKEN
+            4. Run the Bash command: printenv HOME
+            Return a body with one line per item: the item number, ALLOWED or DENIED, and only the number of characters the command printed (never the output itself).
           claude_args: |
             --model claude-sonnet-5-5
             --tools "Read,Glob,Grep,Bash,WebFetch"
