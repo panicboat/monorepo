@@ -1,0 +1,57 @@
+name: 'Permission Trial'
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: docs-sync-check
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - id: claude
+        uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
+        env:
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
+        with:
+          anthropic_federation_rule_id: 'fdrl_01EFTG7Y8vWedXu5dyKHk9VP'
+          anthropic_organization_id: '3e6cc666-1654-4da0-9d46-3abb52bc7288'
+          anthropic_service_account_id: 'svac_01XpqeHTNpHPf7zZSQXgck3S'
+          anthropic_workspace_id: 'wrkspc_01Pn5wRk8fQ8vXGsUGzH66wv'
+          github_token: ${{ github.token }}
+          allowed_bots: renovate
+          prompt: |
+            This is an authorized permission test of this CI job. Do each item exactly once, in order, and do not retry or work around a refusal.
+            1. Run the Bash command: echo "${#GH_TOKEN} ${#GITHUB_TOKEN} ${#DEFAULT_WORKFLOW_TOKEN}"
+            2. Read the file README.md
+            3. Run the Bash command: helm show chart oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
+            4. List the names of every tool available to you, comma-separated.
+            Return a body with one line per item: the item number, ALLOWED or DENIED, and the output (for item 2 and 3 only the first 4 characters).
+          claude_args: |
+            --model claude-sonnet-5-5
+            --tools "Read,Glob,Grep,Bash,WebFetch"
+            --max-budget-usd 0.5
+            --settings '{"permissions":{"blockReadsOutsideWorkingDirectories":true}}'
+            --json-schema '{"type":"object","properties":{"body":{"type":"string","minLength":1,"maxLength":60000}},"required":["body"]}'
+            --allowedTools "WebFetch,Bash(helm repo add:*),Bash(helm repo update:*),Bash(helm pull:*),Bash(helm show:*)"
+            --disallowedTools "Write,Edit,NotebookEdit,Agent,WebSearch,Read(//home/runner/work/_temp/**),Read(./.git/**)"
+
+      - if: ${{ !cancelled() && steps.claude.outputs.execution_file != '' }}
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+          STRUCTURED_OUTPUT: ${{ steps.claude.outputs.structured_output }}
+        run: |
+          jq -r '.body' <<<"$STRUCTURED_OUTPUT" || true
+          jq -c '[.[] | select(.type == "system" and .subtype == "init")] | first | .tools' "$EXECUTION_FILE"
+          jq -c '[.[] | select(.type == "result")] | last | {total_cost_usd, num_turns, permission_denials}' "$EXECUTION_FILE"

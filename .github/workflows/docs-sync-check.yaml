@@ -28,7 +28,7 @@ jobs:
       pull-requests: write
       statuses: write
       id-token: write
-    uses: panicboat/.github/.github/workflows/reusable--docs-sync-check.yaml@c0d9db3e48ca7ba58b66af850ec91822ea816d7a # feat/claude-code-action-wif
+    uses: panicboat/.github/.github/workflows/reusable--docs-sync-check.yaml@c516a1488532838e201dc0c2c85d16a7bfd626df # feat/claude-code-action-wif
     with:
       scope-pattern: '^dystopia/'
       prompt-path: .github/prompts/docs-sync-check.md
