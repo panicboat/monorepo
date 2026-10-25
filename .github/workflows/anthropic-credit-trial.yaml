@@ -29,6 +29,7 @@ jobs:
           anthropic_service_account_id: svac_01XpqeHTNpHPf7zZSQXgck3S
           anthropic_workspace_id: wrkspc_01Pn5wRk8fQ8vXGsUGzH66wv
           github_token: ${{ github.token }}
+          show_full_output: 'true'
           prompt: 'Reply with the single word: ok'
           claude_args: |
             --model claude-haiku-5-5
