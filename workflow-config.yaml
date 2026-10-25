@@ -25,7 +25,7 @@ stacks:
       # Keep production excluded until the release workflow is enabled
       - environment: production
 
-  - name: kubernetes
+  - name: kustomize
     paths:
       - "dystopia/{service}/kubernetes/overlays/{environment}"
       - "system-components/{service}/kubernetes/overlays/{environment}"

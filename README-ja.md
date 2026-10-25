@@ -8,7 +8,7 @@
 
 ```
 .
-├── .github/workflows/        # CI ワークフロー（label base deploy / release / reusable builders）
+├── .github/workflows/        # CI ワークフロー（label base deploy / release）
 ├── clusters/{environment}/   # Flux CD ソース（Kustomization / ImagePolicy）
 ├── docs/                     # アーキテクチャ・アクセスポリシー
 ├── proto/{product}/          # product 内のサービス間で共有する gRPC コントラクト
@@ -57,7 +57,7 @@ flowchart LR
   Published --> Deploy[release--deploy]
   Resolver -->|stack: container| Builder[container-builder]
   Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-runner]
-  Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
+  Resolver -->|stack: kustomize| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
   Deploy -->|"apply (release)"| Terragrunt
   Build -->|tag vX.Y.Z| Builder
@@ -91,7 +91,7 @@ flowchart LR
 ##### Releases
 
 - `apply_trigger: release` の environment ディレクトリを持つ service は、それぞれ release-please の設定（`release-please-config.json` / `release-please-manifest.json`）を持つ。
-  - 設定がないと [check-release-configs.sh](.github/scripts/terragrunt-release/check-release-configs.sh) が CI を失敗させる。
+  - 設定がないと [check-release-configs.sh](https://github.com/panicboat/.github/blob/main/scripts/terragrunt-release/check-release-configs.sh) が CI を失敗させる。
 - `apply_trigger: merge` の environment ディレクトリだけを変える commit は、release を作らない（`exclude-paths`）。
 - `apply_trigger: release` の environment ディレクトリを持たない service（例: [dystopia/frontend](dystopia/frontend)）は `terragrunt` の target がないため、`Release - Plan` と `Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
 - `apply_trigger: release` の environment がすべて除外されている間も release PR は作られるが、plan も apply もされない。
@@ -104,9 +104,9 @@ flowchart LR
 
 | Stack | Workflow | PR | `main` への push | release の公開 |
 | --- | --- | --- | --- | --- |
-| `container` | [reusable--container-builder.yaml](.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` の tag で GHCR に push |
-| `terragrunt` | [reusable--terragrunt-runner.yaml](.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `apply_trigger: merge` の environment を `terragrunt apply` | `apply_trigger: release` の environment を `terragrunt apply` |
-| `kubernetes` | [reusable--kubernetes-builder.yaml](.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない | 何もしない |
+| `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` の tag で GHCR に push |
+| `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `apply_trigger: merge` の environment を `terragrunt apply` | `apply_trigger: release` の environment を `terragrunt apply` |
+| `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない | 何もしない |
 
 `terragrunt` stack の environment は、それぞれ `apply_trigger` を持つ。`merge` は `main` への push で apply し、`release` は service の release が公開されたときに apply する。
 

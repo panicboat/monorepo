@@ -6,61 +6,11 @@ on:
     - cron: '0 16 * * *'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
-  cleanup-container:
-    name: 'Cleanup ${{ matrix.service }}'
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: ["monolith", "frontend", "pennyworth"]
-      fail-fast: false
-    steps:
-      - name: Clean old PR tags
-        uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          package: ${{ github.event.repository.name }}/${{ matrix.service }}
-          delete-tags: ^pr-
-          older-than: 1 days
-          exclude-tags: ^(latest|v\d+\.\d+\.\d+.*)$
-          use-regex: true
-          validate: true
-
-      - name: Clean SHA tags
-        uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          package: ${{ github.event.repository.name }}/${{ matrix.service }}
-          delete-tags: ^sha-
-          exclude-tags: ^(latest|v\d+\.\d+\.\d+.*)$
-          use-regex: true
-          validate: true
-
-      - name: Clean untagged images
-        uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          package: ${{ github.event.repository.name }}/${{ matrix.service }}
-          keep-n-untagged: 0
-          delete-orphaned-images: true
-          delete-ghost-images: true
-          delete-partial-images: true
-          exclude-tags: ^(latest|v\d+\.\d+\.\d+.*)$
-          use-regex: true
-          validate: true
-
-  summary:
-    name: 'Cleanup Summary'
-    needs: cleanup-container
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Summary
-        run: |
-          echo "📊 Cleanup Summary"
-          echo "Services: monorepo/monolith, monorepo/frontend, monorepo/pennyworth"
-          echo "Cleanup job status: ${{ needs.cleanup-container.result }}"
+  cleanup:
+    permissions:
+      contents: read
+      packages: write
+    uses: panicboat/.github/.github/workflows/reusable--cleanup-container-image.yaml@d54532665675f1843914da4b324dc2a58dd37239 # v1.0.0
+    with:
+      services: '["monolith","frontend","pennyworth"]'
