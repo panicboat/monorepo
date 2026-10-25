@@ -1,0 +1,75 @@
+# Throwaway trial: checks whether the Agent SDK with Anthropic WIF is paid by the Max plan API credits.
+name: 'Agent SDK WIF Trial'
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: docs-sync-check
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      - name: Install the Agent SDK
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir -p trial && cd trial
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund @anthropic-ai/claude-agent-sdk@0.3.310 @actions/core@3.0.1
+
+      - name: Call Claude through the Agent SDK with WIF
+        working-directory: ${{ runner.temp }}/trial
+        env:
+          ANTHROPIC_FEDERATION_RULE_ID: fdrl_01EFTG7Y8vWedXu5dyKHk9VP
+          ANTHROPIC_ORGANIZATION_ID: 3e6cc666-1654-4da0-9d46-3abb52bc7288
+          ANTHROPIC_SERVICE_ACCOUNT_ID: svac_01XpqeHTNpHPf7zZSQXgck3S
+          ANTHROPIC_WORKSPACE_ID: wrkspc_01Pn5wRk8fQ8vXGsUGzH66wv
+        run: |
+          cat > trial.mjs <<'JS'
+          import * as core from '@actions/core';
+          import { query } from '@anthropic-ai/claude-agent-sdk';
+          import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+          import { join } from 'node:path';
+          const dir = join(process.env.RUNNER_TEMP, 'anthropic-wif');
+          const configDir = join(dir, 'config');
+          mkdirSync(join(configDir, 'configs'), { recursive: true, mode: 0o700 });
+          writeFileSync(join(configDir, 'configs', 'default.json'), JSON.stringify({ version: '1.0', authentication: { type: 'oidc_federation' } }), { mode: 0o600 });
+          const tokenFile = join(dir, 'identity-token');
+          const token = await core.getIDToken('https://api.anthropic.com');
+          core.setSecret(token);
+          writeFileSync(tokenFile, token, { mode: 0o600 });
+          const env = {
+            PATH: process.env.PATH,
+            HOME: process.env.HOME,
+            ANTHROPIC_FEDERATION_RULE_ID: process.env.ANTHROPIC_FEDERATION_RULE_ID,
+            ANTHROPIC_ORGANIZATION_ID: process.env.ANTHROPIC_ORGANIZATION_ID,
+            ANTHROPIC_SERVICE_ACCOUNT_ID: process.env.ANTHROPIC_SERVICE_ACCOUNT_ID,
+            ANTHROPIC_WORKSPACE_ID: process.env.ANTHROPIC_WORKSPACE_ID,
+            ANTHROPIC_IDENTITY_TOKEN_FILE: tokenFile,
+            ANTHROPIC_CONFIG_DIR: configDir,
+            ANTHROPIC_PROFILE: 'default',
+          };
+          try {
+            for await (const message of query({
+              prompt: 'Reply with the single word: ok',
+              options: { model: 'claude-haiku-5-5', maxTurns: 1, settingSources: [], permissionMode: 'dontAsk', allowedTools: [], env },
+            })) {
+              if (message.type === 'system' && message.subtype === 'init') console.log(JSON.stringify({ init: { model: message.model, apiKeySource: message.apiKeySource } }));
+              if (message.type === 'assistant') console.log(JSON.stringify({ assistant: message.message.content }));
+              if (message.type === 'result') console.log(JSON.stringify({ subtype: message.subtype, is_error: message.is_error, result: message.result, total_cost_usd: message.total_cost_usd, errors: message.errors }));
+            }
+          } finally {
+            rmSync(dir, { recursive: true, force: true });
+          }
+          JS
+          node trial.mjs
