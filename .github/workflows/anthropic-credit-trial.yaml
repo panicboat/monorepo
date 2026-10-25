@@ -1,0 +1,36 @@
+# Throwaway trial: checks whether claude-code-action with Anthropic WIF is paid by the Max plan API credits.
+name: 'Anthropic Credit Trial'
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: docs-sync-check
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Call Claude through claude-code-action
+        id: claude
+        uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
+        with:
+          anthropic_federation_rule_id: fdrl_01EFTG7Y8vWedXu5dyKHk9VP
+          anthropic_organization_id: 3e6cc666-1654-4da0-9d46-3abb52bc7288
+          anthropic_service_account_id: svac_01XpqeHTNpHPf7zZSQXgck3S
+          anthropic_workspace_id: wrkspc_01Pn5wRk8fQ8vXGsUGzH66wv
+          github_token: ${{ github.token }}
+          prompt: 'Reply with the single word: ok'
+          claude_args: |
+            --model claude-haiku-5-5
+            --max-turns 1
+            --allowedTools ""
