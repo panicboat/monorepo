@@ -1,4 +1,4 @@
-# Judges with Gemini on Vertex AI whether a pull request keeps the dystopia docs in sync and reports the verdict as the Docs Sync Check commit status.
+# Judges with Claude whether a pull request keeps the dystopia docs in sync and reports the verdict as the Docs Sync Check commit status.
 name: 'Docs Sync Check'
 
 on:
@@ -28,7 +28,7 @@ jobs:
       pull-requests: write
       statuses: write
       id-token: write
-    uses: panicboat/.github/.github/workflows/reusable--docs-sync-check.yaml@e7a229f86dc6e9676d29ec12601da9a1996a0765 # v2.0.0
+    uses: panicboat/.github/.github/workflows/reusable--docs-sync-check.yaml@cf98ce094f5e91cfc9072b5e401d9ed371bf0719 # v3.0.0
     with:
       scope-pattern: '^dystopia/'
       prompt-path: .github/prompts/docs-sync-check.md
