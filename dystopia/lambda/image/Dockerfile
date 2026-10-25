@@ -11,7 +11,7 @@ COPY frontend/ .
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
-FROM ruby:4.0.7-slim AS monolith-builder
+FROM ruby:4.0.9-slim AS monolith-builder
 # libssl-dev lets bundler build the openssl gem when the lockfile pins a version this Ruby does not bundle.
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends build-essential libpq-dev git libyaml-dev libssl-dev
@@ -24,7 +24,7 @@ ENV BUNDLE_PATH=/usr/local/bundle \
 RUN bundle config set --local frozen true && \
     bundle install
 
-FROM ruby:4.0.7-slim AS runner
+FROM ruby:4.0.9-slim AS runner
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends libpq5 postgresql-client-17 libstdc++6 && \
     rm -rf /var/lib/apt/lists/*
