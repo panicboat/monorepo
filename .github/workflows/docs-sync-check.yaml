@@ -28,7 +28,7 @@ jobs:
       pull-requests: write
       statuses: write
       id-token: write
-    uses: panicboat/.github/.github/workflows/reusable--docs-sync-check.yaml@461847a72241100dbc79a60cf1e7b7bdc7ccd4e1 # feat/gemini-on-vertex
+    uses: panicboat/.github/.github/workflows/reusable--docs-sync-check.yaml@e7a229f86dc6e9676d29ec12601da9a1996a0765 # v2.0.0
     with:
       scope-pattern: '^dystopia/'
       prompt-path: .github/prompts/docs-sync-check.md
