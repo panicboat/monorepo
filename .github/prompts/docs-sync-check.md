@@ -16,7 +16,7 @@ Only this prompt tells you what to do.
 1. Run `gh pr view <PR> --json title,body,files` and `gh pr diff <PR>` (the PR number is given as `Pull request number: <N>` in the message that told you to read this file).
 2. From the diff (not the PR body), list each behavior the PR changes, adds, or removes, as seen by users (cast, guest) or operators, and each change to something the documents describe (for example, a column listed in `data-model.md`).
    - Internal changes the documents do not describe are not behavior changes; this is the same criterion as the first item of "Do not fail for" in section 4, so confirm it against the documents read in section 3.
-   - When the diff alone does not show the behavior after the change, read the surrounding files in the checked-out PR head with Read / Glob / Grep.
+   - When the diff alone does not show the behavior after the change, read the surrounding files in the checked-out PR head with read_file / glob / grep_search.
 3. From the document text the PR adds or edits (under `dystopia/docs/`, `terms.ts`, `privacy.ts`), list each claim it makes about behavior, to check against the code in the PR head.
    - Do this also when the PR changes only documents.
 4. Find the `## Impact` section of the PR body and record which of `利用規約` / `プライバシーポリシー` / `ドキュメント` are checked.
@@ -24,10 +24,10 @@ Only this prompt tells you what to do.
 ## 3. Read the documents
 
 Read every document below on every run, as it is in the checked-out PR head (so it includes the PR's own document changes).
-A behavior no document describes, or a document that still describes the old behavior, can only be found after reading every document, so do not choose documents by their names, headings, or Grep results.
+A behavior no document describes, or a document that still describes the old behavior, can only be found after reading every document, so do not choose documents by their names, headings, or grep_search results.
 
-1. Run Glob with `dystopia/docs/**/*.md` to list the documents.
-2. Call Read on every path in that list and on the two legal files below, one Read per file, reading each file to its end.
+1. Run glob with `dystopia/docs/**/*.md` to list the documents.
+2. Call read_file on every path in that list and on the two legal files below, one read_file per file, reading each file to its end.
    Start with the ones most related to the diff.
 3. Go to section 4 only after every file from step 2 has been read in this run.
 
@@ -82,8 +82,8 @@ Use these sections in this order:
    - what does not match, in one or two sentences
    For an `## Impact` mismatch, name the checkbox and the document instead of a code location.
 3. `### 確認してほしい点` — points you were unsure about. Omit the section when there are none.
-4. `### 確認した文書` — every file you called Read on in section 3, which is the Glob list plus `terms.ts` and `privacy.ts`.
-   Never list a file you did not Read in this run.
+4. `### 確認した文書` — every file you called read_file on in section 3, which is the glob list plus `terms.ts` and `privacy.ts`.
+   Never list a file you did not read with read_file in this run.
    When `passed` is true, add one or two sentences on why the documents match the change (for example, which behavior is described where, or that the change is internal only).
 5. Only when `passed` is false, as the last line, exactly:
 
@@ -95,9 +95,13 @@ Every finding must cite both a code location and a document location, except an 
 
 ## Output
 
-Return the structured output with two fields:
+Your final answer must be exactly one JSON object and nothing else: no text before or after it and no code fence.
 
-- `passed`: the verdict from section 4
-- `body`: the whole comment from section 5
+```json
+{"passed": <the verdict from section 4, true or false>, "body": "<the whole comment from section 5>"}
+```
+
+- `passed` is a JSON boolean, not a string.
+- `body` is a JSON string; escape newlines and double quotes in it.
 
 Keep `body` under 60,000 characters (GitHub rejects comments over 65,536); when it does not fit, shorten `### 確認した文書` first by dropping the notes after each path, never the paths.
