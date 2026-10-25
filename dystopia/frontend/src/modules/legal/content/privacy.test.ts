@@ -1,23 +1,23 @@
 import { describe, expect, it } from "vitest";
 import type { LegalSection } from "../types";
-import { EDITION, EFFECTIVE_DATE, OPERATOR } from "./operator";
+import { EDITION, EFFECTIVE_DATE, OPERATOR, OPERATOR_IDENTITY_ON_REQUEST } from "./operator";
 import { PRIVACY } from "./privacy";
 
 const HEADINGS = [
-  "運営者と窓口", "取得する情報", "利用目的", "他の利用者に表示される情報", "第三者への提供",
-  "委託と外部への送信", "保存場所と安全管理", "Cookie と端末内の保存", "保存期間と削除", "DM とログ",
-  "開示などの請求", "18歳未満の方", "改定",
+  "運営者と窓口", "取得する情報", "利用目的", "他の利用者に表示される情報", "カルテ・クチコミ・足跡の共有",
+  "第三者への提供", "外部のサービスの利用と外部への送信", "保存場所と安全管理", "Cookie と端末内の保存", "保存期間と削除",
+  "DM とログ", "開示などの請求", "18歳未満の方", "改定",
 ];
 
 const text = (section: LegalSection) =>
   [section.heading, ...section.paragraphs.flatMap((paragraph) => [paragraph.text, ...(paragraph.items ?? [])])].join("\n");
 
-const section = (number: number) => text(PRIVACY.sections[number - 1]);
+const section = (heading: string) => text(PRIVACY.sections.find((entry) => entry.heading === heading)!);
 
 const all = [PRIVACY.title, PRIVACY.preamble, ...PRIVACY.sections.map(text)].join("\n");
 
 describe("PRIVACY", () => {
-  it("has the 13 sections in order", () => {
+  it("has the sections in order", () => {
     expect(PRIVACY.sections.map((entry) => entry.heading)).toEqual(HEADINGS);
     expect(PRIVACY.title).toBe("プライバシーポリシー");
     expect(PRIVACY.numbering).toBe("section");
@@ -25,240 +25,46 @@ describe("PRIVACY", () => {
     expect(PRIVACY.effectiveDate).toBe(EFFECTIVE_DATE);
   });
 
-  it("names the operator as the contact", () => {
-    const contact = section(1);
-
-    expect(contact).toContain(OPERATOR.name);
-    expect(contact).toContain(OPERATOR.address);
-    expect(contact).toContain(OPERATOR.contact);
+  it("names the contact and answers the operator's identity on request", () => {
+    expect(section("運営者と窓口")).toContain(OPERATOR.contact);
+    expect(section("運営者と窓口")).toContain(OPERATOR_IDENTITY_ON_REQUEST);
+    expect(all).not.toContain("【運営者氏名】");
+    expect(all).not.toContain("【住所】");
   });
 
-  it("lists the phone number and its hash, and says the age answer is not kept", () => {
-    const collected = section(2);
-
-    expect(collected).toContain("電話番号");
-    expect(collected).toContain("ハッシュ");
-    expect(collected).toMatch(/「年齢の確認」への回答は、保存しません/);
-    expect(collected).toContain("電話番号、ハッシュ値、パスワードおよびパスワードを確認するための情報は、いずれも、本サービスのデータベースには保存しません");
+  it("keeps the phone number and the password out of the database", () => {
+    expect(section("取得する情報")).toContain("電話番号、ハッシュ値、パスワードおよびパスワードを確認するための情報は、いずれも、本サービスのデータベースには保存しません。");
   });
 
-  it("names the profile actions with the screen verbs", () => {
-    expect(section(2)).toContain("利用者がプロフィールを作り、編集し、無効にし、または有効に戻した時に、次の情報を取得します");
+  it("shows the karte to every cast and not to the guest it is about", () => {
+    expect(section("カルテ・クチコミ・足跡の共有")).toContain("カルテの内容（評価、段階、結果、タグ、補足および日付）、書いたキャストと対象のゲストのプロフィールの情報、および対象のゲストについてのカルテの評価の集計は、すべてのキャストに表示されます。");
+    expect(section("カルテ・クチコミ・足跡の共有")).toContain("ゲストには、本サービス上では、自分についてのカルテも表示されません。");
   });
 
-  it("limits the fields it does not ask for to registration and lists what inquiries bring in", () => {
-    const collected = section(2);
-
-    expect(collected).toContain("登録の際に、メールアドレス、本名および生年月日の入力を求めません");
-    expect(collected).not.toMatch(/メールアドレス、本名および生年月日を取得しません/);
-    expect(collected).toMatch(/問い合わせ、苦情、申出または第11節の請求を受けた場合/);
-    expect(collected).toContain("本人であることや代理の権限を確認するために提出された書類に書かれた情報");
+  it("lets the operator read DMs only in the cases the terms set", () => {
+    expect(section("DM とログ")).toContain("運営者が DM の内容を確認するのは、利用規約の「DM」の条に定める場合に限ります。");
   });
 
-  it("says the app removes location and device metadata from uploaded images and videos on the device", () => {
-    expect(section(2)).toContain("利用者の端末で取り除きます");
-    expect(section(2)).toContain("取り除けない場合があります");
-  });
+  it("keeps the karte, delivered DMs and reviews after deactivation and deletions", () => {
+    const remaining = PRIVACY.sections.find((entry) => entry.heading === "保存期間と削除")!.paragraphs.find((paragraph) => paragraph.text.includes("次の情報は残ります"));
 
-  it("uses information to send notices about the service", () => {
-    expect(PRIVACY.sections[2].paragraphs[0].items).toContain("本サービスに関するお知らせ（利用規約や本ポリシーの変更、本サービスの終了などを含みます）を伝えること");
-  });
-
-  it("names the processors and the push services abroad", () => {
-    const processors = section(6);
-
-    expect(processors).toContain("Amazon Web Services");
-    expect(processors).toMatch(/外国にある場合があります/);
-    expect(processors).toMatch(/広告[^。]*使っていません/);
-  });
-
-  it("says how long the push services hold a notification and that shared devices show it", () => {
-    expect(section(6)).toMatch(/最大24時間/);
-    expect(section(6)).toContain("他人と共有している端末では、通知の内容が他人に見えることがあります");
-  });
-
-  it("records which profiles receive notifications on a device and names the receiving profile only on a device shared by several profiles", () => {
-    expect(section(2)).toContain("その端末の購読情報（通知の配信先と、通知を暗号化するための鍵）と、その端末でどのプロフィールの通知を受け取るかを取得します");
-    expect(section(6)).toContain("1つの端末で、同じアカウントの複数のプロフィールについて通知を受け取る設定をしている場合は、通知を受け取ったプロフィールの表示名も含みます");
-    expect(section(6)).not.toContain("1つのアカウントで複数のプロフィールを使っている場合");
-  });
-
-  it("keeps data in Tokyo except what the push services hold for delivery", () => {
-    expect(section(7)).toContain("東京");
-    expect(section(7)).toMatch(/通知の配信サービスは、配信のために、暗号化した通知を一時的に保持します/);
-  });
-
-  it("limits the Tokyo statement to the service's functions and stores inquiries with the contact service", () => {
-    expect(section(7)).toContain("本サービスの機能を通じて取得した情報は、AWS の東京リージョン");
-    expect(section(7)).toContain("第2節の問い合わせなどで運営者が取得した情報は、運営者の連絡先として使うサービスに保存します");
-    expect(section(6)).toContain("本サービスの機能を通じて取得した情報は、これらのサービスに保存され、または送られます");
-  });
-
-  it("limits the guest's view of karte to the service screens as the terms do", () => {
-    expect(section(4)).toContain("ゲストには、本サービス上では、自分についてのカルテも表示されません");
-  });
-
-  it("limits restricted posts to the posting profile and its followers, not the account's other profiles", () => {
-    expect(section(4)).toContain("鍵をかけたプロフィールの投稿と、「フォロワーのみ」を選んだ投稿は、投稿したプロフィールとそのプロフィールのフォロワーにだけ表示されます。同じアカウントの別のプロフィールであっても、フォロワーでなければ表示されません。");
-    expect(section(4)).toContain("表示する期間を指定した投稿は、その期間の外では、投稿したプロフィールにだけ表示されます。");
-    expect(section(4)).not.toContain("投稿した本人");
-  });
-
-  it("hides the comments of profiles that the viewer blocks from a post's comments and replies", () => {
-    expect(section(4)).toContain("ただし、利用者がその時に使っているプロフィールでブロックしているプロフィールのコメントは、投稿に付いたコメントと返信の一覧には表示されません。");
-  });
-
-  it("leaves casts in a block relation out of the schedule search", () => {
-    expect(section(4)).toContain("ただし、利用者がその時に使っているプロフィールとブロックの関係にあるキャストの予定は、予定検索には表示されません。");
-  });
-
-  it("shows every cast the rating summary of the karte about a guest", () => {
-    const karte = PRIVACY.sections[3].paragraphs.find((paragraph) => paragraph.text === "カルテの次の情報は、すべてのキャストに表示されます。");
-
-    expect(karte?.items).toContain("対象のゲストについてのカルテの評価の集計（評価の平均、評価したプロフィールの数および評価済みのカルテの件数）");
-  });
-
-  it("shows a cast's rating summary to every signed-in user, including ratings from guests in a block relation", () => {
-    expect(section(4)).toContain("キャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）は、キャストがプロフィールに鍵をかけていても、ログインしているすべての利用者に表示されます。この集計には、ブロックの関係にあるゲストの評価も含まれます。");
-  });
-
-  it("lets each profile stop leaving footprints and records none between profiles in a block relation", () => {
-    expect(section(4)).toContain("利用者は、プロフィールごとに、通知設定の「他人のプロフィール訪問時に足跡を残す」をオフにして、そのプロフィールで訪れたときに足跡を残さないようにできます（初期設定ではオンです）。ブロックの関係にあるプロフィールの間では、足跡は記録されません。");
-  });
-
-  it("shows a schedule's date and time on its announcement post under the rules for posts open to everyone", () => {
-    expect(section(4)).toContain("予定にお知らせを付けた場合は、お知らせの投稿にも予定の日付と時刻が表示されます。お知らせの投稿は、「全員」を選んだ投稿と同じ規則で表示されます。");
-  });
-
-  it("sends the selected profile ID with every request except sign-in requests and direct transfers of images and videos", () => {
-    expect(section(8)).toContain("ただし、選んでいるプロフィールの ID は、どのプロフィールで操作しているかを示すため、本サービスへの通信（登録、ログイン、パスワードの再設定およびログインの状態の確認のための通信と、画像と動画を保存先と直接やり取りする通信を除きます）のたびに送ります。");
-  });
-
-  it("uses the app's word for the note of a karte or review event", () => {
-    expect(all).not.toContain("メモ");
-    expect(section(2)).toContain("カルテとクチコミ（対象、評価、段階、結果、タグ、補足および日付を含みます）");
-  });
-
-  it("shows a review of a party who left the way the terms do and hides reviews in a block relation", () => {
-    const display = PRIVACY.sections[3].paragraphs.find((paragraph) => paragraph.text.startsWith("クチコミの内容（評価、段階、結果、タグ、補足および日付）"));
-
-    expect(display?.text).toBe(
-      "クチコミの内容（評価、段階、結果、タグ、補足および日付）と、書いたゲストの表示名、ユーザー名およびアバターは、対象のキャストの投稿を見ることができる利用者に表示されます。" +
-        "ただし、利用者がその時に使っているプロフィールと、書いたゲストまたは対象のキャストとの間にブロックの関係があるクチコミは、その利用者には表示されません。プロフィールのクチコミの一覧では、対象のキャストは自分へのクチコミを、書いたゲストは自分が書いたクチコミを、ブロックの関係にかかわらず見ることができます。" +
-        "書いたゲストまたは対象のキャストがプロフィールを無効にし、退会し、またはプロフィールを削除しても、クチコミは残ります。この場合、そのプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は表示されず、対象のキャストが表示されないクチコミは、書いたゲストの投稿を見ることができる利用者に表示されます。",
-    );
-  });
-
-  it("explains that there is no sign-out", () => {
-    expect(section(8)).toMatch(/ログアウトの機能がありません/);
-  });
-
-  it("deletes only the selected profile's subscription when the device switch is turned off and keeps the browser's", () => {
-    expect(section(8)).toContain("「この端末で受け取る」をオフにすると、本サービスは、運営者が取得したその端末の購読情報のうち、選んでいるプロフィールの分を削除します。ブラウザが保存した購読情報は、同じ端末の他のプロフィールでも使うため、削除しません");
-    expect(section(8)).not.toContain("両方を削除します");
-  });
-
-  it("states both expiry cases of the refresh token cookie without nested parentheses", () => {
-    expect(section(8)).toContain("この Cookie は、ログインした時から30日で消えます。ただし、その後にアクセストークンを更新した場合は、最後に更新した時から30日で消えます）");
-    expect(section(8)).not.toMatch(/（[^（）]*（[^（）]*）[^（）]*）/);
-  });
-
-  it("says deactivation also ends the login on the account's other devices", () => {
-    expect(section(8)).toMatch(/そのアカウントでログインしている他の端末でも[^。]*ログインの状態が終わります/);
-    expect(section(8)).toContain("通常は、それぞれの端末のアクセストークンの有効期間が切れた時（退会の操作から1時間以内）に");
-  });
-
-  it("states backup and log periods without a deletion date for deactivated accounts", () => {
-    const retention = section(9);
-
-    expect(retention).toMatch(/7\s*日/);
-    expect(retention).toMatch(/30\s*日/);
-
-    const deactivation = PRIVACY.sections[8].paragraphs
-      .map((paragraph) => [paragraph.text, ...(paragraph.items ?? [])].join("\n"))
-      .filter((paragraph) => paragraph.includes("退会"));
-    expect(deactivation.length).toBeGreaterThan(0);
-    for (const paragraph of deactivation) expect(paragraph).not.toMatch(/30\s*日/);
-  });
-
-  it("keeps posts until the user deletes them, except DMs that cannot be deleted", () => {
-    expect(section(9)).toContain("投稿等（DM を除きます）は、利用者が削除するまで保存します。");
-    expect(section(9)).toContain("DM は、送った利用者も受け取った利用者も削除できません。");
-  });
-
-  it("deletes the replies to a deleted comment, including replies by other users", () => {
-    expect(section(9)).toContain("コメントを削除すると、そのコメントへの返信も、他の利用者が書いたものを含めて削除されます。");
-  });
-
-  it("keeps footprints and notification history until a related profile is deleted", () => {
-    expect(section(9)).toContain("足跡と通知の履歴は、利用者が削除することはできず、関係するプロフィールが削除されるまで残ります。");
-  });
-
-  it("keeps uploaded files until the profile is deleted and lists what deleting a profile removes", () => {
-    const files = PRIVACY.sections[8].paragraphs.find((paragraph) => paragraph.text.startsWith("アップロードされた画像と動画のファイル"));
-
-    expect(files?.text).toContain("そのファイルを使った投稿やコメントを削除し、またはアバターやカバー画像を変更した後も残ります。");
-    expect(files?.text).not.toContain("残る場合があります");
-    expect(files?.text).toContain("プロフィールを削除したときはそのプロフィールで、退会したアカウントの情報を削除するときはそのアカウントのすべてのプロフィールで、投稿、コメント、いいね、ブックマーク、予定、足跡、フォロー、ブロック、通知などの情報を削除し、アップロードしたファイルも削除します。");
-  });
-
-  it("says karte, DMs and reviews stay after deactivation and that a review's rating stays in the cast's average", () => {
-    const retention = section(9);
-
-    expect(retention).toContain("クチコミは、書いたゲストと対象のキャストのどちらが退会し、またはプロフィールを削除した場合も残ります。この場合、退会した利用者または削除されたプロフィールの表示名、ユーザー名、アバターなどのプロフィールの情報は、表示されなくなります。書いたゲストが退会し、またはプロフィールを削除しても、そのクチコミの評価は、対象のキャストの評価の集計（評価の平均、評価した人数および評価済みのクチコミの件数）に含まれます（利用規約第6条第4項および第18条第7項）。");
-    expect(retention).not.toContain("削除の対象になります");
-    expect(retention).not.toContain("クチコミも削除されます");
-    expect(retention).toContain("利用者が退会すると、そのアカウントのすべてのプロフィールと投稿等は、他の利用者に表示されなくなります（次の3つの段落に定めるカルテ、DM およびクチコミを除きます）。運営者は、退会したアカウントの情報を削除します。ただし、次の3つの段落に定めるカルテ、DM およびクチコミは、退会した後も残ります。");
-    expect(retention).not.toContain("次の2つの段落");
-    expect(retention).not.toContain("前の段落の画像と動画のファイルも、残る場合があります");
-    expect(retention).toContain("アップロードしたファイルも削除します");
-  });
-
-  it("lists only the counts that include a deactivated account until deletion, not the cast's rating", () => {
-    const counts = PRIVACY.sections[8].paragraphs.find((paragraph) => paragraph.text.includes("削除が済むまでの間、次のものには"));
-
-    expect(counts?.text).toContain("（利用規約第18条第2項）");
-    expect(counts?.text).not.toContain("第18条第2項および第7項");
-    expect(counts?.items).toEqual([
-      "他の利用者の投稿のいいねとコメントの数",
-      "他の利用者のプロフィールの「フォロー中」と「フォロワー」の数",
+    expect(remaining?.text).toBe("利用者が退会し、プロフィールを削除し、または運営者が利用者のアカウントを削除した場合（「18歳未満の方」の節の場合と、利用規約の「違反への措置」の条の場合）も、その利用者またはそのプロフィールに関係する次の情報は残ります。この場合、その利用者またはそのプロフィールの表示名、ユーザー名、アバターなどの情報は、表示されなくなります。");
+    expect(remaining?.items).toEqual([
+      "カルテ",
+      "相手に届いた DM",
+      "クチコミ（クチコミの評価は、対象のキャストの評価の集計に含まれたままです）",
     ]);
   });
 
-  it("limits when the operator reads messages", () => {
-    expect(section(10)).toContain("申出");
-    expect(section(10)).toMatch(/DM の内容を見るのは、利用者その他の方からの申出[^。]*法令にもとづく場合に限ります/);
+  it("does not use ad or analytics tools", () => {
+    expect(all).toContain("運営者は、広告を配信するツールと、アクセスを解析するツールを使っていません。");
   });
 
-  it("lists only the log fields recorded now and keeps the IDs optional", () => {
-    const fields = PRIVACY.sections[9].paragraphs.find((paragraph) => paragraph.text.includes("次の情報をログに記録します"));
-
-    expect(fields?.items).toEqual(["処理した時刻", "操作の種類", "処理にかかった時間", "処理の結果（エラーの場合は、エラーの内容）"]);
-    expect(section(10)).toContain("処理ごとに割り当てる識別子、アカウントの ID およびプロフィールの ID をログに記録することがあります");
-  });
-
-  it("lets the person, including one who left, make requests and checks identity without public data", () => {
-    const requests = section(11);
-
-    expect(requests).toContain("本人（退会した方を含みます）は、運営者の連絡先に");
-    expect(requests).toContain("登録した電話番号の照合など、運営者が定める方法で確認します");
-    expect(requests).not.toContain("ユーザー名の照合");
-    expect(requests).toContain("カルテとクチコミについて内容の訂正を請求された場合、運営者は、削除または非表示によって対応することがあります");
-  });
-
-  it("deletes a minor's account the way deactivation does and keeps the karte, DMs and reviews", () => {
-    expect(section(12)).toContain("その利用者による本サービスの利用を停止し、その利用者のアカウントの情報を削除します。ただし、退会した場合と同じく、第9節に定めるカルテ、DM およびクチコミは残ります");
-    expect(section(12)).not.toContain("残る場合があります");
-  });
-
-  it("tells users individually about changes that greatly harm them", () => {
-    expect(section(13)).toContain("利用者の利益を大きく損なう改定は、本サービス上での表示に加えて、個別のお知らせなどの方法でも利用者に伝えます");
-  });
-
-  it("keeps to what the code does", () => {
-    expect(all).not.toContain("会員限定");
-    expect(all).not.toContain("通報");
-    expect(all).not.toContain("出勤");
+  it("leaves out implementation values, setting and infrastructure names, and words the app does not use", () => {
+    expect(all).not.toMatch(/[0-9０-９一二三四五六七八九十百千]+\s*(?:日|時間|字|週間|か月|ヶ月|カ月|年|件|回|枚)/);
+    for (const word of ["出勤", "通報", "メモ", "非表示", "個別のお知らせ", "この端末で受け取る", "他人のプロフィール訪問時に足跡を残す", "localStorage", "AWS", "Amazon", "東京リージョン"]) {
+      expect(all).not.toContain(word);
+    }
   });
 
   it("leaves the numbering of headings and items to the view", () => {
