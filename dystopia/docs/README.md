@@ -73,3 +73,5 @@ flowchart LR
 | bookmarks | ブックマーク | [ブックマーク](features/bookmarks.md) |
 | footprints | 足跡 | [足跡](features/footprints.md) |
 | billing | 課金（未稼働） | [課金](features/billing.md) |
+
+<!-- trial: fix pass -->
