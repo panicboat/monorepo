@@ -6,7 +6,7 @@ import { ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { useFollowRequests } from "../hooks/useFollowRequests";
 
 export function FollowRequestsList() {
-  const { requests, pendingCount, loading, error, approve, reject, approveAll } = useFollowRequests();
+  const { requests, pendingCount, loading, loadingMore, error, approve, reject, approveAll, hasMore, loadMore } = useFollowRequests();
 
   const onApproveAll = async () => {
     if (!confirm(`${pendingCount} 件の申請をすべて承認しますか？`)) return;
@@ -48,6 +48,13 @@ export function FollowRequestsList() {
           </div>
         );
       })}
+      {hasMore && (
+        <div className="flex justify-center px-4 py-6">
+          <Button variant="secondary" size="md" onClick={() => loadMore()} disabled={loadingMore}>
+            もっと見る
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

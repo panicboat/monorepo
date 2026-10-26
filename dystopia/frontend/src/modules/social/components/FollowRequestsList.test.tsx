@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 
-const state = vi.hoisted(() => ({ requests: [] as ProfileSummaryView[] }));
+const state = vi.hoisted(() => ({ requests: [] as ProfileSummaryView[], hasMore: false, loadMore: () => {} }));
 
 vi.mock("../hooks/useFollowRequests", () => ({
   useFollowRequests: () => ({
@@ -12,6 +12,8 @@ vi.mock("../hooks/useFollowRequests", () => ({
     error: undefined,
     approve: vi.fn(),
     reject: vi.fn(),
+    hasMore: state.hasMore,
+    loadMore: state.loadMore,
   }),
 }));
 
@@ -51,6 +53,17 @@ describe("FollowRequestsList", () => {
     const html = renderToStaticMarkup(<FollowRequestsList />);
 
     expect(html.match(/rounded-full[^>]*>(?:<img[^>]*>)?<span[^>]*>([^<]*)<\/span>/)?.[1]).toBe("?");
+  });
+
+  it("offers more requests only while there are more to read", () => {
+    state.requests = [requester()];
+    state.hasMore = true;
+    const more = renderToStaticMarkup(<FollowRequestsList />);
+    state.hasMore = false;
+    const last = renderToStaticMarkup(<FollowRequestsList />);
+
+    expect(more).toContain("もっと見る");
+    expect(last).not.toContain("もっと見る");
   });
 
   it("says so when there are no requests", () => {

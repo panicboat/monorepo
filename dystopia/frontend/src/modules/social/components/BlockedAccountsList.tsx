@@ -1,16 +1,17 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { ProfileName } from "@/components/ui/profile-name";
 import { useBlockedList } from "../hooks/useBlockedList";
 import { BlockButton } from "./BlockButton";
 
 export function BlockedAccountsList() {
-  const { profiles, loading, error } = useBlockedList();
+  const { profiles, loading, loadingMore, error, hasMore, loadMore } = useBlockedList();
 
   return (
     <div>
-      <p className="px-4 pt-1 text-sm text-text-secondary">ブロック中のアカウント {profiles.length} 件</p>
+      <p className="px-4 pt-1 text-sm text-text-secondary">ブロック中のアカウント</p>
       {loading && <p className="px-4 py-6 text-text-secondary">読み込み中…</p>}
       {error && <p className="px-4 py-6 text-text-secondary">読み込みに失敗しました。</p>}
       {!loading && profiles.length === 0 && <p className="px-4 py-6 text-text-secondary">ブロック中のアカウントはありません。</p>}
@@ -26,6 +27,13 @@ export function BlockedAccountsList() {
           <BlockButton targetProfileId={p.profileId} />
         </div>
       ))}
+      {hasMore && (
+        <div className="flex justify-center px-4 py-6">
+          <Button variant="secondary" size="md" onClick={() => loadMore()} disabled={loadingMore}>
+            もっと見る
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
