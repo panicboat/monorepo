@@ -119,9 +119,9 @@ RSpec.describe "Review list use cases", type: :database do
     end
 
     let!(:plain) { write(at: Time.now - 40) }
-    let!(:about_private) do
-      private_cast = new_cast("private_cast")
-      write(target: private_cast, at: Time.now - 30).tap { db[:profile__profiles].where(id: private_cast).update(is_private: true) }
+    let!(:about_locked) do
+      locked_cast = new_cast("locked_cast")
+      write(target: locked_cast, at: Time.now - 30).tap { db[:profile__profiles].where(id: locked_cast).update(is_private: true) }
     end
     let!(:about_blocked) do
       blocked_cast = new_cast("blocked_cast")
@@ -134,8 +134,8 @@ RSpec.describe "Review list use cases", type: :database do
       write(target: disabled_cast, at: Time.now - 10).tap { db[:profile__profiles].where(id: disabled_cast).update(disabled_at: Time.now) }
     end
 
-    it "leaves out a review about a private cast the viewer does not follow" do
-      expect(by_author(viewer_account: viewer_account, viewer: viewer)).not_to include(about_private[:id])
+    it "shows a review about a locked cast the viewer does not follow" do
+      expect(by_author(viewer_account: viewer_account, viewer: viewer)).to include(about_locked[:id])
     end
 
     it "leaves out a review about a cast the viewer blocks" do
@@ -155,7 +155,7 @@ RSpec.describe "Review list use cases", type: :database do
     end
 
     it "shows the author every review" do
-      expect(by_author(viewer_account: guest_account, viewer: guest)).to eq([about_disabled[:id], about_blocked[:id], about_private[:id], plain[:id]])
+      expect(by_author(viewer_account: guest_account, viewer: guest)).to eq([about_disabled[:id], about_blocked[:id], about_locked[:id], plain[:id]])
     end
   end
 
@@ -205,8 +205,9 @@ RSpec.describe "Review list use cases", type: :database do
     newer = write(account: other_guest_account, profile: other_guest, at: Time.now - 10)
     db[:review__reviews].where(id: older[:id]).update(last_occurred_on: Date.new(2026, 10, 9))
     db[:review__reviews].where(id: newer[:id]).update(last_occurred_on: Date.new(2026, 10, 8))
-    private_cast = create_account_with_profile(account_id: create_account(role: 2), username: "private_cast", is_private: true)
-    write(target: private_cast)
+    blocking_cast = create_account_with_profile(account_id: create_account(role: 2), username: "blocking_cast")
+    write(target: blocking_cast)
+    Social::Slice["repositories.block_repository"].block(blocker_profile_id: blocking_cast, blocked_profile_id: cast)
 
     result = uc(:list_recent_reviews).call(viewer_account_id: cast_account, viewer_profile_id: cast, limit: 20, cursor: nil)
 

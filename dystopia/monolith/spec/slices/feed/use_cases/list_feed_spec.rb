@@ -90,13 +90,10 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
       expect(followers_feed).to eq([friend_secret.id.to_s])
     end
 
-    it "shows a locked follower only when the viewer follows them back" do
+    it "shows a locked follower's public posts whether or not the viewer follows them back" do
       locked_fan = create_account_with_profile(username: "locked_fan", is_private: true)
-      locked_friend = create_account_with_profile(username: "locked_friend", is_private: true)
-      [locked_fan, locked_friend].each { |id| follow_repo.follow(follower_profile_id: id, followee_profile_id: viewer, status: "approved") }
-      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: locked_friend, status: "approved")
-      post_repo.create_post(author_profile_id: locked_fan, content: "hidden", visibility: "public")
-      shown = post_repo.create_post(author_profile_id: locked_friend, content: "shown", visibility: "public")
+      follow_repo.follow(follower_profile_id: locked_fan, followee_profile_id: viewer, status: "approved")
+      shown = post_repo.create_post(author_profile_id: locked_fan, content: "shown", visibility: "public")
 
       expect(followers_feed).to eq([shown.id.to_s])
     end

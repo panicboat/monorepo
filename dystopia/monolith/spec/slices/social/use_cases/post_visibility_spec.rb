@@ -34,11 +34,13 @@ RSpec.describe "post visibility in social", type: :database do
     expect([author, follower, pending, stranger].map { |viewer| can_see.call(viewer_profile_id: viewer, post: post) }).to eq([true, true, false, false])
   end
 
-  it "keeps a private profile's public posts to approved followers" do
+  it "decides a locked profile's posts by each post's visibility alone" do
     db[:profile__profiles].where(id: author).update(is_private: true)
-    post = post_ref.new("p3", author, "public")
+    open = post_ref.new("p3", author, "public")
+    secret = post_ref.new("p3s", author, "private")
 
-    expect([follower, stranger].map { |viewer| visible_to(viewer, post) }).to eq([true, false])
+    expect([follower, pending, stranger].map { |viewer| visible_to(viewer, open) }).to eq([true, true, true])
+    expect([follower, pending, stranger].map { |viewer| visible_to(viewer, secret) }).to eq([true, false, false])
   end
 
   describe "when a block exists alongside an approved follow" do

@@ -165,7 +165,7 @@ export function PostComposer({
           </Button>
         </div>
       </div>
-      <p className="mt-1 text-xs text-text-secondary">{visibilityNote(accountPrivate, isPrivate)}</p>
+      <p className="mt-1 text-xs text-text-secondary">{isPrivate ? "あなたとフォロワーだけが見られます" : "誰でも見られます"}</p>
       <label className="mt-3 flex items-center gap-2 text-sm text-text-secondary">
         <Toggle checked={windowEnabled} onCheckedChange={setWindowEnabled} aria-label="表示期間を指定" />
         <span>表示期間を指定</span>
@@ -199,15 +199,4 @@ export function PostComposer({
       )}
     </form>
   );
-}
-
-function visibilityNote(accountPrivate: boolean, followersOnly: boolean): string {
-  if (followersOnly) {
-    return accountPrivate
-      ? "あなたとフォロワーだけが見られます。鍵を外してもフォロワーのみのままです"
-      : "あなたとフォロワーだけが見られます";
-  }
-  return accountPrivate
-    ? "今は鍵付きのため、フォロワーだけに表示されます。鍵を外すと誰でも見られるようになります"
-    : "誰でも見られます";
 }

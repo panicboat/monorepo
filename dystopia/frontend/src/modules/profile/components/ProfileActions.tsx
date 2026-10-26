@@ -7,10 +7,9 @@ import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authSt
 
 interface ProfileActionsProps {
   targetProfileId: string;
-  isPrivate: boolean;
 }
 
-export function ProfileActions({ targetProfileId, isPrivate }: ProfileActionsProps) {
+export function ProfileActions({ targetProfileId }: ProfileActionsProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
   const viewerRole = useAuthStore(selectRole);
   const { isFollowing, isPending, approvalRequired, follow, unfollow, cancelRequest, loading } = useFollow(targetProfileId);
@@ -36,7 +35,7 @@ export function ProfileActions({ targetProfileId, isPrivate }: ProfileActionsPro
     );
   }
 
-  const canMessage = viewerRole === "cast" && !isPrivate;
+  const canMessage = viewerRole === "cast";
 
   return (
     <>

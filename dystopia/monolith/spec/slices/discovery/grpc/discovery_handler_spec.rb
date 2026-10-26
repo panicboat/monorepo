@@ -13,9 +13,9 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
   let!(:viewer) { create_account_with_profile(username: "discovery_viewer") }
   let!(:other_guest) { create_account_with_profile(username: "discovery_other_guest") }
   let!(:public_cast) { create_account_with_profile(role: 2, username: "discovery_public") }
-  let!(:private_cast) { create_account_with_profile(role: 2, username: "discovery_private", is_private: true) }
+  let!(:locked_cast) { create_account_with_profile(role: 2, username: "discovery_private", is_private: true) }
   let!(:public_post) { post_repo.create_post(author_profile_id: public_cast, content: "discovery public", visibility: "public") }
-  let!(:private_post) { post_repo.create_post(author_profile_id: private_cast, content: "discovery private", visibility: "public") }
+  let!(:locked_post) { post_repo.create_post(author_profile_id: locked_cast, content: "discovery locked", visibility: "public") }
 
   def rpc(method, message)
     described_class.new(method_key: method, service: double, rpc_desc: double, active_call: double, message: message).public_send(method)
@@ -47,10 +47,10 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
 
   it "suggests profiles of the opposite role, without the ones the acting profile follows or is blocked with" do
     act_as(viewer)
-    expect(suggested).to contain_exactly([public_cast, 2], [private_cast, 2])
+    expect(suggested).to contain_exactly([public_cast, 2], [locked_cast, 2])
 
     follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_cast, status: "approved")
-    block_repo.block(blocker_profile_id: private_cast, blocked_profile_id: viewer)
+    block_repo.block(blocker_profile_id: locked_cast, blocked_profile_id: viewer)
     expect(suggested).to be_empty
 
     act_as(public_cast)
@@ -85,19 +85,11 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     expect(second.has_more).to be(false)
   end
 
-  it "searches and ranks posts as the acting profile is allowed to see them" do
-    [public_post, private_post].each { |post| liked(post) }
+  it "searches and ranks a locked profile's public posts like any other public post" do
+    [public_post, locked_post].each { |post| liked(post) }
     act_as(viewer)
-    expect(searched_post_ids).to eq([public_post.id])
-    expect(ranked_post_ids).to eq([public_post.id])
-
-    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_cast, status: "approved")
-    expect(searched_post_ids).to contain_exactly(public_post.id, private_post.id)
-    expect(ranked_post_ids).to contain_exactly(public_post.id, private_post.id)
-
-    act_as(other_guest)
-    expect(searched_post_ids).to eq([public_post.id])
-    expect(ranked_post_ids).to eq([public_post.id])
+    expect(searched_post_ids).to contain_exactly(public_post.id, locked_post.id)
+    expect(ranked_post_ids).to contain_exactly(public_post.id, locked_post.id)
   end
 
   it "keeps followers-only posts out of search and ranking, even for an approved follower" do
@@ -105,7 +97,7 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_cast, status: "approved")
     act_as(viewer)
 
-    expect(searched_post_ids).to eq([public_post.id])
+    expect(searched_post_ids).to contain_exactly(public_post.id, locked_post.id)
     expect(ranked_post_ids).to eq([public_post.id])
   end
 
@@ -116,7 +108,7 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     liked(post_repo.create_post(author_profile_id: public_cast, content: "discovery expired", visibility: "public", published_at: now - 7200, expires_at: now - 3600))
     act_as(public_cast)
 
-    expect(searched_post_ids).to eq([public_post.id])
+    expect(searched_post_ids).to contain_exactly(public_post.id, locked_post.id)
     expect(ranked_post_ids).to eq([public_post.id])
   end
 
@@ -182,18 +174,18 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
       expect(search_schedules(industry: "ソープ").results).to be_empty
     end
 
-    it "shows private casts, hides the ones the acting profile is blocked with, and limits following_only to approved follows" do
+    it "shows locked casts, hides the ones the acting profile is blocked with, and limits following_only to approved follows" do
       schedule(public_cast)
-      schedule(private_cast)
+      schedule(locked_cast)
       act_as(viewer)
 
-      expect(search_schedules.results.map { |r| r.profile.profile_id }).to contain_exactly(public_cast, private_cast)
+      expect(search_schedules.results.map { |r| r.profile.profile_id }).to contain_exactly(public_cast, locked_cast)
 
-      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_cast, status: "approved")
-      expect(search_schedules(following_only: true).results.map { |r| r.profile.profile_id }).to eq([private_cast])
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: locked_cast, status: "approved")
+      expect(search_schedules(following_only: true).results.map { |r| r.profile.profile_id }).to eq([locked_cast])
 
       block_repo.block(blocker_profile_id: public_cast, blocked_profile_id: viewer)
-      expect(search_schedules.results.map { |r| r.profile.profile_id }).to eq([private_cast])
+      expect(search_schedules.results.map { |r| r.profile.profile_id }).to eq([locked_cast])
     end
 
     it "pages by cursor, 20 at a time by default" do

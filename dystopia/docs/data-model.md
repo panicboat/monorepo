@@ -65,7 +65,7 @@ erDiagram
         uuid account_id "参照（FK なし）"
         uuid avatar_media_id "参照（FK なし）"
         uuid cover_media_id "参照（FK なし）"
-        boolean is_private "非公開プロフィール"
+        boolean is_private "鍵マークを付けるか"
         boolean follow_approval_required "フォローに承認が必要"
         varchar prefecture "主要エリア（都道府県）"
         text area "都道府県内のエリア"
@@ -80,7 +80,7 @@ erDiagram
 ```
 
 - `profile.profiles`: プロフィール本体。
-  - 公開範囲（`is_private`）とフォロー承認の要否を持つ。
+  - 鍵（`is_private`）とフォロー承認の要否を持つ。
 - `profile.casts`: キャストのプロフィールだけが持つ補足情報（年齢、体型など）。
 
 [プロフィール](features/profiles.md)

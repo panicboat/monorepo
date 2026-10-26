@@ -34,7 +34,7 @@ module Social
           next false unless live?(post, now)
           next false unless profile_by_author[author_profile_id]
           next false if blocked_set.include?(author_profile_id.to_s)
-          next true unless follow_required?(profile_by_author[author_profile_id], post)
+          next true unless follow_required?(post)
           next false unless viewer_profile_id
 
           follow_statuses[author_profile_id.to_s] == "approved"
@@ -49,8 +49,8 @@ module Social
         !(post.respond_to?(:expires_at) && post.expires_at && post.expires_at <= now)
       end
 
-      def follow_required?(profile, post)
-        profile.is_private || (post.respond_to?(:visibility) && post.visibility == "private")
+      def follow_required?(post)
+        post.respond_to?(:visibility) && post.visibility == "private"
       end
 
       def get_profile

@@ -46,8 +46,8 @@ vi.mock("@/modules/messaging", () => ({
 
 const { ProfileActions } = await import("./ProfileActions");
 
-const render = (isPrivate = false, targetProfileId = "target-1") =>
-  renderToStaticMarkup(<ProfileActions targetProfileId={targetProfileId} isPrivate={isPrivate} />);
+const render = (targetProfileId = "target-1") =>
+  renderToStaticMarkup(<ProfileActions targetProfileId={targetProfileId} />);
 
 const labels = (html: string) =>
   Array.from(html.matchAll(/<(?:span|button)[^>]*>([^<]+)</g)).map((m) => m[1]);
@@ -55,12 +55,12 @@ const labels = (html: string) =>
 let root: Root | null = null;
 let container: HTMLElement;
 
-async function mount(isPrivate = false) {
+async function mount() {
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
   await act(async () => {
-    root!.render(createElement(ProfileActions, { targetProfileId: "target-1", isPrivate }));
+    root!.render(createElement(ProfileActions, { targetProfileId: "target-1" }));
   });
 }
 
@@ -92,7 +92,7 @@ afterEach(async () => {
 
 describe("ProfileActions", () => {
   it("renders nothing on the viewer's own profile", () => {
-    expect(render(false, "viewer-1")).toBe("");
+    expect(render("viewer-1")).toBe("");
   });
 
   it("offers follow first and message second to a cast viewing an unfollowed public profile", () => {
@@ -117,15 +117,11 @@ describe("ProfileActions", () => {
     expect(labels(render())).toEqual(["menu:block", "フォローを申請"]);
   });
 
-  it("offers a plain follow on an unfollowed locked profile that does not require approval", () => {
-    expect(labels(render(true))).toEqual(["menu:block", "フォロー"]);
-  });
-
-  it("offers no message to a cast on an unfollowed locked profile", () => {
+  it("offers message to a cast on an unfollowed profile that requires approval", () => {
     mocks.role = "cast";
     mocks.approvalRequired = true;
 
-    expect(labels(render(true))).toEqual(["menu:block", "フォローを申請"]);
+    expect(labels(render())).toEqual(["menu:block", "message:secondary", "フォローを申請"]);
   });
 
   it("shows a pending request", () => {
@@ -144,7 +140,7 @@ describe("ProfileActions", () => {
 
   it("cancels the pending request when the pending button is confirmed", async () => {
     mocks.isPending = true;
-    await mount(true);
+    await mount();
     await clickButton("申請中");
 
     expect(mocks.cancelRequest).toHaveBeenCalledTimes(1);

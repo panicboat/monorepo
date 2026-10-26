@@ -32,9 +32,7 @@ vi.mock("@/modules/social", () => ({
 }));
 
 vi.mock("@/modules/profile/components/ProfileActions", () => ({
-  ProfileActions: ({ targetProfileId, isPrivate }: { targetProfileId: string; isPrivate: boolean }) => (
-    <span>{`profile-actions:${targetProfileId}:${isPrivate}`}</span>
-  ),
+  ProfileActions: ({ targetProfileId }: { targetProfileId: string }) => <span>{`profile-actions:${targetProfileId}`}</span>,
 }));
 
 vi.mock("@/modules/footprints", () => ({
@@ -81,7 +79,7 @@ describe("PublicProfilePage layout", () => {
     const html = renderToStaticMarkup(<PublicProfilePage />);
     const header = html.match(/<header>(.*?)<\/header>/)?.[1] ?? "";
 
-    expect(header).toBe("<span>profile-actions:profile-1:true</span>");
+    expect(header).toBe("<span>profile-actions:profile-1</span>");
   });
 
   it("puts only the edit action in the header of the viewer's own profile", () => {

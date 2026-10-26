@@ -61,13 +61,10 @@ describe("PostComposer visibility", () => {
     expect(html).not.toContain(">公開<");
   });
 
-  it("explains each visibility for a public account", () => {
-    expect(noteOf(render(false, "public"))).toBe("誰でも見られます");
-    expect(noteOf(render(false, "private"))).toBe("あなたとフォロワーだけが見られます");
-  });
-
-  it("explains each visibility for a private account", () => {
-    expect(noteOf(render(true, "public"))).toBe("今は鍵付きのため、フォロワーだけに表示されます。鍵を外すと誰でも見られるようになります");
-    expect(noteOf(render(true, "private"))).toBe("あなたとフォロワーだけが見られます。鍵を外してもフォロワーのみのままです");
+  it("explains each visibility the same way with or without the lock", () => {
+    for (const locked of [false, true]) {
+      expect(noteOf(render(locked, "public"))).toBe("誰でも見られます");
+      expect(noteOf(render(locked, "private"))).toBe("あなたとフォロワーだけが見られます");
+    }
   });
 });
