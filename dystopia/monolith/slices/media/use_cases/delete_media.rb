@@ -11,8 +11,9 @@ module Media
         media = repo.find_by_id(id)
         return false unless media && media.uploader_profile_id && media.uploader_profile_id.to_s == profile_id.to_s
 
-        Storage.delete(key: media.media_key) if media.media_key
-        Storage.delete(key: media.thumbnail_key) if media.thumbnail_key
+        keys = [media.media_key, media.thumbnail_key].reject { |key| key.nil? || key.empty? }
+        # Keep the row when a file is left behind, so the uploader can retry and the profile purge can still find the file.
+        return false unless keys.map { |key| Storage.delete(key: key) }.all?
 
         repo.delete(id)
         true

@@ -173,6 +173,15 @@ RSpec.describe Media::Grpc::Handler, type: :database do
     expect(db[:media__files].where(id: media_id).count).to eq(0)
   end
 
+  it "keeps the media and answers that it was not deleted when the file cannot be deleted" do
+    act_as(uploader)
+    media_id = register
+    allow(Storage).to receive(:delete).and_return(false)
+
+    expect(delete(media_id)).to be false
+    expect(db[:media__files].where(id: media_id).count).to eq(1)
+  end
+
   it "does not let another profile delete it, and answers as for a file that does not exist" do
     act_as(uploader)
     media_id = register
