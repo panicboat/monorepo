@@ -63,8 +63,8 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
     all = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_profile_id: viewer)
     following = Feed::UseCases::ListFeed.new.call(filter: "following", viewer_profile_id: viewer)
 
-    expect(all[:post_ids]).to contain_exactly(public_post.id, locked_post.id)
-    expect(following[:post_ids]).to eq([public_post.id])
+    expect(all[:posts].map(&:id)).to contain_exactly(public_post.id, locked_post.id)
+    expect(following[:posts].map(&:id)).to eq([public_post.id])
   end
 
   it "excludes posts from profiles blocked by the viewer" do
@@ -72,7 +72,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
 
     result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_profile_id: viewer)
 
-    expect(result[:post_ids]).not_to include(public_post.id)
+    expect(result[:posts].map(&:id)).not_to include(public_post.id)
   end
 
   it "excludes posts from profiles that blocked the viewer" do
@@ -80,7 +80,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
 
     result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_profile_id: viewer)
 
-    expect(result[:post_ids]).not_to include(public_post.id)
+    expect(result[:posts].map(&:id)).not_to include(public_post.id)
   end
 
   it "ranks and searches a locked author's public posts for a viewer" do

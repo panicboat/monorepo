@@ -255,6 +255,36 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
     end
   end
 
+  describe "paging past posts the viewer cannot see" do
+    let(:post_repo) { Post::Slice["repositories.post_repository"] }
+    let(:viewer) { create_account_with_profile(username: "pp_viewer") }
+    let(:hidden_author) { create_account_with_profile(role: 2, username: "pp_hidden") }
+    let!(:shown) { post_repo.create_post(author_profile_id: create_account_with_profile(role: 2, username: "pp_shown"), content: "shown", visibility: "public", published_at: Time.now - 60) }
+
+    before do
+      2.times { |i| post_repo.create_post(author_profile_id: hidden_author, content: "hidden", visibility: "public", published_at: Time.now - (3600 * (i + 1))) }
+    end
+
+    def first_page
+      response = described_class.new(method_key: :list_posts, service: double, rpc_desc: double, active_call: double, message: Post::V1::ListPostsRequest.new(limit: 1)).list_posts
+      [response.posts.map(&:id), response.has_more]
+    end
+
+    it "fills the page past an author the viewer blocks and reports no more" do
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: viewer, blocked_profile_id: hidden_author)
+      Current.account_id = SecureRandom.uuid_v7
+      Current.profile_id = viewer
+
+      expect(first_page).to eq([[shown.id], false])
+    end
+
+    it "fills the page past a disabled author for a signed-out viewer and reports no more" do
+      Hanami.app["db.gateway"].connection[:profile__profiles].where(id: hidden_author).update(disabled_at: Time.now)
+
+      expect(first_page).to eq([[shown.id], false])
+    end
+  end
+
   describe "#save_post display window" do
     let(:post_repo) { Post::Slice["repositories.post_repository"] }
     let(:now) { Time.now }

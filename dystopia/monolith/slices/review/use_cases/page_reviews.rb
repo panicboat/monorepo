@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "concerns/visible_page"
+
 module Review
   module UseCases
     class PageReviews
@@ -16,13 +18,19 @@ module Review
         limit <= 0 ? DEFAULT_LIMIT : [limit, MAX_LIMIT].min
       end
 
-      def call(rows:, limit:, viewer_account_id:, order: :activity, visible: ->(page) { page })
-        has_more = rows.length > limit
-        page = rows.first(limit)
+      def call(fetch:, cursor:, limit:, viewer_account_id:, order: :activity, visible: ->(page) { page })
+        page = ::Concerns::VisiblePage.fill(
+          limit: limit,
+          cursor: cursor,
+          fetch: fetch,
+          keep: visible,
+          cursor_of: ->(row) { review_repo.cursor_for(row, order: order) }
+        )
+        reviews = page[:items]
         {
-          reviews: present_reviews.call(reviews: visible.call(page), viewer_account_id: viewer_account_id),
-          next_cursor: has_more ? review_repo.cursor_for(page.last, order: order) : nil,
-          has_more: has_more
+          reviews: present_reviews.call(reviews: reviews, viewer_account_id: viewer_account_id),
+          next_cursor: page[:has_more] && reviews.any? ? review_repo.cursor_for(reviews.last, order: order) : nil,
+          has_more: page[:has_more]
         }
       end
     end

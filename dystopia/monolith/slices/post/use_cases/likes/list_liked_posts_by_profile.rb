@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "concerns/cursor_pagination"
+require "concerns/visible_page"
 
 module Post
   module UseCases
@@ -21,24 +22,26 @@ module Post
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 
-          rows = like_repo.liked_post_ids_by_profile(
-            profile_id: profile_id,
+          posts_map = {}
+          page = ::Concerns::VisiblePage.fill(
             limit: limit,
-            cursor: decoded_cursor
+            cursor: decoded_cursor,
+            fetch: ->(after) { like_repo.liked_post_ids_by_profile(profile_id: profile_id, limit: limit, cursor: after) },
+            keep: ->(rows) {
+              posts_map.merge!(list_posts_uc.call(post_ids: rows.map(&:post_id), viewer_profile_id: viewer_profile_id))
+              rows.select { |row| posts_map.key?(row.post_id.to_s) }
+            },
+            cursor_of: ->(row) { { created_at: row.created_at, id: row.id } }
           )
-
-          result = build_pagination_result(items: rows, limit: limit) do |last|
-            encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
+          likes = page[:items]
+          next_cursor = if page[:has_more] && likes.any?
+            encode_cursor(created_at: likes.last.created_at.iso8601(6), id: likes.last.id)
           end
 
-          post_ids = result[:items].map(&:post_id)
-          posts_map = list_posts_uc.call(post_ids: post_ids, viewer_profile_id: viewer_profile_id)
-          ordered_posts = post_ids.filter_map { |id| posts_map[id.to_s] }
-
           {
-            posts: ordered_posts,
-            next_cursor: result[:next_cursor],
-            has_more: result[:has_more]
+            posts: likes.map { |row| posts_map[row.post_id.to_s] },
+            next_cursor: next_cursor,
+            has_more: page[:has_more]
           }
         end
 

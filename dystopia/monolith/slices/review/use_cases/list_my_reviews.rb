@@ -15,9 +15,11 @@ module Review
         raise Errors::Forbidden, "Guest only" unless authorize_guest.call(viewer_account_id: viewer_account_id)
 
         limit = page_reviews.limit_for(limit)
-        rows = review_repo.list_by_account(author_account_id: viewer_account_id, limit: limit, cursor: cursor)
         counts = cursor.nil? ? counts_for(viewer_account_id) : NO_COUNTS
-        page_reviews.call(rows: rows, limit: limit, viewer_account_id: viewer_account_id).merge(counts: counts)
+        page_reviews.call(
+          fetch: ->(after) { review_repo.list_by_account(author_account_id: viewer_account_id, limit: limit, cursor: after) },
+          cursor: cursor, limit: limit, viewer_account_id: viewer_account_id
+        ).merge(counts: counts)
       end
 
       private

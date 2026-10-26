@@ -45,12 +45,8 @@ module Feed
           cursor: cursor
         )
 
-        hydrated = list_posts_by_ids_uc.call(post_ids: result[:post_ids], viewer_profile_id: current_profile_id)
-
-        posts = result[:post_ids].map { |id| hydrated[id] }.compact
-
         ::Feed::V1::ListFeedResponse.new(
-          posts: posts,
+          posts: result[:posts],
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -62,10 +58,6 @@ module Feed
 
       def list_feed_uc
         @list_feed_uc ||= Feed::UseCases::ListFeed.new
-      end
-
-      def list_posts_by_ids_uc
-        @list_posts_by_ids_uc ||= Post::Slice["use_cases.posts.list_posts_by_ids"]
       end
 
       def follow_adapter

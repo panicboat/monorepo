@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "concerns/cursor_pagination"
+require "concerns/visible_page"
 
 module Notifications
   module UseCases
@@ -16,27 +17,35 @@ module Notifications
       def call(recipient_profile_id:, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
 
-        rows = notification_repo.list(recipient_profile_id: recipient_profile_id, limit: limit, cursor: cursor)
-
-        result = build_pagination_result(items: rows, limit: limit) do |last|
-          encode_cursor(created_at: last.latest_event_at.iso8601(6), id: last.id)
-        end
-
-        actor_profile_ids = result[:items].map(&:latest_actor_profile_id).uniq
-        profiles_by_actor_profile_id = actor_profile_ids.each_with_object({}) do |aid, h|
-          h[aid] = get_profile.call(profile_id: aid)
-        end
+        profiles_by_actor_profile_id = {}
+        page = ::Concerns::VisiblePage.fill(
+          limit: limit,
+          cursor: cursor,
+          fetch: ->(after) { notification_repo.list(recipient_profile_id: recipient_profile_id, limit: limit, cursor: after) },
+          keep: ->(rows) {
+            rows.map(&:latest_actor_profile_id).uniq.each do |aid|
+              profiles_by_actor_profile_id[aid] = get_profile.call(profile_id: aid) unless profiles_by_actor_profile_id.key?(aid)
+            end
+            rows.select { |row| profiles_by_actor_profile_id[row.latest_actor_profile_id] }
+          },
+          cursor_of: ->(row) { cursor_for(row) }
+        )
+        rows = page[:items]
 
         {
-          rows: result[:items].select { |row| profiles_by_actor_profile_id[row.latest_actor_profile_id] },
-          profiles_by_actor_profile_id: profiles_by_actor_profile_id,
-          next_cursor: result[:next_cursor],
-          has_more: result[:has_more],
+          rows: rows,
+          profiles_by_actor_profile_id: profiles_by_actor_profile_id.slice(*rows.map(&:latest_actor_profile_id)),
+          next_cursor: page[:has_more] && rows.any? ? cursor_for(rows.last) : nil,
+          has_more: page[:has_more],
           unread_count: get_unread_count.call(recipient_profile_id: recipient_profile_id)
         }
       end
 
       private
+
+      def cursor_for(row)
+        encode_cursor(created_at: row.latest_event_at.iso8601(6), id: row.id)
+      end
 
       def get_profile
         @get_profile ||= Profile::Slice["use_cases.get_profile"]

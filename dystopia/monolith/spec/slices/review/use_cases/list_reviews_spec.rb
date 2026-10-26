@@ -59,6 +59,22 @@ RSpec.describe "Review list use cases", type: :database do
     expect(result[:summary]).to eq(average_rating: 4.0, rater_count: 1, review_count: 1)
   end
 
+  it "fills the page past reviews of authors the viewer blocks and reports no more" do
+    shown = write(at: Time.now - 60)
+    viewer_account = create_account(role: 1)
+    viewer = create_account_with_profile(account_id: viewer_account, username: "viewer")
+    2.times do |i|
+      account = create_account(role: 1)
+      author = create_account_with_profile(account_id: account, username: "blocked_#{i}")
+      write(account: account, profile: author, at: Time.now - (3600 * (i + 1)))
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: viewer, blocked_profile_id: author)
+    end
+
+    page = by_target(viewer_account: viewer_account, viewer: viewer, limit: 1)
+
+    expect([page[:reviews].map { |r| r[:id] }, page[:has_more]]).to eq([[shown[:id]], false])
+  end
+
   it "answers for a disabled cast as for a profile that does not exist" do
     write
     db[:profile__profiles].where(id: cast).update(disabled_at: Time.now)

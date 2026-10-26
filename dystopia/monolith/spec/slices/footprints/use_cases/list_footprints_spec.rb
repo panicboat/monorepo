@@ -5,9 +5,9 @@ require "spec_helper"
 RSpec.describe Footprints::UseCases::ListFootprints do
   subject(:use_case) { Footprints::Slice["use_cases.list_footprints"] }
 
-  let(:viewer) { SecureRandom.uuid_v7 }
-  let(:visitor_a) { SecureRandom.uuid_v7 }
-  let(:visitor_b) { SecureRandom.uuid_v7 }
+  let(:viewer) { create_account_with_profile(username: "lf_viewer") }
+  let(:visitor_a) { create_account_with_profile(username: "lf_visitor_a") }
+  let(:visitor_b) { create_account_with_profile(username: "lf_visitor_b") }
 
   let(:footprints_repo) { Footprints::Slice["repositories.footprints_repository"] }
   let(:social_blocks) { Social::Slice["relations.blocks"] }
@@ -59,5 +59,21 @@ RSpec.describe Footprints::UseCases::ListFootprints do
     expect(rows.size).to eq(2)
     expect(rows.find { |r| r[:visitor_profile_id] == visitor_b }[:is_unread]).to be true
     expect(rows.find { |r| r[:visitor_profile_id] == visitor_a }[:is_unread]).to be false
+  end
+
+  it "fills the page past disabled visitors and reports no more" do
+    db = Hanami.app["db.gateway"].connection
+    record(visitor: visitor_a, visited: viewer)
+    db[:footprints__visits].where(visitor_profile_id: visitor_a).update(last_visited_at: Time.now - 60)
+    2.times do |i|
+      hidden = create_account_with_profile(username: "lf_hidden_#{i}")
+      record(visitor: hidden, visited: viewer)
+      db[:footprints__visits].where(visitor_profile_id: hidden).update(last_visited_at: Time.now - (3600 * (i + 1)))
+      db[:profile__profiles].where(id: hidden).update(disabled_at: Time.now)
+    end
+
+    result = use_case.call(viewer_profile_id: viewer, limit: 1, cursor: nil)
+
+    expect([result[:rows].map { |r| r[:visitor_profile_id] }, result[:has_more]]).to eq([[visitor_a], false])
   end
 end

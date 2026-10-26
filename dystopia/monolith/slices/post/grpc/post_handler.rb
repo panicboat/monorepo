@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "concerns/visible_page"
 require "post/v1/post_service_services_pb"
 require "text"
 require_relative "handler"
@@ -35,20 +36,25 @@ module Post
         return ::Post::V1::ListPostsResponse.new(posts: [], next_cursor: "", has_more: false) if author_profile_id && !author_readable?(author_profile_id)
 
         live_only = author_profile_id.nil? || author_profile_id != current_profile_id
-        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_profile_id: author_profile_id, media_only: request.message.media_only, include_private: author_profile_id ? followers_only_readable?(author_profile_id) : false, live_only: live_only)
-        has_more = rows.length > limit
-        rows = rows.first(limit) if has_more
-        next_cursor = if has_more && rows.any?
+        include_private = author_profile_id ? followers_only_readable?(author_profile_id) : false
+        page = ::Concerns::VisiblePage.fill(
+          limit: limit,
+          cursor: cursor,
+          fetch: ->(after) { post_repo.list_posts(limit: limit, cursor: after, author_profile_id: author_profile_id, media_only: request.message.media_only, include_private: include_private, live_only: live_only) },
+          keep: ->(rows) { filter_visible_posts.call(viewer_profile_id: current_profile_id, posts: rows) },
+          cursor_of: ->(row) { { published_at: row.published_at, id: row.id } }
+        )
+        rows = page[:items]
+        next_cursor = if page[:has_more] && rows.any?
           encode_cursor(published_at: rows.last.published_at.iso8601(6), id: rows.last.id)
         else
           ""
         end
-        rows = filter_visible_posts.call(viewer_profile_id: current_profile_id, posts: rows)
 
         ::Post::V1::ListPostsResponse.new(
           posts: present_posts(rows),
           next_cursor: next_cursor,
-          has_more: has_more
+          has_more: page[:has_more]
         )
       end
 

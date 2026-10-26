@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "concerns/cursor_pagination"
+require "concerns/visible_page"
 
 module Discovery
   module UseCases
@@ -14,19 +15,27 @@ module Discovery
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor, keys: [:published_at, :id])
 
-        post_ids = matching_post_ids(query.to_s.strip, limit: limit, cursor: decoded_cursor)
-        has_more = post_ids.length > limit
-        truncated = has_more ? post_ids.first(limit) : post_ids
+        post_protos_map = {}
+        page = ::Concerns::VisiblePage.fill(
+          limit: limit,
+          cursor: decoded_cursor,
+          fetch: ->(after) { matching_post_ids(query.to_s.strip, limit: limit, cursor: after) },
+          keep: ->(ids) {
+            post_protos_map.merge!(list_posts_uc.call(post_ids: ids, viewer_profile_id: viewer_profile_id))
+            ids.select { |id| post_protos_map.key?(id.to_s) }
+          },
+          cursor_of: ->(id) { { published_at: post_repo.published_at_for_id(id), id: id } }
+        )
+        truncated = page[:items]
 
-        next_cursor = if has_more && truncated.any?
+        next_cursor = if page[:has_more] && truncated.any?
           last_published_at = post_repo.published_at_for_id(truncated.last)
           last_published_at ? encode_cursor(published_at: last_published_at.iso8601(6), id: truncated.last) : nil
         end
 
-        post_protos_map = list_posts_uc.call(post_ids: truncated, viewer_profile_id: viewer_profile_id)
-        ordered_posts = truncated.filter_map { |id| post_protos_map[id.to_s] }
+        ordered_posts = truncated.map { |id| post_protos_map[id.to_s] }
 
-        { posts: ordered_posts, next_cursor: next_cursor, has_more: has_more }
+        { posts: ordered_posts, next_cursor: next_cursor, has_more: page[:has_more] }
       end
 
       private
