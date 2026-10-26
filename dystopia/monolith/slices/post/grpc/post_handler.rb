@@ -188,9 +188,10 @@ module Post
 
       def present_posts(rows)
         post_ids = rows.map(&:id)
+        blocked_profile_ids = get_blocked_profile_ids
         authors = summarize_profiles.call(profile_ids: rows.map(&:author_profile_id))
-        likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
-        comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_author_profile_ids: [])
+        likes_counts = like_repo.likes_count_batch(post_ids: post_ids, exclude_profile_ids: blocked_profile_ids)
+        comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_author_profile_ids: blocked_profile_ids)
         liked = current_profile_id ? like_repo.profile_liked_status_batch(post_ids: post_ids, profile_id: current_profile_id) : {}
         media_files = load_media_files_for_posts(rows)
         mentioned_usernames = mentioned_usernames_for(rows.flat_map { |p| p.post_mentions.map(&:profile_id) })
@@ -211,9 +212,10 @@ module Post
       end
 
       def present_post(post, mentioned_usernames: nil)
+        blocked_profile_ids = get_blocked_profile_ids
         authors = summarize_profiles.call(profile_ids: [post.author_profile_id])
-        likes_count = like_repo.likes_count(post_id: post.id)
-        comments_count = comment_repo.comments_count(post_id: post.id, exclude_author_profile_ids: [])
+        likes_count = like_repo.likes_count(post_id: post.id, exclude_profile_ids: blocked_profile_ids)
+        comments_count = comment_repo.comments_count(post_id: post.id, exclude_author_profile_ids: blocked_profile_ids)
         liked = current_profile_id ? like_repo.profile_liked?(post_id: post.id, profile_id: current_profile_id) : false
         media_files = load_media_files_for_posts([post])
         mentioned_usernames ||= mentioned_usernames_for(post.post_mentions.map(&:profile_id))

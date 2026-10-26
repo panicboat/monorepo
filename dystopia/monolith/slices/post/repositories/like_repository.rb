@@ -3,18 +3,22 @@
 module Post
   module Repositories
     class LikeRepository < Post::DB::Repo
-      def likes_count(post_id:)
-        likes.where(post_id: post_id).count
+      def likes_count(post_id:, exclude_profile_ids: nil)
+        scope = likes.where(post_id: post_id)
+        scope = scope.exclude(profile_id: exclude_profile_ids) if exclude_profile_ids && !exclude_profile_ids.empty?
+        scope.count
       end
 
-      def likes_count_batch(post_ids:)
+      def likes_count_batch(post_ids:, exclude_profile_ids: nil)
         return {} if post_ids.empty?
 
-        likes.dataset
+        scope = likes.dataset
           .unordered
           .where(post_id: post_ids)
-          .group_and_count(:post_id)
-          .to_hash(:post_id, :count)
+
+        scope = scope.exclude(profile_id: exclude_profile_ids) if exclude_profile_ids && !exclude_profile_ids.empty?
+
+        scope.group_and_count(:post_id).to_hash(:post_id, :count)
       end
 
       def profile_like(post_id:, profile_id:)

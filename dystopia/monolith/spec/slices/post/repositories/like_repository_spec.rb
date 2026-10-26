@@ -17,6 +17,20 @@ RSpec.describe "Post::Repositories::LikeRepository", type: :database do
       3.times { repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7) }
       expect(repo.likes_count(post_id: post.id)).to eq(3)
     end
+
+    it "leaves out the likes of excluded profiles" do
+      blocked = SecureRandom.uuid_v7
+      repo.profile_like(post_id: post.id, profile_id: blocked)
+      repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7)
+
+      expect(repo.likes_count(post_id: post.id, exclude_profile_ids: [blocked])).to eq(1)
+    end
+
+    it "counts every like when the excluded list is nil or empty" do
+      repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7)
+
+      expect([nil, []].map { |ids| repo.likes_count(post_id: post.id, exclude_profile_ids: ids) }).to eq([1, 1])
+    end
   end
 
   describe "#likes_count_batch" do
@@ -32,6 +46,23 @@ RSpec.describe "Post::Repositories::LikeRepository", type: :database do
 
     it "returns empty hash for empty input" do
       expect(repo.likes_count_batch(post_ids: [])).to eq({})
+    end
+
+    it "leaves out the likes of excluded profiles" do
+      post2 = post_repo.create_post(author_profile_id: cast_id, content: "Post 2")
+      blocked = SecureRandom.uuid_v7
+      [post, post2].each { |target| repo.profile_like(post_id: target.id, profile_id: blocked) }
+      repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7)
+
+      counts = repo.likes_count_batch(post_ids: [post.id, post2.id], exclude_profile_ids: [blocked])
+
+      expect(counts).to eq(post.id => 1)
+    end
+
+    it "counts every like when the excluded list is nil or empty" do
+      repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7)
+
+      expect([nil, []].map { |ids| repo.likes_count_batch(post_ids: [post.id], exclude_profile_ids: ids) }).to eq([{ post.id => 1 }, { post.id => 1 }])
     end
   end
 

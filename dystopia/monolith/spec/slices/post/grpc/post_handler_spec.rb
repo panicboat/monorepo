@@ -209,6 +209,52 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
     end
   end
 
+  describe "counts of profiles the viewer blocks" do
+    let(:post_repo) { Post::Slice["repositories.post_repository"] }
+    let(:viewer) { create_account_with_profile(username: "pc_viewer") }
+    let(:other) { create_account_with_profile(username: "pc_other") }
+    let(:commenter) { create_account_with_profile(username: "pc_commenter") }
+    let(:liker) { create_account_with_profile(username: "pc_liker") }
+    let!(:counted) { post_repo.create_post(author_profile_id: create_account_with_profile(role: 2, username: "pc_author"), content: "counted", visibility: "public") }
+
+    before do
+      Post::Slice["repositories.comment_repository"].create_comment(post_id: counted.id, author_profile_id: commenter, content: "hi")
+      Post::Slice["repositories.like_repository"].profile_like(post_id: counted.id, profile_id: liker)
+      blocks = Social::Slice["repositories.block_repository"]
+      blocks.block(blocker_profile_id: viewer, blocked_profile_id: commenter)
+      blocks.block(blocker_profile_id: viewer, blocked_profile_id: liker)
+    end
+
+    def rpc(method, message)
+      described_class.new(method_key: method, service: double, rpc_desc: double, active_call: double, message: message).public_send(method)
+    end
+
+    def act_as(profile_id)
+      Current.account_id = SecureRandom.uuid_v7
+      Current.profile_id = profile_id
+    end
+
+    def counts(proto)
+      [proto.comments_count, proto.likes_count]
+    end
+
+    it "leaves them out of a single post" do
+      act_as(viewer)
+      expect(counts(rpc(:get_post, Post::V1::GetPostRequest.new(id: counted.id)).post)).to eq([0, 0])
+
+      act_as(other)
+      expect(counts(rpc(:get_post, Post::V1::GetPostRequest.new(id: counted.id)).post)).to eq([1, 1])
+    end
+
+    it "leaves them out of a post list" do
+      act_as(viewer)
+      expect(rpc(:list_posts, Post::V1::ListPostsRequest.new).posts.map { |p| counts(p) }).to eq([[0, 0]])
+
+      act_as(other)
+      expect(rpc(:list_posts, Post::V1::ListPostsRequest.new).posts.map { |p| counts(p) }).to eq([[1, 1]])
+    end
+  end
+
   describe "#save_post display window" do
     let(:post_repo) { Post::Slice["repositories.post_repository"] }
     let(:now) { Time.now }

@@ -22,8 +22,9 @@ module Post
 
           ids = posts.map(&:id)
           authors = summarize_profiles.call(profile_ids: posts.map(&:author_profile_id))
-          likes_counts = like_repo.likes_count_batch(post_ids: ids)
-          comments_counts = comment_repo.comments_count_batch(post_ids: ids, exclude_author_profile_ids: [])
+          blocked_profile_ids = viewer_profile_id ? block_adapter.blocked_ids(profile_id: viewer_profile_id) : []
+          likes_counts = like_repo.likes_count_batch(post_ids: ids, exclude_profile_ids: blocked_profile_ids)
+          comments_counts = comment_repo.comments_count_batch(post_ids: ids, exclude_author_profile_ids: blocked_profile_ids)
           liked = if viewer_profile_id
             like_repo.profile_liked_status_batch(post_ids: ids, profile_id: viewer_profile_id)
           else
@@ -67,6 +68,10 @@ module Post
           return {} if ids.empty?
 
           summarize_profiles.call(profile_ids: ids).transform_values(&:username)
+        end
+
+        def block_adapter
+          @block_adapter ||= Post::Adapters::BlockAdapter.new
         end
 
         def media_adapter
