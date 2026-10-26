@@ -312,6 +312,7 @@ erDiagram
         uuid target_resource_id UK "通知対象のリソース"
         uuid target_post_id "参照（FK なし）"
         uuid latest_actor_profile_id "参照（FK なし）"
+        uuid[] actor_profile_ids "発火したプロフィール（重複なし）"
         timestamptz latest_event_at "最新の発火時刻"
         integer actor_count
         timestamptz read_at
@@ -337,7 +338,9 @@ erDiagram
 
 - `notifications.notifications`: 受信者ごとの通知。
   - 同じ種類・対象の通知は 1 件にまとめられ、`actor_count` で件数を持つ。
-    - 同じプロフィールによる繰り返しの発火も件数に含まれる。
+    - 件数は発火したプロフィールの人数で、数えたプロフィールを `actor_profile_ids` に持つ。
+    - 同じプロフィールが繰り返し発火しても件数は増えない。
+    - 同じプロフィールの再発火で最新の発火者・最新の発火時刻・未読を更新するのは、コメント・返信・メンションだけである。
 - `notifications.preferences`: プロフィールごとの通知の設定と足跡の設定。
   - 種類別の設定はプッシュ通知の送信だけを制御する。
 - `notifications.push_subscriptions`: プロフィールごと・ブラウザごとのプッシュ通知の購読先。

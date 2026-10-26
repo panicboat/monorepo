@@ -21,6 +21,8 @@ module Notifications
           actor_profile_id: actor_profile_id,
           target_post_id: target_post_id
         )
+        return nil if notification.nil?
+
         send_push.call(
           recipient_profile_id: recipient_profile_id,
           kind: type.to_s,
