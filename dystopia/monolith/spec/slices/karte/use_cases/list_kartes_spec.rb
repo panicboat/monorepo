@@ -35,6 +35,22 @@ RSpec.describe "Karte list use cases", type: :database do
     expect(result[:next_cursor]).to be_nil
   end
 
+  it "raises NotFound for a disabled guest" do
+    write(account: cast_account, profile: persona, rating: 4)
+    db[:profile__profiles].where(id: guest).update(disabled_at: Time.now)
+
+    expect { uc(:list_kartes_by_target).call(viewer_account_id: cast_account, target_profile_id: guest, limit: 20, cursor: nil) }
+      .to raise_error(Karte::Errors::NotFound, "Unknown profile")
+  end
+
+  it "raises NotFound for a guest whose account is deactivated" do
+    write(account: cast_account, profile: persona, rating: 4)
+    db[:identity__accounts].where(id: guest_account).update(deactivated_at: Time.now)
+
+    expect { uc(:list_kartes_by_target).call(viewer_account_id: cast_account, target_profile_id: guest, limit: 20, cursor: nil) }
+      .to raise_error(Karte::Errors::NotFound, "Unknown profile")
+  end
+
   it "pages with a cursor" do
     now = Time.now
     older = write(account: cast_account, profile: persona, rating: nil, created_at: now - 20)
