@@ -28,7 +28,7 @@ jobs:
       pull-requests: write
       statuses: write
       id-token: write
-    uses: panicboat/.github/.github/workflows/reusable--docs-sync-check.yaml@cf98ce094f5e91cfc9072b5e401d9ed371bf0719 # v3.0.0
+    uses: panicboat/.github/.github/workflows/reusable--docs-sync-check.yaml@958c050e66e24be98e940332be342f8317642183 # trial
     with:
       scope-pattern: '^dystopia/'
       prompt-path: .github/prompts/docs-sync-check.md
