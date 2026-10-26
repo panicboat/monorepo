@@ -27,7 +27,7 @@ module Post
 
           next_cursor = if has_more && comments.any?
             last = comments.last
-            encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+            encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
           end
 
           author_profile_ids = comments.map(&:author_profile_id).uniq

@@ -22,7 +22,7 @@ module Footprints
         )
 
         result = build_pagination_result(items: rows, limit: limit) do |last|
-          encode_cursor(created_at: last[:last_visited_at].iso8601, id: last[:id])
+          encode_cursor(created_at: last[:last_visited_at].iso8601(6), id: last[:id])
         end
 
         last_read = footprints_repo.last_read_at(profile_id: viewer_profile_id)

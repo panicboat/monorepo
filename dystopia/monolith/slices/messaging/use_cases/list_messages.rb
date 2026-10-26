@@ -27,7 +27,7 @@ module Messaging
         rows = messaging_repo.list_messages(thread_id: thread_id, limit: limit, cursor: cursor)
 
         result = build_pagination_result(items: rows, limit: limit) do |last|
-          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+          encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
         end
 
         counterpart_id = thread.profile_a.to_s == viewer ? thread.profile_b : thread.profile_a

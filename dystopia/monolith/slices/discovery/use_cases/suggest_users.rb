@@ -24,7 +24,7 @@ module Discovery
         )
 
         result = build_pagination_result(items: rows, limit: limit) do |last|
-          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+          encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
         end
 
         profiles = result[:items].filter_map { |row| get_profile.call(profile_id: row.id) }
