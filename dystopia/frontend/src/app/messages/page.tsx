@@ -45,7 +45,7 @@ export function ThreadRow({ thread }: { thread: ThreadView }) {
 }
 
 export default function MessagesPage() {
-  const { threads, totalUnreadCount, loading, error } = useThreads();
+  const { threads, totalUnreadCount, loading, loadingMore, error, hasMore, loadMore } = useThreads();
   // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
   const [composing, setComposing] = useState<{ session: number; open: boolean } | null>(null);
 
@@ -81,6 +81,13 @@ export default function MessagesPage() {
       {threads.map((t) => (
         <ThreadRow key={t.id} thread={t} />
       ))}
+      {hasMore && (
+        <div className="flex justify-center px-4 py-6">
+          <Button variant="secondary" size="md" onClick={() => loadMore()} disabled={loadingMore}>
+            もっと見る
+          </Button>
+        </div>
+      )}
       {composing && (
         <ComposeToSheet
           key={composing.session}

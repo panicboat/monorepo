@@ -164,15 +164,22 @@ module Messaging
       def apply_thread_cursor(scope, cursor)
         return scope unless cursor
 
-        decoded = decode_cursor(cursor)
+        decoded = decode_cursor(cursor, keys: [:last_message_at, :id])
         return scope unless decoded
 
-        cutoff = decoded[:created_at]
         cutoff_id = decoded[:id]
+        # Threads without a message sort last, so a cursor still among dated threads must let them through.
+        return scope.where { (last_message_at =~ nil) & (id < cutoff_id) } unless decoded[:last_message_at]
+
+        cutoff = Time.parse(decoded[:last_message_at])
         scope.where {
           (last_message_at < cutoff) |
-            ((last_message_at =~ cutoff) & (id < cutoff_id))
+            ((last_message_at =~ cutoff) & (id < cutoff_id)) |
+            (last_message_at =~ nil)
         }
+      rescue ArgumentError, TypeError
+        # FALLBACK: Read a cursor whose time cannot be parsed as the first page, like any unreadable cursor.
+        scope
       end
 
       def apply_message_cursor(scope, cursor)

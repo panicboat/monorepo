@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
 import { profileRequestHeaders } from "@/lib/auth/profile-headers";
@@ -19,8 +20,14 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
   const profileId = useAuthStore((s) => s.activeProfileId);
   const active = enabled && !!profileId;
 
-  const { data: list, error: listError, isLoading, mutate: mutateList } = useSWR<ListResponse>(
-    active ? "/api/social/follow/requests" : null,
+  const getKey = (pageIndex: number, prev: ListResponse | null): string | null => {
+    if (!active) return null;
+    if (prev && !prev.hasMore) return null;
+    return pageIndex === 0 ? "/api/social/follow/requests" : `/api/social/follow/requests?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
+  };
+
+  const { data: pages, error: listError, isLoading, isValidating, size, setSize, mutate: mutateList } = useSWRInfinite<ListResponse>(
+    getKey,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 5000 }
   );
@@ -41,7 +48,7 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to approve");
     }
-    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.profileId !== requesterProfileId) } : cur), { revalidate: false });
+    mutateList((cur) => cur?.map((page) => ({ ...page, requests: page.requests.filter((r) => r.profileId !== requesterProfileId) })), { revalidate: false });
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 
@@ -55,7 +62,7 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to reject");
     }
-    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.profileId !== requesterProfileId) } : cur), { revalidate: false });
+    mutateList((cur) => cur?.map((page) => ({ ...page, requests: page.requests.filter((r) => r.profileId !== requesterProfileId) })), { revalidate: false });
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 
@@ -72,12 +79,15 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
     await Promise.all([mutateList(), mutateCount()]);
   }, [mutateList, mutateCount]);
 
+  const loaded = pages || [];
+
   return {
-    requests: list?.requests || [],
-    hasMore: list?.hasMore || false,
-    nextCursor: list?.nextCursor || "",
+    requests: loaded.flatMap((page) => page.requests || []),
+    hasMore: loaded.length > 0 ? !!loaded[loaded.length - 1].hasMore : false,
+    loadMore: () => setSize(size + 1),
     pendingCount: countData?.count || 0,
     loading: isLoading,
+    loadingMore: isValidating,
     error: listError,
     approve,
     reject,
