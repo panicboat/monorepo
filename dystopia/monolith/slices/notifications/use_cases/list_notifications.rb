@@ -6,7 +6,10 @@ module Notifications
   module UseCases
     class ListNotifications
       include Concerns::CursorPagination
-      include Notifications::Deps[notification_repo: "repositories.notification_repository"]
+      include Notifications::Deps[
+        notification_repo: "repositories.notification_repository",
+        get_unread_count: "use_cases.get_unread_count"
+      ]
 
       MAX_LIMIT = 50
 
@@ -29,7 +32,7 @@ module Notifications
           profiles_by_actor_profile_id: profiles_by_actor_profile_id,
           next_cursor: result[:next_cursor],
           has_more: result[:has_more],
-          unread_count: notification_repo.count_unread(recipient_profile_id: recipient_profile_id)
+          unread_count: get_unread_count.call(recipient_profile_id: recipient_profile_id)
         }
       end
 

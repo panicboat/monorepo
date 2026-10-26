@@ -6,7 +6,10 @@ module Messaging
   module UseCases
     class ListThreads
       include ::Concerns::CursorPagination
-      include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]
+      include Messaging::Deps[
+        messaging_repo: "repositories.messaging_repository",
+        get_total_unread_count: "use_cases.get_total_unread_count"
+      ]
 
       MAX_LIMIT = 50
 
@@ -27,7 +30,7 @@ module Messaging
             counterpart: counterpart,
             hidden_sender_profile_id: counterpart ? nil : counterpart_id,
             last_message: messaging_repo.last_message(thread_id: row.id),
-            unread_count: messaging_repo.unread_count(thread_id: row.id, profile_id: profile_id)
+            unread_count: counterpart ? messaging_repo.unread_count(thread_id: row.id, profile_id: profile_id) : 0
           }
         end
 
@@ -35,7 +38,7 @@ module Messaging
           threads: threads,
           next_cursor: result[:next_cursor],
           has_more: result[:has_more],
-          total_unread_count: messaging_repo.total_unread_count(profile_id: profile_id)
+          total_unread_count: get_total_unread_count.call(profile_id: profile_id)
         }
       end
 
