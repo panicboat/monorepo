@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "errors/validation_error"
+require "text"
 
 module Schedule
   module UseCases
@@ -19,7 +20,7 @@ module Schedule
         validate_format!(start_time, TIME_FORMAT, "開始時刻")
         validate_format!(end_time, TIME_FORMAT, "終了時刻")
 
-        note = announce_note.to_s.strip
+        note = Text.strip(announce_note)
         window = nil
         if announce
           validate_format!(announce_time, TIME_FORMAT, "お知らせの時刻")

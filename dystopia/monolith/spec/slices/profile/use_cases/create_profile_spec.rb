@@ -76,6 +76,12 @@ RSpec.describe "Profile::UseCases::CreateProfile", type: :database do
     expect { uc.call(account_id: account_id, display_name: "   ") }.to raise_error(Errors::ValidationError)
   end
 
+  it "rejects a display name of only full-width spaces" do
+    expect {
+      uc.call(account_id: create_account, display_name: "　")
+    }.to raise_error(Errors::ValidationError, "表示名は必須です")
+  end
+
   it "rejects a display name longer than 50 characters" do
     expect {
       uc.call(account_id: create_account, display_name: "あ" * 51)

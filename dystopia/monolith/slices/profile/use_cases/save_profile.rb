@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "errors/validation_error"
+require "text"
 
 module Profile
   module UseCases
@@ -52,7 +53,7 @@ module Profile
       private
 
       def validate_display_name!(value)
-        if value.nil? || value.strip.empty?
+        if Text.blank?(value)
           raise Errors::ValidationError, "表示名は必須です"
         end
         if value.length > DISPLAY_NAME_MAX

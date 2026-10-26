@@ -35,6 +35,12 @@ RSpec.describe Messaging::UseCases::SendMessage do
     }.to raise_error(described_class::BlockedError)
   end
 
+  it "raises EmptyContentError for content of only full-width spaces" do
+    expect {
+      use_case.call(sender_profile_id: sender_profile_id, content: "　", recipient_profile_id: recipient_profile_id)
+    }.to raise_error(described_class::EmptyContentError)
+  end
+
   it "sends the message when nothing restricts the sender" do
     restrict(nil)
     thread = double(:thread, id: "thread-1", :[] => nil)

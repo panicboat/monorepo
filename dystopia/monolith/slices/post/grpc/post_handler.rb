@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "post/v1/post_service_services_pb"
+require "text"
 require_relative "handler"
 
 module Post
@@ -63,7 +64,7 @@ module Post
 
         m = request.message
         content = m.content.to_s
-        if content.strip.empty?
+        if Text.blank?(content)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "本文を入力してください")
         end
         visibility = m.visibility.empty? ? "public" : m.visibility

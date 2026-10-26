@@ -228,6 +228,10 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       expect(&block).to raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(GRPC::Core::StatusCodes::INVALID_ARGUMENT) }
     end
 
+    it "rejects a body of only full-width spaces" do
+      expect_invalid { save(content: "　") }
+    end
+
     it "starts a post now and keeps it without an end when no window is given" do
       saved = post_repo.find_by_id(save.post.id)
 

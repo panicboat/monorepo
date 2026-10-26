@@ -20,6 +20,10 @@ export function ProfileNameForm({ submitLabel, onSubmit, onCancel }: ProfileName
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (displayName.trim() === "") {
+      setError("表示名を入力してください");
+      return;
+    }
     setSubmitting(true);
     try {
       await onSubmit({ displayName, username });

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "text"
+
 module Messaging
   module UseCases
     class SendMessage
@@ -23,7 +25,7 @@ module Messaging
       end
 
       def call(sender_profile_id:, content:, thread_id: nil, recipient_profile_id: nil)
-        raise EmptyContentError, "content is required" if content.nil? || content.to_s.strip.empty?
+        raise EmptyContentError, "content is required" if Text.blank?(content)
 
         resolved_recipient_profile_id = resolve_recipient(
           sender_profile_id: sender_profile_id,
