@@ -223,7 +223,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
       posts.each_with_index { |post, i| (i + 1).times { like_repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7) } }
 
       first = repo.top_by_likes(period: "all", limit: 2)
-      second = repo.top_by_likes(period: "all", limit: 2, cursor: { created_at: first[1][1].to_s, id: first[1][0] })
+      second = repo.top_by_likes(period: "all", limit: 2, cursor: { likes: first[1][1], id: first[1][0] })
 
       expect(first.first(2).map(&:first) + second.map(&:first)).to eq(posts.reverse.map(&:id))
     end

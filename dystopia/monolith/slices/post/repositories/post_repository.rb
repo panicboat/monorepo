@@ -163,10 +163,10 @@ module Post
           .select(Sequel[:post__posts][:id], likes_count_expr.as(:likes_count))
 
         if cursor
-          likes_at = cursor[:created_at].to_i
+          likes = cursor[:likes].to_i
           scope = scope.having {
-            (likes_count_expr < likes_at) |
-              ((likes_count_expr =~ likes_at) & (Sequel[:post__posts][:id] < cursor[:id]))
+            (likes_count_expr < likes) |
+              ((likes_count_expr =~ likes) & (Sequel[:post__posts][:id] < cursor[:id]))
           }
         end
 
