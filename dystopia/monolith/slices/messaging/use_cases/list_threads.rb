@@ -17,7 +17,7 @@ module Messaging
 
         result = build_pagination_result(items: rows, limit: limit) do |last|
           last_time = last.last_message_at || last.created_at
-          encode_cursor(created_at: last_time.iso8601, id: last.id)
+          encode_cursor(created_at: last_time.iso8601(6), id: last.id)
         end
 
         threads = result[:items].map do |row|

@@ -43,17 +43,19 @@ RSpec.describe Concerns::CursorPagination do
   describe "#encode_cursor / #decode_cursor" do
     it "reads a display start cursor as a time down to the microsecond" do
       published_at = Time.at(1_800_000_000, 123_456, :usec)
-      encoded = instance.encode_cursor(published_at: published_at.iso8601(6), id: "abc-123")
+      id = SecureRandom.uuid_v7
+      encoded = instance.encode_cursor(published_at: published_at.iso8601(6), id: id)
 
-      expect(instance.decode_cursor(encoded, keys: [:published_at, :id])).to eq(published_at: published_at, id: "abc-123")
+      expect(instance.decode_cursor(encoded, keys: [:published_at, :id])).to eq(published_at: published_at, id: id)
     end
 
     it "round-trips cursor data" do
-      data = { created_at: Time.now.iso8601, id: "abc-123" }
+      id = SecureRandom.uuid_v7
+      data = { created_at: Time.now.iso8601, id: id }
       encoded = instance.encode_cursor(data)
       decoded = instance.decode_cursor(encoded)
 
-      expect(decoded[:id]).to eq("abc-123")
+      expect(decoded[:id]).to eq(id)
       expect(decoded[:created_at]).to be_a(Time)
     end
 
@@ -69,13 +71,18 @@ RSpec.describe Concerns::CursorPagination do
       expect(instance.decode_cursor("not-valid-base64!!!")).to be_nil
     end
 
+    it "returns nil for a cursor whose id is not a uuid" do
+      expect(instance.decode_cursor(instance.encode_cursor(created_at: Time.now.iso8601(6), id: "not-a-uuid"))).to be_nil
+    end
+
     it "supports custom keys" do
-      data = { score: "42", id: "xyz" }
+      id = SecureRandom.uuid_v7
+      data = { score: "42", id: id }
       encoded = instance.encode_cursor(data)
       decoded = instance.decode_cursor(encoded, keys: [:score, :id])
 
       expect(decoded[:score]).to eq("42")
-      expect(decoded[:id]).to eq("xyz")
+      expect(decoded[:id]).to eq(id)
     end
   end
 
