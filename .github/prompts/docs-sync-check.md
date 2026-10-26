@@ -40,7 +40,18 @@ In `terms.ts` (`numbering: "article"`), the N-th element of `sections` is 第N�
 In `privacy.ts` (`numbering: "section"`), the N-th element of `sections` is 第N節.
 Cite them by these numbers and the `heading`.
 
-The terms and the privacy policy must be checked against every change in what data is kept, shown to other users, shared with third parties, or deleted, and every change in users' obligations or rights.
+The terms and the privacy policy state rights, obligations and principles, not screen-level behavior.
+They need an update only when the PR does one of these:
+- adds or removes a kind of information that is collected
+- adds a purpose of use
+- adds a recipient of information (a third party, a kind of contractor, or a business in a foreign country)
+- changes the principle of who can see what (for example, showing kartes to guests, or showing DMs to people outside the conversation)
+- changes what remains after an account is deactivated or a profile is deleted
+- changes users' obligations, prohibited acts, or the operator's powers
+- starts a paid feature
+
+Any other change, such as the name of a screen or a setting, a number, or a detail of what a screen shows, needs no update to the terms or the privacy policy, even when they say nothing about it.
+Text the terms or the privacy policy already have must still not contradict the code in the PR head.
 
 ## 4. Decide the verdict
 
@@ -49,6 +60,7 @@ Set `passed: false` when any one of these holds:
 1. A document still describes a behavior the PR changed as it was before the change, or document text the PR added or edited contradicts the behavior of the code in the PR head.
    - Document text the PR did not touch fails this condition only for behaviors the PR changed.
 2. A behavior the PR added that users or operators can see is not described at all by the documents it relates to.
+   - For the terms and the privacy policy, this holds only when the change is one of the kinds listed in section 3.
 3. The `## Impact` checkboxes do not match the change.
    - Mapping: `利用規約` = `terms.ts`, `プライバシーポリシー` = `privacy.ts`, `ドキュメント` = files under `dystopia/docs/`.
    - A box is checked but the PR does not update the matching document.
