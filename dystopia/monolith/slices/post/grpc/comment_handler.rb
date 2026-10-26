@@ -150,7 +150,8 @@ module Post
           author_profile_id: request.message.author_profile_id,
           viewer_profile_id: current_profile_id,
           limit: limit,
-          cursor: cursor
+          cursor: cursor,
+          exclude_author_profile_ids: get_blocked_profile_ids
         )
 
         media_files = load_media_files_for_comments(result[:comments])

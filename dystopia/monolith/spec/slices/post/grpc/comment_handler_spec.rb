@@ -65,6 +65,24 @@ RSpec.describe Post::Grpc::CommentHandler, type: :database do
       expect(author).not_to be_nil
       expect(author.display_name).to eq("テストゲスト")
     end
+
+    it "leaves out the comments of an author the viewer blocks, and keeps them for a viewer the author blocks" do
+      post = post_repo.create_post(author_profile_id: post_author_profile_id, content: "元の投稿")
+      comment_repo.create_comment(post_id: post.id, author_profile_id: reply_author_profile_id, content: "bbbb")
+      blocker = create_account_with_profile(username: "replies_blocker")
+      blocked = create_account_with_profile(username: "replies_blocked")
+      blocks = Social::Slice["repositories.block_repository"]
+      blocks.block(blocker_profile_id: blocker, blocked_profile_id: reply_author_profile_id)
+      blocks.block(blocker_profile_id: reply_author_profile_id, blocked_profile_id: blocked)
+
+      listed = [blocker, blocked].map do |viewer|
+        Current.account_id = SecureRandom.uuid_v7
+        Current.profile_id = viewer
+        handler.list_comments_by_author.comments.length
+      end
+
+      expect(listed).to eq([0, 1])
+    end
   end
 
   describe "#add_comment mentions" do
