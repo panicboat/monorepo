@@ -7,7 +7,7 @@ module Social
         include Social::Deps[follow_repo: "repositories.follow_repository"]
 
         def call(follower_profile_id:, target_profile_id:)
-          follow_repo.unfollow(follower_profile_id: follower_profile_id, followee_profile_id: target_profile_id)
+          follow_repo.delete_pending(follower_profile_id: follower_profile_id, followee_profile_id: target_profile_id)
           {}
         end
       end

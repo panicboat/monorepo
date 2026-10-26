@@ -26,11 +26,14 @@ module Social
         follows.dataset.where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id).delete > 0
       end
 
-      def update_status(follower_profile_id:, followee_profile_id:, status:)
-        updated = follows.dataset
-          .where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id)
-          .update(status: status, updated_at: Time.now)
-        updated > 0
+      def delete_pending(follower_profile_id:, followee_profile_id:)
+        follows.dataset.where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id, status: "pending").delete > 0
+      end
+
+      def approve_pending(follower_profile_id:, followee_profile_id:)
+        follows.dataset
+          .where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id, status: "pending")
+          .update(status: "approved", updated_at: Time.now) > 0
       end
 
       def remove_bidirectional(profile_a:, profile_b:)
