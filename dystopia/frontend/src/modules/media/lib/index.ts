@@ -1,6 +1,4 @@
 export {
-  mapApiToMediaItem,
-  mapApiToMediaList,
   toProtoMediaType,
   getMediaTypeFromMime,
   getMediaTypeFromPath,

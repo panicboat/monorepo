@@ -8,6 +8,7 @@ module Post
           comment_repo: "repositories.comment_repository",
           post_repo: "repositories.post_repository",
           account_adapter: "adapters.account_adapter",
+          media_adapter: "adapters.media_adapter",
           extract_mentions: "use_cases.extract_mentions"
         ]
 
@@ -43,6 +44,8 @@ module Post
               media_type: m[:media_type] || m["media_type"]
             }
           end
+          raise MediaNotOwnedError unless media_adapter.owned_all?(profile_id: author_profile_id, ids: media_data.map { |m| m[:media_id] })
+
           mentions = extract_mentions.call(content: normalized_content)
 
           comment = comment_repo.create_comment(
@@ -117,6 +120,7 @@ module Post
         class EmptyContentError < StandardError; end
         class ContentTooLongError < StandardError; end
         class TooManyMediaError < StandardError; end
+        class MediaNotOwnedError < StandardError; end
         class ParentNotFoundError < StandardError; end
         class CannotReplyToReplyError < StandardError; end
         class CreateFailedError < StandardError; end

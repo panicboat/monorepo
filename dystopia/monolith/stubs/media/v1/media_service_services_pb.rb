@@ -15,15 +15,8 @@ module Media
         self.unmarshal_class_method = :decode
         self.service_name = 'media.v1.MediaService'
 
-        # Get a presigned URL for uploading a file
         rpc :GetUploadUrl, ::Media::V1::GetUploadUrlRequest, ::Media::V1::GetUploadUrlResponse
-        # Register uploaded media after successful upload
         rpc :RegisterMedia, ::Media::V1::RegisterMediaRequest, ::Media::V1::RegisterMediaResponse
-        # Get media by ID
-        rpc :GetMedia, ::Media::V1::GetMediaRequest, ::Media::V1::GetMediaResponse
-        # Get multiple media by IDs
-        rpc :GetMediaBatch, ::Media::V1::GetMediaBatchRequest, ::Media::V1::GetMediaBatchResponse
-        # Delete media by ID
         rpc :DeleteMedia, ::Media::V1::DeleteMediaRequest, ::Media::V1::DeleteMediaResponse
       end
 

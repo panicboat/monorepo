@@ -132,6 +132,8 @@ module Profile
           cover_media_id: blank_to_nil(m.cover_media_id)
         )
         build_response(::Profile::V1::SaveProfileMediaResponse, profile)
+      rescue Errors::ValidationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
       def disable_profile

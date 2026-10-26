@@ -19,15 +19,11 @@ module Media
 
       rpc :GetUploadUrl, ::Media::V1::GetUploadUrlRequest, ::Media::V1::GetUploadUrlResponse
       rpc :RegisterMedia, ::Media::V1::RegisterMediaRequest, ::Media::V1::RegisterMediaResponse
-      rpc :GetMedia, ::Media::V1::GetMediaRequest, ::Media::V1::GetMediaResponse
-      rpc :GetMediaBatch, ::Media::V1::GetMediaBatchRequest, ::Media::V1::GetMediaBatchResponse
       rpc :DeleteMedia, ::Media::V1::DeleteMediaRequest, ::Media::V1::DeleteMediaResponse
 
       include Media::Deps[
         get_upload_url_uc: "use_cases.get_upload_url",
         register_media_uc: "use_cases.register_media",
-        get_media_uc: "use_cases.get_media",
-        get_media_batch_uc: "use_cases.get_media_batch",
         delete_media_uc: "use_cases.delete_media"
       ]
 
@@ -75,30 +71,6 @@ module Media
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Invalid input")
       rescue UseCases::RegisterMedia::UploadMissingError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, "The file has not been uploaded")
-      end
-
-      def get_media
-        authenticate_account!
-
-        result = get_media_uc.call(id: request.message.id)
-
-        unless result
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Media not found")
-        end
-
-        ::Media::V1::GetMediaResponse.new(
-          media: MediaPresenter.to_proto(result)
-        )
-      end
-
-      def get_media_batch
-        authenticate_account!
-
-        result = get_media_batch_uc.call(ids: request.message.ids.to_a)
-
-        ::Media::V1::GetMediaBatchResponse.new(
-          media: MediaPresenter.to_proto_list(result)
-        )
       end
 
       def delete_media

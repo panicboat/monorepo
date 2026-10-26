@@ -7,10 +7,6 @@ service MediaService {
 
   rpc RegisterMedia(RegisterMediaRequest) returns (RegisterMediaResponse);
 
-  rpc GetMedia(GetMediaRequest) returns (GetMediaResponse);
-
-  rpc GetMediaBatch(GetMediaBatchRequest) returns (GetMediaBatchResponse);
-
   rpc DeleteMedia(DeleteMediaRequest) returns (DeleteMediaResponse);
 }
 
@@ -55,22 +51,6 @@ message RegisterMediaRequest {
 
 message RegisterMediaResponse {
   Media media = 1;
-}
-
-message GetMediaRequest {
-  string id = 1;
-}
-
-message GetMediaResponse {
-  Media media = 1;
-}
-
-message GetMediaBatchRequest {
-  repeated string ids = 1;
-}
-
-message GetMediaBatchResponse {
-  repeated Media media = 1;
 }
 
 message DeleteMediaRequest {
