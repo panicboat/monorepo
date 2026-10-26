@@ -24,9 +24,11 @@ module Schedule
       end
 
       def validate_format!(value, label)
-        unless value.is_a?(String) && value.match?(DATE_FORMAT)
-          raise Errors::ValidationError, "#{label}の形式が正しくありません"
-        end
+        raise Errors::ValidationError, "#{label}の形式が正しくありません" unless value.is_a?(String) && value.match?(DATE_FORMAT)
+
+        Date.iso8601(value)
+      rescue Date::Error
+        raise Errors::ValidationError, "#{label}の形式が正しくありません"
       end
     end
   end
