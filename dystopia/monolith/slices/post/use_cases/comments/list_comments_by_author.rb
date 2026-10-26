@@ -12,8 +12,8 @@ module Post
 
         MAX_LIMIT = 50
 
-        def call(author_profile_id:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
-          if summarize_profiles.call(profile_ids: [author_profile_id]).empty?
+        def call(author_profile_id:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil, exclude_author_profile_ids: [])
+          if exclude_author_profile_ids.map(&:to_s).include?(author_profile_id.to_s) || summarize_profiles.call(profile_ids: [author_profile_id]).empty?
             return { comments: [], posts_by_id: {}, authors: {}, mentioned_usernames: {}, next_cursor: nil, has_more: false }
           end
 
