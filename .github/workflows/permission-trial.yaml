@@ -1,0 +1,35 @@
+name: 'Permission Trial'
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  trial:
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+    uses: panicboat/.github/.github/workflows/internal--claude-code-action.yaml@5cc1ea75c73b1e3df8177d6fe441030d6607716d
+    with:
+      prompt-path: .github/prompts/permission-trial.md
+      output-kind: review
+      model: claude-haiku-5-5
+      bedrock-model: global.anthropic.claude-haiku-4-5-20251001-v1:0
+      tools: Read,Glob,Grep,Bash,WebFetch
+      allowed-tools: WebFetch,Bash(helm repo add:*),Bash(helm repo update:*),Bash(helm pull:*),Bash(helm show:*)
+      max-budget-usd: '0.5'
+      execution-log-name: permission-trial-execution
+
+  show:
+    needs: trial
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          BODY: ${{ needs.trial.outputs.body }}
+          BACKEND: ${{ needs.trial.outputs.backend }}
+        run: |
+          echo "backend=$BACKEND"
+          printf '%s\n' "$BODY"
