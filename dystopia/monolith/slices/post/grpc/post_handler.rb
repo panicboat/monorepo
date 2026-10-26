@@ -90,7 +90,7 @@ module Post
           post = post_repo.find_by_id(m.id)
         end
 
-        post_repo.save_media(post_id: post.id, media_data: media_data) if media_data.any?
+        post_repo.save_media(post_id: post.id, media_data: media_data) if media_data.any? || !is_create
         post_repo.save_hashtags(post_id: post.id, hashtags: hashtags) if hashtags.any? || !is_create
         post_repo.save_mentions(post_id: post.id, mentions: mentions)
         post = post_repo.find_by_id(post.id)

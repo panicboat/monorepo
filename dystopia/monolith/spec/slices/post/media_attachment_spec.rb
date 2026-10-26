@@ -67,6 +67,16 @@ RSpec.describe "Attaching media and discarding it with what it was attached to",
       expect(db[:profile__profiles].where(id: owner).get(%i[avatar_media_id cover_media_id])).to eq([nil, nil])
     end
 
+    it "removes every attachment when a post is saved again without any" do
+      act_as(owner)
+      post = save_post([upload(owner)])
+
+      saved = save_post([], id: post.id)
+
+      expect(saved.media).to be_empty
+      expect(db[:post__post_media].where(post_id: post.id).count).to eq(0)
+    end
+
     it "refuses media that does not exist" do
       act_as(owner)
 
