@@ -35,21 +35,12 @@ module Feed
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "filter is required")
         end
 
-        prefecture = nil
-        if filter == "area"
-          prefecture = request.message.prefecture.to_s
-          if prefecture.empty?
-            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "prefecture is required for AREA filter")
-          end
-        end
-
         limit = request.message.limit.zero? ? ::Concerns::CursorPagination::DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_feed_uc.call(
           filter: filter,
           viewer_profile_id: current_profile_id,
-          prefecture: prefecture,
           limit: limit,
           cursor: cursor
         )
@@ -63,6 +54,8 @@ module Feed
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
+      rescue Feed::UseCases::ListFeed::PrefectureRequired
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "prefecture is required for AREA filter")
       end
 
       private

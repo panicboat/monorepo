@@ -33,9 +33,9 @@ describe("useFeed after a post is created", () => {
     expect(authFetch).not.toHaveBeenCalled();
   });
 
-  it("refetches the area tab of a profile with a prefecture", async () => {
+  it("refetches the area tab of a profile with a prefecture without sending the prefecture", async () => {
     await renderAndPost("area", "東京都");
 
-    expect(authFetch).toHaveBeenCalledWith(expect.stringContaining("prefecture="), expect.anything());
+    expect(authFetch).toHaveBeenCalledWith("/api/feed?filter=area", expect.anything());
   });
 });

@@ -9,12 +9,14 @@ module Feed
 
       MAX_LIMIT = 50
 
+      class PrefectureRequired < StandardError; end
+
       def initialize
         @block_adapter = Feed::Adapters::BlockAdapter.new
         @follow_adapter = Feed::Adapters::FollowAdapter.new
       end
 
-      def call(filter:, viewer_profile_id:, prefecture: nil, limit: DEFAULT_LIMIT, cursor: nil)
+      def call(filter:, viewer_profile_id:, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor, keys: [:published_at, :id])
         excluded = @block_adapter.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
@@ -23,7 +25,7 @@ module Feed
         when "all"
           nil
         when "area"
-          list_profile_ids_by_prefecture_uc.call(prefecture: prefecture)
+          list_profile_ids_by_prefecture_uc.call(prefecture: viewer_prefecture(viewer_profile_id))
         when "following"
           @follow_adapter.following_profile_ids(profile_id: viewer_profile_id)
         when "followers"
@@ -57,6 +59,13 @@ module Feed
 
       AuthorRef = Struct.new(:author_profile_id)
 
+      def viewer_prefecture(viewer_profile_id)
+        prefecture = get_profile.call(profile_id: viewer_profile_id)&.prefecture.to_s
+        raise PrefectureRequired if prefecture.empty?
+
+        prefecture
+      end
+
       # Narrow to authors whose public posts the viewer may read, so locked or blocked followers never thin out a page.
       def readable_author_ids(viewer_profile_id, profile_ids)
         refs = profile_ids.map { |id| AuthorRef.new(id) }
@@ -65,6 +74,10 @@ module Feed
 
       def mutual_ids(viewer_profile_id, follower_ids)
         follower_ids & @follow_adapter.following_profile_ids(profile_id: viewer_profile_id)
+      end
+
+      def get_profile
+        @get_profile ||= Profile::Slice["use_cases.get_profile"]
       end
 
       def filter_visible_posts
