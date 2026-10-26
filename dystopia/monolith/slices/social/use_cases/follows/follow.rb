@@ -7,6 +7,8 @@ module Social
         include Social::Deps[follow_repo: "repositories.follow_repository", block_repo: "repositories.block_repository"]
 
         def call(follower_profile_id:, target_profile_id:)
+          return { status: "none", reason: :self } if follower_profile_id.to_s == target_profile_id.to_s
+
           if block_repo.blocked?(blocker_profile_id: target_profile_id, blocked_profile_id: follower_profile_id) ||
              block_repo.blocked?(blocker_profile_id: follower_profile_id, blocked_profile_id: target_profile_id)
             return { status: "none", reason: :blocked }
