@@ -197,11 +197,8 @@ module Profile
       private
 
       def name_matches(query)
-        pattern = "%#{query}%"
-        Sequel.|(
-          Sequel.lit("username ILIKE ?", pattern),
-          Sequel.lit("display_name ILIKE ?", pattern)
-        )
+        pattern = "%#{profiles.dataset.escape_like(query)}%"
+        Sequel.|(Sequel.ilike(:username, pattern), Sequel.ilike(:display_name, pattern))
       end
 
       # Profile management and the username uniqueness check must not read through this scope: they act on hidden profiles too.
@@ -224,8 +221,7 @@ module Profile
       end
 
       def filter_by_name(scope, query)
-        pattern = "%#{profiles.dataset.escape_like(query.to_s.strip)}%"
-        scope.where(Sequel.|(Sequel.ilike(:username, pattern), Sequel.ilike(:display_name, pattern)))
+        scope.where(name_matches(query.to_s.strip))
       end
 
       def apply_cursor(scope, cursor)

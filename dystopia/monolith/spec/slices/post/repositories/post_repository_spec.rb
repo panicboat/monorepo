@@ -52,6 +52,16 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
   end
 
+  describe "#search_by_content" do
+    it "matches % and _ in the query literally" do
+      literal = repo.create_post(author_profile_id: cast_id, content: "100%_sure", visibility: "public")
+      other = repo.create_post(author_profile_id: cast_id, content: "100 sure", visibility: "public")
+
+      expect(repo.search_by_content(query: "100%_")).to eq([literal.id])
+      expect(repo.search_by_content(query: "100_")).not_to include(other.id)
+    end
+  end
+
   describe "#find_by_id" do
     it "returns nil when post does not exist" do
       expect(repo.find_by_id(SecureRandom.uuid_v7)).to be_nil

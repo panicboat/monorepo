@@ -126,8 +126,8 @@ module Post
         q = query.to_s.strip
         return [] if q.empty?
 
-        pattern = "%#{q}%"
-        scope = posts.dataset.where(visibility: "public").where(live_condition).where(Sequel.lit("content ILIKE ?", pattern))
+        pattern = "%#{posts.dataset.escape_like(q)}%"
+        scope = posts.dataset.where(visibility: "public").where(live_condition).where(Sequel.ilike(:content, pattern))
 
         newest_ids(scope, limit: limit, cursor: cursor)
       end

@@ -27,6 +27,17 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     end
   end
 
+  describe "name search" do
+    it "matches % and _ in the query literally in the user search and the following filter" do
+      literal = create_profile(display_name: "100%_sure")
+      other = create_profile(owner: create_account, display_name: "100 sure")
+
+      expect(repo.search_by_query(query: "100%_", limit: 20).map(&:id)).to eq([literal.id])
+      expect(repo.visible_ids_matching(query: "100%_").select_map(:id)).to eq([literal.id])
+      expect(repo.search_by_query(query: "100_", limit: 20).map(&:id)).not_to include(other.id)
+    end
+  end
+
   describe "#find_by_username" do
     it "matches case-insensitively" do
       profile = create_profile(username: "Coco")
