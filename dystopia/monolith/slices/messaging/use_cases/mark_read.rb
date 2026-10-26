@@ -7,6 +7,7 @@ module Messaging
 
       ThreadNotFoundError = Class.new(StandardError)
       ForbiddenError = Class.new(StandardError)
+      MessageNotInThreadError = Class.new(StandardError)
 
       def call(thread_id:, viewer_profile_id:, message_id:)
         thread = messaging_repo.find_thread(id: thread_id)
@@ -20,6 +21,9 @@ module Messaging
         end
 
         last_id = (message_id && !message_id.to_s.empty?) ? message_id.to_s : nil
+        if last_id && !messaging_repo.message_in_thread?(thread_id: thread_id, message_id: last_id)
+          raise MessageNotInThreadError, "message is not in the thread"
+        end
 
         messaging_repo.upsert_read_state(
           thread_id: thread_id,

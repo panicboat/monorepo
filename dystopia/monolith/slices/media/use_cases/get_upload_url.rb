@@ -7,9 +7,10 @@ module Media
   module UseCases
     class GetUploadUrl
       EXTENSION = /\A\.[a-z0-9]{1,10}\z/
+      CONTENT_TYPE = %r{\A(image|video)/[\w.+-]+\z}
 
       def call(filename:, content_type:, profile_id:)
-        return nil if filename.to_s.empty? || content_type.to_s.empty?
+        return nil if filename.to_s.empty? || !CONTENT_TYPE.match?(content_type.to_s)
 
         media_id = SecureRandom.uuid_v7
         # Keep the account out of the key: the key is part of every download URL, and an account id there would tie its profiles together.

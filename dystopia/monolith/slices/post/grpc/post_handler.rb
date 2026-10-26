@@ -67,6 +67,9 @@ module Post
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "本文を入力してください")
         end
         visibility = m.visibility.empty? ? "public" : m.visibility
+        unless %w[public private].include?(visibility)
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "公開範囲が正しくありません")
+        end
         media_data = m.media.map { |x| { media_id: x.media_id, media_type: x.media_type } }
         unless media_adapter.owned_all?(profile_id: current_profile_id, ids: media_data.map { |x| x[:media_id] })
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "添付できないメディアが含まれています")

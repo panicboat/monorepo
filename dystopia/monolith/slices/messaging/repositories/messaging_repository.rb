@@ -50,6 +50,12 @@ module Messaging
       end
 
 
+      def message_in_thread?(thread_id:, message_id:)
+        return false unless ::Concerns::CursorPagination::UUID_FORMAT.match?(message_id.to_s)
+
+        message_records.where(thread_id: thread_id, id: message_id).exist?
+      end
+
       def insert_message(thread_id:, sender_profile_id:, content:)
         new_id = SecureRandom.uuid_v7
         now = Time.now

@@ -158,6 +158,8 @@ module Messaging
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, e.message)
       rescue UseCases::MarkRead::ForbiddenError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
+      rescue UseCases::MarkRead::MessageNotInThreadError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
       def get_total_unread_count
