@@ -23,7 +23,7 @@ RSpec.describe "Lists that page through rows written in the same second", type: 
 
     first, rest = walk { |cursor| Bookmarks::Slice["use_cases.list_bookmarks"].call(profile_id: viewer, limit: 1, cursor: cursor) }
 
-    expect((first[:posts] + rest[:posts]).map(&:id)).to eq([posts[1].id, posts[0].id])
+    expect((first[:items] + rest[:items]).map { |item| item[:post_id] }).to eq([posts[1].id, posts[0].id])
   end
 
   it "keeps a notification fired earlier in the same second on the next page" do

@@ -21,7 +21,7 @@ module Profile
         account = identity_account_repo.find_by_id(account_id)
         raise AccountNotFoundError, "Account not found" unless account
 
-        attrs = { display_name: display_name }
+        attrs = { display_name: display_name, registered_at: Time.now }
         attrs[:username] = username unless username.nil?
 
         profile = profile_repository.create_within_limit(

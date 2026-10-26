@@ -19,11 +19,11 @@ export function useBookmarkList() {
     useSWRInfinite<PaginatedBookmarksResponse>(getKey, fetcher, { revalidateOnFocus: false });
 
   const pages = data || [];
-  const posts = pages.flatMap((p) => p.posts || []);
+  const items = pages.flatMap((p) => p.items || []);
   const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
 
   return {
-    posts,
+    items,
     hasMore,
     loading: isLoading || isValidating,
     error,

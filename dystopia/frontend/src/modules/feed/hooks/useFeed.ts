@@ -60,9 +60,11 @@ export function useFeed(options: UseFeedOptions = {}) {
   useEffect(() => {
     if (lastSeenVersionRef.current === postCreatedVersion) return;
     lastSeenVersionRef.current = postCreatedVersion;
+    // The server refuses the area tab without a prefecture; the page shows a hint there instead of fetching.
+    if (filter === "area" && !prefecture) return;
     reset();
     fetchInitial();
-  }, [postCreatedVersion, reset, fetchInitial]);
+  }, [postCreatedVersion, reset, fetchInitial, filter, prefecture]);
 
   return {
     posts,

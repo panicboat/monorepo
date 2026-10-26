@@ -97,7 +97,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
 
     result = Bookmarks::Slice["use_cases.list_bookmarks"].call(profile_id: viewer)
 
-    expect(result[:posts].map(&:id)).to eq([public_post.id])
+    expect(result[:items].map { |item| item[:post]&.id }).to eq([public_post.id])
   end
 
   it "filters review author references through the post visibility filter" do

@@ -19,6 +19,13 @@ RSpec.describe "Profile::UseCases::CreateProfile", type: :database do
       expect(profile.username).to eq("taro_01")
     end
 
+    it "records when the profile registered, so its header shows the month like a migrated profile" do
+      now = Time.now
+      profile = uc.call(account_id: account_id, display_name: "Taro")
+
+      expect(profile.registered_at).to be_within(5).of(now)
+    end
+
     it "rejects a second profile" do
       uc.call(account_id: account_id, display_name: "Taro")
 

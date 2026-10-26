@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -13,12 +13,16 @@ export function FootprintsHeader() {
 }
 
 export default function FootprintsPage() {
-  const { footprints, hasMore, loading, error, loadMore } = useFootprints();
+  const { footprints, hasMore, loading, loaded, error, loadMore } = useFootprints();
   const unreadCount = useFootprintsUnreadCount();
+  const marked = useRef(false);
 
+  // Mark read only after the list has come back: the list reads the last read time to tell which rows are new.
   useEffect(() => {
+    if (!loaded || marked.current) return;
+    marked.current = true;
     markFootprintsRead().then(() => unreadCount.refresh());
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">

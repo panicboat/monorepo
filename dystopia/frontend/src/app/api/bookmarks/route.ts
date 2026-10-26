@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     const res = await bookmarkClient.listBookmarks({ limit, cursor }, { headers });
     return NextResponse.json({
-      posts: (res.posts || []).map(mapPostToView),
+      items: (res.items || []).map((item) => ({ postId: item.postId, post: item.post ? mapPostToView(item.post) : null })),
       nextCursor: res.nextCursor || "",
       hasMore: !!res.hasMore,
     });
