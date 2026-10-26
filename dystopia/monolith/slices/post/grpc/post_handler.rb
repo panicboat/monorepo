@@ -21,7 +21,8 @@ module Post
 
       include Post::Concerns::ProfileAuthorResolvable
       include Post::Deps[
-        extract_mentions: "use_cases.extract_mentions"
+        extract_mentions: "use_cases.extract_mentions",
+        discard_detached_media: "use_cases.discard_detached_media"
       ]
 
       AuthorRef = Struct.new(:author_profile_id)
@@ -67,6 +68,9 @@ module Post
         end
         visibility = m.visibility.empty? ? "public" : m.visibility
         media_data = m.media.map { |x| { media_id: x.media_id, media_type: x.media_type } }
+        unless media_adapter.owned_all?(profile_id: current_profile_id, ids: media_data.map { |x| x[:media_id] })
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "添付できないメディアが含まれています")
+        end
         hashtags = m.hashtags.to_a
         mentions = extract_mentions.call(content: content)
         is_create = m.id.empty?
@@ -114,7 +118,9 @@ module Post
         existing = post_repo.find_by_id_and_author(id: request.message.id, author_profile_id: current_profile_id)
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
 
-        post_repo.delete_post(request.message.id)
+        media_ids = post_repo.media_ids_of(existing.id) + comment_repo.media_ids_on_post(existing.id)
+        post_repo.delete_post(existing.id)
+        discard_detached_media.call(ids: media_ids)
         ::Post::V1::DeletePostResponse.new
       end
 

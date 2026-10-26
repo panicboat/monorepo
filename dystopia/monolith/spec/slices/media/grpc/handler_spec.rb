@@ -90,7 +90,6 @@ RSpec.describe Media::Grpc::Handler, type: :database do
     expect(db[:media__files].where(id: [image.id, video.id, by_number.id]).to_hash(:id, :media_type))
       .to eq(image.id => "image", video.id => "video", by_number.id => "video")
     expect([image.media_type, video.media_type, by_number.media_type]).to eq(%i[MEDIA_TYPE_IMAGE MEDIA_TYPE_VIDEO MEDIA_TYPE_VIDEO])
-    expect(rpc(:get_media, Media::V1::GetMediaRequest.new(id: video.id)).media.media_type).to eq(:MEDIA_TYPE_VIDEO)
   end
 
   it "issues an upload key under the acting profile, without the account in it" do
@@ -166,17 +165,6 @@ RSpec.describe Media::Grpc::Handler, type: :database do
     expect(db[:media__files].count).to eq(0)
   end
 
-  it "does not hand the owning account to anyone who reads the file" do
-    act_as(uploader)
-    account_id = Current.account_id
-    media_id = register
-    act_as(other)
-
-    answer = rpc(:get_media, Media::V1::GetMediaRequest.new(id: media_id))
-
-    expect(answer.to_json).not_to include(account_id)
-  end
-
   it "lets the uploader delete its media file" do
     act_as(uploader)
     media_id = register
@@ -222,22 +210,10 @@ RSpec.describe Media::Grpc::Handler, type: :database do
     Current.clear
     unauthenticated = GRPC::Core::StatusCodes::UNAUTHENTICATED
 
-    expect { rpc(:get_media, Media::V1::GetMediaRequest.new(id: media_id)) }.to status(unauthenticated)
-    expect { rpc(:get_media_batch, Media::V1::GetMediaBatchRequest.new(ids: [media_id])) }.to status(unauthenticated)
     expect { rpc(:get_upload_url, Media::V1::GetUploadUrlRequest.new(filename: "a.png", content_type: "image/png", media_type: :MEDIA_TYPE_IMAGE)) }.to status(unauthenticated)
     expect { register(media_key: "media/x/y.png") }.to status(unauthenticated)
     expect { delete(media_id) }.to status(unauthenticated)
     expect(db[:media__files].where(id: media_id).count).to eq(1)
-  end
-
-  it "serves a media file to any signed-in account" do
-    act_as(uploader)
-    media_id = register
-    Current.clear
-    Current.account_id = SecureRandom.uuid_v7
-
-    expect(rpc(:get_media, Media::V1::GetMediaRequest.new(id: media_id)).media.id).to eq(media_id)
-    expect(rpc(:get_media_batch, Media::V1::GetMediaBatchRequest.new(ids: [media_id])).media.map(&:id)).to eq([media_id])
   end
 
   it "has what a profile uploaded removed when that profile is purged, and nothing else" do

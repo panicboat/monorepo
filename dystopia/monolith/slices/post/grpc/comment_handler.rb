@@ -65,6 +65,8 @@ module Post
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content exceeds 1000 characters")
       rescue AddComment::TooManyMediaError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Maximum 3 media attachments allowed")
+      rescue AddComment::MediaNotOwnedError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Only media the acting profile uploaded can be attached")
       rescue AddComment::ParentNotFoundError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Parent comment not found")
       rescue AddComment::CannotReplyToReplyError

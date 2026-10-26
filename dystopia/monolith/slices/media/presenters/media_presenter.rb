@@ -20,12 +20,6 @@ module Media
           )
         end
 
-        def to_proto_list(media_list)
-          return [] if media_list.nil? || media_list.empty?
-
-          media_list.map { |m| to_proto(m) }.compact
-        end
-
         private
 
         def media_type_to_enum(type)

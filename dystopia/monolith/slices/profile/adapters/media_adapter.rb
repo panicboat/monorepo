@@ -14,6 +14,13 @@ module Profile
         end
       end
 
+      def owned_all?(profile_id:, ids:)
+        ids = ids.compact.map(&:to_s).uniq
+        return true if ids.empty?
+
+        select_owned_media_ids.call(profile_id: profile_id, ids: ids).map(&:to_s).sort == ids.sort
+      end
+
       private
 
       def build_media_file(file)
@@ -29,6 +36,10 @@ module Profile
 
       def get_media_batch
         @get_media_batch ||= Media::Slice["use_cases.get_media_batch"]
+      end
+
+      def select_owned_media_ids
+        @select_owned_media_ids ||= Media::Slice["use_cases.select_owned_media_ids"]
       end
     end
   end

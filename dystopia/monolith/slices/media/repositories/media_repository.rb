@@ -20,6 +20,10 @@ module Media
         files.where(id: ids).to_a.map { |file| resolve_urls(file) }
       end
 
+      def ids_uploaded_by(profile_id:, ids:)
+        files.where(id: ids, uploader_profile_id: profile_id).pluck(:id)
+      end
+
       def create(id:, media_type:, filename: nil, content_type: nil, size_bytes: nil, media_key: nil, thumbnail_key: nil, uploader_profile_id: nil, owner_account_id: nil)
         resolve_urls(files.command(:create).call(
           id: id,

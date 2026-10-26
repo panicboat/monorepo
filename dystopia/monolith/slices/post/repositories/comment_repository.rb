@@ -48,15 +48,14 @@ module Post
           deleted_count += comments.where(parent_id: id).count
         end
 
-        comment_media.dataset.where(comment_id: id).delete
-        if comment.parent_id.nil?
-          reply_ids = comments.dataset.where(parent_id: id).select_map(:id)
-          comment_media.dataset.where(comment_id: reply_ids).delete unless reply_ids.empty?
-          comments.dataset.where(parent_id: id).delete
-        end
+        deleted_ids = [id]
+        deleted_ids += comments.dataset.where(parent_id: id).select_map(:id) if comment.parent_id.nil?
+        media_ids = comment_media.dataset.where(comment_id: deleted_ids).select_map(:media_id)
+        comment_media.dataset.where(comment_id: deleted_ids).delete
+        comments.dataset.where(parent_id: id).delete if comment.parent_id.nil?
         comments.dataset.where(id: id).delete
 
-        { post_id: comment.post_id, deleted_count: deleted_count }
+        { post_id: comment.post_id, deleted_count: deleted_count, media_ids: media_ids }
       end
 
       def find_by_id(id)
@@ -123,6 +122,14 @@ module Post
         scope = scope.exclude(author_profile_id: exclude_author_profile_ids) if exclude_author_profile_ids && !exclude_author_profile_ids.empty?
 
         scope.group_and_count(:post_id).to_hash(:post_id, :count)
+      end
+
+      def media_ids_on_post(post_id)
+        comment_media.dataset.where(comment_id: comments.dataset.where(post_id: post_id).select(:id)).select_map(:media_id)
+      end
+
+      def attached_media_ids(ids)
+        comment_media.dataset.where(media_id: ids).select_map(:media_id)
       end
 
       def delete_by_profile(profile_id)
