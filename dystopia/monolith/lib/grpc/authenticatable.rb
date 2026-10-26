@@ -5,6 +5,7 @@ module Grpc
     ERROR_REASON_METADATA_KEY = "error-reason"
     PROFILE_REQUIRED_REASON = "profile_required"
     PROFILE_NOT_PERMITTED_REASON = "profile_not_permitted"
+    ACCOUNT_DEACTIVATED_REASON = "account_deactivated"
 
     def authenticate_account!
       return if current_account_id

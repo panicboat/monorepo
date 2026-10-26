@@ -51,6 +51,43 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
   before { Current.account_id = account_id }
   after { Current.clear }
 
+  describe "from a deactivated account" do
+    before { db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now) }
+
+    def rejected_as_deactivated
+      raise_error(GRPC::BadStatus) do |e|
+        expect(e.code).to eq(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
+        expect(e.metadata["error-reason"]).to eq("account_deactivated")
+      end
+    end
+
+    it "rejects CreateProfile and creates no profile" do
+      expect {
+        rpc(:create_profile, Profile::V1::CreateProfileRequest.new(display_name: "Third", username: "lifecycle_third"))
+      }.to rejected_as_deactivated
+      expect(db[:profile__profiles].where(account_id: account_id).count).to eq(2)
+    end
+
+    it "rejects DisableProfile and leaves the profile enabled" do
+      expect { disable(first) }.to rejected_as_deactivated
+      expect(disabled?(first)).to be false
+    end
+
+    it "rejects EnableProfile and leaves the profile disabled" do
+      db[:profile__profiles].where(id: first).update(disabled_at: Time.now)
+
+      expect { enable(first) }.to rejected_as_deactivated
+      expect(disabled?(first)).to be true
+    end
+
+    it "rejects DeleteProfile and keeps the disabled profile" do
+      db[:profile__profiles].where(id: first).update(disabled_at: Time.now)
+
+      expect { delete(first) }.to rejected_as_deactivated
+      expect(repo.find_by_id(first)).not_to be_nil
+    end
+  end
+
   describe "DisableProfile" do
     it "disables a profile of the account without an acting profile and stops it from acting" do
       expect_account_lock
