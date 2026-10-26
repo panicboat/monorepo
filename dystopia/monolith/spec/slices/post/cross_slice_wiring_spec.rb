@@ -17,14 +17,15 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
 
   let(:viewer) { create_account_with_profile(username: "wiring_viewer") }
   let(:public_author) { create_account_with_profile(role: 2, username: "wiring_public") }
-  let(:private_author) { create_account_with_profile(role: 2, username: "wiring_private", is_private: true) }
+  let(:locked_author) { create_account_with_profile(role: 2, username: "wiring_locked", is_private: true) }
   let!(:public_post) { post_repo.create_post(author_profile_id: public_author, content: "wiring public", visibility: "public") }
-  let!(:private_post) { post_repo.create_post(author_profile_id: private_author, content: "wiring private", visibility: "public") }
+  let!(:locked_post) { post_repo.create_post(author_profile_id: locked_author, content: "wiring locked", visibility: "public") }
+  let!(:followers_post) { post_repo.create_post(author_profile_id: locked_author, content: "wiring followers", visibility: "private") }
 
-  it "hydrates posts with the author profile and hides a private author's post from a non-follower" do
-    result = list_posts.call(post_ids: [public_post.id, private_post.id], viewer_profile_id: viewer)
+  it "hydrates posts with the author profile and hides a followers-only post from a non-follower" do
+    result = list_posts.call(post_ids: [public_post.id, locked_post.id, followers_post.id], viewer_profile_id: viewer)
 
-    expect(result.keys).to eq([public_post.id])
+    expect(result.keys).to contain_exactly(public_post.id, locked_post.id)
     expect(result[public_post.id].author_profile_id).to eq(public_author)
     expect(result[public_post.id].author.profile_id).to eq(public_author)
     expect(result[public_post.id].author.username).to eq("wiring_public")
@@ -32,28 +33,28 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
     expect(result[public_post.id].author.is_private).to be false
   end
 
-  it "shows a private author's post to an approved follower and marks the viewer's like" do
-    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_author, status: "approved")
-    like_repo.profile_like(post_id: private_post.id, profile_id: viewer)
+  it "shows a followers-only post to an approved follower and marks the viewer's like" do
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: locked_author, status: "approved")
+    like_repo.profile_like(post_id: followers_post.id, profile_id: viewer)
 
-    result = list_posts.call(post_ids: [public_post.id, private_post.id], viewer_profile_id: viewer)
+    result = list_posts.call(post_ids: [public_post.id, followers_post.id], viewer_profile_id: viewer)
 
-    expect(result.keys).to contain_exactly(public_post.id, private_post.id)
-    expect(result[private_post.id].liked).to be true
+    expect(result.keys).to contain_exactly(public_post.id, followers_post.id)
+    expect(result[followers_post.id].liked).to be true
     expect(result[public_post.id].liked).to be false
   end
 
-  it "decides a single post's visibility from its author profile" do
+  it "decides a single post's visibility from its visibility and the viewer's follow" do
     can_see = Social::Slice["use_cases.viewer_can_see_post"]
 
-    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(public_post.id))).to be true
-    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be_falsy
-    expect(can_see.call(viewer_profile_id: private_author, post: post_repo.find_by_id(private_post.id))).to be true
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(locked_post.id))).to be true
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(followers_post.id))).to be_falsy
+    expect(can_see.call(viewer_profile_id: locked_author, post: post_repo.find_by_id(followers_post.id))).to be true
 
-    follow_repo.follow(follower_profile_id: private_author, followee_profile_id: viewer, status: "approved")
-    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be_falsy
-    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_author, status: "approved")
-    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be true
+    follow_repo.follow(follower_profile_id: locked_author, followee_profile_id: viewer, status: "approved")
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(followers_post.id))).to be_falsy
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: locked_author, status: "approved")
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(followers_post.id))).to be true
   end
 
   it "lists the following feed by the followed author profiles" do
@@ -62,7 +63,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
     all = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_profile_id: viewer)
     following = Feed::UseCases::ListFeed.new.call(filter: "following", viewer_profile_id: viewer)
 
-    expect(all[:post_ids]).to contain_exactly(public_post.id, private_post.id)
+    expect(all[:post_ids]).to contain_exactly(public_post.id, locked_post.id)
     expect(following[:post_ids]).to eq([public_post.id])
   end
 
@@ -82,13 +83,13 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
     expect(result[:post_ids]).not_to include(public_post.id)
   end
 
-  it "ranks and searches posts for a viewer" do
-    [public_post, private_post].each { |post| like_repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7) }
+  it "ranks and searches a locked author's public posts for a viewer" do
+    [public_post, locked_post, followers_post].each { |post| like_repo.profile_like(post_id: post.id, profile_id: SecureRandom.uuid_v7) }
     ranked = Discovery::Slice["use_cases.rank_posts"].call(period: "all", viewer_profile_id: viewer)
     found = Discovery::Slice["use_cases.search_posts"].call(query: "wiring", viewer_profile_id: viewer)
 
-    expect(ranked[:posts].map(&:id)).to eq([public_post.id])
-    expect(found[:posts].map(&:id)).to eq([public_post.id])
+    expect(ranked[:posts].map(&:id)).to contain_exactly(public_post.id, locked_post.id)
+    expect(found[:posts].map(&:id)).to contain_exactly(public_post.id, locked_post.id)
   end
 
   it "lists bookmarked posts for a viewer" do
@@ -100,7 +101,8 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   end
 
   it "filters review author references through the post visibility filter" do
-    refs = [public_author, private_author].map { |id| Review::UseCases::FilterVisibleReviews::AuthorRef.new(id) }
+    refs = [public_author, locked_author].map { |id| Review::UseCases::FilterVisibleReviews::AuthorRef.new(id) }
+    Social::Slice["repositories.block_repository"].block(blocker_profile_id: locked_author, blocked_profile_id: viewer)
 
     visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_profile_id: viewer, posts: refs)
 
@@ -132,21 +134,21 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(listed.posts.map(&:id)).to eq([public_post.id])
       expect(listed.posts.first.author_profile_id).to eq(public_author)
       expect(got.post.author.profile_id).to eq(public_author)
-      expect { rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: private_post.id)) }
+      expect { rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: followers_post.id)) }
         .to status(GRPC::Core::StatusCodes::NOT_FOUND)
     end
 
     it "returns the post author as a profile summary with its privacy" do
-      act_as(private_author)
+      act_as(locked_author)
 
-      got = rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: private_post.id))
+      got = rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: locked_post.id))
 
       expect(got.post.author).to be_a(::Profile::V1::ProfileSummary)
       expect(got.post.author.is_private).to be true
     end
 
     it "returns the comment author as a profile summary with its privacy" do
-      act_as(private_author)
+      act_as(locked_author)
       added = rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: public_post.id, content: "hello"))
       listed = rpc(Post::Grpc::CommentHandler, :list_comments, Post::V1::ListCommentsRequest.new(post_id: public_post.id))
 
@@ -292,17 +294,17 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
 
       act_as(viewer)
       expect(authored_by.call(public_author)).to eq([public_post.id])
-      expect(authored_by.call(private_author)).to be_empty
-      expect(rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new).posts.map(&:id)).to eq([public_post.id])
+      expect(authored_by.call(locked_author)).to eq([locked_post.id])
+      expect(rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new).posts.map(&:id)).to contain_exactly(public_post.id, locked_post.id)
 
-      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_author, status: "approved")
-      expect(authored_by.call(private_author)).to eq([private_post.id])
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: locked_author, status: "approved")
+      expect(authored_by.call(locked_author)).to contain_exactly(locked_post.id, followers_post.id)
 
       Social::Slice["repositories.block_repository"].block(blocker_profile_id: public_author, blocked_profile_id: viewer)
       expect(authored_by.call(public_author)).to be_empty
 
-      act_as(private_author)
-      expect(authored_by.call(private_author)).to eq([private_post.id])
+      act_as(locked_author)
+      expect(authored_by.call(locked_author)).to contain_exactly(locked_post.id, followers_post.id)
     end
 
     it "serves the feed with hydrated posts" do
@@ -310,8 +312,8 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
 
       feed = rpc(Feed::Grpc::Handler, :list_feed, Feed::V1::ListFeedRequest.new(filter: :FEED_FILTER_ALL))
 
-      expect(feed.posts.map(&:id)).to eq([public_post.id])
-      expect(feed.posts.first.author_profile_id).to eq(public_author)
+      expect(feed.posts.map(&:id)).to contain_exactly(public_post.id, locked_post.id)
+      expect(feed.posts.find { |post| post.id == public_post.id }.author_profile_id).to eq(public_author)
     end
   end
 end

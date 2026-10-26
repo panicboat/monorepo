@@ -177,14 +177,11 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
       expect(search(viewer_profile_id: follower)[:results].map(&:note)).to eq(["followers only"])
     end
 
-    it "is empty for a private cast's announcement unless the viewer is an approved follower" do
+    it "shows a locked cast's public announcement to every viewer" do
       suzu = cast(is_private: true)
-      announce(suzu, schedule(suzu), content: "private cast")
-      follower = create_account_with_profile
-      follow_repo.follow(follower_profile_id: follower, followee_profile_id: suzu, status: "approved")
+      announce(suzu, schedule(suzu), content: "locked cast")
 
-      expect(search[:results].map(&:note)).to eq([""])
-      expect(search(viewer_profile_id: follower)[:results].map(&:note)).to eq(["private cast"])
+      expect(search[:results].map(&:note)).to eq(["locked cast"])
     end
 
     it "loads the announcement posts of a page in one lookup" do

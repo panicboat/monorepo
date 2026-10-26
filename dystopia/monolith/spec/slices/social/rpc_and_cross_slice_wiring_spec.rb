@@ -217,12 +217,13 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       review = Struct.new(:author_profile_id, :target_profile_id)
       filter = Review::Slice["use_cases.filter_visible_reviews"]
 
+      block_repo.block(blocker_profile_id: private_cast, blocked_profile_id: viewer)
       on_public_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: public_cast, reviews: [review.new(other_guest, public_cast)])
-      on_private_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: private_cast, reviews: [review.new(other_guest, private_cast)])
+      on_blocked_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: private_cast, reviews: [review.new(other_guest, private_cast)])
       recent = filter.recent(viewer_profile_id: viewer, reviews: [review.new(other_guest, public_cast), review.new(other_guest, private_cast)])
 
       expect(on_public_page.length).to eq(1)
-      expect(on_private_page).to eq([])
+      expect(on_blocked_page).to eq([])
       expect(recent.map(&:target_profile_id)).to eq([public_cast])
     end
 

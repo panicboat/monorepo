@@ -78,12 +78,11 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       expect { read_as(third_account, third, review) }.to invalid("Review not found")
     end
 
-    it "reads a review of a private cast as not found for a viewer who cannot reach it" do
-      private_cast = create_account_with_profile(account_id: create_account(role: 2), username: "private_cast", is_private: true)
-      review = create(target: private_cast)
+    it "reads a review of a locked cast for a viewer who does not follow it" do
+      locked_cast = create_account_with_profile(account_id: create_account(role: 2), username: "locked_cast", is_private: true)
+      review = create(target: locked_cast)
 
-      expect(db[:profile__profiles].where(id: persona_a).get(:is_private)).to be false
-      expect { read_as(other_guest_account, other_guest, review) }.to invalid("Review not found")
+      expect(read_as(other_guest_account, other_guest, review)[:id]).to eq(review[:id])
     end
 
     it "keeps the review readable for another profile of the author's account and for the cast" do

@@ -152,21 +152,45 @@ describe("EditProfileSheet", () => {
     expect(saveButton().disabled).toBe(true);
   });
 
-  it("saves the lock setting of the profile", async () => {
+  it("turns on follow approval together with the lock", async () => {
     const onSave = vi.fn(async () => {});
     await renderSheet(onSave);
 
     await act(async () => (document.querySelector('[aria-label="プロフィールに鍵をかける"]') as HTMLButtonElement).click());
     await act(async () => saveButton().click());
 
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: true }));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: true, followApprovalRequired: true }));
   });
 
-  it("explains which parts of a locked profile stay visible to non-followers", async () => {
+  it("keeps follow approval on when the lock is turned off", async () => {
+    const onSave = vi.fn(async () => {});
+    document.body.innerHTML = "";
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    await act(async () => {
+      createRoot(container).render(
+        createElement(EditProfileSheet, {
+          open: true,
+          onOpenChange: () => {},
+          profile: { ...emptyProfileView("p1"), displayName: "ゆな", username: "yuna", isPrivate: true, followApprovalRequired: true },
+          isCast: false,
+          onSave,
+          onSaveMedia: async () => {},
+        })
+      );
+    });
+
+    await act(async () => (document.querySelector('[aria-label="プロフィールに鍵をかける"]') as HTMLButtonElement).click());
+    await act(async () => saveButton().click());
+
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: false, followApprovalRequired: true }));
+  });
+
+  it("explains that the lock shows a mark and that each post's visibility decides who sees it", async () => {
     await renderSheet(vi.fn(async () => {}));
 
     expect(document.body.textContent).toContain(
-      "投稿はフォロワーだけが見られます。プロフィールの項目、フォロー・フォロワーの一覧、コメント、予定などは、フォロワー以外にも表示されます"
+      "プロフィールに鍵マークが付き、フォローが承認制になります。投稿を見られる人は、投稿ごとの公開範囲で決まります"
     );
   });
 

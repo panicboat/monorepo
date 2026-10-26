@@ -65,7 +65,7 @@ export default function PublicProfilePage() {
               プロフィールを編集
             </Button>
           ) : (
-            <ProfileActions targetProfileId={profile.id} isPrivate={profile.isPrivate} />
+            <ProfileActions targetProfileId={profile.id} />
           )
         }
       />

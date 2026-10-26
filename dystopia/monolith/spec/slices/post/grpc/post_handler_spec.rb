@@ -198,14 +198,14 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       end
     end
 
-    it "lists a private profile's public posts for followers only" do
+    it "lists a locked profile's public posts to everyone" do
       db[:profile__profiles].where(id: author).update(is_private: true)
 
       act_as(follower)
       expect(listed_ids).to contain_exactly(secret.id, open.id)
 
       act_as(stranger)
-      expect(listed_ids).to eq([])
+      expect(listed_ids).to eq([open.id])
     end
   end
 
