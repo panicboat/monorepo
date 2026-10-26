@@ -138,7 +138,7 @@ kill -9 <PID>
 ```bash
 cd dystopia/frontend
 pnpm install --prefer-offline
-pnpm dev
+COGNITO_ADAPTER=fake pnpm dev
 ```
 
 **制約**: dev mode の HTTP/2 1-connection 制限 + `/api/messaging/stream` の SSE 
@@ -157,7 +157,7 @@ connection pool を圧迫しない。
 ```bash
 cd dystopia/frontend
 pnpm build
-INSECURE_COOKIES=true pnpm start
+COGNITO_ADAPTER=fake INSECURE_COOKIES=true pnpm start
 ```
 
 `INSECURE_COOKIES` については次節参照。
@@ -219,7 +219,7 @@ password はすべて `password`。
 - 再実行しても行は増えない。既に存在する行は読み飛ばす
 - account の id は固定している。frontend の fake Cognito adapter
   (`dystopia/frontend/src/lib/cognito/fake.ts`) が同じ id を sub に持つ user を
-  起動時に登録するので、`COGNITO_ADAPTER=aws` を指定しない限り seed した account で
+  起動時に登録するので、`COGNITO_ADAPTER=fake` で起動すると seed した account で
   sign-in できる
 - cast の account のうち 2 件は 2 つ目のプロフィールを持つ (有効なものと無効化済みの
   もの)。guest の account は `CreateProfile` が 1 件に制限するので 1 件のまま

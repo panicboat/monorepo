@@ -86,12 +86,13 @@ import { colors } from '@/config/theme';
 | Variable | Description | Default | Required |
 | --- | --- | --- | --- |
 | `GRPC_ENDPOINT` | gRPC backend URL | - | Yes |
+| `COGNITO_ADAPTER` | Cognito adapter: `aws` or `fake` | - | Yes |
 
 ## 🚀 Running Locally
 
 ```bash
 npm install
-npm run dev
+COGNITO_ADAPTER=fake npm run dev
 ```
 
 ## Proto Generation

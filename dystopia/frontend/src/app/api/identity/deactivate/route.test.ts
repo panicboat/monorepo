@@ -18,7 +18,8 @@ vi.mock("@/lib/grpc", () => ({
   },
 }));
 
-vi.mock("@/lib/cognito/adapter", () => ({
+vi.mock("@/lib/cognito/adapter", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/cognito/adapter")>()),
   cognito: () => ({ globalSignOut: cognitoMocks.globalSignOut }),
 }));
 
@@ -53,7 +54,9 @@ describe("POST /api/identity/deactivate", () => {
     expect(res.headers.get("Set-Cookie") ?? "").toMatch(/access_token=;/);
     expect(identity.deactivateAccount).toHaveBeenCalledWith(
       {},
-      expect.objectContaining({ headers: expect.any(Object) }),
+      expect.objectContaining({
+        headers: expect.objectContaining({ "x-user-id": expect.any(String) }),
+      }),
     );
     expect(cognitoMocks.globalSignOut).toHaveBeenCalledWith(tokens.accessToken);
   });

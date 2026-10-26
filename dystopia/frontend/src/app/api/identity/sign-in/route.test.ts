@@ -18,7 +18,8 @@ vi.mock("@/lib/grpc", () => ({
   },
 }));
 
-vi.mock("@/lib/cognito/adapter", () => ({
+vi.mock("@/lib/cognito/adapter", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/cognito/adapter")>()),
   cognito: () => cognitoMocks.adapter!,
 }));
 

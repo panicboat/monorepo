@@ -16,10 +16,16 @@ export type CognitoAdapter = {
 
 let instance: CognitoAdapter | null = null;
 
+export function cognitoAdapterKind(): "aws" | "fake" {
+  const kind = process.env.COGNITO_ADAPTER;
+  if (kind === "aws" || kind === "fake") return kind;
+  throw new Error('COGNITO_ADAPTER must be "aws" or "fake"');
+}
+
 export function cognito(): CognitoAdapter {
   if (instance) return instance;
 
-  if (process.env.COGNITO_ADAPTER === "aws") {
+  if (cognitoAdapterKind() === "aws") {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mod = require("./aws") as { createAwsAdapter: () => CognitoAdapter };
     instance = mod.createAwsAdapter();
