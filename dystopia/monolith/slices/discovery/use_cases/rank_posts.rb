@@ -15,24 +15,33 @@ module Discovery
         period = period.to_s
         return { posts: [], next_cursor: nil, has_more: false } unless VALID_PERIODS.include?(period)
 
-        decoded_cursor = decode_cursor(cursor)
-        rows = post_repo.top_by_likes(period: period, limit: limit, cursor: decoded_cursor)
-        has_more = rows.length > limit
-        truncated = has_more ? rows.first(limit) : rows
+        visible = visible_ranked(period: period, viewer_profile_id: viewer_profile_id, limit: limit, cursor: decode_cursor(cursor, keys: [:likes, :id]))
+        has_more = visible.length > limit
+        page = visible.first(limit)
 
-        next_cursor = if has_more && truncated.any?
-          last = truncated.last
-          encode_cursor(created_at: last[1].to_s, id: last[0])
-        end
+        # Build the cursor from a post the viewer sees, so it never carries the id or likes of one they do not.
+        next_cursor = encode_cursor(likes: page.last[:likes], id: page.last[:id]) if has_more
 
-        ids = truncated.map(&:first)
-        post_protos_map = list_posts_uc.call(post_ids: ids, viewer_profile_id: viewer_profile_id)
-        ordered_posts = ids.filter_map { |id| post_protos_map[id.to_s] }
-
-        { posts: ordered_posts, next_cursor: next_cursor, has_more: has_more }
+        { posts: page.map { |entry| entry[:post] }, next_cursor: next_cursor, has_more: has_more }
       end
 
       private
+
+      def visible_ranked(period:, viewer_profile_id:, limit:, cursor:)
+        visible = []
+        loop do
+          rows = post_repo.top_by_likes(period: period, limit: limit, cursor: cursor)
+          batch = rows.first(limit)
+          post_protos_map = list_posts_uc.call(post_ids: batch.map(&:first), viewer_profile_id: viewer_profile_id)
+          batch.each do |id, likes|
+            post = post_protos_map[id.to_s]
+            visible << { id: id, likes: likes, post: post } if post
+          end
+          return visible if visible.length > limit || rows.length <= limit
+
+          cursor = { likes: batch.last[1], id: batch.last[0] }
+        end
+      end
 
       def post_repo
         @post_repo ||= Post::Slice["repositories.post_repository"]
