@@ -88,16 +88,15 @@ Use these sections in this order:
 1. `## Docs Sync Check` followed by exactly one verdict line:
    - `✅ 文書と食い違いはありません` when `passed` is true
    - `❌ 文書との食い違いがあります` when `passed` is false
+
+   When `passed` is true, follow the verdict line with one or two sentences on why the documents match the change (for example, which behavior is described where, or that the change is internal only).
 2. `### 指摘` — only when `passed` is false. One item per finding, each with:
    - the code location as `path:line` (in the PR head)
    - the document location: `path` and its heading, or 第N条 / 第N条第M項 / 第N節 with the `heading` for the terms and the privacy policy
    - what does not match, in one or two sentences
    For an `## Impact` mismatch, name the checkbox and the document instead of a code location.
 3. `### 確認してほしい点` — points you were unsure about. Omit the section when there are none.
-4. `### 確認した文書` — every file you called Read on in section 3, which is the Glob list plus `terms.ts` and `privacy.ts`.
-   Never list a file you did not Read in this run.
-   When `passed` is true, add one or two sentences on why the documents match the change (for example, which behavior is described where, or that the change is internal only).
-5. Only when `passed` is false, as the last line, exactly:
+4. Only when `passed` is false, as the last line, exactly:
 
    ```
    判定が誤っている場合は、内容を確かめて `docs-check-approved` ラベルを付けると通ります。
@@ -112,4 +111,4 @@ Return the structured output with two fields:
 - `passed`: the verdict from section 4
 - `body`: the whole comment from section 5
 
-Keep `body` under 60,000 characters (GitHub rejects comments over 65,536); when it does not fit, shorten `### 確認した文書` first by dropping the notes after each path, never the paths.
+Keep `body` under 60,000 characters (GitHub rejects comments over 65,536); when it does not fit, shorten `### 確認してほしい点` first, never `### 指摘`.
