@@ -115,7 +115,7 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       expect(post_ids(rpc(Feed::Grpc::Handler, :list_feed, Feed::V1::ListFeedRequest.new(filter: :FEED_FILTER_AREA, prefecture: "東京都")).posts)).to eq([shown_post.id])
       expect(post_ids(Discovery::Slice["use_cases.search_posts"].call(query: "visibility", viewer_profile_id: viewer)[:posts])).to eq([shown_post.id])
       expect(post_ids(Discovery::Slice["use_cases.rank_posts"].call(period: "all", viewer_profile_id: viewer)[:posts])).to eq([shown_post.id])
-      expect(Bookmarks::Slice["use_cases.list_bookmarks"].call(profile_id: viewer)[:posts]).to be_empty
+      expect(Bookmarks::Slice["use_cases.list_bookmarks"].call(profile_id: viewer)[:items].filter_map { |item| item[:post] }).to be_empty
       expect(Post::Slice["use_cases.likes.list_liked_posts_by_profile"].call(profile_id: viewer, viewer_profile_id: viewer)[:posts]).to be_empty
     end
 

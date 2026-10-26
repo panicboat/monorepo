@@ -130,7 +130,7 @@ RSpec.describe "post display window", type: :database do
       like_repo.profile_like(post_id: live.id, profile_id: follower)
       post_repo.update_post(live.id, expires_at: now - 1)
 
-      bookmarks = rpc(Bookmarks::Grpc::BookmarkHandler, :list_bookmarks, Bookmarks::V1::ListBookmarksRequest.new).posts
+      bookmarks = rpc(Bookmarks::Grpc::BookmarkHandler, :list_bookmarks, Bookmarks::V1::ListBookmarksRequest.new).items.filter_map(&:post)
       likes = rpc(Post::Grpc::LikeHandler, :list_liked_posts_by_profile, Post::V1::ListLikedPostsByProfileRequest.new(profile_id: follower)).posts
 
       expect([bookmarks, likes]).to eq([[], []])

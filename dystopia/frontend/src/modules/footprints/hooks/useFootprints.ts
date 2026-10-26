@@ -35,6 +35,7 @@ export function useFootprints() {
     footprints,
     hasMore,
     loading: isLoading || isValidating,
+    loaded: pages.length > 0,
     error,
     loadMore: () => setSize(size + 1),
     refresh: () => mutate(),

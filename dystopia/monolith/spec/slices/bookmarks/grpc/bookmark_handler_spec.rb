@@ -24,7 +24,7 @@ RSpec.describe Bookmarks::Grpc::BookmarkHandler, type: :database do
   end
 
   def bookmarked_post_ids
-    rpc(:list_bookmarks, Bookmarks::V1::ListBookmarksRequest.new).posts.map(&:id)
+    rpc(:list_bookmarks, Bookmarks::V1::ListBookmarksRequest.new).items.filter_map { |item| item.post&.id }
   end
 
   def bookmark_status
@@ -44,6 +44,18 @@ RSpec.describe Bookmarks::Grpc::BookmarkHandler, type: :database do
     act_as(other_reader)
     expect(bookmarked_post_ids).to be_empty
     expect(bookmark_status).to eq(first_post.id => false, second_post.id => false)
+  end
+
+  it "keeps listing a bookmark of a post the reader can no longer see, without the post, until it is removed" do
+    act_as(reader)
+    rpc(:bookmark, Bookmarks::V1::BookmarkRequest.new(post_id: first_post.id))
+    Social::Slice["repositories.block_repository"].block(blocker_profile_id: author, blocked_profile_id: reader)
+
+    items = rpc(:list_bookmarks, Bookmarks::V1::ListBookmarksRequest.new).items
+    expect(items.map { |item| [item.post_id, item.post.nil?] }).to eq([[first_post.id, true]])
+
+    rpc(:unbookmark, Bookmarks::V1::UnbookmarkRequest.new(post_id: first_post.id))
+    expect(rpc(:list_bookmarks, Bookmarks::V1::ListBookmarksRequest.new).items).to be_empty
   end
 
   it "removes only the acting profile's bookmark" do

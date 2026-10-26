@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { authFetch } from "@/lib/auth";
 import { PageHeader } from "@/components/ui/page-header";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { useBookmarkList } from "@/modules/bookmarks";
@@ -11,8 +13,31 @@ export function BookmarksHeader() {
   return <PageHeader title="ブックマーク" description={getFeatureDescription("bookmarks")} />;
 }
 
+function HiddenBookmarkRow({ postId, onRemoved }: { postId: string; onRemoved: () => void }) {
+  const [removing, setRemoving] = useState(false);
+
+  const remove = async () => {
+    setRemoving(true);
+    try {
+      await authFetch(`/api/bookmarks/${encodeURIComponent(postId)}`, { method: "DELETE" });
+      onRemoved();
+    } finally {
+      setRemoving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-4">
+      <p className="text-sm text-text-secondary">この投稿は表示できません</p>
+      <Button variant="secondary" size="sm" onClick={() => void remove()} disabled={removing}>
+        ブックマークを外す
+      </Button>
+    </div>
+  );
+}
+
 export default function BookmarksPage() {
-  const { posts, hasMore, loading, error, loadMore } = useBookmarkList();
+  const { items, hasMore, loading, error, loadMore, refresh } = useBookmarkList();
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
@@ -20,11 +45,11 @@ export default function BookmarksPage() {
         <BookmarksHeader />
       </div>
 
-      {loading && posts.length === 0 && (
+      {loading && items.length === 0 && (
         <p className="px-4 py-6 text-text-secondary">読み込み中…</p>
       )}
       {error && <p className="px-4 py-6 text-text-secondary">読み込みに失敗しました。</p>}
-      {!loading && posts.length === 0 && (
+      {!loading && !hasMore && items.length === 0 && (
         <div className="flex flex-col items-center px-4 py-12 text-center">
           <Bookmark className="size-10 text-text-secondary" strokeWidth={1.5} />
           <p className="pt-3 text-text-primary">まだブックマークがありません</p>
@@ -34,9 +59,13 @@ export default function BookmarksPage() {
         </div>
       )}
 
-      {posts.map((post) => (
-        <PostCardBinding key={post.id} post={post} />
-      ))}
+      {items.map((item) =>
+        item.post ? (
+          <PostCardBinding key={item.postId} post={item.post} />
+        ) : (
+          <HiddenBookmarkRow key={item.postId} postId={item.postId} onRemoved={refresh} />
+        )
+      )}
 
       {hasMore && (
         <div className="flex justify-center px-4 py-6">

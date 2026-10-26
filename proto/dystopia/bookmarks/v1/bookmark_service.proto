@@ -28,10 +28,17 @@ message ListBookmarksRequest {
   string cursor = 2;
 }
 
+message BookmarkItem {
+  string post_id = 1;
+  // Unset when the viewer can no longer see the post; the bookmark is still listed so it can be removed.
+  post.v1.Post post = 2;
+}
+
 message ListBookmarksResponse {
-  repeated post.v1.Post posts = 1;
+  reserved 1;
   string next_cursor = 2;
   bool has_more = 3;
+  repeated BookmarkItem items = 4;
 }
 
 message GetBookmarkStatusRequest {

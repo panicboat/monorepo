@@ -22,10 +22,8 @@ module Bookmarks
         post_ids = result[:items].map(&:post_id)
         post_protos_map = list_posts_uc.call(post_ids: post_ids, viewer_profile_id: profile_id)
 
-        ordered_posts = post_ids.filter_map { |id| post_protos_map[id.to_s] }
-
         {
-          posts: ordered_posts,
+          items: post_ids.map { |id| { post_id: id.to_s, post: post_protos_map[id.to_s] } },
           next_cursor: result[:next_cursor],
           has_more: result[:has_more]
         }

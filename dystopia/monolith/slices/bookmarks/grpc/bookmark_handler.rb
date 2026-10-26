@@ -47,7 +47,7 @@ module Bookmarks
 
         result = list_bookmarks_uc.call(profile_id: current_profile_id, limit: limit, cursor: cursor)
         ::Bookmarks::V1::ListBookmarksResponse.new(
-          posts: result[:posts],
+          items: result[:items].map { |item| ::Bookmarks::V1::BookmarkItem.new(post_id: item[:post_id], post: item[:post]) },
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
