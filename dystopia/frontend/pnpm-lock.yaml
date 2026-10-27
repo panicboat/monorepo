@@ -169,7 +169,7 @@ overrides:
   '@typescript-eslint/type-utils': ^8.72.1
   '@typescript-eslint/types': ^8.72.0
   '@typescript-eslint/typescript-estree': ^8.72.0
-  '@typescript-eslint/scope-manager': ^8.72.0
+  '@typescript-eslint/scope-manager': ^8.72.1
   '@typescript-eslint/visitor-keys': ^8.72.0
   typescript-eslint: ^8.72.0
 
@@ -1687,8 +1687,8 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4 <6.1.0'
 
-  '@typescript-eslint/scope-manager@8.72.0':
-    resolution: {integrity: sha512-JewPyJOYcXBSAS7PIgufscHOwZqhTGyBRiQJhhuDln66tMchxvvt7nJ90JKKIoOelmdHA3kAQbm9cEUHc4JSEA==}
+  '@typescript-eslint/scope-manager@8.72.1':
+    resolution: {integrity: sha512-lC/t6eMCZZQAAKZEYGL6RDVSuFehpdmMT6h+nJIjIa6oylN/PwDgDVtEIbB7O9xFfZYtZAYLoLlDNWKJhtF+uQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@typescript-eslint/tsconfig-utils@8.72.0':
@@ -5051,7 +5051,7 @@ snapshots:
     dependencies:
       '@eslint-community/regexpp': 4.12.2
       '@typescript-eslint/parser': 8.72.1(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
-      '@typescript-eslint/scope-manager': 8.72.0
+      '@typescript-eslint/scope-manager': 8.72.1
       '@typescript-eslint/type-utils': 8.72.1(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
       '@typescript-eslint/utils': 8.72.0(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
       '@typescript-eslint/visitor-keys': 8.72.0
@@ -5065,7 +5065,7 @@ snapshots:
 
   '@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)':
     dependencies:
-      '@typescript-eslint/scope-manager': 8.72.0
+      '@typescript-eslint/scope-manager': 8.72.1
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/typescript-estree': 8.72.0(supports-color@7.2.0)(typescript@7.0.2)
       '@typescript-eslint/visitor-keys': 8.72.0
@@ -5084,7 +5084,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/scope-manager@8.72.0':
+  '@typescript-eslint/scope-manager@8.72.1':
     dependencies:
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/visitor-keys': 8.72.0
@@ -5125,7 +5125,7 @@ snapshots:
   '@typescript-eslint/utils@8.72.0(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)':
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))
-      '@typescript-eslint/scope-manager': 8.72.0
+      '@typescript-eslint/scope-manager': 8.72.1
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/typescript-estree': 8.72.0(supports-color@7.2.0)(typescript@7.0.2)
       eslint: 10.13.0(jiti@2.7.0)(supports-color@7.2.0)
