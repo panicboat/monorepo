@@ -33,11 +33,11 @@ module Footprints
         scope.order { [last_visited_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def count_unread(profile_id:)
+      def unread_visitor_profile_ids(profile_id:)
         last_read = read_state_records.where(profile_id: profile_id).one&.last_read_visit_at
         scope = visit_records.where(visited_profile_id: profile_id)
         scope = scope.where { last_visited_at > last_read } if last_read
-        scope.count
+        scope.pluck(:visitor_profile_id)
       end
 
       def last_read_at(profile_id:)
