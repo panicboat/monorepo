@@ -10,6 +10,7 @@ service IdentityService {
   rpc GetAccount (GetAccountRequest) returns (GetAccountResponse);
   rpc DeactivateAccount (DeactivateAccountRequest) returns (DeactivateAccountResponse);
   rpc ReactivateAccount (ReactivateAccountRequest) returns (ReactivateAccountResponse);
+  rpc ReleaseIncompleteSignUp (ReleaseIncompleteSignUpRequest) returns (ReleaseIncompleteSignUpResponse);
 }
 
 message HealthCheckRequest {}
@@ -44,6 +45,14 @@ message ReactivateAccountRequest {
 
 message ReactivateAccountResponse {
   Account account = 1;
+}
+
+message ReleaseIncompleteSignUpRequest {
+  string username = 1;
+}
+
+message ReleaseIncompleteSignUpResponse {
+  bool released = 1;
 }
 
 enum Role {

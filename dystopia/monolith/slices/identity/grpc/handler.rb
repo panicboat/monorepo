@@ -2,6 +2,7 @@
 
 require "identity/v1/service_services_pb"
 require "gruf"
+require "cognito"
 
 module Identity
   module Grpc
@@ -20,12 +21,14 @@ module Identity
       rpc :GetAccount, ::Identity::V1::GetAccountRequest, ::Identity::V1::GetAccountResponse
       rpc :DeactivateAccount, ::Identity::V1::DeactivateAccountRequest, ::Identity::V1::DeactivateAccountResponse
       rpc :ReactivateAccount, ::Identity::V1::ReactivateAccountRequest, ::Identity::V1::ReactivateAccountResponse
+      rpc :ReleaseIncompleteSignUp, ::Identity::V1::ReleaseIncompleteSignUpRequest, ::Identity::V1::ReleaseIncompleteSignUpResponse
 
       include Identity::Deps[
         create_account_uc: "use_cases.account.create_account",
         get_account_uc: "use_cases.account.get_account",
         deactivate_account_uc: "use_cases.account.deactivate_account",
-        reactivate_account_uc: "use_cases.account.reactivate_account"
+        reactivate_account_uc: "use_cases.account.reactivate_account",
+        release_incomplete_sign_up_uc: "use_cases.account.release_incomplete_sign_up"
       ]
 
       def health_check
@@ -68,6 +71,14 @@ module Identity
         Identity::V1::ReactivateAccountResponse.new(
           account: Identity::Presenters::AccountPresenter.to_proto(account)
         )
+      end
+
+      def release_incomplete_sign_up
+        username = request.message.username
+        raise GRPC::InvalidArgument.new("invalid username") unless Cognito::USERNAME_PATTERN.match?(username)
+
+        released = release_incomplete_sign_up_uc.call(username: username)
+        Identity::V1::ReleaseIncompleteSignUpResponse.new(released: released)
       end
     end
   end
