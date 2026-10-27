@@ -34,7 +34,7 @@ Scope: 現行の自前 identity 実装 (`identity__users` / SMS 検証 / 自前 
 | Cognito 呼び出し主体 | **BFF (Next.js API route)**。将来 BFF を独立 service に切り出しても Cognito 依存はそこに閉じる |
 | BFF ↔ monolith 認証 | **BFF が JWKS 検証 → `x-user-id` gRPC metadata のみ付与**。`Authorization: Bearer` 経路と `JwtCodec` は削除 |
 | purge cron | **monolith cron に 1 箇所 Cognito SDK 依存を許容** (`Identity::UseCases::Account::PurgeDeactivatedAccounts` から AdminDeleteUser)。他は全て Cognito 非依存 |
-| Cognito Disable/AdminDeleteUser | **admin 判断による Disable/Delete は禁止**。本人退会 → 30 日 grace → hard-delete cron からの AdminDeleteUser のみ許容 |
+| Cognito Disable/AdminDeleteUser | **admin 判断による Disable/Delete は禁止**。本人退会 → 90 日 grace → hard-delete cron からの AdminDeleteUser のみ許容 |
 | Terraform 配置 | **`dystopia/frontend/aws/`** (BFF が呼び出し主体のため隣接)。将来 auth-service に切り出す際に module ごと移す |
 | 使う AWS リソース | Cognito User Pool + Client + SNS SMS role のみ。**Lambda trigger / KMS 一切不採用** |
 
@@ -43,7 +43,10 @@ Scope: 現行の自前 identity 実装 (`identity__users` / SMS 検証 / 自前 
 `docs/superpowers/specs/2026-06-29-account-durability-design.md` の invariants を継続、Cognito 側にも波及させる:
 
 1. **admin による永久 BAN / 永久 suspend / 永久削除の経路を作らない** (Cognito Disable/AdminDeleteUser 含む)
-2. **hard-delete の唯一の trigger は (本人 deactivate request) AND (grace 期間経過)**。cron 以外に Cognito AdminDeleteUser を呼ぶ場所を作らない
+2. **Cognito AdminDeleteUser を呼ぶ起点は次の 3 つだけ**。この 3 つ以外に Cognito AdminDeleteUser を呼ぶ場所を作らない
+   - (本人 deactivate request) AND (grace 期間経過): hard-delete cron
+   - 登録を完了しなかったユーザー (`identity__accounts` に行がなく、Cognito での作成から 24 時間経過): 同じ cron 実行での削除
+   - 登録のやり直し (SignUp が既存ユーザーで失敗し、そのユーザーに `identity__accounts` の行がない): 残った登録の削除
 3. **BFF は client に token を露出させない** (httpOnly cookie 仲介、frontend は Cognito SDK を持たない)
 4. **monolith は Cognito 非依存を維持**。例外は `PurgeDeactivatedAccounts` cron の AdminDeleteUser 呼び出し 1 箇所のみ
 
@@ -210,7 +213,7 @@ end
   - 残すメソッド: `find_by_id(sub)` / `create(sub:, role:)` / `mark_deactivated(sub)` / `reactivate(sub)` / `delete(sub)`
   - 削除するメソッド: `find_by_phone_number`, `record_failed_login`, `lock_until`, `reset_login_attempts`, `update_password_digest` 等 bcrypt/lockout/phone-based lookup
 - `slices/identity/use_cases/auth/deactivate_account.rb` → `slices/identity/use_cases/account/deactivate_account.rb` (DB soft delete のみ、Cognito 呼び出しなし)
-- `slices/identity/use_cases/user/purge_deactivated_accounts.rb` → `slices/identity/use_cases/account/purge_deactivated_accounts.rb` (30 日 grace 判定は不変、最後に `Cognito.admin_delete_user(sub:)` を呼ぶ)
+- `slices/identity/use_cases/user/purge_deactivated_accounts.rb` → `slices/identity/use_cases/account/purge_deactivated_accounts.rb` (90 日 grace 判定は不変、最後に `Cognito.admin_delete_user(sub:)` を呼ぶ)
 - `slices/identity/use_cases/user/purge_identity.rb` → `slices/identity/use_cases/account/purge_identity.rb` (post_comments の cascade を明示 DELETE 化。他 slice への application-level cascade は既存の PurgeAccount pattern を継続)
 
 **新規**:
@@ -392,7 +395,7 @@ end
 1. `bundle exec rspec` monolith 全 spec green
 2. `pnpm test` frontend spec green
 3. `pnpm build` frontend build green
-4. local e2e で dogfood: register → login → 主要 slice の動作 (karte / feed / follow / message) → logout → login → deactivate → 30 日相当を手動 SQL 更新で simulate → cron 実行で hard-delete 確認 (DB row 消失 + fake Cognito.admin_delete_user が呼ばれた log)
+4. local e2e で dogfood: register → login → 主要 slice の動作 (karte / feed / follow / message) → logout → login → deactivate → 90 日相当を手動 SQL 更新で simulate → cron 実行で hard-delete 確認 (DB row 消失 + fake Cognito.admin_delete_user が呼ばれた log)
 5. prod smoke: terraform apply → BFF/monolith deployment → register 1 件 / login / logout / self deactivate
 
 ### ROLLBACK
