@@ -69,7 +69,7 @@ module Profile
       end
 
       def create_profile
-        authenticate_account!
+        authenticate_active_account!
 
         m = request.message
         profile = create_profile_uc.call(
@@ -137,7 +137,7 @@ module Profile
       end
 
       def disable_profile
-        authenticate_account!
+        authenticate_active_account!
 
         profile = disable_profile_uc.call(account_id: current_account_id, profile_id: request.message.profile_id)
         build_response(::Profile::V1::DisableProfileResponse, profile)
@@ -148,7 +148,7 @@ module Profile
       end
 
       def enable_profile
-        authenticate_account!
+        authenticate_active_account!
 
         profile = enable_profile_uc.call(account_id: current_account_id, profile_id: request.message.profile_id)
         build_response(::Profile::V1::EnableProfileResponse, profile)
@@ -157,7 +157,7 @@ module Profile
       end
 
       def delete_profile
-        authenticate_account!
+        authenticate_active_account!
 
         delete_profile_uc.call(account_id: current_account_id, profile_id: request.message.profile_id)
         ::Profile::V1::DeleteProfileResponse.new
@@ -185,6 +185,17 @@ module Profile
           media_files: media_files,
           role: role,
           own: profile.account_id == current_account_id
+        )
+      end
+
+      def authenticate_active_account!
+        authenticate_account!
+        return unless identity_account_repo.find_by_id(current_account_id)&.deactivated_at
+
+        raise GRPC::BadStatus.new(
+          GRPC::Core::StatusCodes::FAILED_PRECONDITION,
+          "Account is deactivated",
+          ERROR_REASON_METADATA_KEY => ACCOUNT_DEACTIVATED_REASON
         )
       end
 
