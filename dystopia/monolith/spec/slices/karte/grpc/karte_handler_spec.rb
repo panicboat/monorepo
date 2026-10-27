@@ -189,5 +189,14 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
 
       expect { handler_for(::Karte::V1::ListRecentKartesRequest.new).list_recent_kartes }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
     end
+
+    it "answers NOT_FOUND when listing by a target that others cannot see" do
+      act_as(cast_account, persona_a)
+      create_karte(rating: 4)
+      Hanami.app["db.gateway"].connection[:profile__profiles].where(id: guest).update(disabled_at: Time.now)
+
+      expect { handler_for(::Karte::V1::ListKartesByTargetRequest.new(target_profile_id: guest)).list_kartes_by_target }
+        .to status(GRPC::Core::StatusCodes::NOT_FOUND)
+    end
   end
 end

@@ -158,6 +158,8 @@ module Karte
         fail!(:permission_denied, :permission_denied, e.message)
       rescue Karte::Errors::Invalid => e
         fail!(:invalid_argument, :invalid_argument, e.message)
+      rescue Karte::Errors::NotFound => e
+        fail!(:not_found, :not_found, e.message)
       rescue ROM::SQL::CheckConstraintError
         fail!(:invalid_argument, :invalid_argument, "Karte state changed")
       end
