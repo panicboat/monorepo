@@ -13,12 +13,11 @@ export async function GET(req: NextRequest) {
     const headers = await buildGrpcHeaders(req);
     const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
     const filterRaw = (req.nextUrl.searchParams.get("filter") || "all") as FeedFilterValue;
-    const prefecture = req.nextUrl.searchParams.get("prefecture") || "";
 
     const filter = feedFilterFromString(filterRaw);
 
     const res = await feedClient.listFeed(
-      { filter, limit, cursor, prefecture },
+      { filter, limit, cursor },
       { headers }
     );
     return NextResponse.json(mapFeedListResponse(res));

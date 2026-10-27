@@ -28,9 +28,26 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     post_repo.create_post(author_profile_id: nearby_author, content: "followers", visibility: "private")
     open = post_repo.create_post(author_profile_id: nearby_author, content: "everyone", visibility: "public")
 
-    area = uc.call(filter: "area", viewer_profile_id: nearby_viewer, prefecture: "東京都")[:post_ids]
+    area = uc.call(filter: "area", viewer_profile_id: nearby_viewer)[:post_ids]
 
     expect(area).to eq([open.id.to_s])
+  end
+
+  it "uses the viewer's own prefecture for the area feed" do
+    tokyo_author = create_account_with_profile(role: 2, username: "tokyo_author", prefecture: "東京都")
+    osaka_author = create_account_with_profile(role: 2, username: "osaka_author", prefecture: "大阪府")
+    tokyo_viewer = create_account_with_profile(username: "tokyo_viewer", prefecture: "東京都")
+    tokyo_post = post_repo.create_post(author_profile_id: tokyo_author, content: "tokyo", visibility: "public")
+    post_repo.create_post(author_profile_id: osaka_author, content: "osaka", visibility: "public")
+
+    area = uc.call(filter: "area", viewer_profile_id: tokyo_viewer)[:post_ids]
+
+    expect(area).to contain_exactly(tokyo_post.id.to_s)
+  end
+
+  it "raises PrefectureRequired when the viewer has no prefecture" do
+    expect { uc.call(filter: "area", viewer_profile_id: viewer) }
+      .to raise_error(Feed::UseCases::ListFeed::PrefectureRequired)
   end
 
   it "shows the viewer's own followers-only posts wherever their public posts appear" do
@@ -39,7 +56,7 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     open = post_repo.create_post(author_profile_id: own, content: "everyone", visibility: "public")
 
     all = uc.call(filter: "all", viewer_profile_id: own)[:post_ids]
-    area = uc.call(filter: "area", viewer_profile_id: own, prefecture: "東京都")[:post_ids]
+    area = uc.call(filter: "area", viewer_profile_id: own)[:post_ids]
     following = uc.call(filter: "following", viewer_profile_id: own)[:post_ids]
 
     expect([all, area]).to all(contain_exactly(secret.id.to_s, open.id.to_s))

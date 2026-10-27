@@ -30,9 +30,8 @@ export function useFeed(options: UseFeedOptions = {}) {
   const buildParams = useCallback(
     (params: URLSearchParams) => {
       params.set("filter", filter);
-      if (prefecture) params.set("prefecture", prefecture);
     },
-    [filter, prefecture]
+    [filter]
   );
 
   const {

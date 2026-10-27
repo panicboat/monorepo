@@ -20,7 +20,8 @@ message ListFeedRequest {
   FeedFilter filter = 1;
   int32 limit = 2;
   string cursor = 3;
-  string prefecture = 4;
+  reserved 4;
+  reserved "prefecture";
 }
 
 message ListFeedResponse {

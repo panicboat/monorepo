@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file feed/v1/feed_service.proto.
  */
 export const file_feed_v1_feed_service: GenFile = /*@__PURE__*/
-  fileDesc("ChpmZWVkL3YxL2ZlZWRfc2VydmljZS5wcm90bxIHZmVlZC52MSJpCg9MaXN0RmVlZFJlcXVlc3QSIwoGZmlsdGVyGAEgASgOMhMuZmVlZC52MS5GZWVkRmlsdGVyEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCRISCgpwcmVmZWN0dXJlGAQgASgJIlcKEExpc3RGZWVkUmVzcG9uc2USHAoFcG9zdHMYASADKAsyDS5wb3N0LnYxLlBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgqigEKCkZlZWRGaWx0ZXISGwoXRkVFRF9GSUxURVJfVU5TUEVDSUZJRUQQABITCg9GRUVEX0ZJTFRFUl9BTEwQARIZChVGRUVEX0ZJTFRFUl9GT0xMT1dJTkcQAhIUChBGRUVEX0ZJTFRFUl9BUkVBEAMSGQoVRkVFRF9GSUxURVJfRk9MTE9XRVJTEAQyTgoLRmVlZFNlcnZpY2USPwoITGlzdEZlZWQSGC5mZWVkLnYxLkxpc3RGZWVkUmVxdWVzdBoZLmZlZWQudjEuTGlzdEZlZWRSZXNwb25zZWIGcHJvdG8z", [file_post_v1_post_service]);
+  fileDesc("ChpmZWVkL3YxL2ZlZWRfc2VydmljZS5wcm90bxIHZmVlZC52MSJnCg9MaXN0RmVlZFJlcXVlc3QSIwoGZmlsdGVyGAEgASgOMhMuZmVlZC52MS5GZWVkRmlsdGVyEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCUoECAQQBVIKcHJlZmVjdHVyZSJXChBMaXN0RmVlZFJlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIKooBCgpGZWVkRmlsdGVyEhsKF0ZFRURfRklMVEVSX1VOU1BFQ0lGSUVEEAASEwoPRkVFRF9GSUxURVJfQUxMEAESGQoVRkVFRF9GSUxURVJfRk9MTE9XSU5HEAISFAoQRkVFRF9GSUxURVJfQVJFQRADEhkKFUZFRURfRklMVEVSX0ZPTExPV0VSUxAEMk4KC0ZlZWRTZXJ2aWNlEj8KCExpc3RGZWVkEhguZmVlZC52MS5MaXN0RmVlZFJlcXVlc3QaGS5mZWVkLnYxLkxpc3RGZWVkUmVzcG9uc2ViBnByb3RvMw", [file_post_v1_post_service]);
 
 /**
  * @generated from message feed.v1.ListFeedRequest
@@ -32,11 +32,6 @@ export type ListFeedRequest = Message<"feed.v1.ListFeedRequest"> & {
    * @generated from field: string cursor = 3;
    */
   cursor: string;
-
-  /**
-   * @generated from field: string prefecture = 4;
-   */
-  prefecture: string;
 };
 
 /**
