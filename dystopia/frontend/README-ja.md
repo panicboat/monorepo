@@ -85,10 +85,11 @@ import { colors } from '@/config/theme';
 | Variable | Description | Default | Required |
 | --- | --- | --- | --- |
 | `GRPC_ENDPOINT` | gRPC バックエンド URL | - | Yes |
+| `COGNITO_ADAPTER` | Cognito アダプター: `aws` か `fake` | - | Yes |
 
 ## 🚀 Running Locally
 
 ```bash
 npm install
-npm run dev
+COGNITO_ADAPTER=fake npm run dev
 ```

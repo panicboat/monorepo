@@ -12,7 +12,8 @@ const cognitoMocks = vi.hoisted(() => ({
   adapter: null as ReturnType<typeof createFakeAdapter> | null,
 }));
 
-vi.mock("@/lib/cognito/adapter", () => ({
+vi.mock("@/lib/cognito/adapter", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/cognito/adapter")>()),
   cognito: () => cognitoMocks.adapter!,
 }));
 

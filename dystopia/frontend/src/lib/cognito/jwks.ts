@@ -1,4 +1,5 @@
 import { createRemoteJWKSet, importJWK, jwtVerify, type JWTPayload } from "jose";
+import { cognitoAdapterKind } from "./adapter";
 import { fakeJwks } from "./fake";
 
 async function localVerifier(token: string): Promise<{ sub: string }> {
@@ -25,5 +26,5 @@ function extractSub(payload: JWTPayload): { sub: string } {
 }
 
 export async function verifyAccessToken(token: string): Promise<{ sub: string }> {
-  return process.env.COGNITO_ADAPTER === "aws" ? awsVerifier(token) : localVerifier(token);
+  return cognitoAdapterKind() === "aws" ? awsVerifier(token) : localVerifier(token);
 }

@@ -30,4 +30,14 @@ describe("verifyAccessToken in fake mode", () => {
   it("rejects a malformed token", async () => {
     await expect(verifyAccessToken("not.a.jwt")).rejects.toThrow();
   });
+
+  it("rejects every token when COGNITO_ADAPTER is unset", async () => {
+    const adapter = createFakeAdapter();
+    await adapter.signUp("+15551234567", "Passw0rd!Passw0rd!");
+    await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+    const tokens = await adapter.initiateAuth("+15551234567", "Passw0rd!Passw0rd!");
+    delete process.env.COGNITO_ADAPTER;
+
+    await expect(verifyAccessToken(tokens.accessToken)).rejects.toThrow('COGNITO_ADAPTER must be "aws" or "fake"');
+  });
 });
