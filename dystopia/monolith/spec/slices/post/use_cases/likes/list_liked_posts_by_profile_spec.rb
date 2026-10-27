@@ -22,6 +22,24 @@ RSpec.describe "Post::UseCases::Likes::ListLikedPostsByProfile", type: :database
       end
     end
 
+    context "when liked posts the viewer cannot see follow the first one" do
+      it "fills the page past them and reports no more" do
+        db = Hanami.app["db.gateway"].connection
+        hidden = create_account_with_profile(role: 2, username: "llp_hidden")
+        db[:post__likes].where(post_id: post.id, profile_id: profile_id).update(created_at: Time.now - 60)
+        2.times do |i|
+          hidden_post = post_repo.create_post(author_profile_id: hidden, content: "hidden", visibility: "public")
+          like_repo.profile_like(post_id: hidden_post.id, profile_id: profile_id)
+          db[:post__likes].where(post_id: hidden_post.id, profile_id: profile_id).update(created_at: Time.now - (3600 * (i + 1)))
+        end
+        db[:profile__profiles].where(id: hidden).update(disabled_at: Time.now)
+
+        result = use_case.call(profile_id: profile_id, viewer_profile_id: profile_id, limit: 1)
+
+        expect([result[:posts].map(&:id), result[:has_more]]).to eq([[post.id], false])
+      end
+    end
+
     context "when the viewer requests another profile's likes" do
       it "raises ForbiddenError" do
         expect {

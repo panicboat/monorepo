@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "concerns/cursor_pagination"
+require "concerns/visible_page"
 
 module Post
   module UseCases
@@ -20,19 +21,22 @@ module Post
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 
-          rows = comment_repo.list_by_author(
-            author_profile_id: author_profile_id,
+          posts_by_id = {}
+          page = ::Concerns::VisiblePage.fill(
             limit: limit,
-            cursor: decoded_cursor
+            cursor: decoded_cursor,
+            fetch: ->(after) { comment_repo.list_by_author(author_profile_id: author_profile_id, limit: limit, cursor: after) },
+            keep: ->(rows) {
+              posts_by_id.merge!(list_posts_uc.call(post_ids: rows.map(&:post_id).uniq, viewer_profile_id: viewer_profile_id))
+              rows.select { |comment| posts_by_id.key?(comment.post_id.to_s) && parent_readable?(comment) }
+            },
+            cursor_of: ->(row) { { created_at: row.created_at, id: row.id } }
           )
-
-          result = build_pagination_result(items: rows, limit: limit) do |last|
-            encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
+          comments = page[:items]
+          next_cursor = if page[:has_more] && comments.any?
+            encode_cursor(created_at: comments.last.created_at.iso8601(6), id: comments.last.id)
           end
-
-          post_ids = result[:items].map(&:post_id).uniq
-          posts_by_id = list_posts_uc.call(post_ids: post_ids, viewer_profile_id: viewer_profile_id)
-          comments = result[:items].select { |comment| posts_by_id.key?(comment.post_id.to_s) && parent_readable?(comment) }
+          posts_by_id = posts_by_id.slice(*comments.map { |comment| comment.post_id.to_s })
 
           author_profile_ids = comments.map(&:author_profile_id).uniq
           authors = build_authors(author_profile_ids)
@@ -43,8 +47,8 @@ module Post
             posts_by_id: posts_by_id,
             authors: authors,
             mentioned_usernames: mentioned_usernames,
-            next_cursor: result[:next_cursor],
-            has_more: result[:has_more]
+            next_cursor: next_cursor,
+            has_more: page[:has_more]
           }
         end
 

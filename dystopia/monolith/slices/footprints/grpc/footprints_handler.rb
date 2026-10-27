@@ -46,15 +46,9 @@ module Footprints
           cursor: cursor
         )
 
-        visitor_profile_ids = result[:rows].map { |r| r[:visitor_profile_id] }.uniq
-        summaries = summarize_profiles.call(profile_ids: visitor_profile_ids)
-
-        footprints = result[:rows].filter_map do |row|
-          summary = summaries[row[:visitor_profile_id].to_s]
-          next nil unless summary
-
+        footprints = result[:rows].map do |row|
           ::Footprints::V1::Footprint.new(
-            visitor: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(summary),
+            visitor: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(row[:visitor]),
             last_visited_at: to_proto_ts(row[:last_visited_at]),
             is_unread: row[:is_unread],
             visit_count: row[:visit_count]
@@ -81,10 +75,6 @@ module Footprints
       end
 
       private
-
-      def summarize_profiles
-        @summarize_profiles ||= ::Profile::Slice["use_cases.summarize_profiles"]
-      end
 
       def to_proto_ts(time)
         return nil unless time

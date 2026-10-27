@@ -85,6 +85,32 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     expect(second.has_more).to be(false)
   end
 
+  context "with matching posts the viewer cannot see after the first one" do
+    let(:hidden_cast) { create_account_with_profile(role: 2, username: "discovery_hidden") }
+    let!(:shown) { post_repo.create_post(author_profile_id: public_cast, content: "fillpage shown", visibility: "public", published_at: Time.now - 60) }
+
+    before do
+      2.times { |i| post_repo.create_post(author_profile_id: hidden_cast, content: "fillpage hidden", visibility: "public", published_at: Time.now - (3600 * (i + 1))) }
+    end
+
+    it "fills the page past a blocked author and reports no more" do
+      block_repo.block(blocker_profile_id: viewer, blocked_profile_id: hidden_cast)
+      act_as(viewer)
+
+      response = rpc(:search_posts, Discovery::V1::SearchPostsRequest.new(query: "fillpage", limit: 1))
+
+      expect([response.posts.map(&:id), response.has_more]).to eq([[shown.id], false])
+    end
+
+    it "fills the page past a disabled author without a viewer and reports no more" do
+      Hanami.app["db.gateway"].connection[:profile__profiles].where(id: hidden_cast).update(disabled_at: Time.now)
+
+      result = Discovery::Slice["use_cases.search_posts"].call(query: "fillpage", viewer_profile_id: nil, limit: 1)
+
+      expect([result[:posts].map(&:id), result[:has_more]]).to eq([[shown.id], false])
+    end
+  end
+
   it "searches and ranks a locked profile's public posts like any other public post" do
     [public_post, locked_post].each { |post| liked(post) }
     act_as(viewer)

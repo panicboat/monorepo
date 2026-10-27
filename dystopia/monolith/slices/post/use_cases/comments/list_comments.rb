@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "concerns/cursor_pagination"
+require "concerns/visible_page"
 
 module Post
   module UseCases
@@ -16,26 +17,28 @@ module Post
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 
-          comments = comment_repo.list_by_post_id(
-            post_id: post_id,
+          authors = {}
+          page = ::Concerns::VisiblePage.fill(
             limit: limit,
             cursor: decoded_cursor,
-            exclude_author_profile_ids: exclude_author_profile_ids
+            fetch: ->(after) { comment_repo.list_by_post_id(post_id: post_id, limit: limit, cursor: after, exclude_author_profile_ids: exclude_author_profile_ids) },
+            keep: ->(rows) {
+              authors.merge!(build_authors(rows.map(&:author_profile_id).uniq))
+              rows.select { |comment| authors.key?(comment.author_profile_id) }
+            },
+            cursor_of: ->(row) { { created_at: row.created_at, id: row.id } }
           )
-          has_more = comments.length > limit
-          comments = comments.first(limit) if has_more
+          comments = page[:items]
 
-          next_cursor = if has_more && comments.any?
+          next_cursor = if page[:has_more] && comments.any?
             last = comments.last
             encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
           end
 
-          author_profile_ids = comments.map(&:author_profile_id).uniq
-          authors = build_authors(author_profile_ids)
-          comments = comments.select { |comment| authors.key?(comment.author_profile_id) }
+          authors = authors.slice(*comments.map(&:author_profile_id))
           mentioned_usernames = build_mentioned_usernames(comments)
 
-          { comments: comments, next_cursor: next_cursor, has_more: has_more, authors: authors, mentioned_usernames: mentioned_usernames }
+          { comments: comments, next_cursor: next_cursor, has_more: page[:has_more], authors: authors, mentioned_usernames: mentioned_usernames }
         end
 
         private

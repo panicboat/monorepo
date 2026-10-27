@@ -21,6 +21,23 @@ RSpec.describe "Post::UseCases::Comments::ListReplies", type: :database do
       expect(result[:authors][author_profile_id].username).to eq("coco_u")
     end
 
+    it "fills the page past replies of a disabled author and reports no more" do
+      db = Hanami.app["db.gateway"].connection
+      hidden = create_account_with_profile(username: "lr_hidden")
+      parent = comment_repo.create_comment(post_id: post.id, author_profile_id: create_account_with_profile(username: "lr_parent"), content: "Parent")
+      shown = comment_repo.create_comment(post_id: post.id, author_profile_id: create_account_with_profile(username: "lr_shown"), content: "shown", parent_id: parent.id)
+      db[:post__comments].where(id: shown.id).update(created_at: Time.now - 60)
+      2.times do |i|
+        hidden_reply = comment_repo.create_comment(post_id: post.id, author_profile_id: hidden, content: "hidden", parent_id: parent.id)
+        db[:post__comments].where(id: hidden_reply.id).update(created_at: Time.now - (3600 * (i + 1)))
+      end
+      db[:profile__profiles].where(id: hidden).update(disabled_at: Time.now)
+
+      result = use_case.call(comment_id: parent.id, limit: 1)
+
+      expect([result[:replies].map(&:id), result[:has_more]]).to eq([[shown.id], false])
+    end
+
     it "returns mentioned_usernames for a reply mention" do
       mentioned_id = create_account_with_profile(display_name: "Mentioned", username: "mentioned_user")
       reply_author_profile_id = create_account_with_profile

@@ -14,8 +14,8 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     secret = post_repo.create_post(author_profile_id: author, content: "followers", visibility: "private")
     open = post_repo.create_post(author_profile_id: author, content: "everyone", visibility: "public")
 
-    following = uc.call(filter: "following", viewer_profile_id: viewer)[:post_ids]
-    all = uc.call(filter: "all", viewer_profile_id: viewer)[:post_ids]
+    following = uc.call(filter: "following", viewer_profile_id: viewer)[:posts].map(&:id)
+    all = uc.call(filter: "all", viewer_profile_id: viewer)[:posts].map(&:id)
 
     expect(following).to contain_exactly(secret.id.to_s, open.id.to_s)
     expect(all).to eq([open.id.to_s])
@@ -28,7 +28,7 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     post_repo.create_post(author_profile_id: nearby_author, content: "followers", visibility: "private")
     open = post_repo.create_post(author_profile_id: nearby_author, content: "everyone", visibility: "public")
 
-    area = uc.call(filter: "area", viewer_profile_id: nearby_viewer)[:post_ids]
+    area = uc.call(filter: "area", viewer_profile_id: nearby_viewer)[:posts].map(&:id)
 
     expect(area).to eq([open.id.to_s])
   end
@@ -40,7 +40,7 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     tokyo_post = post_repo.create_post(author_profile_id: tokyo_author, content: "tokyo", visibility: "public")
     post_repo.create_post(author_profile_id: osaka_author, content: "osaka", visibility: "public")
 
-    area = uc.call(filter: "area", viewer_profile_id: tokyo_viewer)[:post_ids]
+    area = uc.call(filter: "area", viewer_profile_id: tokyo_viewer)[:posts].map(&:id)
 
     expect(area).to contain_exactly(tokyo_post.id.to_s)
   end
@@ -55,9 +55,9 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     secret = post_repo.create_post(author_profile_id: own, content: "followers", visibility: "private")
     open = post_repo.create_post(author_profile_id: own, content: "everyone", visibility: "public")
 
-    all = uc.call(filter: "all", viewer_profile_id: own)[:post_ids]
-    area = uc.call(filter: "area", viewer_profile_id: own)[:post_ids]
-    following = uc.call(filter: "following", viewer_profile_id: own)[:post_ids]
+    all = uc.call(filter: "all", viewer_profile_id: own)[:posts].map(&:id)
+    area = uc.call(filter: "area", viewer_profile_id: own)[:posts].map(&:id)
+    following = uc.call(filter: "following", viewer_profile_id: own)[:posts].map(&:id)
 
     expect([all, area]).to all(contain_exactly(secret.id.to_s, open.id.to_s))
     expect(following).to eq([])
@@ -67,14 +67,14 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     own_secret = post_repo.create_post(author_profile_id: viewer, content: "mine", visibility: "private")
     post_repo.create_post(author_profile_id: author, content: "theirs", visibility: "private")
 
-    expect(uc.call(filter: "all", viewer_profile_id: viewer)[:post_ids]).to eq([own_secret.id.to_s])
+    expect(uc.call(filter: "all", viewer_profile_id: viewer)[:posts].map(&:id)).to eq([own_secret.id.to_s])
   end
 
   it "leaves a pending follower's following feed without followers-only posts" do
     follow_repo.follow(follower_profile_id: viewer, followee_profile_id: author, status: "pending")
     post_repo.create_post(author_profile_id: author, content: "followers", visibility: "private")
 
-    expect(uc.call(filter: "following", viewer_profile_id: viewer)[:post_ids]).to eq([])
+    expect(uc.call(filter: "following", viewer_profile_id: viewer)[:posts].map(&:id)).to eq([])
   end
 
   describe "the followers feed" do
@@ -84,7 +84,7 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     let(:idol) { create_account_with_profile(role: 2, username: "idol") }
     let(:asker) { create_account_with_profile(username: "asker") }
 
-    def followers_feed = uc.call(filter: "followers", viewer_profile_id: viewer)[:post_ids]
+    def followers_feed = uc.call(filter: "followers", viewer_profile_id: viewer)[:posts].map(&:id)
 
     it "lists the public posts of approved followers only" do
       follow_repo.follow(follower_profile_id: fan, followee_profile_id: viewer, status: "approved")
@@ -124,6 +124,17 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
     end
   end
 
+  it "fills the page past posts of a disabled author and reports no more" do
+    hidden = create_account_with_profile(role: 2, username: "hidden_author")
+    shown = post_repo.create_post(author_profile_id: author, content: "shown", visibility: "public", published_at: Time.now - 60)
+    2.times { |i| post_repo.create_post(author_profile_id: hidden, content: "hidden", visibility: "public", published_at: Time.now - (3600 * (i + 1))) }
+    Hanami.app["db.gateway"].connection[:profile__profiles].where(id: hidden).update(disabled_at: Time.now)
+
+    page = uc.call(filter: "all", viewer_profile_id: viewer, limit: 1)
+
+    expect([page[:posts].map(&:id), page[:has_more]]).to eq([[shown.id.to_s], false])
+  end
+
   describe "the display window" do
     let(:now) { Time.now }
 
@@ -136,8 +147,8 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
         post_repo.create_post(author_profile_id: id, content: "expired", visibility: "public", published_at: now - 7200, expires_at: now - 3600)
       end
 
-      expect(uc.call(filter: "all", viewer_profile_id: viewer)[:post_ids]).to contain_exactly(live.id.to_s, own_live.id.to_s)
-      expect(uc.call(filter: "following", viewer_profile_id: viewer)[:post_ids]).to eq([live.id.to_s])
+      expect(uc.call(filter: "all", viewer_profile_id: viewer)[:posts].map(&:id)).to contain_exactly(live.id.to_s, own_live.id.to_s)
+      expect(uc.call(filter: "following", viewer_profile_id: viewer)[:posts].map(&:id)).to eq([live.id.to_s])
     end
 
     it "orders by the display start and pages through equal starts without gaps or repeats" do
@@ -150,7 +161,7 @@ RSpec.describe "Feed::UseCases::ListFeed", type: :database do
       cursor = nil
       loop do
         page = uc.call(filter: "all", viewer_profile_id: viewer, limit: 2, cursor: cursor)
-        ids.concat(page[:post_ids])
+        ids.concat(page[:posts].map(&:id))
         break unless page[:has_more]
 
         cursor = page[:next_cursor]

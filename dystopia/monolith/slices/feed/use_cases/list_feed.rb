@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "concerns/cursor_pagination"
+require "concerns/visible_page"
 
 module Feed
   module UseCases
@@ -34,25 +35,36 @@ module Feed
           raise ArgumentError, "unknown filter: #{filter.inspect}"
         end
 
-        post_ids = post_repo.list_post_ids(
+        private_author_profile_ids = filter == "followers" ? mutual_ids(viewer_profile_id, author_ids) : []
+        hydrated = {}
+        page = Concerns::VisiblePage.fill(
           limit: limit,
           cursor: decoded_cursor,
-          author_profile_ids: author_ids,
-          excluded_author_profile_ids: excluded,
-          include_private: filter == "following",
-          viewer_profile_id: viewer_profile_id,
-          private_author_profile_ids: filter == "followers" ? mutual_ids(viewer_profile_id, author_ids) : []
+          fetch: ->(after) {
+            post_repo.list_post_ids(
+              limit: limit,
+              cursor: after,
+              author_profile_ids: author_ids,
+              excluded_author_profile_ids: excluded,
+              include_private: filter == "following",
+              viewer_profile_id: viewer_profile_id,
+              private_author_profile_ids: private_author_profile_ids
+            )
+          },
+          keep: ->(ids) {
+            hydrated.merge!(list_posts_by_ids_uc.call(post_ids: ids, viewer_profile_id: viewer_profile_id))
+            ids.select { |id| hydrated.key?(id.to_s) }
+          },
+          cursor_of: ->(id) { { published_at: post_repo.published_at_for_id(id), id: id } }
         )
+        truncated = page[:items]
 
-        has_more = post_ids.length > limit
-        truncated = has_more ? post_ids.first(limit) : post_ids
-
-        next_cursor = if has_more && truncated.any?
+        next_cursor = if page[:has_more] && truncated.any?
           last_published_at = post_repo.published_at_for_id(truncated.last)
           last_published_at ? encode_cursor(published_at: last_published_at.iso8601(6), id: truncated.last) : nil
         end
 
-        { post_ids: truncated, next_cursor: next_cursor, has_more: has_more }
+        { posts: truncated.map { |id| hydrated[id.to_s] }, next_cursor: next_cursor, has_more: page[:has_more] }
       end
 
       private
@@ -86,6 +98,10 @@ module Feed
 
       def post_repo
         @post_repo ||= Post::Slice["repositories.post_repository"]
+      end
+
+      def list_posts_by_ids_uc
+        @list_posts_by_ids_uc ||= Post::Slice["use_cases.posts.list_posts_by_ids"]
       end
 
       def list_profile_ids_by_prefecture_uc
