@@ -196,4 +196,22 @@ RSpec.describe Billing::Repositories::SubscriptionRepository, type: :database do
       expect(repo.find_by_stripe_subscription_id("sub_other").cancel_at_period_end).to be(false)
     end
   end
+
+  describe "#delete_by_account_id" do
+    it "deletes every row of the account and keeps the rows of other accounts" do
+      upsert
+      upsert(stripe_subscription_id: "sub_second", status: "canceled")
+      bystander_id = SecureRandom.uuid_v7
+      upsert(account_id: bystander_id, stripe_subscription_id: "sub_bystander")
+
+      repo.delete_by_account_id(account_id)
+
+      expect(repo.find_by_account_id(account_id)).to be_nil
+      expect(repo.find_by_account_id(bystander_id).stripe_subscription_id).to eq("sub_bystander")
+    end
+
+    it "does nothing when the account has no rows" do
+      expect { repo.delete_by_account_id(account_id) }.not_to raise_error
+    end
+  end
 end

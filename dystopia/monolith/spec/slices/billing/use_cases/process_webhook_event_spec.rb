@@ -113,6 +113,21 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
     end
   end
 
+  describe "when the customer row is gone" do
+    before { customer_repo.delete_by_account_id(account_id) }
+
+    %w[customer.subscription.created customer.subscription.updated customer.subscription.deleted].each do |type|
+      it "returns :ignored for #{type}, stores nothing and marks the event processed" do
+        event = make_event(type)
+
+        expect(use_case.call(event: event)).to eq(:ignored)
+
+        expect(subscription_repo.find_by_stripe_subscription_id(stripe_subscription_id)).to be_nil
+        expect(stripe_event_repo.find_by_stripe_event_id(event.id).processed_at).not_to be_nil
+      end
+    end
+  end
+
   describe "dedupe" do
     it "returns :duplicate on the second call with the same event id" do
       event = make_event("customer.subscription.created")

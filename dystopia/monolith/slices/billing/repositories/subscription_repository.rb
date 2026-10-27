@@ -65,6 +65,10 @@ module Billing
           .call(cancel_at_period_end: true, updated_at: Time.now)
       end
 
+      def delete_by_account_id(account_id)
+        subscription_records.dataset.where(account_id: account_id).delete
+      end
+
       private
 
       # id breaks created_at ties because uuid_v7 ids are time-ordered.

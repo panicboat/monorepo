@@ -17,11 +17,26 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
   let(:messaging_repo) { Messaging::Slice["repositories.messaging_repository"] }
   let(:schedule_repo) { Schedule::Slice["repositories.schedule_repository"] }
   let(:review_repo) { Review::Slice["repositories.review_repository"] }
+  let(:billing_customer_repo) { Billing::Slice["repositories.customer_repository"] }
+  let(:billing_subscription_repo) { Billing::Slice["repositories.subscription_repository"] }
   let(:cognito_adapter) { double(:cognito_adapter, admin_delete_user: true) }
+  let(:deleted_stripe_customer_ids) { [] }
+
+  def store_billing(account_id:, stripe_customer_id:, stripe_subscription_id:)
+    billing_customer_repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: stripe_customer_id)
+    billing_subscription_repo.upsert_by_stripe_id(
+      account_id: account_id, stripe_subscription_id: stripe_subscription_id, stripe_price_id: "price_g",
+      status: "active", current_period_end: Time.now + 3600, cancel_at_period_end: false
+    )
+  end
 
   before do
     Cognito.reset!
     Cognito.adapter = cognito_adapter
+    deleted_ids = deleted_stripe_customer_ids
+    allow_any_instance_of(Billing::Adapters::StripeClient).to receive(:delete_customer) do |_client, stripe_customer_id:|
+      deleted_ids << stripe_customer_id
+    end
   end
 
   after { Cognito.reset! }
@@ -99,6 +114,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     review_repo.create(author_account_id: account_id, author_profile_id: persona_b, target_profile_id: witness, rating: nil, occurred_on: Date.new(2026, 10, 1))
     review_repo.create(author_account_id: bystander_account_id, author_profile_id: bystander, target_profile_id: witness, rating: nil, occurred_on: Date.new(2026, 10, 1))
 
+    store_billing(account_id: account_id, stripe_customer_id: "cus_purged", stripe_subscription_id: "sub_purged")
+    store_billing(account_id: bystander_account_id, stripe_customer_id: "cus_kept", stripe_subscription_id: "sub_kept")
+
     db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (91 * 24 * 3600))
 
     push_subscriptions = Notifications::Slice["repositories.push_subscription_repository"]
@@ -149,6 +167,34 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:schedule__schedules].where(profile_id: bystander).count).to eq(1)
     expect(db[:review__reviews].where(author_profile_id: bystander, target_profile_id: witness).count).to eq(1)
     expect(db[:notifications__push_subscriptions].select_map(:endpoint)).to eq(["https://fcm.googleapis.com/fcm/send/kept"])
+    expect(deleted_stripe_customer_ids).to eq(["cus_purged"])
+    expect(db[:billing__customers].select_map(:stripe_customer_id)).to eq(["cus_kept"])
+    expect(db[:billing__subscriptions].select_map(:stripe_subscription_id)).to eq(["sub_kept"])
+  end
+
+  it "keeps the account and the billing rows when deleting the Stripe customer fails, and finishes on the next run" do
+    account_id = create_account(role: 1)
+    create_account_with_profile(account_id: account_id)
+    store_billing(account_id: account_id, stripe_customer_id: "cus_retry", stripe_subscription_id: "sub_retry")
+    db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (91 * 24 * 3600))
+    allow(Hanami.logger).to receive(:error)
+    purge = Identity::Slice["use_cases.account.purge_deactivated_accounts"]
+    allow_any_instance_of(Billing::Adapters::StripeClient).to receive(:delete_customer).and_raise(Stripe::APIConnectionError.new("stripe down"))
+
+    failed = purge.call(now: Time.now)
+
+    expect([failed.purged, failed.failed_account_ids]).to eq([0, [account_id]])
+    expect(cognito_adapter).not_to have_received(:admin_delete_user)
+    expect(db[:identity__accounts].where(id: account_id).count).to eq(1)
+    expect(db[:billing__customers].where(account_id: account_id).count).to eq(1)
+    expect(db[:billing__subscriptions].where(account_id: account_id).count).to eq(1)
+
+    allow_any_instance_of(Billing::Adapters::StripeClient).to receive(:delete_customer)
+
+    expect(purge.call(now: Time.now).purged).to eq(1)
+    expect(db[:identity__accounts].where(id: account_id).count).to eq(0)
+    expect(db[:billing__customers].where(account_id: account_id).count).to eq(0)
+    expect(db[:billing__subscriptions].where(account_id: account_id).count).to eq(0)
   end
 
   it "keeps the account and the profile whose slice purge failed, and finishes on the next run" do

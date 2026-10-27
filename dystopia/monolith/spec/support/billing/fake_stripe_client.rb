@@ -95,6 +95,12 @@ module Spec
         @subscriptions[stripe_subscription_id]&.cancel_at_period_end = true
       end
 
+      def delete_customer(stripe_customer_id:)
+        maybe_raise!
+        record(:delete_customer, stripe_customer_id: stripe_customer_id)
+        @customers.delete(stripe_customer_id)
+      end
+
       def construct_webhook_event(payload:, sig_header:, secret:)
         record(:construct_webhook_event, payload_size: payload.bytesize, sig_present: !sig_header.nil?)
         ::Stripe::Webhook.construct_event(payload, sig_header, secret)

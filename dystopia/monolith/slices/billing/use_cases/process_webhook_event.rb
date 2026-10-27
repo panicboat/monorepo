@@ -56,7 +56,6 @@ module Billing
         case event.type
         when *SUBSCRIPTION_UPSERT_TYPES
           upsert_subscription(event.data.object)
-          :processed
         when "customer.subscription.deleted"
           object = event.data.object
           existing = subscription_repo.find_by_stripe_subscription_id(object.id)
@@ -67,7 +66,8 @@ module Billing
             )
           else
             customer = customer_repo.find_by_stripe_customer_id(object.customer)
-            raise "no billing__customers row for stripe customer=#{object.customer}" unless customer
+            # A purged account has no customer row, and raising would make Stripe redeliver the event.
+            return :ignored unless customer
 
             item = object.items.data.first
             subscription_repo.upsert_by_stripe_id(
@@ -90,10 +90,11 @@ module Billing
 
       def upsert_subscription(object)
         existing = subscription_repo.find_by_stripe_subscription_id(object.id)
-        return if existing && existing.status == "canceled"
+        return :processed if existing && existing.status == "canceled"
 
         customer = customer_repo.find_by_stripe_customer_id(object.customer)
-        raise "no billing__customers row for stripe customer=#{object.customer}" unless customer
+        # A purged account has no customer row, and raising would make Stripe redeliver the event.
+        return :ignored unless customer
 
         item = object.items.data.first
         subscription_repo.upsert_by_stripe_id(
@@ -105,6 +106,7 @@ module Billing
           cancel_at_period_end: object.cancel_at_period_end,
           canceled_at: object.canceled_at ? Time.at(object.canceled_at) : nil
         )
+        :processed
       end
     end
   end
