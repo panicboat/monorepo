@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
+import { GrpcCode, isConnectError } from "@/lib/grpc-errors";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError } from "@/lib/api-helpers";
 import { setAuthCookies } from "@/lib/auth/cookies";
@@ -28,7 +29,12 @@ export async function POST(req: NextRequest) {
 
     const { sub } = await verifyAccessToken(tokens.accessToken);
     const headers = await buildGrpcHeaders(req);
-    const { account } = await identityClient.getAccount({ sub }, { headers });
+    let account;
+    try {
+      ({ account } = await identityClient.getAccount({ sub }, { headers }));
+    } catch (err) {
+      if (!(isConnectError(err) && err.code === GrpcCode.NOT_FOUND)) throw err;
+    }
 
     if (!account) {
       await cognito()

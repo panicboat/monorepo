@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Code, ConnectError } from "@connectrpc/connect";
 import { NextRequest } from "next/server";
 import {
   createFakeAdapter,
@@ -84,13 +85,30 @@ describe("POST /api/identity/sign-in", () => {
     });
   });
 
-  it("rejects sign-in when the account cannot be found", async () => {
-    identity.getAccount.mockResolvedValue({ account: undefined });
+  it("rejects sign-in and signs out when the monolith has no account for the sub", async () => {
+    identity.getAccount.mockRejectedValue(new ConnectError("account not found", Code.NotFound));
+    const globalSignOut = vi.spyOn(cognitoMocks.adapter!, "globalSignOut");
 
     const res = await POST(signInRequest());
 
     expect(res.status).toBe(401);
+    await expect(res.json()).resolves.toEqual({
+      error: "電話番号または認証コードが正しくありません",
+    });
     expect(res.headers.get("Set-Cookie")).toBeNull();
+    expect(globalSignOut).toHaveBeenCalledWith(expect.stringMatching(/^eyJ/));
+  });
+
+  it("returns the error response when looking up the account fails for another reason", async () => {
+    identity.getAccount.mockRejectedValue(new ConnectError("unavailable", Code.Unavailable));
+    const globalSignOut = vi.spyOn(cognitoMocks.adapter!, "globalSignOut");
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const res = await POST(signInRequest());
+
+    expect(res.status).toBe(500);
+    expect(res.headers.get("Set-Cookie")).toBeNull();
+    expect(globalSignOut).not.toHaveBeenCalled();
   });
 
   it("reactivates a deactivated account before returning success", async () => {
