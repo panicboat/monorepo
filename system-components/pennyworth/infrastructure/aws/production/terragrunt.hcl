@@ -11,21 +11,6 @@ terraform {
   source = "../modules"
 }
 
-remote_state {
-  backend = "s3"
-  generate = {
-    path      = "backend.tf"
-    if_exists = "overwrite_terragrunt"
-  }
-  config = {
-    bucket         = "terragrunt-state-${get_aws_account_id()}"
-    key            = "system-components/pennyworth/${include.env.locals.environment}/terraform.tfstate"
-    region         = "ap-northeast-1"
-    dynamodb_table = "terragrunt-state-locks"
-    encrypt        = true
-  }
-}
-
 inputs = {
   environment = include.env.locals.environment
   aws_region  = include.env.locals.aws_region

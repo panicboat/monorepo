@@ -24,7 +24,7 @@ remote_state {
   config = {
     bucket = "terragrunt-state-${get_aws_account_id()}"
 
-    key    = "system-components/template/${local.environment}/terraform.tfstate"
+    key    = "monorepo/${get_path_from_repo_root()}/terraform.tfstate"
     region = "ap-northeast-1"
 
     dynamodb_table = "terragrunt-state-locks"
