@@ -13,7 +13,7 @@ RSpec.describe "Schedule::UseCases::DeleteSchedule", type: :database do
     save_uc.call(profile_id: profile_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")
     uc.call(profile_id: profile_id, work_date: "2026-09-20")
 
-    rows = list_uc.call(profile_id: profile_id, from_date: "2026-09-20", to_date: "2026-09-20")
+    rows = list_uc.call(profile_id: profile_id, viewer_profile_id: profile_id, from_date: "2026-09-20", to_date: "2026-09-20")
     expect(rows).to be_empty
   end
 
