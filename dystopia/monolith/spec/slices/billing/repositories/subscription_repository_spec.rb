@@ -185,4 +185,15 @@ RSpec.describe Billing::Repositories::SubscriptionRepository, type: :database do
       expect(row.canceled_at).to be_within(1).of(canceled_time)
     end
   end
+
+  describe "#mark_cancel_at_period_end" do
+    it "sets cancel_at_period_end on the matching row only" do
+      upsert
+      upsert(stripe_subscription_id: "sub_other")
+      repo.mark_cancel_at_period_end(stripe_subscription_id: sub_id)
+
+      expect(repo.find_by_stripe_subscription_id(sub_id).cancel_at_period_end).to be(true)
+      expect(repo.find_by_stripe_subscription_id("sub_other").cancel_at_period_end).to be(false)
+    end
+  end
 end

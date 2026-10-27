@@ -25,4 +25,16 @@ RSpec.describe Billing::Adapters::StripeClient do
   it "responds to construct_webhook_event" do
     expect(client).to respond_to(:construct_webhook_event)
   end
+
+  describe "#cancel_at_period_end" do
+    it "sets cancel_at_period_end on the subscription with a per-subscription idempotency key" do
+      expect(::Stripe::Subscription).to receive(:update).with(
+        "sub_1",
+        { cancel_at_period_end: true },
+        { api_key: "sk_test_dummy", idempotency_key: "billing:cancel_at_period_end:sub_1" }
+      )
+
+      client.cancel_at_period_end(stripe_subscription_id: "sub_1")
+    end
+  end
 end

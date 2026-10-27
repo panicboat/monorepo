@@ -89,6 +89,12 @@ module Spec
         @subscriptions[stripe_subscription_id] || raise(Stripe::InvalidRequestError.new("No such subscription", nil))
       end
 
+      def cancel_at_period_end(stripe_subscription_id:)
+        maybe_raise!
+        record(:cancel_at_period_end, stripe_subscription_id: stripe_subscription_id)
+        @subscriptions[stripe_subscription_id]&.cancel_at_period_end = true
+      end
+
       def construct_webhook_event(payload:, sig_header:, secret:)
         record(:construct_webhook_event, payload_size: payload.bytesize, sig_present: !sig_header.nil?)
         ::Stripe::Webhook.construct_event(payload, sig_header, secret)

@@ -25,6 +25,10 @@ RSpec.describe "Billing slice container resolution" do
     expect { Billing::Slice["use_cases.process_webhook_event"] }.not_to raise_error
   end
 
+  it "resolves use_cases.cancel_subscriptions_at_period_end" do
+    expect { Billing::Slice["use_cases.cancel_subscriptions_at_period_end"] }.not_to raise_error
+  end
+
   it "resolves plan_registry" do
     expect { Billing::Slice["plan_registry"] }.not_to raise_error
     expect(Billing::Slice["plan_registry"]).to be_a(Billing::PlanRegistry)

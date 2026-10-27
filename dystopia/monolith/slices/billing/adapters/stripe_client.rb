@@ -40,6 +40,14 @@ module Billing
         ::Stripe::Subscription.retrieve(stripe_subscription_id, { api_key: @api_key })
       end
 
+      def cancel_at_period_end(stripe_subscription_id:)
+        ::Stripe::Subscription.update(
+          stripe_subscription_id,
+          { cancel_at_period_end: true },
+          { api_key: @api_key, idempotency_key: "billing:cancel_at_period_end:#{stripe_subscription_id}" }
+        )
+      end
+
       def construct_webhook_event(payload:, sig_header:, secret:)
         ::Stripe::Webhook.construct_event(payload, sig_header, secret)
       end

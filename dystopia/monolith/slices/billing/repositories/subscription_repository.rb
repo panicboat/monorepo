@@ -58,6 +58,13 @@ module Billing
           .call(status: "canceled", canceled_at: canceled_at, updated_at: Time.now)
       end
 
+      def mark_cancel_at_period_end(stripe_subscription_id:)
+        subscription_records
+          .where(stripe_subscription_id: stripe_subscription_id)
+          .command(:update)
+          .call(cancel_at_period_end: true, updated_at: Time.now)
+      end
+
       private
 
       # id breaks created_at ties because uuid_v7 ids are time-ordered.
