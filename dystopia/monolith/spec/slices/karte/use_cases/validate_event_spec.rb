@@ -58,6 +58,11 @@ RSpec.describe Karte::UseCases::ValidateEvent do
     expect(call(stage: "reservation", outcome: "no_show", tags: [], note: "連絡なし")[:note]).to eq("連絡なし")
   end
 
+  it "treats full-width spaces as no note" do
+    expect(call(note: "　")[:note]).to be_nil
+    expect { call(stage: "reservation", outcome: "no_show", tags: [], note: "　") }.to invalid("Note required for this outcome")
+  end
+
   it "accepts a note of 500 characters and rejects 501" do
     expect(call(note: "あ" * 500)[:note].length).to eq(500)
     expect { call(note: "あ" * 501) }.to invalid("Note too long")

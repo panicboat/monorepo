@@ -28,6 +28,11 @@ RSpec.describe Review::UseCases::ValidateEvent do
     expect { validate.call(**base, note: "a" * 501) }.to invalid("Note too long")
   end
 
+  it "treats full-width spaces as no note" do
+    expect(validate.call(**base, note: "　")[:note]).to be_nil
+    expect { validate.call(**base, outcome: "ended_early", note: "　") }.to invalid("Note required for this outcome")
+  end
+
   it "refuses a malformed or future date" do
     expect { validate.call(**base, occurred_on: "2026/10/17") }.to invalid("Occurred date must be YYYY-MM-DD")
     expect { validate.call(**base, occurred_on: "2026-10-18") }.to invalid("Occurred date is in the future")

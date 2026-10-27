@@ -53,6 +53,12 @@ RSpec.describe "Profile::UseCases::SaveProfile", type: :database do
     expect { uc.call(profile_id: profile_id, display_name: "") }.to raise_error(Errors::ValidationError)
   end
 
+  it "rejects a display name of only full-width spaces" do
+    expect {
+      uc.call(profile_id: profile_id, display_name: "　")
+    }.to raise_error(Errors::ValidationError, "表示名は必須です")
+  end
+
   it "rejects a bio longer than 1000 chars" do
     expect {
       uc.call(profile_id: profile_id, display_name: "Coco", bio: "あ" * 1001)

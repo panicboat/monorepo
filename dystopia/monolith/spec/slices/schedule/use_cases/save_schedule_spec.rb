@@ -219,6 +219,12 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
         .to raise_error(Errors::ValidationError, "お知らせの時刻は予定の終了より前にしてください")
     end
 
+    it "counts only the characters left after stripping full-width spaces toward the limit" do
+      row = save(announce_note: "　" * 5 + "a" * 200)
+
+      expect(post_of(row).content).to eq("a" * 200)
+    end
+
     it "rejects a note longer than 200 characters" do
       expect { save(announce_note: "あ" * 201) }
         .to raise_error(Errors::ValidationError, "ひとことは200文字以内で入力してください")

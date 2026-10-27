@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "date"
+require "text"
 
 module Karte
   module UseCases
@@ -18,7 +19,7 @@ module Karte
 
         note = note.to_s
         raise Errors::Invalid, "Note too long" if note.length > Catalog::MAX_NOTE_LENGTH
-        blank_note = note.strip.empty?
+        blank_note = Text.blank?(note)
         if blank_note && Catalog::NOTE_REQUIRED_OUTCOMES.fetch(stage).include?(outcome)
           raise Errors::Invalid, "Note required for this outcome"
         end

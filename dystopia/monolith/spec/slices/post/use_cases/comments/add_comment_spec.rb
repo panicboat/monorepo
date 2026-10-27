@@ -64,6 +64,19 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
       end
     end
 
+    context "when the content is only full-width spaces and media is empty" do
+      it "raises EmptyContentError" do
+        expect {
+          use_case.call(
+            post_id: post.id,
+            author_profile_id: author_profile_id,
+            content: "　",
+            media: []
+          )
+        }.to raise_error(Post::UseCases::Comments::AddComment::EmptyContentError)
+      end
+    end
+
     context "when only media is provided (no content)" do
       it "creates a comment successfully with media_id" do
         media_id = SecureRandom.uuid_v7
@@ -82,6 +95,26 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
         expect(result[:comment].author_profile_id).to eq(author_profile_id)
         expect(result[:comment].comment_media).not_to be_empty
         expect(result[:comment].comment_media.first.media_id).to eq(media_id)
+      end
+    end
+
+    context "when the content is only full-width spaces and media is attached" do
+      let(:media) do
+        media_id = SecureRandom.uuid_v7
+        Hanami.app["db.gateway"].connection[:media__files].insert(id: media_id, media_type: "image", media_key: "media/#{author_profile_id}/#{media_id}.jpg", uploader_profile_id: author_profile_id)
+        [{ media_id: media_id, media_type: "image" }]
+      end
+
+      it "saves the comment with empty content" do
+        result = use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "　　", media: media)
+
+        expect(result[:comment].content).to eq("")
+      end
+
+      it "raises ContentTooLongError when the content is longer than the limit" do
+        expect {
+          use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "　" * 1001, media: media)
+        }.to raise_error(Post::UseCases::Comments::AddComment::ContentTooLongError)
       end
     end
 

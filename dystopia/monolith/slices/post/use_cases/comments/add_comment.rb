@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "text"
+
 module Post
   module UseCases
     module Comments
@@ -21,14 +23,14 @@ module Post
           post = post_repo.find_by_id(post_id)
           raise PostNotFoundError unless post
 
-          empty_content = content.nil? || content.strip.empty?
+          empty_content = Text.blank?(content)
           empty_media = media.nil? || media.empty?
           raise EmptyContentError if empty_content && empty_media
-          raise ContentTooLongError if !empty_content && content.length > MAX_CONTENT_LENGTH
+          raise ContentTooLongError if content.to_s.length > MAX_CONTENT_LENGTH
 
           raise TooManyMediaError if !empty_media && media.length > MAX_MEDIA_COUNT
 
-          normalized_content = content.to_s.strip
+          normalized_content = empty_content ? "" : content.to_s.strip
 
           parent = nil
           if parent_id
