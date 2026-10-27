@@ -32,5 +32,31 @@ RSpec.describe Post::Grpc::LikeHandler, type: :database do
       expect([first.likes_count, again.likes_count]).to eq([1, 1])
       expect(notification_repo.list(recipient_profile_id: author).map { |n| [n.type, n.actor_count] }).to eq([["like", 1]])
     end
+
+    it "leaves the likes of profiles the viewer blocks out of the returned count" do
+      blocked = create_account_with_profile(username: "like_blocked")
+      Post::Slice["repositories.like_repository"].profile_like(post_id: liked_post.id, profile_id: blocked)
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: liker, blocked_profile_id: blocked)
+      act_as(liker)
+
+      liked = rpc(:like_post, Post::V1::LikePostRequest.new(post_id: liked_post.id))
+
+      expect(liked.likes_count).to eq(1)
+    end
+  end
+
+  describe "#unlike_post" do
+    it "leaves the likes of profiles the viewer blocks out of the returned count" do
+      blocked = create_account_with_profile(username: "unlike_blocked")
+      likes = Post::Slice["repositories.like_repository"]
+      likes.profile_like(post_id: liked_post.id, profile_id: blocked)
+      likes.profile_like(post_id: liked_post.id, profile_id: liker)
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: liker, blocked_profile_id: blocked)
+      act_as(liker)
+
+      unliked = rpc(:unlike_post, Post::V1::UnlikePostRequest.new(post_id: liked_post.id))
+
+      expect(unliked.likes_count).to eq(0)
+    end
   end
 end

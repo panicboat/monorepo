@@ -41,14 +41,14 @@ module Post
           )
         end
 
-        ::Post::V1::LikePostResponse.new(likes_count: like_repo.likes_count(post_id: request.message.post_id))
+        ::Post::V1::LikePostResponse.new(likes_count: like_repo.likes_count(post_id: request.message.post_id, exclude_profile_ids: get_blocked_profile_ids))
       end
 
       def unlike_post
         authenticate_user!
 
         like_repo.profile_unlike(post_id: request.message.post_id, profile_id: current_profile_id)
-        likes_count = find_readable_post(request.message.post_id) ? like_repo.likes_count(post_id: request.message.post_id) : 0
+        likes_count = find_readable_post(request.message.post_id) ? like_repo.likes_count(post_id: request.message.post_id, exclude_profile_ids: get_blocked_profile_ids) : 0
         ::Post::V1::UnlikePostResponse.new(likes_count: likes_count)
       end
 
