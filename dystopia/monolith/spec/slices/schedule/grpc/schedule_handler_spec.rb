@@ -43,6 +43,17 @@ RSpec.describe Schedule::Grpc::ScheduleHandler, type: :database do
     expect(schedules_of(other_cast)).to be_empty
   end
 
+  it "lists nothing for a viewer in a block relation with the cast" do
+    act_as(cast)
+    save("2026-10-20")
+    Social::Slice["repositories.block_repository"].block(blocker_profile_id: cast, blocked_profile_id: guest)
+
+    act_as(guest)
+    expect(schedules_of(cast)).to be_empty
+    act_as(cast)
+    expect(schedules_of(cast)).to eq([[cast, "2026-10-20", "20:00", "02:00"]])
+  end
+
   it "deletes only the acting profile's schedule for that date" do
     act_as(cast)
     save("2026-10-20")

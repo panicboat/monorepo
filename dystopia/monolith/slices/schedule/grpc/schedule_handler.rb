@@ -30,7 +30,7 @@ module Schedule
       def list_schedules
         authenticate_user!
         m = request.message
-        rows = list_schedules_uc.call(profile_id: m.profile_id, from_date: m.from_date, to_date: m.to_date)
+        rows = list_schedules_uc.call(profile_id: m.profile_id, viewer_profile_id: current_profile_id, from_date: m.from_date, to_date: m.to_date)
 
         ::Schedule::V1::ListSchedulesResponse.new(
           schedules: rows.map { |r|

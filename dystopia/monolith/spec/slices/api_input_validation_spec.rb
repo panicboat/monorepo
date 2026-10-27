@@ -60,6 +60,6 @@ RSpec.describe "Values the API accepts only within what the screens send", type:
     list = Schedule::Slice["use_cases.list_schedules"]
 
     expect { delete.call(profile_id: profile, work_date: "2026-02-30") }.to raise_error(Errors::ValidationError, "予定日の形式が正しくありません")
-    expect { list.call(profile_id: profile, from_date: "2026-13-01", to_date: "2026-13-31") }.to raise_error(Errors::ValidationError)
+    expect { list.call(profile_id: profile, viewer_profile_id: profile, from_date: "2026-13-01", to_date: "2026-13-31") }.to raise_error(Errors::ValidationError)
   end
 end

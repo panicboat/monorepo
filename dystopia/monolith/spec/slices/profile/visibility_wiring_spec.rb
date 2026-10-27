@@ -159,7 +159,7 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       notifications = Notifications::Slice["use_cases.list_notifications"].call(recipient_profile_id: viewer)
       act_as(viewer)
       footprints = rpc(Footprints::Grpc::FootprintsHandler, :list_footprints, Footprints::V1::ListFootprintsRequest.new).footprints
-      schedules = Schedule::Slice["use_cases.list_schedules"].call(profile_id: ghost, from_date: "2026-10-01", to_date: "2026-10-31")
+      schedules = Schedule::Slice["use_cases.list_schedules"].call(profile_id: ghost, viewer_profile_id: viewer, from_date: "2026-10-01", to_date: "2026-10-31")
 
       expect(notifications[:rows].map(&:latest_actor_profile_id)).to eq([shown])
       expect(footprints.map { |footprint| footprint.visitor.profile_id }).to eq([shown])
@@ -342,6 +342,6 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
     expect(post_ids(rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new(author_profile_id: ghost)).posts)).to eq([ghost_post.id])
     expect(Post::Slice["use_cases.comments.list_comments"].call(post_id: shown_post.id)[:comments].map(&:author_profile_id)).to contain_exactly(viewer, ghost)
     expect(Notifications::Slice["use_cases.list_notifications"].call(recipient_profile_id: viewer)[:rows].map(&:latest_actor_profile_id)).to contain_exactly(ghost, shown)
-    expect(Schedule::Slice["use_cases.list_schedules"].call(profile_id: ghost, from_date: "2026-10-01", to_date: "2026-10-31").length).to eq(1)
+    expect(Schedule::Slice["use_cases.list_schedules"].call(profile_id: ghost, viewer_profile_id: viewer, from_date: "2026-10-01", to_date: "2026-10-31").length).to eq(1)
   end
 end
