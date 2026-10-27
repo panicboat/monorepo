@@ -7,6 +7,9 @@ module Notifications
     class NotificationRepository < Notifications::DB::Repo
       include Concerns::CursorPagination
 
+      # Likes and follows can be undone and redone, so a repeat by the same actor carries nothing new.
+      TYPES_RENOTIFYING_SAME_ACTOR = %w[comment reply mention].freeze
+
       def emit(recipient_profile_id:, type:, target_resource_id:, actor_profile_id:, target_post_id: nil)
         new_id = SecureRandom.uuid_v7
         now = Time.now
@@ -14,19 +17,30 @@ module Notifications
         sql = <<~SQL
           INSERT INTO notifications.notifications
             (id, recipient_profile_id, type, target_resource_id, actor_count,
-             latest_actor_profile_id, latest_event_at, read_at, created_at, target_post_id)
-          VALUES (?, ?, ?, ?, 1, ?, ?, NULL, ?, ?)
+             latest_actor_profile_id, actor_profile_ids, latest_event_at, read_at, created_at, target_post_id)
+          VALUES (?, ?, ?, ?, 1, ?, ARRAY[?]::uuid[], ?, NULL, ?, ?)
           ON CONFLICT (recipient_profile_id, type, target_resource_id) DO UPDATE SET
-            actor_count = notifications.notifications.actor_count + 1,
+            actor_count = CASE
+              WHEN EXCLUDED.latest_actor_profile_id = ANY(notifications.notifications.actor_profile_ids)
+                THEN notifications.notifications.actor_count
+              ELSE notifications.notifications.actor_count + 1
+            END,
             latest_actor_profile_id = EXCLUDED.latest_actor_profile_id,
+            actor_profile_ids = CASE
+              WHEN EXCLUDED.latest_actor_profile_id = ANY(notifications.notifications.actor_profile_ids)
+                THEN notifications.notifications.actor_profile_ids
+              ELSE array_append(notifications.notifications.actor_profile_ids, EXCLUDED.latest_actor_profile_id)
+            END,
             latest_event_at = EXCLUDED.latest_event_at,
             read_at = NULL,
             target_post_id = EXCLUDED.target_post_id
+          WHERE NOT (EXCLUDED.latest_actor_profile_id = ANY(notifications.notifications.actor_profile_ids)) OR ?
           RETURNING *
         SQL
 
+        renotifies = TYPES_RENOTIFYING_SAME_ACTOR.include?(type.to_s)
         ds = notification_records.dataset.db
-        result = ds.fetch(sql, new_id, recipient_profile_id, type, target_resource_id, actor_profile_id, now, now, target_post_id).first
+        result = ds.fetch(sql, new_id, recipient_profile_id, type, target_resource_id, actor_profile_id, actor_profile_id, now, now, target_post_id, renotifies).first
         result
       end
 

@@ -10,6 +10,7 @@ module Notifications
         attribute :target_resource_id, Types::String
         attribute :actor_count, Types::Integer
         attribute :latest_actor_profile_id, Types::String
+        attribute :actor_profile_ids, Types::PG::Array("uuid", Types::String)
         attribute :latest_event_at, Types::Time
         attribute :read_at, Types::Time.optional
         attribute :created_at, Types::Time
