@@ -49,6 +49,14 @@ export function createAwsAdapter(): CognitoAdapter {
         }),
       );
     },
+    async releaseIncompleteSignUp(phone) {
+      // Lazy import because the proxy loads this module and must not pull the gRPC client at load.
+      const { identityClient } = await import("@/lib/grpc");
+      const { released } = await identityClient.releaseIncompleteSignUp({
+        username: usernameForPhone(phone),
+      });
+      return released;
+    },
     async initiateAuth(phone, password): Promise<Tokens> {
       const response = await client().send(
         new InitiateAuthCommand({

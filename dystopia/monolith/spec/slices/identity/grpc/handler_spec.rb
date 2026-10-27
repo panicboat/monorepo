@@ -15,7 +15,8 @@ RSpec.describe Identity::Grpc::Handler do
       create_account_uc: create_account_uc,
       get_account_uc: get_account_uc,
       deactivate_account_uc: deactivate_account_uc,
-      reactivate_account_uc: reactivate_account_uc
+      reactivate_account_uc: reactivate_account_uc,
+      release_incomplete_sign_up_uc: release_incomplete_sign_up_uc
     )
   end
   let(:message) { double(:message) }
@@ -23,6 +24,7 @@ RSpec.describe Identity::Grpc::Handler do
   let(:get_account_uc) { double(:get_account_uc) }
   let(:deactivate_account_uc) { double(:deactivate_account_uc) }
   let(:reactivate_account_uc) { double(:reactivate_account_uc) }
+  let(:release_incomplete_sign_up_uc) { double(:release_incomplete_sign_up_uc) }
 
   after { Current.clear }
 
@@ -118,6 +120,42 @@ RSpec.describe Identity::Grpc::Handler do
       allow(reactivate_account_uc).to receive(:call).with(sub: "sub-1").and_return(nil)
 
       expect { handler.reactivate_account }.to raise_error(GRPC::NotFound, /account not found/)
+    end
+  end
+
+  describe "#release_incomplete_sign_up" do
+    let(:username) { "a" * 64 }
+    let(:message) { Identity::V1::ReleaseIncompleteSignUpRequest.new(username: username) }
+
+    it "returns released true when the use case releases the sign-up" do
+      expect(release_incomplete_sign_up_uc).to receive(:call).with(username: username).and_return(true)
+
+      response = handler.release_incomplete_sign_up
+
+      expect(response).to be_a(Identity::V1::ReleaseIncompleteSignUpResponse)
+      expect(response.released).to be(true)
+    end
+
+    it "returns released false when the use case keeps the user" do
+      expect(release_incomplete_sign_up_uc).to receive(:call).with(username: username).and_return(false)
+
+      expect(handler.release_incomplete_sign_up.released).to be(false)
+    end
+
+    context "with a malformed username" do
+      let(:username) { "not-a-username" }
+
+      it "raises INVALID_ARGUMENT without calling the use case" do
+        expect(release_incomplete_sign_up_uc).not_to receive(:call)
+
+        expect { handler.release_incomplete_sign_up }.to raise_error(GRPC::InvalidArgument, /username/)
+      end
+    end
+
+    it "propagates a use case failure" do
+      allow(release_incomplete_sign_up_uc).to receive(:call).and_raise(RuntimeError, "lookup failed")
+
+      expect { handler.release_incomplete_sign_up }.to raise_error(RuntimeError, "lookup failed")
     end
   end
 end

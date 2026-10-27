@@ -1,5 +1,6 @@
 import { generateKeyPairSync, randomUUID } from "node:crypto";
 import { exportJWK, SignJWT, type JWK } from "jose";
+import { GrpcCode, isConnectError } from "@/lib/grpc-errors";
 import type { CognitoAdapter, Tokens } from "./adapter";
 
 type FakeUser = {
@@ -74,6 +75,25 @@ export function createFakeAdapter(): CognitoAdapter {
       }
 
       user.confirmed = true;
+    },
+    async releaseIncompleteSignUp(phone) {
+      const user = users.get(phone);
+      if (!user) return false;
+
+      if (user.confirmed) {
+        // Lazy import because the proxy loads this module separately and must not pull the gRPC client at load.
+        const { identityClient } = await import("@/lib/grpc");
+        try {
+          await identityClient.getAccount({ sub: user.sub });
+          return false;
+        } catch (err) {
+          // Only NotFound proves there is no account; any other failure must not delete a user that may have one.
+          if (!(isConnectError(err) && err.code === GrpcCode.NOT_FOUND)) throw err;
+        }
+      }
+
+      users.delete(phone);
+      return true;
     },
     async initiateAuth(phone, password): Promise<Tokens> {
       const user = users.get(phone);

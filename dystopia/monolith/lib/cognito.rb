@@ -21,6 +21,18 @@ module Cognito
       adapter.admin_delete_user(sub: sub)
     end
 
+    def find_user(username:)
+      adapter.find_user(username: username)
+    end
+
+    def delete_user(username:)
+      adapter.delete_user(username: username)
+    end
+
+    def each_user(&block)
+      adapter.each_user(&block)
+    end
+
     private
 
     def default_adapter

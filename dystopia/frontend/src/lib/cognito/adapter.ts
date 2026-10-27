@@ -7,6 +7,7 @@ export type Tokens = {
 export type CognitoAdapter = {
   signUp(phone: string, password: string): Promise<{ userSub: string }>;
   confirmSignUp(phone: string, code: string): Promise<void>;
+  releaseIncompleteSignUp(phone: string): Promise<boolean>;
   initiateAuth(phone: string, password: string): Promise<Tokens>;
   refreshTokens(refreshToken: string): Promise<Pick<Tokens, "accessToken" | "idToken">>;
   globalSignOut(accessToken: string): Promise<void>;

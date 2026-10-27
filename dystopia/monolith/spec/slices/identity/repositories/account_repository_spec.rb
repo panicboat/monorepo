@@ -44,6 +44,19 @@ RSpec.describe "Identity::Repositories::AccountRepository", type: :database do
       expect(repo.mark_deactivated(sub)).to be_nil
       expect(repo.find_by_id(sub).deactivated_at).not_to be_nil
     end
+
+    it "keeps deactivated_at when an already deactivated account is deactivated again" do
+      repo.create(sub: sub, role: 1)
+      first_deactivated_at = Time.now - 600
+      allow(Time).to receive(:now).and_return(first_deactivated_at)
+      repo.mark_deactivated(sub)
+      recorded_at = repo.find_by_id(sub).deactivated_at
+
+      allow(Time).to receive(:now).and_return(first_deactivated_at + 300)
+
+      expect(repo.mark_deactivated(sub)).to be_nil
+      expect(repo.find_by_id(sub).deactivated_at).to eq(recorded_at)
+    end
   end
 
   describe "#reactivate" do

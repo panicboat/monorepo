@@ -1,9 +1,19 @@
+import { Code, ConnectError } from "@connectrpc/connect";
 import { decodeJwt, importJWK, jwtVerify } from "jose";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createFakeAdapter, _resetFakePool, FAKE_CONFIRMATION_CODE } from "./fake";
 
+const identity = vi.hoisted(() => ({ getAccount: vi.fn() }));
+
+vi.mock("@/lib/grpc", () => ({
+  identityClient: { getAccount: identity.getAccount },
+}));
+
 describe("createFakeAdapter", () => {
-  beforeEach(() => _resetFakePool());
+  beforeEach(() => {
+    _resetFakePool();
+    identity.getAccount.mockReset();
+  });
 
   it("authenticates a user after confirmation", async () => {
     const adapter = createFakeAdapter();
@@ -100,5 +110,62 @@ describe("createFakeAdapter", () => {
     const key = await importJWK((await reloaded.fakeJwks()).keys[0]);
 
     await expect(jwtVerify(accessToken, key, { issuer: "fake-issuer" })).resolves.toBeTruthy();
+  });
+
+  describe("releaseIncompleteSignUp", () => {
+    it("returns false for an unknown user", async () => {
+      const adapter = createFakeAdapter();
+
+      await expect(adapter.releaseIncompleteSignUp("+15551234567")).resolves.toBe(false);
+      expect(identity.getAccount).not.toHaveBeenCalled();
+    });
+
+    it("deletes an unconfirmed user without asking the monolith", async () => {
+      const adapter = createFakeAdapter();
+      await adapter.signUp("+15551234567", "Passw0rd!");
+
+      await expect(adapter.releaseIncompleteSignUp("+15551234567")).resolves.toBe(true);
+
+      expect(identity.getAccount).not.toHaveBeenCalled();
+      await expect(adapter.signUp("+15551234567", "AnotherPass!")).resolves.toBeTruthy();
+    });
+
+    it("deletes a confirmed user when the monolith has no account for the sub", async () => {
+      const adapter = createFakeAdapter();
+      const { userSub } = await adapter.signUp("+15551234567", "Passw0rd!");
+      await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+      identity.getAccount.mockRejectedValue(new ConnectError("account not found", Code.NotFound));
+
+      await expect(adapter.releaseIncompleteSignUp("+15551234567")).resolves.toBe(true);
+
+      expect(identity.getAccount).toHaveBeenCalledWith({ sub: userSub });
+      await expect(adapter.initiateAuth("+15551234567", "Passw0rd!")).rejects.toMatchObject({
+        name: "UserNotFoundException",
+      });
+    });
+
+    it("keeps a confirmed user that has an account", async () => {
+      const adapter = createFakeAdapter();
+      await adapter.signUp("+15551234567", "Passw0rd!");
+      await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+      identity.getAccount.mockResolvedValue({ account: { id: "account-id" } });
+
+      await expect(adapter.releaseIncompleteSignUp("+15551234567")).resolves.toBe(false);
+
+      await expect(adapter.initiateAuth("+15551234567", "Passw0rd!")).resolves.toBeTruthy();
+    });
+
+    it("propagates a lookup failure other than not found and keeps the user", async () => {
+      const adapter = createFakeAdapter();
+      await adapter.signUp("+15551234567", "Passw0rd!");
+      await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+      identity.getAccount.mockRejectedValue(new ConnectError("unavailable", Code.Unavailable));
+
+      await expect(adapter.releaseIncompleteSignUp("+15551234567")).rejects.toMatchObject({
+        code: Code.Unavailable,
+      });
+
+      await expect(adapter.initiateAuth("+15551234567", "Passw0rd!")).resolves.toBeTruthy();
+    });
   });
 });

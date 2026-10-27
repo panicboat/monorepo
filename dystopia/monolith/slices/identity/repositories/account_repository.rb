@@ -21,7 +21,7 @@ module Identity
       end
 
       def mark_deactivated(sub)
-        accounts.by_pk(sub).command(:update).call(
+        accounts.where(id: sub, deactivated_at: nil).command(:update).call(
           deactivated_at: Time.now,
           updated_at: Time.now
         )

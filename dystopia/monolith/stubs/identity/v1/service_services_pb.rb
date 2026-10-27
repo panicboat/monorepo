@@ -20,6 +20,7 @@ module Identity
         rpc :GetAccount, ::Identity::V1::GetAccountRequest, ::Identity::V1::GetAccountResponse
         rpc :DeactivateAccount, ::Identity::V1::DeactivateAccountRequest, ::Identity::V1::DeactivateAccountResponse
         rpc :ReactivateAccount, ::Identity::V1::ReactivateAccountRequest, ::Identity::V1::ReactivateAccountResponse
+        rpc :ReleaseIncompleteSignUp, ::Identity::V1::ReleaseIncompleteSignUpRequest, ::Identity::V1::ReleaseIncompleteSignUpResponse
       end
 
       Stub = Service.rpc_stub_class
