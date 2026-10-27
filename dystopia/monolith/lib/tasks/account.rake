@@ -11,7 +11,7 @@ namespace :account do
 
     failures = []
     failures << "failed to purge: #{deactivated.failed_account_ids.join(', ')}" unless deactivated.failed_account_ids.empty?
-    failures << "failed to purge incomplete sign-ups: #{incomplete.failed_usernames.join(', ')}" unless incomplete.failed_usernames.empty?
+    failures << "failed to purge incomplete sign-ups: #{incomplete.failed_subs.join(', ')}" unless incomplete.failed_subs.empty?
     abort failures.join("\n") unless failures.empty?
   end
 end

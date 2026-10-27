@@ -30,6 +30,14 @@ RSpec.describe Identity::UseCases::Account::ReleaseIncompleteSignUp do
       expect(use_case.call(username: username)).to be(false)
     end
 
+    it "returns false without deleting when the Cognito user has no sub" do
+      allow(cognito_adapter).to receive(:find_user).with(username: username)
+        .and_return(Cognito::User.new(username: username, sub: nil, status: status, created_at: Time.now))
+      expect(cognito_adapter).not_to receive(:delete_user)
+
+      expect(use_case.call(username: username)).to be(false)
+    end
+
     it "deletes an UNCONFIRMED Cognito user that has no account row" do
       expect(cognito_adapter).to receive(:delete_user).with(username: username).and_return(true)
 

@@ -8,7 +8,7 @@ module Identity
       class PurgeIncompleteSignUps
         RETENTION_SECONDS = 24 * 3600
 
-        Result = Data.define(:purged, :failed_usernames)
+        Result = Data.define(:purged, :failed_subs)
 
         include Identity::Deps[account_repo: "repositories.account_repository"]
 
@@ -20,10 +20,11 @@ module Identity
         def call(now:)
           cutoff = now - RETENTION_SECONDS
           purged = 0
-          failed_usernames = []
+          failed_subs = []
 
           Cognito.each_user do |user|
             next unless user.created_at < cutoff
+            next if user.sub.nil?
             next if account_repo.find_by_id(user.sub)
 
             if purge(user)
@@ -32,11 +33,11 @@ module Identity
             end
           rescue => error
             # FALLBACK: Continue purging other sign-ups after recording this failure.
-            failed_usernames << user.username
+            failed_subs << user.sub
             logger.error("[purge] incomplete sign-up #{user.sub} failed: #{error.class}: #{error.message}")
           end
 
-          Result.new(purged: purged, failed_usernames: failed_usernames)
+          Result.new(purged: purged, failed_subs: failed_subs)
         end
 
         private

@@ -11,7 +11,7 @@ module Identity
         # An account row means the sign-up completed, so the Cognito user must stay whatever its status.
         def call(username:)
           user = Cognito.find_user(username: username)
-          return false unless user
+          return false unless user&.sub
           return false if account_repo.find_by_id(user.sub)
 
           Cognito.delete_user(username: username)

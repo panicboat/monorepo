@@ -39,7 +39,7 @@ RSpec.describe Identity::UseCases::Account::PurgeIncompleteSignUps do
 
       result = use_case.call(now: now)
 
-      expect([result.purged, result.failed_usernames]).to eq([2, []])
+      expect([result.purged, result.failed_subs]).to eq([2, []])
     end
 
     it "keeps a user created exactly 24 hours ago" do
@@ -48,7 +48,16 @@ RSpec.describe Identity::UseCases::Account::PurgeIncompleteSignUps do
 
       result = use_case.call(now: now)
 
-      expect([result.purged, result.failed_usernames]).to eq([0, []])
+      expect([result.purged, result.failed_subs]).to eq([0, []])
+    end
+
+    it "skips a user without a sub without deleting or recording it" do
+      list_users(cognito_user(username: "a" * 64, sub: nil))
+      expect(cognito_adapter).not_to receive(:delete_user)
+
+      result = use_case.call(now: now)
+
+      expect([result.purged, result.failed_subs]).to eq([0, []])
     end
 
     it "keeps a user that has an account row" do
@@ -58,7 +67,7 @@ RSpec.describe Identity::UseCases::Account::PurgeIncompleteSignUps do
 
       result = use_case.call(now: now)
 
-      expect([result.purged, result.failed_usernames]).to eq([0, []])
+      expect([result.purged, result.failed_subs]).to eq([0, []])
     end
 
     it "keeps a user whose account row appears between the listing and the delete" do
@@ -69,7 +78,7 @@ RSpec.describe Identity::UseCases::Account::PurgeIncompleteSignUps do
 
       result = use_case.call(now: now)
 
-      expect([result.purged, result.failed_usernames]).to eq([0, []])
+      expect([result.purged, result.failed_subs]).to eq([0, []])
     end
 
     it "keeps a user that was re-created with another sub between the listing and the delete" do
@@ -81,7 +90,7 @@ RSpec.describe Identity::UseCases::Account::PurgeIncompleteSignUps do
 
       result = use_case.call(now: now)
 
-      expect([result.purged, result.failed_usernames]).to eq([0, []])
+      expect([result.purged, result.failed_subs]).to eq([0, []])
     end
 
     it "keeps a user that no longer exists when re-checked" do
@@ -92,7 +101,7 @@ RSpec.describe Identity::UseCases::Account::PurgeIncompleteSignUps do
 
       result = use_case.call(now: now)
 
-      expect([result.purged, result.failed_usernames]).to eq([0, []])
+      expect([result.purged, result.failed_subs]).to eq([0, []])
     end
 
     it "records a user whose delete fails and goes on to the next user" do
@@ -105,7 +114,7 @@ RSpec.describe Identity::UseCases::Account::PurgeIncompleteSignUps do
 
       result = use_case.call(now: now)
 
-      expect([result.purged, result.failed_usernames]).to eq([1, [failing.username]])
+      expect([result.purged, result.failed_subs]).to eq([1, [failing.sub]])
     end
 
     it "records a user whose re-check fails and goes on to the next user" do
@@ -119,7 +128,7 @@ RSpec.describe Identity::UseCases::Account::PurgeIncompleteSignUps do
 
       result = use_case.call(now: now)
 
-      expect([result.purged, result.failed_usernames]).to eq([1, [failing.username]])
+      expect([result.purged, result.failed_subs]).to eq([1, [failing.sub]])
     end
 
     it "does not log the username when a user is purged" do
