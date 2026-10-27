@@ -26,6 +26,15 @@ RSpec.describe Spec::Billing::FakeStripeClient do
     expect(a.id).to eq(b.id)
   end
 
+  it "delete_customer records the call and raises the injected error once" do
+    fake.raise_on_next_call(Stripe::APIConnectionError.new("stripe down"))
+
+    expect { fake.delete_customer(stripe_customer_id: "cus_1") }.to raise_error(Stripe::APIConnectionError, "stripe down")
+    fake.delete_customer(stripe_customer_id: "cus_1")
+
+    expect(fake.recorded_calls.map { |call| [call[:method], call[:args]] }).to eq([[:delete_customer, { stripe_customer_id: "cus_1" }]])
+  end
+
   it "create_checkout_session returns object with .url" do
     fake.create_customer(account_id: "acct-1", idempotency_key: "k1")
     session = fake.create_checkout_session(

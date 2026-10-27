@@ -27,6 +27,10 @@ module Billing
         customer_records.where(stripe_customer_id: stripe_customer_id).one
       end
 
+      def delete_by_account_id(account_id)
+        customer_records.dataset.where(account_id: account_id).delete
+      end
+
       def all
         customer_records.to_a
       end

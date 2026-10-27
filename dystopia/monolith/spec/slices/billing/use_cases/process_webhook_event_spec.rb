@@ -25,12 +25,13 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
     customer_repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: stripe_customer_id)
   end
 
-  def make_event(type, subscription_status: "active", cancel_at_period_end: false, canceled_at: nil, price_id: "price_g")
+  def make_event(type, subscription_status: "active", cancel_at_period_end: false, canceled_at: nil, price_id: "price_g",
+                 subscription_id: stripe_subscription_id)
     OpenStruct.new(
       id: "evt_#{SecureRandom.hex(6)}",
       type: type,
       data: OpenStruct.new(object: OpenStruct.new(
-        id: stripe_subscription_id,
+        id: subscription_id,
         customer: stripe_customer_id,
         status: subscription_status,
         cancel_at_period_end: cancel_at_period_end,
@@ -53,6 +54,22 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
       sub = subscription_repo.find_by_stripe_subscription_id(stripe_subscription_id)
       expect(sub.status).to eq("trialing")
       expect(sub.account_id).to eq(account_id)
+      expect(stripe_event_repo.find_by_stripe_event_id(event.id).processed_at).not_to be_nil
+    end
+  end
+
+  describe "customer.subscription.created after a previous subscription was canceled" do
+    it "stores the new subscription as a second row and marks the event processed" do
+      use_case.call(event: make_event("customer.subscription.created"))
+      use_case.call(event: make_event("customer.subscription.deleted"))
+      event = make_event("customer.subscription.created", subscription_status: "active", subscription_id: "sub_2")
+
+      expect(use_case.call(event: event)).to eq(:processed)
+
+      expect(subscription_repo.find_by_stripe_subscription_id(stripe_subscription_id).status).to eq("canceled")
+      second = subscription_repo.find_by_stripe_subscription_id("sub_2")
+      expect(second.account_id).to eq(account_id)
+      expect(second.status).to eq("active")
       expect(stripe_event_repo.find_by_stripe_event_id(event.id).processed_at).not_to be_nil
     end
   end
@@ -93,6 +110,21 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
       use_case.call(event: make_event("customer.subscription.updated", subscription_status: "active"))
 
       expect(subscription_repo.find_by_stripe_subscription_id(stripe_subscription_id).status).to eq("canceled")
+    end
+  end
+
+  describe "when the customer row is gone" do
+    before { customer_repo.delete_by_account_id(account_id) }
+
+    %w[customer.subscription.created customer.subscription.updated customer.subscription.deleted].each do |type|
+      it "returns :ignored for #{type}, stores nothing and marks the event processed" do
+        event = make_event(type)
+
+        expect(use_case.call(event: event)).to eq(:ignored)
+
+        expect(subscription_repo.find_by_stripe_subscription_id(stripe_subscription_id)).to be_nil
+        expect(stripe_event_repo.find_by_stripe_event_id(event.id).processed_at).not_to be_nil
+      end
     end
   end
 

@@ -75,4 +75,46 @@ RSpec.describe "billing:reconcile", type: :database do
     expect(reconcile.call).to include(updated: 1, errors: 0)
     expect(sub_repo.find_by_stripe_subscription_id("sub_z").current_period_end.to_i).to eq(period_end.to_i)
   end
+
+  it "compares every uncanceled subscription of the same account with Stripe" do
+    account = SecureRandom.uuid_v7
+    customer_repo.upsert_by_account_id(account_id: account, stripe_customer_id: "cus_4")
+    %w[sub_a sub_b].each do |sub_id|
+      sub_repo.upsert_by_stripe_id(
+        account_id: account, stripe_subscription_id: sub_id, stripe_price_id: "price_g",
+        status: "trialing", current_period_end: Time.now + 3600, cancel_at_period_end: false
+      )
+      fake.inject_subscription(
+        id: sub_id, customer_id: "cus_4", price_id: "price_g",
+        status: "active", current_period_end: Time.now + 3600
+      )
+    end
+
+    expect(reconcile.call).to include(checked: 2, updated: 2, errors: 0)
+    expect(sub_repo.find_by_stripe_subscription_id("sub_a").status).to eq("active")
+    expect(sub_repo.find_by_stripe_subscription_id("sub_b").status).to eq("active")
+  end
+
+  it "skips canceled subscriptions that are not the newest of the account" do
+    account = SecureRandom.uuid_v7
+    base_time = Time.now - 3600
+    customer_repo.upsert_by_account_id(account_id: account, stripe_customer_id: "cus_5")
+    { "sub_old" => ["canceled", base_time], "sub_current" => ["active", base_time + 60] }.each do |sub_id, (status, created_at)|
+      sub_repo.upsert_by_stripe_id(
+        account_id: account, stripe_subscription_id: sub_id, stripe_price_id: "price_g",
+        status: status, current_period_end: Time.now + 3600, cancel_at_period_end: false
+      )
+      Hanami.app["db.gateway"].connection[:billing__subscriptions]
+        .where(stripe_subscription_id: sub_id).update(created_at: created_at)
+      fake.inject_subscription(
+        id: sub_id, customer_id: "cus_5", price_id: "price_g",
+        status: "active", current_period_end: Time.now + 3600
+      )
+    end
+
+    reconcile.call
+
+    retrieved = fake.recorded_calls.select { |call| call[:method] == :retrieve_subscription }
+    expect(retrieved.map { |call| call[:args][:stripe_subscription_id] }).to eq(["sub_current"])
+  end
 end

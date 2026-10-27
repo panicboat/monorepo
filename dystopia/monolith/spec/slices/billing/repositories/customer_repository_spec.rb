@@ -49,6 +49,23 @@ RSpec.describe Billing::Repositories::CustomerRepository, type: :database do
     end
   end
 
+  describe "#delete_by_account_id" do
+    it "deletes the row of the account and keeps the rows of other accounts" do
+      repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: stripe_customer_id)
+      bystander_id = SecureRandom.uuid_v7
+      repo.upsert_by_account_id(account_id: bystander_id, stripe_customer_id: "cus_bystander")
+
+      repo.delete_by_account_id(account_id)
+
+      expect(repo.find_by_account_id(account_id)).to be_nil
+      expect(repo.find_by_account_id(bystander_id).stripe_customer_id).to eq("cus_bystander")
+    end
+
+    it "does nothing when the account has no row" do
+      expect { repo.delete_by_account_id(account_id) }.not_to raise_error
+    end
+  end
+
   describe "#all" do
     it "returns every customer row" do
       3.times { |i| repo.upsert_by_account_id(account_id: SecureRandom.uuid_v7, stripe_customer_id: "cus_#{i}") }

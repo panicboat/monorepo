@@ -40,6 +40,22 @@ module Billing
         ::Stripe::Subscription.retrieve(stripe_subscription_id, { api_key: @api_key })
       end
 
+      def cancel_at_period_end(stripe_subscription_id:)
+        ::Stripe::Subscription.update(
+          stripe_subscription_id,
+          { cancel_at_period_end: true },
+          { api_key: @api_key }
+        )
+      end
+
+      def delete_customer(stripe_customer_id:)
+        ::Stripe::Customer.delete(stripe_customer_id, {}, { api_key: @api_key })
+      rescue ::Stripe::InvalidRequestError => error
+        raise unless error.code == "resource_missing"
+
+        # SILENT: a customer that no longer exists counts as deleted so a retried purge can finish.
+      end
+
       def construct_webhook_event(payload:, sig_header:, secret:)
         ::Stripe::Webhook.construct_event(payload, sig_header, secret)
       end
