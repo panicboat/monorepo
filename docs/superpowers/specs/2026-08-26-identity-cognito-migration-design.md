@@ -33,8 +33,8 @@ Scope: 現行の自前 identity 実装 (`identity__users` / SMS 検証 / 自前 
 | brute-force lockout | **Cognito 標準 rate limit にダウングレード**。auth-hardening spec のこの項目は明示的に落とす。PreAuthentication Lambda / ASF は不採用 |
 | Cognito 呼び出し主体 | **BFF (Next.js API route)**。将来 BFF を独立 service に切り出しても Cognito 依存はそこに閉じる |
 | BFF ↔ monolith 認証 | **BFF が JWKS 検証 → `x-user-id` gRPC metadata のみ付与**。`Authorization: Bearer` 経路と `JwtCodec` は削除 |
-| purge cron | **monolith cron に 1 箇所 Cognito SDK 依存を許容** (`Identity::UseCases::Account::PurgeDeactivatedAccounts` から AdminDeleteUser)。他は全て Cognito 非依存 |
-| Cognito Disable/AdminDeleteUser | **admin 判断による Disable/Delete は禁止**。本人退会 → 90 日 grace → hard-delete cron からの AdminDeleteUser のみ許容 |
+| purge cron | **monolith の Cognito SDK 依存は削除を行う use case に限って許容** (同じ日次 cron 実行の `Identity::UseCases::Account::PurgeDeactivatedAccounts` と `PurgeIncompleteSignUps`、登録のやり直しの RPC から呼ぶ `ReleaseIncompleteSignUp` から ListUsers / AdminDeleteUser)。他は全て Cognito 非依存 |
+| Cognito Disable/AdminDeleteUser | **admin 判断による Disable/Delete は禁止**。AdminDeleteUser は不変条件 2 の 3 つの起点 (本人退会 → 90 日 grace → hard-delete cron、登録を完了しなかったユーザーの削除、登録のやり直し) からのみ許容 |
 | Terraform 配置 | **`dystopia/frontend/aws/`** (BFF が呼び出し主体のため隣接)。将来 auth-service に切り出す際に module ごと移す |
 | 使う AWS リソース | Cognito User Pool + Client + SNS SMS role のみ。**Lambda trigger / KMS 一切不採用** |
 
@@ -48,7 +48,7 @@ Scope: 現行の自前 identity 実装 (`identity__users` / SMS 検証 / 自前 
    - 登録を完了しなかったユーザー (`identity__accounts` に行がなく、Cognito での作成から 24 時間経過): 同じ cron 実行での削除
    - 登録のやり直し (SignUp が既存ユーザーで失敗し、そのユーザーに `identity__accounts` の行がない): 残った登録の削除
 3. **BFF は client に token を露出させない** (httpOnly cookie 仲介、frontend は Cognito SDK を持たない)
-4. **monolith は Cognito 非依存を維持**。例外は `PurgeDeactivatedAccounts` cron の AdminDeleteUser 呼び出し 1 箇所のみ
+4. **monolith は Cognito 非依存を維持**。例外は不変条件 2 の起点に対応する `PurgeDeactivatedAccounts` / `PurgeIncompleteSignUps` / `ReleaseIncompleteSignUp` の ListUsers / AdminDeleteUser 呼び出しのみ
 
 ## Non-Goals
 
