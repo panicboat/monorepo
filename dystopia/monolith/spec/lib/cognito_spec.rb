@@ -21,4 +21,31 @@ RSpec.describe Cognito do
       described_class.admin_delete_user(sub: "sub-1")
     end
   end
+
+  describe ".find_user" do
+    it "delegates to the configured adapter" do
+      user = Cognito::User.new(username: "u", sub: "s", status: "UNCONFIRMED", created_at: Time.now)
+      fake = double(:adapter)
+      expect(fake).to receive(:find_user).with(username: "u").and_return(user)
+      described_class.adapter = fake
+      expect(described_class.find_user(username: "u")).to eq(user)
+    end
+  end
+
+  describe ".delete_user" do
+    it "delegates to the configured adapter" do
+      fake = double(:adapter)
+      expect(fake).to receive(:delete_user).with(username: "u").and_return(true)
+      described_class.adapter = fake
+      expect(described_class.delete_user(username: "u")).to be(true)
+    end
+  end
+
+  describe ".each_user" do
+    it "delegates the block to the configured adapter" do
+      fake = Class.new { def each_user = yield(:user) }.new
+      described_class.adapter = fake
+      expect { |block| described_class.each_user(&block) }.to yield_with_args(:user)
+    end
+  end
 end
