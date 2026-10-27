@@ -13,7 +13,7 @@ slice をまたぐ主要な参照を示す。
 erDiagram
     identity_accounts ||..o{ profile_profiles : "account_id"
     identity_accounts ||..o| billing_customers : "account_id"
-    identity_accounts ||..o| billing_subscriptions : "account_id"
+    identity_accounts ||..o{ billing_subscriptions : "account_id"
     identity_accounts ||..o{ notifications_push_subscriptions : "account_id"
     identity_accounts ||..o{ media_files : "owner_account_id"
     identity_accounts ||..o{ karte_kartes : "author_account_id"
@@ -442,8 +442,8 @@ erDiagram
 ## Billing
 
 課金。
-アカウント単位で Stripe の顧客と契約を持つ。
-課金の行は、アカウントの削除処理の対象にならず、削除後も残る。
+アカウント単位で Stripe の顧客を持ち、購読ごとに契約を持つ。
+顧客と契約の行は、アカウントの削除処理で消える。
 
 ```mermaid
 erDiagram
@@ -454,7 +454,7 @@ erDiagram
     }
     billing_subscriptions {
         uuid id PK
-        uuid account_id UK "参照（FK なし）"
+        uuid account_id "参照（FK なし）"
         text stripe_subscription_id UK
         text stripe_price_id
         text status
@@ -473,10 +473,11 @@ erDiagram
 - `billing.customers`: アカウントと Stripe 顧客の対応。
   - アカウントごとに 1 件。
 - `billing.subscriptions`: アカウントの契約。
-  - アカウントごとに 1 件。
+  - Stripe の購読ごとに 1 件で、アカウントは複数件を持てる。
   - 現在の期間の終了日時と期間末での解約予定を持つ。
 - `billing.stripe_events`: 受信した Stripe のイベント。
   - 処理日時とエラーを持つ。
   - 受信したイベントの全体を `payload` に保存する。
+  - アカウントに紐づかないため、削除処理では消さない。
 
 [課金](features/billing.md)
