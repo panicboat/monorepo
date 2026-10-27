@@ -33,7 +33,7 @@ Scope: 現行の自前 identity 実装 (`identity__users` / SMS 検証 / 自前 
 | brute-force lockout | **Cognito 標準 rate limit にダウングレード**。auth-hardening spec のこの項目は明示的に落とす。PreAuthentication Lambda / ASF は不採用 |
 | Cognito 呼び出し主体 | **BFF (Next.js API route)**。将来 BFF を独立 service に切り出しても Cognito 依存はそこに閉じる |
 | BFF ↔ monolith 認証 | **BFF が JWKS 検証 → `x-user-id` gRPC metadata のみ付与**。`Authorization: Bearer` 経路と `JwtCodec` は削除 |
-| purge cron | **monolith の Cognito SDK 依存は削除を行う use case に限って許容** (同じ日次 cron 実行の `Identity::UseCases::Account::PurgeDeactivatedAccounts` と `PurgeIncompleteSignUps`、登録のやり直しの RPC から呼ぶ `ReleaseIncompleteSignUp` から ListUsers / AdminDeleteUser)。他は全て Cognito 非依存 |
+| purge cron | **monolith の Cognito SDK 依存は削除を行う use case に限って許容** (ListUsers / AdminDeleteUser を使う use case は、同じ日次 cron 実行の `Identity::UseCases::Account::PurgeDeactivatedAccounts` と `PurgeIncompleteSignUps`、登録のやり直しの RPC を処理する `ReleaseIncompleteSignUp`)。他は全て Cognito 非依存 |
 | Cognito Disable/AdminDeleteUser | **admin 判断による Disable/Delete は禁止**。AdminDeleteUser は不変条件 2 の 3 つの起点 (本人退会 → 90 日 grace → hard-delete cron、登録を完了しなかったユーザーの削除、登録のやり直し) からのみ許容 |
 | Terraform 配置 | **`dystopia/frontend/aws/`** (BFF が呼び出し主体のため隣接)。将来 auth-service に切り出す際に module ごと移す |
 | 使う AWS リソース | Cognito User Pool + Client + SNS SMS role のみ。**Lambda trigger / KMS 一切不採用** |
@@ -236,7 +236,8 @@ end
 
 **新規**:
 - `lib/cognito.rb` (既存 `lib/sms.rb` と同じ shape の adapter pattern):
-  - 公開 API: `Cognito.admin_delete_user(sub:)` の 1 メソッドのみ
+  - 公開 API: `Cognito.admin_delete_user(sub:)` / `Cognito.find_user(username:)` / `Cognito.delete_user(username:)` / `Cognito.each_user` の 4 メソッドのみ
+    - 不変条件 2 の 3 つの起点の削除に使う。
   - `Cognito::Adapter` (interface)
   - `Cognito::FakeAdapter` (no-op、log 出力のみ)
   - `Cognito::AwsAdapter` (`aws-sdk-cognitoidentityprovider` を lazy require)
@@ -254,7 +255,7 @@ end
 
 ### IAM (monolith side)
 
-- `AdminDeleteUser` のみ許可する policy を作成、対象 resource は `COGNITO_USER_POOL_ARN` (terraform_remote_state で `dystopia/frontend/production` の output を参照)
+- `AdminDeleteUser` と `ListUsers` のみ許可する policy を作成、対象 resource は `COGNITO_USER_POOL_ARN` (terraform_remote_state で `dystopia/frontend/production` の output を参照)
 - 既存の SNS `Publish` 権限は削除
 
 ### 他 slice への波及 (rename のみ、ロジック不変)
@@ -362,7 +363,7 @@ end
 
 ### monolith
 
-- `HANAMI_ENV=development` / `test` で `Cognito::FakeAdapter` (`admin_delete_user` は log 出力のみ no-op)
+- `HANAMI_ENV=development` / `test` で `Cognito::FakeAdapter` (`admin_delete_user` / `delete_user` は log 出力のみ、`find_user` は nil、`each_user` は何も yield しない)
 - prod のみ `Cognito::AwsAdapter`
 
 ### local e2e run (`docs/superpowers/2026-06-XX-local-e2e-run.md` 相当を更新)
