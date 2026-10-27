@@ -16,22 +16,23 @@ module Billing
 
         @customer_repo.all.each do |customer|
           begin
-            local_sub = @subscription_repo.find_by_account_id(customer.account_id)
-            stripe_sub = fetch_stripe_subscription(local_sub&.stripe_subscription_id)
-            checked += 1
-            next unless stripe_sub
+            @subscription_repo.list_reconcilable_by_account_id(customer.account_id).each do |local_sub|
+              stripe_sub = fetch_stripe_subscription(local_sub.stripe_subscription_id)
+              checked += 1
+              next unless stripe_sub
 
-            if needs_update?(local_sub, stripe_sub)
-              @subscription_repo.upsert_by_stripe_id(
-                account_id: customer.account_id,
-                stripe_subscription_id: stripe_sub.id,
-                stripe_price_id: stripe_sub.items.data.first.price.id,
-                status: stripe_sub.status,
-                current_period_end: Time.at(stripe_sub.items.data.first.current_period_end),
-                cancel_at_period_end: stripe_sub.cancel_at_period_end,
-                canceled_at: stripe_sub.canceled_at ? Time.at(stripe_sub.canceled_at) : nil
-              )
-              updated += 1
+              if needs_update?(local_sub, stripe_sub)
+                @subscription_repo.upsert_by_stripe_id(
+                  account_id: customer.account_id,
+                  stripe_subscription_id: stripe_sub.id,
+                  stripe_price_id: stripe_sub.items.data.first.price.id,
+                  status: stripe_sub.status,
+                  current_period_end: Time.at(stripe_sub.items.data.first.current_period_end),
+                  cancel_at_period_end: stripe_sub.cancel_at_period_end,
+                  canceled_at: stripe_sub.canceled_at ? Time.at(stripe_sub.canceled_at) : nil
+                )
+                updated += 1
+              end
             end
           rescue => e
             # FALLBACK: Continue reconciling other accounts after recording this failure.

@@ -25,7 +25,18 @@ module Billing
       end
 
       def find_by_account_id(account_id)
-        subscription_records.where(account_id: account_id).one
+        newest_first(account_id).limit(1).one
+      end
+
+      def list_uncanceled_by_account_id(account_id)
+        newest_first(account_id).exclude(status: "canceled").to_a
+      end
+
+      def list_reconcilable_by_account_id(account_id)
+        newest, *older = newest_first(account_id).to_a
+        return [] unless newest
+
+        [newest, *older.reject { |row| row.status == "canceled" }]
       end
 
       def find_by_stripe_subscription_id(stripe_subscription_id)
@@ -33,9 +44,10 @@ module Billing
       end
 
       def find_active_by_account_id(account_id)
-        subscription_records
-          .where(account_id: account_id, status: %w[trialing active])
+        newest_first(account_id)
+          .where(status: %w[trialing active])
           .where { current_period_end > Time.now }
+          .limit(1)
           .one
       end
 
@@ -44,6 +56,13 @@ module Billing
           .where(stripe_subscription_id: stripe_subscription_id)
           .command(:update)
           .call(status: "canceled", canceled_at: canceled_at, updated_at: Time.now)
+      end
+
+      private
+
+      # id breaks created_at ties because uuid_v7 ids are time-ordered.
+      def newest_first(account_id)
+        subscription_records.where(account_id: account_id).order { [created_at.desc, id.desc] }
       end
     end
   end
