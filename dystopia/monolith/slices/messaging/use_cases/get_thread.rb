@@ -33,7 +33,7 @@ module Messaging
           counterpart: counterpart,
           hidden_sender_profile_id: counterpart ? nil : counterpart_id,
           last_message: messaging_repo.last_message(thread_id: thread.id),
-          unread_count: messaging_repo.unread_count(thread_id: thread.id, profile_id: viewer_profile_id),
+          unread_count: counterpart ? messaging_repo.unread_count(thread_id: thread.id, profile_id: viewer_profile_id) : 0,
           send_restriction: restriction_for(viewer_profile_id, counterpart, counterpart_id)
         }
       end

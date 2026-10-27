@@ -136,7 +136,17 @@ module Messaging
         thread_records.where(profile_b: profile_id).dataset.update(profile_b: nil)
       end
 
-      def total_unread_count(profile_id:)
+      def counterpart_profile_ids(profile_id:)
+        thread_records.dataset
+          .where(Sequel.|({profile_a: profile_id}, {profile_b: profile_id}))
+          .select_map(Sequel.case({{profile_a: profile_id} => :profile_b}, :profile_a))
+          .compact
+          .uniq
+      end
+
+      def total_unread_count(profile_id:, sender_profile_ids:)
+        return 0 if sender_profile_ids.empty?
+
         ds = message_records.dataset.db
         sql = <<~SQL
           SELECT COALESCE(SUM(unread), 0)::int AS total FROM (
@@ -149,13 +159,14 @@ module Messaging
                 ON cutoff.id = rs.last_read_message_id
               WHERE m.thread_id = t.id
                 AND m.sender_profile_id <> ?
+                AND m.sender_profile_id IN ?
                 AND (cutoff.created_at IS NULL OR m.created_at > cutoff.created_at)
             ) AS unread
             FROM messaging.threads t
             WHERE t.profile_a = ? OR t.profile_b = ?
           ) sub
         SQL
-        row = ds.fetch(sql, profile_id, profile_id, profile_id, profile_id).first
+        row = ds.fetch(sql, profile_id, profile_id, sender_profile_ids, profile_id, profile_id).first
         row ? row[:total].to_i : 0
       end
 

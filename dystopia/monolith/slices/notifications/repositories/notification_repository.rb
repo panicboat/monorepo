@@ -36,8 +36,20 @@ module Notifications
         scope.order { [latest_event_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def count_unread(recipient_profile_id:)
-        notification_records.where(recipient_profile_id: recipient_profile_id, read_at: nil).count
+      def unread_actor_profile_ids(recipient_profile_id:)
+        notification_records.dataset
+          .where(recipient_profile_id: recipient_profile_id, read_at: nil)
+          .unordered
+          .distinct
+          .select_map(:latest_actor_profile_id)
+      end
+
+      def count_unread(recipient_profile_id:, actor_profile_ids:)
+        return 0 if actor_profile_ids.empty?
+
+        notification_records
+          .where(recipient_profile_id: recipient_profile_id, read_at: nil, latest_actor_profile_id: actor_profile_ids)
+          .count
       end
 
       def mark_read(id:, recipient_profile_id:)

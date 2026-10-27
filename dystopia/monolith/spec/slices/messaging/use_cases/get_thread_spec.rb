@@ -55,6 +55,17 @@ RSpec.describe Messaging::UseCases::GetThread do
     expect(result[:hidden_sender_profile_id]).to eq(counterpart_id)
   end
 
+  it "reports the unread count of a visible counterpart and 0 when the counterpart is not visible" do
+    allow(messaging_repo).to receive(:unread_count).with(thread_id: "thread-1", profile_id: viewer_profile_id).and_return(3)
+    allow(send_restriction).to receive(:call).and_return(nil)
+
+    expect(get_thread[:unread_count]).to eq(3)
+
+    allow(get_profile).to receive(:call).with(profile_id: counterpart_id).and_return(nil)
+
+    expect(get_thread[:unread_count]).to eq(0)
+  end
+
   it "raises ThreadNotFoundError for an unknown thread" do
     allow(messaging_repo).to receive(:find_thread).with(id: "thread-1").and_return(nil)
 
