@@ -9,7 +9,7 @@ spec:
   imageRepositoryRef:
     name: frontend
   filterTags:
-    pattern: '^v(?P<version>\d+\.\d+\.\d+)$'
+    pattern: '^frontend-v(?P<version>\d+\.\d+\.\d+)$'
     extract: '$version'
   policy:
     semver:

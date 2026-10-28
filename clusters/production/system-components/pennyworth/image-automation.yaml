@@ -17,9 +17,9 @@ spec:
         email: panicboat@gmail.com
         name: panicboat
       messageTemplate: |
-        chore(pennyworth): bump image to {{range .Changed.Changes}}{{ println .NewValue }}{{end}}
+        chore(pennyworth): deploy {{range .Changed.Changes}}{{ println .NewValue }}{{end}}
     push:
       branch: main
   update:
-    path: ./system-components/pennyworth/kubernetes/overlays/production
+    path: ./clusters/production/system-components/pennyworth
     strategy: Setters
