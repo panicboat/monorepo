@@ -20,7 +20,10 @@
       "release-type": "simple",
       "component": "frontend",
       "include-component-in-tag": true,
-      "exclude-paths": ["dystopia/frontend/infrastructure/aws/develop"]
+      "exclude-paths": ["dystopia/frontend/infrastructure/aws/develop"],
+      "extra-files": [
+        { "type": "generic", "path": "kubernetes/overlays/production/deployment.yaml" }
+      ]
     }
   }
 }
