@@ -119,6 +119,7 @@ describe("Drawer", () => {
     const hrefs = Array.from(nav.matchAll(/href="([^"]+)"/g), (match) => match[1]);
 
     expect(hrefs).toEqual([
+      "/profile",
       "/search",
       "/notifications",
       "/messages",
@@ -126,7 +127,6 @@ describe("Drawer", () => {
       "/bookmarks",
       "/ranking",
       "/karte/my",
-      "/profile",
       "/settings",
     ]);
   });
