@@ -76,10 +76,10 @@ flowchart LR
 | Event | Workflow | Action |
 | --- | --- | --- |
 | `deploy:{service}` label added to a PR | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Plan every `terragrunt` target, build the container image, and post the kustomize diff |
-| Push to `main` | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Apply `terragrunt` targets with `apply_trigger: merge` and build the container image |
-| Release PR opened / updated | [release--plan.yaml](.github/workflows/release--plan.yaml) | Plan the service's `apply_trigger: release` environments |
+| Push to `main` | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Apply non-production `terragrunt` targets and build the container image |
+| Release PR opened / updated | [release--plan.yaml](.github/workflows/release--plan.yaml) | Plan the service's production environment |
 | Release published | [release--build.yaml](.github/workflows/release--build.yaml) | Build the container image and tag it `vX.Y.Z` and `{service}-vX.Y.Z` |
-| Release published | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | Apply the service's `apply_trigger: release` environments |
+| Release published | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | Apply the service's production environment |
 
 ##### Targets
 
@@ -91,11 +91,11 @@ flowchart LR
 
 ##### Releases
 
-- Each service that has an `apply_trigger: release` environment directory has its own release-please config (`release-please-config.json` / `release-please-manifest.json`).
+- Each service that has a production environment directory has its own release-please config (`release-please-config.json` / `release-please-manifest.json`).
   - [check-release-configs.sh](https://github.com/panicboat/.github/blob/main/scripts/terragrunt-release/check-release-configs.sh) fails CI when a config is missing.
-- Commits that touch only `apply_trigger: merge` environment directories do not create a release (`exclude-paths`).
-- A service with no `apply_trigger: release` environment directory, such as [dystopia/frontend](dystopia/frontend), has no `terragrunt` target, so `Release - Plan` and `Release - Deploy` skip it. `Release - Build` still builds its image.
-- While every `apply_trigger: release` environment is excluded, the release PR is still created, but nothing is planned or applied.
+- Commits that touch only non-production environment directories do not create a release (`exclude-paths`).
+- A service with no production environment directory, such as [dystopia/frontend](dystopia/frontend), has no `terragrunt` target, so `Release - Plan` and `Release - Deploy` skip it. `Release - Build` still builds its image.
+- While the production environment is excluded, the release PR is still created, but nothing is planned or applied.
 - To re-plan, use "Re-run all jobs" on the `Release - Plan` run.
 - To re-apply, run `gh workflow run release--deploy.yaml --ref {service}-vX.Y.Z -f tag={service}-vX.Y.Z`.
 
@@ -106,10 +106,10 @@ The paths each stack covers are defined in `stacks` in [workflow-config.yaml](wo
 | Stack | Workflow | On a PR | On push to `main` | On release published |
 | --- | --- | --- | --- | --- |
 | `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` and `{service}-vX.Y.Z` |
-| `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` of `apply_trigger: merge` environments | `terragrunt apply` of `apply_trigger: release` environments |
+| `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` of non-production environments | `terragrunt apply` of the production environment |
 | `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. CI never runs `kubectl apply`, and Flux does not apply the overlay on `main` until it is released | Flux applies the overlay at the release tag |
 
-Each environment of the `terragrunt` stack sets `apply_trigger`: `merge` applies on push to `main`, `release` applies when the service release is published.
+The `terragrunt` stack applies the environment named `production` when the service release is published, and every other environment on push to `main`.
 
 #### Versioning
 
@@ -118,7 +118,7 @@ Each environment of the `terragrunt` stack sets `apply_trigger`: `merge` applies
      - The lines to rewrite are the ones marked `# x-release-please-version` in the files listed in `extra-files` of the config.
 2. Merging a release PR publishes the release `{service}-vX.Y.Z`.
 3. [release--build.yaml](.github/workflows/release--build.yaml) builds the container for that release and tags the image `vX.Y.Z` and `{service}-vX.Y.Z`.
-4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) applies the service's `apply_trigger: release` environments.
+4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) applies the service's production environment.
 5. Flux finds the `{service}-vX.Y.Z` image tag and switches the service to the manifests at that release tag (see [GitOps](#gitops)).
 
 #### GitOps
