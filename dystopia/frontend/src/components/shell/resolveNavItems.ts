@@ -20,6 +20,7 @@ interface NavContext {
 export function resolveNavItems({ role }: NavContext): NavItem[] {
   return [
     { path: "/", label: "ホーム", icon: FEATURE_ICONS.home },
+    { path: PROFILE_NAV_PATH, label: "プロフィール", icon: FEATURE_ICONS.profile },
     { path: "/search", label: "検索", icon: FEATURE_ICONS.search },
     { path: "/notifications", label: "通知", icon: FEATURE_ICONS.notifications, badgeKey: "unread" },
     { path: "/messages", label: "メッセージ", icon: FEATURE_ICONS.messages, badgeKey: "messaging_unread" },
@@ -28,7 +29,6 @@ export function resolveNavItems({ role }: NavContext): NavItem[] {
     { path: "/ranking", label: "ランキング", icon: FEATURE_ICONS.ranking },
     ...(role === "cast" ? [{ path: "/karte/my", label: "カルテ", icon: FEATURE_ICONS.karte }] : []),
     ...(role === "guest" ? [{ path: "/reviews/my", label: "クチコミ", icon: FEATURE_ICONS.reviews }] : []),
-    { path: PROFILE_NAV_PATH, label: "プロフィール", icon: FEATURE_ICONS.profile },
     { path: "/settings", label: "設定", icon: FEATURE_ICONS.settings },
   ];
 }
