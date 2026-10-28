@@ -131,7 +131,12 @@ spec:
 6. `monorepo-cluster` が `service.yaml` を適用し、GitRepository `monorepo-<service>` がタグを fetch し、Kustomization `<service>` がその snapshot の overlay を適用する
 
 - ロールバックは、`ref.tag` を前のリリースタグに戻す PR を merge して行う（`clusters/production/` は merge で反映される）
-  - ImagePolicy は semver の最新を選ぶので、そのままでは ImageUpdateAutomation が次の実行で最新のタグに戻す。同じ PR で `image-automation.yaml` に `spec.suspend: true` を入れ、次のリリースを出す PR で外す
+  - 同じ PR で `image-automation.yaml` に `spec.suspend: true` を入れる
+    - ImagePolicy は semver の最新を選ぶので、`suspend` がないと ImageUpdateAutomation が次の実行で最新のタグに戻す
+  - `suspend` は、次のリリースの `<service>-vX.Y.Z` イメージが ghcr に置かれた後に、別の PR で外す
+    - それまで ImagePolicy は戻す前のタグを選び続けるので、先に外すと `ref.tag` に書き戻される
+    - release-please は release PR のブランチを書き換えるので、release PR には commit を足さない
+    - イメージの有無は `flux get image policy <service>` か ghcr のタグ一覧で確認する
   - DB migration を含むリリースを戻せるかは、今の運用（`main` の revert）と変わらない。この設計では扱わない
 
 ### Cutover

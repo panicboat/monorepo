@@ -115,7 +115,7 @@ Each environment of the `terragrunt` stack sets `apply_trigger`: `merge` applies
 
 1. [release--please.yaml](.github/workflows/release--please.yaml) runs release-please once for every `release-please-config.json` (e.g. [dystopia/monolith/release-please-config.json](dystopia/monolith/release-please-config.json)) and raises one release PR per service.
    - The release PR also rewrites the `image:` lines of the service's production overlay to the new version.
-     - The lines to rewrite are the ones marked `# x-release-please-version`, listed in `extra-files` of the config.
+     - The lines to rewrite are the ones marked `# x-release-please-version` in the files listed in `extra-files` of the config.
 2. Merging a release PR publishes the release `{service}-vX.Y.Z`.
 3. [release--build.yaml](.github/workflows/release--build.yaml) builds the container for that release and tags the image `vX.Y.Z` and `{service}-vX.Y.Z`.
 4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) applies the service's `apply_trigger: release` environments.
@@ -131,6 +131,7 @@ Each service has a directory under `clusters/<environment>/` (e.g. [clusters/pro
 - [image-policy.yaml](clusters/production/dystopia/monolith/image-policy.yaml) selects the highest `{service}-vX.Y.Z` tag on GHCR.
 - [image-automation.yaml](clusters/production/dystopia/monolith/image-automation.yaml) writes that tag into `ref.tag` of `service.yaml` and pushes the commit to `main`.
   - Flux notices a tag only after its image is on GHCR, so the manifests are never switched before the image exists.
+    - This holds only on the automated path, so a hand-written `ref.tag` must point at a release tag whose `{service}-vX.Y.Z` image is already on GHCR.
 - The `image:` lines of the overlay are written by release-please in the release PR, so they name the same release as `ref.tag`.
 
 ##### Rollback
@@ -138,7 +139,10 @@ Each service has a directory under `clusters/<environment>/` (e.g. [clusters/pro
 1. Merge a PR that sets `ref.tag` in `service.yaml` back to the previous release tag.
 2. Set `spec.suspend: true` in `image-automation.yaml` in the same PR.
    - image-policy still selects the newest tag, so without `suspend` image-automation moves `ref.tag` forward again on its next run.
-3. Remove `suspend: true` in the PR that ships the next release.
+3. Remove `suspend: true` in a separate PR once the `{service}-vX.Y.Z` image of the next release is on GHCR.
+   - Until then image-policy keeps selecting the newest tag, the one rolled back from, so removing `suspend` earlier writes it back into `ref.tag`.
+   - Check the image with `flux get image policy {service}` or the GHCR tag list.
+   - Do not add the change to the release PR, because release-please rewrites its branch.
 
 ### Related Repositories
 

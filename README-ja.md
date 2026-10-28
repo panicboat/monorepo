@@ -115,7 +115,7 @@ flowchart LR
 
 1. [release--please.yaml](.github/workflows/release--please.yaml) が `release-please-config.json`（例: [dystopia/monolith/release-please-config.json](dystopia/monolith/release-please-config.json)）ごとに release-please を実行し、サービスごとに release PR を起票する。
    - release PR は、サービスの production overlay の `image:` 行も新しいバージョンに書き換える。
-     - 書き換える行は `# x-release-please-version` の目印が付いた行で、設定の `extra-files` に列挙している。
+     - 書き換える行は、設定の `extra-files` に列挙したファイルにある `# x-release-please-version` の目印が付いた行である。
 2. release PR をマージすると、release `{service}-vX.Y.Z` が公開される。
 3. [release--build.yaml](.github/workflows/release--build.yaml) がその release のコンテナをビルドし、イメージに `vX.Y.Z` と `{service}-vX.Y.Z` の tag を付ける。
 4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) がその service の `apply_trigger: release` の environment を apply する。
@@ -131,6 +131,7 @@ flowchart LR
 - [image-policy.yaml](clusters/production/dystopia/monolith/image-policy.yaml) が GHCR から最も新しい `{service}-vX.Y.Z` の tag を選ぶ。
 - [image-automation.yaml](clusters/production/dystopia/monolith/image-automation.yaml) がその tag を `service.yaml` の `ref.tag` に書き込み、commit を `main` に push する。
   - Flux は GHCR にイメージが置かれた後にしか tag に気付かないため、イメージがない状態でマニフェストが切り替わることはない。
+    - これは自動の経路でのみ成り立つため、手で書き換える `ref.tag` には、`{service}-vX.Y.Z` のイメージが既に GHCR にある release tag を指定する。
 - overlay の `image:` 行は release PR で release-please が書き換えるので、`ref.tag` と同じ release を指す。
 
 ##### Rollback
@@ -138,7 +139,10 @@ flowchart LR
 1. `service.yaml` の `ref.tag` を一つ前の release tag に戻す PR をマージする。
 2. 同じ PR で `image-automation.yaml` の `spec.suspend: true` を設定する。
    - image-policy は最新の tag を選び続けるため、`suspend` がないと image-automation が次の実行で `ref.tag` を最新に戻してしまう。
-3. 次の release を出す PR で `suspend: true` を外す。
+3. 次の release の `{service}-vX.Y.Z` のイメージが GHCR に置かれた後に、別の PR で `suspend: true` を外す。
+   - それまで image-policy は最新の tag、つまり戻す前の tag を選び続けるため、先に `suspend` を外すと `ref.tag` に書き戻される。
+   - イメージの有無は `flux get image policy {service}` か GHCR の tag 一覧で確認する。
+   - release-please が release PR のブランチを書き換えるため、この変更を release PR には足さない。
 
 ### Related Repositories
 
