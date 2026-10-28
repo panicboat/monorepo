@@ -41,7 +41,7 @@ graph LR
 
 ## 🚢 Deployment
 
-PR ラベルおよび `main` への push を起点とした CI が GHCR にコンテナイメージを push し、Flux がそれをクラスタに反映する。release-please がサービスごとのバージョニングを担っているため、production のデプロイは moving tag ではなく semver tag に固定される。
+PR ラベルおよび `main` への push を起点とした CI が GHCR にコンテナイメージを push し、Flux が各サービスの Kubernetes マニフェストを release tag から適用して、クラスタは対応するイメージを GHCR から pull する。release-please がサービスごとのバージョニングを担っているため、production のデプロイは moving tag ではなく semver tag に固定される。
 
 ### Pipeline Flow
 
@@ -60,11 +60,12 @@ flowchart LR
   Resolver -->|stack: kustomize| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
   Deploy -->|"apply (release)"| Terragrunt
-  Build -->|tag vX.Y.Z| Builder
+  Build -->|"tag vX.Y.Z and {service}-vX.Y.Z"| Builder
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
   Terragrunt --> AWS[(AWS)]
   GHCR --> Flux[Flux CD]
   Main --> Flux
+  Published -->|"overlay at release tag"| Flux
   Flux --> K8s[(Kubernetes)]
 ```
 
@@ -77,7 +78,7 @@ flowchart LR
 | PR に `deploy:{service}` ラベルが付く | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | すべての `terragrunt` target を plan し、コンテナイメージをビルドし、kustomize diff をコメントする |
 | `main` への push | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | `apply_trigger: merge` の `terragrunt` target を apply し、コンテナイメージをビルドする |
 | release PR の作成・更新 | [release--plan.yaml](.github/workflows/release--plan.yaml) | その service の `apply_trigger: release` の environment を plan する |
-| release の公開 | [release--build.yaml](.github/workflows/release--build.yaml) | コンテナイメージをビルドし、`vX.Y.Z` の tag を付ける |
+| release の公開 | [release--build.yaml](.github/workflows/release--build.yaml) | コンテナイメージをビルドし、`vX.Y.Z` と `{service}-vX.Y.Z` の tag を付ける |
 | release の公開 | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | その service の `apply_trigger: release` の environment を apply する |
 
 ##### Targets
@@ -104,25 +105,40 @@ flowchart LR
 
 | Stack | Workflow | PR | `main` への push | release の公開 |
 | --- | --- | --- | --- | --- |
-| `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` の tag で GHCR に push |
+| `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` と `{service}-vX.Y.Z` の tag で GHCR に push |
 | `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `apply_trigger: merge` の environment を `terragrunt apply` | `apply_trigger: release` の environment を `terragrunt apply` |
-| `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない | 何もしない |
+| `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。CI は `kubectl apply` を実行せず、Flux は `main` の overlay を release されるまで apply しない | Flux が release tag の overlay を apply する |
 
 `terragrunt` stack の environment は、それぞれ `apply_trigger` を持つ。`merge` は `main` への push で apply し、`release` は service の release が公開されたときに apply する。
 
 #### Versioning
 
 1. [release--please.yaml](.github/workflows/release--please.yaml) が `release-please-config.json`（例: [dystopia/monolith/release-please-config.json](dystopia/monolith/release-please-config.json)）ごとに release-please を実行し、サービスごとに release PR を起票する。
+   - release PR は、サービスの production overlay の `image:` 行も新しいバージョンに書き換える。
+     - 書き換える行は `# x-release-please-version` の目印が付いた行で、設定の `extra-files` に列挙している。
 2. release PR をマージすると、release `{service}-vX.Y.Z` が公開される。
-3. [release--build.yaml](.github/workflows/release--build.yaml) がその release のコンテナをビルドし、イメージに `vX.Y.Z` の tag を付ける。
+3. [release--build.yaml](.github/workflows/release--build.yaml) がその release のコンテナをビルドし、イメージに `vX.Y.Z` と `{service}-vX.Y.Z` の tag を付ける。
 4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) がその service の `apply_trigger: release` の environment を apply する。
+5. Flux が `{service}-vX.Y.Z` のイメージ tag を見つけ、サービスをその release tag のマニフェストに切り替える（[GitOps](#gitops) を参照）。
 
 #### GitOps
 
 各サービスは `clusters/<environment>/` 配下にディレクトリを持つ（例: [clusters/production/dystopia/monolith](clusters/production/dystopia/monolith)）。
 
-- [image-policy.yaml](clusters/production/dystopia/monolith/image-policy.yaml) が GHCR から最も新しい `vX.Y.Z` の tag を選ぶ。
-- [image-automation.yaml](clusters/production/dystopia/monolith/image-automation.yaml) がその tag をサービスの overlay（例: [dystopia/monolith/kubernetes/overlays/production](dystopia/monolith/kubernetes/overlays/production)）にコミットする。クラスタで動いているものとリポジトリにあるものが一致する。
+- [service.yaml](clusters/production/dystopia/monolith/service.yaml) が GitRepository `monorepo-{service}` と Kustomization `{service}` を定義する。
+  - Kustomization は、GitRepository の `ref.tag` にある tag の snapshot からサービスの overlay（例: [dystopia/monolith/kubernetes/overlays/production](dystopia/monolith/kubernetes/overlays/production)）を apply する。
+  - `main` の overlay への変更は、そのサービスの次の release でクラスタに届く。
+- [image-policy.yaml](clusters/production/dystopia/monolith/image-policy.yaml) が GHCR から最も新しい `{service}-vX.Y.Z` の tag を選ぶ。
+- [image-automation.yaml](clusters/production/dystopia/monolith/image-automation.yaml) がその tag を `service.yaml` の `ref.tag` に書き込み、commit を `main` に push する。
+  - Flux は GHCR にイメージが置かれた後にしか tag に気付かないため、イメージがない状態でマニフェストが切り替わることはない。
+- overlay の `image:` 行は release PR で release-please が書き換えるので、`ref.tag` と同じ release を指す。
+
+##### Rollback
+
+1. `service.yaml` の `ref.tag` を一つ前の release tag に戻す PR をマージする。
+2. 同じ PR で `image-automation.yaml` の `spec.suspend: true` を設定する。
+   - image-policy は最新の tag を選び続けるため、`suspend` がないと image-automation が次の実行で `ref.tag` を最新に戻してしまう。
+3. 次の release を出す PR で `suspend: true` を外す。
 
 ### Related Repositories
 
