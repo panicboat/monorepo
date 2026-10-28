@@ -2,9 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { authFetch } from "@/lib/auth";
+import { createRequestBatcher } from "@/lib/request-batcher";
 import { useAuthStore } from "@/stores/authStore";
 
 interface StatusResponse { bookmarked: Record<string, boolean> }
+
+const fetchStatus = createRequestBatcher((postIds) =>
+  authFetch<StatusResponse>("/api/bookmarks/status", { method: "POST", body: { postIds } })
+);
 
 export function useBookmark(postId: string | null | undefined) {
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -15,10 +20,7 @@ export function useBookmark(postId: string | null | undefined) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await authFetch<StatusResponse>(
-          "/api/bookmarks/status",
-          { method: "POST", body: { postIds: [postId] } }
-        );
+        const res = await fetchStatus(postId);
         if (cancelled) return;
         setIsBookmarked(!!res.bookmarked?.[postId]);
       } catch (e) {

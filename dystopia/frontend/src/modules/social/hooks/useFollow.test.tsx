@@ -77,3 +77,39 @@ describe("useFollow approvalRequired", () => {
     expect(current.approvalRequired).toBe(false);
   });
 });
+
+describe("useFollow status", () => {
+  it("fetches the status of every button mounted together in one request", async () => {
+    mocks.authFetch.mockResolvedValue({
+      statuses: { "target-1": FollowStatus.APPROVED, "target-2": FollowStatus.PENDING },
+      approvalRequired: { "target-2": true },
+    });
+    const statuses: Record<string, ReturnType<typeof useFollow>> = {};
+    const Probe = ({ targetProfileId }: { targetProfileId: string }) => {
+      statuses[targetProfileId] = useFollow(targetProfileId);
+      return null;
+    };
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    unmount = async () => {
+      await act(async () => {
+        root.unmount();
+      });
+      container.remove();
+    };
+
+    await act(async () => {
+      root.render(["target-1", "target-2"].map((id) => createElement(Probe, { key: id, targetProfileId: id })));
+    });
+
+    expect(mocks.authFetch).toHaveBeenCalledTimes(1);
+    expect(mocks.authFetch).toHaveBeenCalledWith("/api/social/follow/status", {
+      method: "POST",
+      body: { targetProfileIds: ["target-1", "target-2"] },
+    });
+    expect(statuses["target-1"].isFollowing).toBe(true);
+    expect(statuses["target-2"].isPending).toBe(true);
+    expect(statuses["target-2"].approvalRequired).toBe(true);
+  });
+});
