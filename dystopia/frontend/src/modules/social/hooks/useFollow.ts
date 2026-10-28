@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { authFetch } from "@/lib/auth";
+import { createRequestBatcher } from "@/lib/request-batcher";
 import { useAuthStore } from "@/stores/authStore";
 import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
 
 interface FollowResponse { status: FollowStatus }
 interface StatusResponse { statuses: Record<string, FollowStatus>; approvalRequired?: Record<string, boolean> }
+
+const fetchStatus = createRequestBatcher((targetProfileIds) =>
+  authFetch<StatusResponse>("/api/social/follow/status", { method: "POST", body: { targetProfileIds } })
+);
 
 export function useFollow(targetProfileId: string | null | undefined) {
   const [status, setStatus] = useState<FollowStatus>(FollowStatus.NONE);
@@ -18,10 +23,7 @@ export function useFollow(targetProfileId: string | null | undefined) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await authFetch<StatusResponse>(
-          "/api/social/follow/status",
-          { method: "POST", body: { targetProfileIds: [targetProfileId] } }
-        );
+        const res = await fetchStatus(targetProfileId);
         if (cancelled) return;
         setStatus(res.statuses?.[targetProfileId] ?? FollowStatus.NONE);
         setApprovalRequired(res.approvalRequired?.[targetProfileId] ?? false);
