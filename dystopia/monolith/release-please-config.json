@@ -20,7 +20,12 @@
       "release-type": "simple",
       "component": "monolith",
       "include-component-in-tag": true,
-      "exclude-paths": ["dystopia/monolith/infrastructure/aws/develop"]
+      "exclude-paths": ["dystopia/monolith/infrastructure/aws/develop"],
+      "extra-files": [
+        { "type": "generic", "path": "kubernetes/overlays/production/deployment.yaml" },
+        { "type": "generic", "path": "kubernetes/overlays/production/migrate-job.yaml" },
+        { "type": "generic", "path": "kubernetes/overlays/production/purge-deactivated-cronjob.yaml" }
+      ]
     }
   }
 }

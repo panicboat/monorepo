@@ -9,7 +9,7 @@ spec:
   imageRepositoryRef:
     name: monolith
   filterTags:
-    pattern: '^v(?P<version>\d+\.\d+\.\d+)$'
+    pattern: '^monolith-v(?P<version>\d+\.\d+\.\d+)$'
     extract: '$version'
   policy:
     semver:

@@ -17,9 +17,9 @@ spec:
         email: panicboat@gmail.com
         name: panicboat
       messageTemplate: |
-        chore(monolith): bump image to {{range .Changed.Changes}}{{ println .NewValue }}{{end}}
+        chore(monolith): deploy {{range .Changed.Changes}}{{ println .NewValue }}{{end}}
     push:
       branch: main
   update:
-    path: ./dystopia/monolith/kubernetes/overlays/production
+    path: ./clusters/production/dystopia/monolith
     strategy: Setters

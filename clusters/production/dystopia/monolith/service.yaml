@@ -1,4 +1,18 @@
 ---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: monorepo-monolith
+  namespace: flux-system
+spec:
+  interval: 5m
+  url: https://github.com/panicboat/monorepo.git
+  ref:
+    tag: monolith-v0.8.0 # {"$imagepolicy": "flux-system:monolith:tag"}
+  provider: github
+  secretRef:
+    name: panicboat-github-app
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -10,7 +24,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: monorepo
+    name: monorepo-monolith
   targetNamespace: dystopia
   postBuild:
     substitute:

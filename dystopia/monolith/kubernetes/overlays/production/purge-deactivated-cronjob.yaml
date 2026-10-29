@@ -9,4 +9,4 @@ spec:
         spec:
           containers:
             - name: purge-deactivated
-              image: ghcr.io/panicboat/monorepo/monolith:v0.8.0 # {"$imagepolicy": "flux-system:monolith"}
+              image: ghcr.io/panicboat/monorepo/monolith:v0.8.0 # x-release-please-version

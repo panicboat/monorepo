@@ -41,7 +41,7 @@ Service-internal architecture is documented in each `dystopia/<service>/README.m
 
 ## 🚢 Deployment
 
-A PR-label / push-driven CI pipeline produces container images; Flux pulls them from GHCR into the cluster. release-please owns service versioning, so a production deploy is pinned to a semver tag rather than to a moving target.
+A PR-label / push-driven CI pipeline produces container images; Flux applies each service's Kubernetes manifests from its release tag, and the cluster pulls the matching image from GHCR. release-please owns service versioning, so a production deploy is pinned to a semver tag rather than to a moving target.
 
 ### Pipeline Flow
 
@@ -60,11 +60,12 @@ flowchart LR
   Resolver -->|stack: kustomize| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
   Deploy -->|"apply (release)"| Terragrunt
-  Build -->|tag vX.Y.Z| Builder
+  Build -->|"tag vX.Y.Z and {service}-vX.Y.Z"| Builder
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
   Terragrunt --> AWS[(AWS)]
   GHCR --> Flux[Flux CD]
   Main --> Flux
+  Published -->|"overlay at release tag"| Flux
   Flux --> K8s[(Kubernetes)]
 ```
 
@@ -77,7 +78,7 @@ flowchart LR
 | `deploy:{service}` label added to a PR | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Plan every `terragrunt` target, build the container image, and post the kustomize diff |
 | Push to `main` | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Apply `terragrunt` targets with `apply_trigger: merge` and build the container image |
 | Release PR opened / updated | [release--plan.yaml](.github/workflows/release--plan.yaml) | Plan the service's `apply_trigger: release` environments |
-| Release published | [release--build.yaml](.github/workflows/release--build.yaml) | Build the container image and tag it `vX.Y.Z` |
+| Release published | [release--build.yaml](.github/workflows/release--build.yaml) | Build the container image and tag it `vX.Y.Z` and `{service}-vX.Y.Z` |
 | Release published | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | Apply the service's `apply_trigger: release` environments |
 
 ##### Targets
@@ -104,25 +105,44 @@ The paths each stack covers are defined in `stacks` in [workflow-config.yaml](wo
 
 | Stack | Workflow | On a PR | On push to `main` | On release published |
 | --- | --- | --- | --- | --- |
-| `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` |
+| `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` and `{service}-vX.Y.Z` |
 | `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` of `apply_trigger: merge` environments | `terragrunt apply` of `apply_trigger: release` environments |
-| `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` | Nothing |
+| `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. CI never runs `kubectl apply`, and Flux does not apply the overlay on `main` until it is released | Flux applies the overlay at the release tag |
 
 Each environment of the `terragrunt` stack sets `apply_trigger`: `merge` applies on push to `main`, `release` applies when the service release is published.
 
 #### Versioning
 
 1. [release--please.yaml](.github/workflows/release--please.yaml) runs release-please once for every `release-please-config.json` (e.g. [dystopia/monolith/release-please-config.json](dystopia/monolith/release-please-config.json)) and raises one release PR per service.
+   - The release PR also rewrites the `image:` lines of the service's production overlay to the new version.
+     - The lines to rewrite are the ones marked `# x-release-please-version` in the files listed in `extra-files` of the config.
 2. Merging a release PR publishes the release `{service}-vX.Y.Z`.
-3. [release--build.yaml](.github/workflows/release--build.yaml) builds the container for that release and tags the image `vX.Y.Z`.
+3. [release--build.yaml](.github/workflows/release--build.yaml) builds the container for that release and tags the image `vX.Y.Z` and `{service}-vX.Y.Z`.
 4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) applies the service's `apply_trigger: release` environments.
+5. Flux finds the `{service}-vX.Y.Z` image tag and switches the service to the manifests at that release tag (see [GitOps](#gitops)).
 
 #### GitOps
 
 Each service has a directory under `clusters/<environment>/` (e.g. [clusters/production/dystopia/monolith](clusters/production/dystopia/monolith)).
 
-- [image-policy.yaml](clusters/production/dystopia/monolith/image-policy.yaml) selects the highest `vX.Y.Z` tag on GHCR.
-- [image-automation.yaml](clusters/production/dystopia/monolith/image-automation.yaml) commits that tag into the service's overlay (e.g. [dystopia/monolith/kubernetes/overlays/production](dystopia/monolith/kubernetes/overlays/production)), so what runs in the cluster is what is checked in.
+- [service.yaml](clusters/production/dystopia/monolith/service.yaml) defines the GitRepository `monorepo-{service}` and the Kustomization `{service}`.
+  - The Kustomization applies the service's overlay (e.g. [dystopia/monolith/kubernetes/overlays/production](dystopia/monolith/kubernetes/overlays/production)) from the snapshot of the tag in `ref.tag` of the GitRepository.
+  - A change to the overlay on `main` reaches the cluster with the next release of the service.
+- [image-policy.yaml](clusters/production/dystopia/monolith/image-policy.yaml) selects the highest `{service}-vX.Y.Z` tag on GHCR.
+- [image-automation.yaml](clusters/production/dystopia/monolith/image-automation.yaml) writes that tag into `ref.tag` of `service.yaml` and pushes the commit to `main`.
+  - Flux notices a tag only after its image is on GHCR, so the manifests are never switched before the image exists.
+    - This holds only on the automated path, so a hand-written `ref.tag` must point at a release tag whose `{service}-vX.Y.Z` image is already on GHCR.
+- The `image:` lines of the overlay are written by release-please in the release PR, so they name the same release as `ref.tag`.
+
+##### Rollback
+
+1. Merge a PR that sets `ref.tag` in `service.yaml` back to the previous release tag.
+2. Set `spec.suspend: true` in `image-automation.yaml` in the same PR.
+   - image-policy still selects the newest tag, so without `suspend` image-automation moves `ref.tag` forward again on its next run.
+3. Remove `suspend: true` in a separate PR once the `{service}-vX.Y.Z` image of the next release is on GHCR.
+   - Until then image-policy keeps selecting the newest tag, the one rolled back from, so removing `suspend` earlier writes it back into `ref.tag`.
+   - Check the image with `flux get image policy {service}` or the GHCR tag list.
+   - Do not add the change to the release PR, because release-please rewrites its branch.
 
 ### Related Repositories
 
