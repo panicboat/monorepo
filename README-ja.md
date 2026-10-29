@@ -55,10 +55,11 @@ flowchart LR
   Please -->|release PR merged| Published[release published]
   Published --> Build[release--build]
   Published --> Deploy[release--deploy]
-  Resolver -->|stack: container| Builder[container-builder]
-  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-runner]
+  Resolver -->|stack: container| Builder[image build]
+  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt]
   Resolver -->|stack: kustomize| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
+  Plan -->|"against the previous release tag"| Diff
   Deploy -->|"apply (release)"| Terragrunt
   Build -->|"tag vX.Y.Z and {service}-vX.Y.Z"| Builder
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
@@ -77,7 +78,7 @@ flowchart LR
 | --- | --- | --- |
 | PR に `deploy:{service}` ラベルが付く | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | すべての `terragrunt` target を plan し、コンテナイメージをビルドし、kustomize diff をコメントする |
 | `main` への push | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | `production` 以外の environment の `terragrunt` target を apply し、コンテナイメージをビルドする |
-| release PR の作成・更新 | [release--plan.yaml](.github/workflows/release--plan.yaml) | その service の production の environment を plan する |
+| release PR の作成・更新 | [release--plan.yaml](.github/workflows/release--plan.yaml) | その service の production の environment を plan し、production の overlay の前回の release tag との kustomize diff を投稿する |
 | release の公開 | [release--build.yaml](.github/workflows/release--build.yaml) | コンテナイメージをビルドし、`vX.Y.Z` と `{service}-vX.Y.Z` の tag を付ける |
 | release の公開 | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | その service の production の environment を apply する |
 
@@ -92,9 +93,11 @@ flowchart LR
 ##### Releases
 
 - production の environment ディレクトリを持つ service は、それぞれ release-please の設定（`release-please-config.json` / `release-please-manifest.json`）を持つ。
-  - 設定がないと [check-release-configs.sh](https://github.com/panicboat/.github/blob/main/scripts/terragrunt-release/check-release-configs.sh) が CI を失敗させる。
+  - 設定がないと [test-terragrunt-release.yaml](.github/workflows/test-terragrunt-release.yaml) が CI を失敗させる。
 - production 以外の environment ディレクトリだけを変える commit は、release を作らない（`exclude-paths`）。
-- production の environment ディレクトリを持たない service（例: [dystopia/frontend](dystopia/frontend)）は `terragrunt` の target がないため、`Release - Plan` と `Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
+- production の environment ディレクトリを持たない service（例: [dystopia/frontend](dystopia/frontend)）は `terragrunt` の target がないため、`Release - Plan` は何も plan せず、`Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
+- `Release - Plan` は、その service の production の overlay について、前回の release tag との kustomize diff を投稿する。release PR を merge したときに cluster に入る変更である。
+  - 前回の release がない service には diff を出さない。
 - production の environment が除外されている間も release PR は作られるが、plan も apply もされない。
 - plan を出し直すときは、`Release - Plan` の run で「Re-run all jobs」を使う。
 - apply を再実行するときは、`gh workflow run release--deploy.yaml --ref {service}-vX.Y.Z -f tag={service}-vX.Y.Z` を実行する。
@@ -103,11 +106,11 @@ flowchart LR
 
 各 stack が対象とするパスは [workflow-config.yaml](workflow-config.yaml) の `stacks` で定義している。
 
-| Stack | Workflow | PR | `main` への push | release の公開 |
-| --- | --- | --- | --- | --- |
-| `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` と `{service}-vX.Y.Z` の tag で GHCR に push |
-| `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `production` 以外の environment を `terragrunt apply` | production の environment を `terragrunt apply` |
-| `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。CI は `kubectl apply` を実行せず、Flux は `main` の overlay を release されるまで apply しない | Flux が release tag の overlay を apply する |
+| Stack | PR | `main` への push | release の公開 |
+| --- | --- | --- | --- |
+| `container` | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` と `{service}-vX.Y.Z` の tag で GHCR に push |
+| `terragrunt` | `terragrunt plan` | `production` 以外の environment を `terragrunt apply` | production の environment を `terragrunt apply` |
+| `kustomize` | kustomize diff を PR にコメント。`main` と比べる（release PR では前回の release tag と比べる） | 何もしない。CI は `kubectl apply` を実行せず、Flux は `main` の overlay を release されるまで apply しない | Flux が release tag の overlay を apply する |
 
 `terragrunt` stack は、名前が `production` の environment を service の release が公開されたときに apply し、それ以外の environment を `main` への push で apply する。
 

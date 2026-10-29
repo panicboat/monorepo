@@ -55,10 +55,11 @@ flowchart LR
   Please -->|release PR merged| Published[release published]
   Published --> Build[release--build]
   Published --> Deploy[release--deploy]
-  Resolver -->|stack: container| Builder[container-builder]
-  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt-runner]
+  Resolver -->|stack: container| Builder[image build]
+  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt]
   Resolver -->|stack: kustomize| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
+  Plan -->|"against the previous release tag"| Diff
   Deploy -->|"apply (release)"| Terragrunt
   Build -->|"tag vX.Y.Z and {service}-vX.Y.Z"| Builder
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
@@ -77,7 +78,7 @@ flowchart LR
 | --- | --- | --- |
 | `deploy:{service}` label added to a PR | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Plan every `terragrunt` target, build the container image, and post the kustomize diff |
 | Push to `main` | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | Apply non-production `terragrunt` targets and build the container image |
-| Release PR opened / updated | [release--plan.yaml](.github/workflows/release--plan.yaml) | Plan the service's production environment |
+| Release PR opened / updated | [release--plan.yaml](.github/workflows/release--plan.yaml) | Plan the service's production environment and post the kustomize diff of its production overlay against the previous release tag |
 | Release published | [release--build.yaml](.github/workflows/release--build.yaml) | Build the container image and tag it `vX.Y.Z` and `{service}-vX.Y.Z` |
 | Release published | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | Apply the service's production environment |
 
@@ -92,9 +93,11 @@ flowchart LR
 ##### Releases
 
 - Each service that has a production environment directory has its own release-please config (`release-please-config.json` / `release-please-manifest.json`).
-  - [check-release-configs.sh](https://github.com/panicboat/.github/blob/main/scripts/terragrunt-release/check-release-configs.sh) fails CI when a config is missing.
+  - [test-terragrunt-release.yaml](.github/workflows/test-terragrunt-release.yaml) fails CI when a config is missing.
 - Commits that touch only non-production environment directories do not create a release (`exclude-paths`).
-- A service with no production environment directory, such as [dystopia/frontend](dystopia/frontend), has no `terragrunt` target, so `Release - Plan` and `Release - Deploy` skip it. `Release - Build` still builds its image.
+- A service with no production environment directory, such as [dystopia/frontend](dystopia/frontend), has no `terragrunt` target, so `Release - Plan` plans nothing and `Release - Deploy` skips it. `Release - Build` still builds its image.
+- `Release - Plan` posts the kustomize diff of the service's production overlay against the previous release tag, which is what merging the release PR brings to the cluster.
+  - A service with no previous release gets no diff.
 - While the production environment is excluded, the release PR is still created, but nothing is planned or applied.
 - To re-plan, use "Re-run all jobs" on the `Release - Plan` run.
 - To re-apply, run `gh workflow run release--deploy.yaml --ref {service}-vX.Y.Z -f tag={service}-vX.Y.Z`.
@@ -103,11 +106,11 @@ flowchart LR
 
 The paths each stack covers are defined in `stacks` in [workflow-config.yaml](workflow-config.yaml).
 
-| Stack | Workflow | On a PR | On push to `main` | On release published |
-| --- | --- | --- | --- | --- |
-| `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` and `{service}-vX.Y.Z` |
-| `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `terragrunt apply` of non-production environments | `terragrunt apply` of the production environment |
-| `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. CI never runs `kubectl apply`, and Flux does not apply the overlay on `main` until it is released | Flux applies the overlay at the release tag |
+| Stack | On a PR | On push to `main` | On release published |
+| --- | --- | --- | --- |
+| `container` | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` and `{service}-vX.Y.Z` |
+| `terragrunt` | `terragrunt plan` | `terragrunt apply` of non-production environments | `terragrunt apply` of the production environment |
+| `kustomize` | Kustomize diff as a PR comment, against `main` (against the previous release tag on a release PR) | Nothing. CI never runs `kubectl apply`, and Flux does not apply the overlay on `main` until it is released | Flux applies the overlay at the release tag |
 
 The `terragrunt` stack applies the environment named `production` when the service release is published, and every other environment on push to `main`.
 
