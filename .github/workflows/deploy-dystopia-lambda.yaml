@@ -30,7 +30,7 @@ jobs:
       id-token: write
       contents: read
       pull-requests: write
-    uses: panicboat/.github/.github/workflows/reusable--terragrunt-runner.yaml@abf935e759c635244c5ba4646d852a73693944d6 # v3.1.1
+    uses: panicboat/.github/.github/workflows/reusable--terragrunt-runner.yaml@5c8d1e2a12c97f93b40399902879acd68497a8d9 # v3.3.0
     with:
       service-name: lambda
       environment: production
