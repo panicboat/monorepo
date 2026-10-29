@@ -76,10 +76,10 @@ flowchart LR
 | Event | Workflow | Action |
 | --- | --- | --- |
 | PR に `deploy:{service}` ラベルが付く | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | すべての `terragrunt` target を plan し、コンテナイメージをビルドし、kustomize diff をコメントする |
-| `main` への push | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | `apply_trigger: merge` の `terragrunt` target を apply し、コンテナイメージをビルドする |
-| release PR の作成・更新 | [release--plan.yaml](.github/workflows/release--plan.yaml) | その service の `apply_trigger: release` の environment を plan する |
+| `main` への push | [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) | `production` 以外の environment の `terragrunt` target を apply し、コンテナイメージをビルドする |
+| release PR の作成・更新 | [release--plan.yaml](.github/workflows/release--plan.yaml) | その service の production の environment を plan する |
 | release の公開 | [release--build.yaml](.github/workflows/release--build.yaml) | コンテナイメージをビルドし、`vX.Y.Z` と `{service}-vX.Y.Z` の tag を付ける |
-| release の公開 | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | その service の `apply_trigger: release` の environment を apply する |
+| release の公開 | [release--deploy.yaml](.github/workflows/release--deploy.yaml) | その service の production の environment を apply する |
 
 ##### Targets
 
@@ -91,11 +91,11 @@ flowchart LR
 
 ##### Releases
 
-- `apply_trigger: release` の environment ディレクトリを持つ service は、それぞれ release-please の設定（`release-please-config.json` / `release-please-manifest.json`）を持つ。
+- production の environment ディレクトリを持つ service は、それぞれ release-please の設定（`release-please-config.json` / `release-please-manifest.json`）を持つ。
   - 設定がないと [check-release-configs.sh](https://github.com/panicboat/.github/blob/main/scripts/terragrunt-release/check-release-configs.sh) が CI を失敗させる。
-- `apply_trigger: merge` の environment ディレクトリだけを変える commit は、release を作らない（`exclude-paths`）。
-- `apply_trigger: release` の environment ディレクトリを持たない service（例: [dystopia/frontend](dystopia/frontend)）は `terragrunt` の target がないため、`Release - Plan` と `Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
-- `apply_trigger: release` の environment がすべて除外されている間も release PR は作られるが、plan も apply もされない。
+- production 以外の environment ディレクトリだけを変える commit は、release を作らない（`exclude-paths`）。
+- production の environment ディレクトリを持たない service（例: [dystopia/frontend](dystopia/frontend)）は `terragrunt` の target がないため、`Release - Plan` と `Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
+- production の environment が除外されている間も release PR は作られるが、plan も apply もされない。
 - plan を出し直すときは、`Release - Plan` の run で「Re-run all jobs」を使う。
 - apply を再実行するときは、`gh workflow run release--deploy.yaml --ref {service}-vX.Y.Z -f tag={service}-vX.Y.Z` を実行する。
 
@@ -106,10 +106,10 @@ flowchart LR
 | Stack | Workflow | PR | `main` への push | release の公開 |
 | --- | --- | --- | --- | --- |
 | `container` | [reusable--container-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` と `{service}-vX.Y.Z` の tag で GHCR に push |
-| `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `apply_trigger: merge` の environment を `terragrunt apply` | `apply_trigger: release` の environment を `terragrunt apply` |
+| `terragrunt` | [reusable--terragrunt-runner.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--terragrunt-runner.yaml) | `terragrunt plan` | `production` 以外の environment を `terragrunt apply` | production の environment を `terragrunt apply` |
 | `kustomize` | [reusable--kubernetes-builder.yaml](https://github.com/panicboat/.github/blob/main/.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。CI は `kubectl apply` を実行せず、Flux は `main` の overlay を release されるまで apply しない | Flux が release tag の overlay を apply する |
 
-`terragrunt` stack の environment は、それぞれ `apply_trigger` を持つ。`merge` は `main` への push で apply し、`release` は service の release が公開されたときに apply する。
+`terragrunt` stack は、名前が `production` の environment を service の release が公開されたときに apply し、それ以外の environment を `main` への push で apply する。
 
 #### Versioning
 
@@ -118,7 +118,7 @@ flowchart LR
      - 書き換える行は、設定の `extra-files` に列挙したファイルにある `# x-release-please-version` の目印が付いた行である。
 2. release PR をマージすると、release `{service}-vX.Y.Z` が公開される。
 3. [release--build.yaml](.github/workflows/release--build.yaml) がその release のコンテナをビルドし、イメージに `vX.Y.Z` と `{service}-vX.Y.Z` の tag を付ける。
-4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) がその service の `apply_trigger: release` の environment を apply する。
+4. [release--deploy.yaml](.github/workflows/release--deploy.yaml) がその service の production の environment を apply する。
 5. Flux が `{service}-vX.Y.Z` のイメージ tag を見つけ、サービスをその release tag のマニフェストに切り替える（[GitOps](#gitops) を参照）。
 
 #### GitOps
