@@ -8,7 +8,7 @@ spec:
   interval: 5m
   url: https://github.com/panicboat/monorepo.git
   ref:
-    tag: pennyworth-v1.1.0 # {"$imagepolicy": "flux-system:pennyworth:tag"}
+    tag: pennyworth-v1.2.0 # {"$imagepolicy": "flux-system:pennyworth:tag"}
   provider: github
   secretRef:
     name: panicboat-github-app
