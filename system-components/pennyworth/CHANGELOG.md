@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/panicboat/monorepo/compare/pennyworth-v1.2.0...pennyworth-v1.2.1) (2026-10-29)
+
+
+### Miscellaneous Chores
+
+* **pennyworth:** add a release gate probe annotation ([#1846](https://github.com/panicboat/monorepo/issues/1846)) ([06249df](https://github.com/panicboat/monorepo/commit/06249df839167b1504113bb2ce465d8e132c2022))
+
 ## [1.2.0](https://github.com/panicboat/monorepo/compare/pennyworth-v1.1.0...pennyworth-v1.2.0) (2026-10-29)
 
 
