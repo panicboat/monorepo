@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.2.0](https://github.com/panicboat/monorepo/compare/pennyworth-v1.1.0...pennyworth-v1.2.0) (2026-10-29)
+
+
+### Features
+
+* deploy kubernetes manifests together with service releases ([#1835](https://github.com/panicboat/monorepo/issues/1835)) ([d8fbfe2](https://github.com/panicboat/monorepo/commit/d8fbfe23c5d21d6897c5ff866865a06ce7e35940))
+
+
+### Bug Fixes
+
+* **system-components/pennyworth:** resolve Slack permalinks before asking HolmesGPT ([#1396](https://github.com/panicboat/monorepo/issues/1396)) ([76480e6](https://github.com/panicboat/monorepo/commit/76480e61d45120aa99809ce26939d0e94614bc18))
+
+
+### Code Refactoring
+
+* derive terragrunt state keys from the unit path ([#1828](https://github.com/panicboat/monorepo/issues/1828)) ([f6784b6](https://github.com/panicboat/monorepo/commit/f6784b69368dd3d7f049168604933a1e2569f2eb))
+
+
+### Miscellaneous Chores
+
+* normalize code comments ([#1275](https://github.com/panicboat/monorepo/issues/1275)) ([fb3d8ae](https://github.com/panicboat/monorepo/commit/fb3d8aeb5e3664540683668eace1a5d7bd4bc00d))
+* **system-components/pennyworth/infrastructure/aws/modules:** update terraform aws to v6.66.0 ([#1321](https://github.com/panicboat/monorepo/issues/1321)) ([894deac](https://github.com/panicboat/monorepo/commit/894deac8a9879528f7dda2df6a1fd5bf82bc9d09))
+* **system-components/pennyworth/infrastructure/aws/modules:** update terraform aws to v6.68.0 ([#1462](https://github.com/panicboat/monorepo/issues/1462)) ([2f8e613](https://github.com/panicboat/monorepo/commit/2f8e613e972ab3a3f52f0fc0b3b438fb32d07690))
+* **system-components/pennyworth/infrastructure/aws/modules:** update terraform aws to v6.69.1 ([#1578](https://github.com/panicboat/monorepo/issues/1578)) ([5668965](https://github.com/panicboat/monorepo/commit/56689659af75eb81bc5ae23f877d0cd2939b4aac))
+* **system-components/pennyworth/infrastructure/aws/modules:** update terraform aws to v6.70.0 ([#1765](https://github.com/panicboat/monorepo/issues/1765)) ([7f09fa6](https://github.com/panicboat/monorepo/commit/7f09fa61f5f7a7a138d49a453ab3cc2db4c17ad0))
+* **system-components/pennyworth/infrastructure/aws/modules:** update terraform hashicorp/terraform to v1.13.0 ([#1376](https://github.com/panicboat/monorepo/issues/1376)) ([0526a56](https://github.com/panicboat/monorepo/commit/0526a56efcb7b6411d6585739e486318dbf18a2e))
+* **system-components/pennyworth/infrastructure/aws/modules:** update terraform hashicorp/terraform to v1.13.1 ([#1388](https://github.com/panicboat/monorepo/issues/1388)) ([251f996](https://github.com/panicboat/monorepo/commit/251f996d728febe6d49fcdea7f032da0250c70ca))
+* **system-components/pennyworth/infrastructure/aws/modules:** update terraform hashicorp/terraform to v1.13.2 ([#1650](https://github.com/panicboat/monorepo/issues/1650)) ([50d167e](https://github.com/panicboat/monorepo/commit/50d167e5fe30434b3885495b24b3e41dcac459a8))
+* **system-components/pennyworth:** update golang docker tag to v1.27.2 ([#1454](https://github.com/panicboat/monorepo/issues/1454)) ([df0360a](https://github.com/panicboat/monorepo/commit/df0360aaf6b7ac2754c7e73cb95412a665dc4d4a))
+* **system-components/pennyworth:** update golang docker tag to v1.27.3 ([#1627](https://github.com/panicboat/monorepo/issues/1627)) ([b0c5ad3](https://github.com/panicboat/monorepo/commit/b0c5ad39d75ee39c4ee8a7f1fe9ed88762626ea1))
+
 ## [1.1.0](https://github.com/panicboat/monorepo/compare/pennyworth-v1.0.0...pennyworth-v1.1.0) (2026-09-05)
 
 
