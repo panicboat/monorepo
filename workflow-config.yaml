@@ -1,29 +1,39 @@
-stacks:
-  - name: container
-    paths:
+profiles:
+  aws-develop:
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::270242382571:role/github-oidc-auth-develop-github-actions-plan-role
+    iam_role_apply: arn:aws:iam::270242382571:role/github-oidc-auth-develop-github-actions-apply-role
+  aws-production:
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-plan-role
+    iam_role_apply: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-apply-role
+
+services:
+  - id: app
+    roots:
       - "dystopia/{service}"
       - "system-components/{service}"
-    attributes:
-      repository: ghcr.io/panicboat/monorepo/{service}
+    stacks:
+      - id: container
+        path: "."
+        attributes:
+          type: container
+          repository: ghcr.io/panicboat/monorepo/{service}
 
-  - name: terragrunt
-    id: aws
-    paths:
-      - "{product}/{service}/infrastructure/aws/{environment}"
-    environments:
-      develop:
-        aws_region: ap-northeast-1
-        iam_role_plan: arn:aws:iam::270242382571:role/github-oidc-auth-develop-github-actions-plan-role
-        iam_role_apply: arn:aws:iam::270242382571:role/github-oidc-auth-develop-github-actions-apply-role
-      production:
-        aws_region: ap-northeast-1
-        iam_role_plan: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-plan-role
-        iam_role_apply: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-apply-role
-    exclude:
-      # Keep production excluded until the release workflow is enabled
-      - environment: production
+      - id: aws
+        path: "infrastructure/aws/{environment}"
+        attributes:
+          type: terragrunt
+        environments:
+          develop:
+            use: [aws-develop]
+          production:
+            use: [aws-production]
+        exclude:
+          # Keep production excluded until the release workflow is enabled
+          - environment: production
 
-  - name: kustomize
-    paths:
-      - "dystopia/{service}/kubernetes/overlays/{environment}"
-      - "system-components/{service}/kubernetes/overlays/{environment}"
+      - id: kustomize
+        path: "kubernetes/overlays/{environment}"
+        attributes:
+          type: kustomize
