@@ -93,7 +93,6 @@ flowchart LR
 ##### Releases
 
 - production の environment ディレクトリを持つ service は、それぞれ release-please の設定（`release-please-config.json` / `release-please-manifest.json`）を持つ。
-  - 設定がないと [test-terragrunt-release.yaml](.github/workflows/test-terragrunt-release.yaml) が CI を失敗させる。
 - production 以外の environment ディレクトリを変える commit は、その service の release-please package の変更として数えられる。
 - production の environment ディレクトリを持たない service（例: [dystopia/frontend](dystopia/frontend)）は `terragrunt` の target がないため、`Release - Plan` は何も plan せず、`Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
 - `Release - Plan` は、その service の production の overlay について、前回の release tag との kustomize diff を投稿する。release PR を merge したときに cluster に入る変更である。
