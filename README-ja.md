@@ -55,9 +55,9 @@ flowchart LR
   Please -->|release PR merged| Published[release published]
   Published --> Build[release--build]
   Published --> Deploy[release--deploy]
-  Resolver -->|stack: container| Builder[image build]
-  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt]
-  Resolver -->|stack: kustomize| Diff[kubernetes diff<br/>PR comment]
+  Resolver -->|type: container| Builder[image build]
+  Resolver -->|"type: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt]
+  Resolver -->|type: kustomize| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
   Plan -->|"against the previous release tag"| Diff
   Deploy -->|"apply (release)"| Terragrunt
@@ -85,16 +85,16 @@ flowchart LR
 ##### Targets
 
 - [label-base-deploy--dispatcher.yaml](.github/workflows/label-base-deploy--dispatcher.yaml) が PR の更新ごとに [label-dispatcher](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) を実行し、差分が触れたサービスごとに `deploy:{service}` ラベルを PR に付ける。
-- [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) が PR へのラベル付与と `main` への push で起動する。[label-resolver](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) が [workflow-config.yaml](workflow-config.yaml) の `stacks` を読み、ラベルをデプロイ対象に変換する。
-- 各デプロイ対象は、その stack の reusable workflow に渡される。
-- `terragrunt` stack の `exclude` に一致する `{service}/{environment}` の組は、release も含めて plan も apply もされない。
+- [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) が PR へのラベル付与と `main` への push で起動する。[label-resolver](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) が [workflow-config.yaml](workflow-config.yaml) の `services[].stacks` を読み、ラベルをデプロイ対象に変換する。
+- 各デプロイ対象は、`type` 属性に対応する reusable workflow に渡される。
+- `aws` stack（`type: terragrunt`）の `exclude` に一致する `{service}/{environment}` の組は、release も含めて plan も apply もされない。
   - `environment` だけの rule はすべての service に効く。
 
 ##### Releases
 
 - production の environment ディレクトリを持つ service は、それぞれ release-please の設定（`release-please-config.json` / `release-please-manifest.json`）を持つ。
   - 設定がないと [test-terragrunt-release.yaml](.github/workflows/test-terragrunt-release.yaml) が CI を失敗させる。
-- production 以外の environment ディレクトリだけを変える commit は、release を作らない（`exclude-paths`）。
+- production 以外の environment ディレクトリを変える commit は、その service の release-please package の変更として数えられる。
 - production の environment ディレクトリを持たない service（例: [dystopia/frontend](dystopia/frontend)）は `terragrunt` の target がないため、`Release - Plan` は何も plan せず、`Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
 - `Release - Plan` は、その service の production の overlay について、前回の release tag との kustomize diff を投稿する。release PR を merge したときに cluster に入る変更である。
   - 前回の release がない service には diff を出さない。
@@ -102,17 +102,17 @@ flowchart LR
 - plan を出し直すときは、`Release - Plan` の run で「Re-run all jobs」を使う。
 - apply を再実行するときは、`gh workflow run release--deploy.yaml --ref {service}-vX.Y.Z -f tag={service}-vX.Y.Z` を実行する。
 
-#### Stacks
+#### Types
 
-各 stack が対象とするパスは [workflow-config.yaml](workflow-config.yaml) の `stacks` で定義している。
+各 stack が対象とするパスは [workflow-config.yaml](workflow-config.yaml) の `services[].stacks` で定義している。stack の `type` 属性（`container`・`terragrunt`・`kustomize`）が、実行する処理を決める。
 
-| Stack | PR | `main` への push | release の公開 |
+| Type | PR | `main` への push | release の公開 |
 | --- | --- | --- | --- |
 | `container` | ビルドして GHCR に push | ビルドして GHCR に push | ビルドして `vX.Y.Z` と `{service}-vX.Y.Z` の tag で GHCR に push |
 | `terragrunt` | `terragrunt plan` | `production` 以外の environment を `terragrunt apply` | production の environment を `terragrunt apply` |
 | `kustomize` | kustomize diff を PR にコメント。`main` と比べる（release PR では前回の release tag と比べる） | 何もしない。CI は `kubectl apply` を実行せず、Flux は `main` の overlay を release されるまで apply しない | Flux が release tag の overlay を apply する |
 
-`terragrunt` stack は、名前が `production` の environment を service の release が公開されたときに apply し、それ以外の environment を `main` への push で apply する。
+`terragrunt` type は、名前が `production` の environment を service の release が公開されたときに apply し、それ以外の environment を `main` への push で apply する。
 
 #### Versioning
 

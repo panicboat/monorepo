@@ -20,7 +20,6 @@
       "release-type": "simple",
       "component": "pennyworth",
       "include-component-in-tag": true,
-      "exclude-paths": ["system-components/pennyworth/infrastructure/aws/develop"],
       "extra-files": [
         { "type": "generic", "path": "kubernetes/overlays/production/deployment.yaml" }
       ]
