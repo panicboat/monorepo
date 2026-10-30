@@ -55,9 +55,9 @@ flowchart LR
   Please -->|release PR merged| Published[release published]
   Published --> Build[release--build]
   Published --> Deploy[release--deploy]
-  Resolver -->|stack: container| Builder[image build]
-  Resolver -->|"stack: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt]
-  Resolver -->|stack: kustomize| Diff[kubernetes diff<br/>PR comment]
+  Resolver -->|type: container| Builder[image build]
+  Resolver -->|"type: terragrunt<br/>plan on PR / apply (merge) on main"| Terragrunt[terragrunt]
+  Resolver -->|type: kustomize| Diff[kubernetes diff<br/>PR comment]
   Plan -->|"plan (release)"| Terragrunt
   Plan -->|"against the previous release tag"| Diff
   Deploy -->|"apply (release)"| Terragrunt
@@ -85,16 +85,16 @@ flowchart LR
 ##### Targets
 
 - [label-base-deploy--dispatcher.yaml](.github/workflows/label-base-deploy--dispatcher.yaml) runs [label-dispatcher](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) on every PR update and puts a `deploy:{service}` label on the PR for each service the diff touches.
-- [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) runs when a PR is labeled and on every push to `main`. [label-resolver](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) reads `stacks` in [workflow-config.yaml](workflow-config.yaml) and turns the labels into deploy targets.
-- Each target goes to the reusable workflow of its stack.
-- A `{service}/{environment}` pair matched by `exclude` of the `terragrunt` stack is never planned or applied, including by releases.
+- [label-base-deploy--resolver.yaml](.github/workflows/label-base-deploy--resolver.yaml) runs when a PR is labeled and on every push to `main`. [label-resolver](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) reads `services[].stacks` in [workflow-config.yaml](workflow-config.yaml) and turns the labels into deploy targets.
+- Each target goes to the reusable workflow for its `type` attribute.
+- A `{service}/{environment}` pair matched by `exclude` of the `aws` stack (`type: terragrunt`) is never planned or applied, including by releases.
   - A rule with only `environment` covers every service.
 
 ##### Releases
 
 - Each service that has a production environment directory has its own release-please config (`release-please-config.json` / `release-please-manifest.json`).
   - [test-terragrunt-release.yaml](.github/workflows/test-terragrunt-release.yaml) fails CI when a config is missing.
-- Commits that touch only non-production environment directories do not create a release (`exclude-paths`).
+- Commits that touch non-production environment directories count as changes to the service's release-please package.
 - A service with no production environment directory, such as [dystopia/frontend](dystopia/frontend), has no `terragrunt` target, so `Release - Plan` plans nothing and `Release - Deploy` skips it. `Release - Build` still builds its image.
 - `Release - Plan` posts the kustomize diff of the service's production overlay against the previous release tag, which is what merging the release PR brings to the cluster.
   - A service with no previous release gets no diff.
@@ -102,17 +102,17 @@ flowchart LR
 - To re-plan, use "Re-run all jobs" on the `Release - Plan` run.
 - To re-apply, run `gh workflow run release--deploy.yaml --ref {service}-vX.Y.Z -f tag={service}-vX.Y.Z`.
 
-#### Stacks
+#### Types
 
-The paths each stack covers are defined in `stacks` in [workflow-config.yaml](workflow-config.yaml).
+The paths each stack covers are defined in `services[].stacks` in [workflow-config.yaml](workflow-config.yaml). The `type` attribute of a stack (`container`, `terragrunt`, `kustomize`) selects what runs.
 
-| Stack | On a PR | On push to `main` | On release published |
+| Type | On a PR | On push to `main` | On release published |
 | --- | --- | --- | --- |
 | `container` | Build and push to GHCR | Build and push to GHCR | Build and push to GHCR, tagged `vX.Y.Z` and `{service}-vX.Y.Z` |
 | `terragrunt` | `terragrunt plan` | `terragrunt apply` of non-production environments | `terragrunt apply` of the production environment |
 | `kustomize` | Kustomize diff as a PR comment, against `main` (against the previous release tag on a release PR) | Nothing. CI never runs `kubectl apply`, and Flux does not apply the overlay on `main` until it is released | Flux applies the overlay at the release tag |
 
-The `terragrunt` stack applies the environment named `production` when the service release is published, and every other environment on push to `main`.
+The `terragrunt` type applies the environment named `production` when the service release is published, and every other environment on push to `main`.
 
 #### Versioning
 
