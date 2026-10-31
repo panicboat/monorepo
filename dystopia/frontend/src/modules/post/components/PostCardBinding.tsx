@@ -77,13 +77,13 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
   const handleLikeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleLike(post.id, liked).catch(() => {});
+    toggleLike(post.id, liked).catch(() => showToast("いいねできませんでした"));
   };
 
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleBookmark().catch(() => {});
+    toggleBookmark().catch(() => showToast("ブックマークできませんでした"));
   };
 
   const handleDeleteClick = async (e: React.MouseEvent) => {

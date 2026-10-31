@@ -11,6 +11,7 @@ import { PostText } from "@/modules/post/lib/post-text";
 import { ReplyList } from "./ReplyList";
 import { ReplyComposer } from "./ReplyComposer";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
+import { toastOnFailure } from "@/stores/toastStore";
 
 interface CommentListProps {
   postId: string;
@@ -35,7 +36,7 @@ export function CommentList({ postId }: CommentListProps) {
 
   const onDelete = async (commentId: string) => {
     if (!confirm("このコメントを削除しますか?")) return;
-    await deleteComment(commentId).catch(() => {});
+    await deleteComment(commentId).catch(toastOnFailure("コメントを削除できませんでした"));
   };
 
   return (

@@ -28,3 +28,5 @@ export const useToastStore = create<ToastState>()((set) => ({
     set({ message: null });
   },
 }));
+
+export const toastOnFailure = (message: string) => () => useToastStore.getState().show(message);

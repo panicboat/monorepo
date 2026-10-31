@@ -5,6 +5,7 @@ import { Ellipsis } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBlock } from "@/modules/social/hooks";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
+import { toastOnFailure } from "@/stores/toastStore";
 
 interface ProfileMoreMenuProps {
   targetProfileId: string;
@@ -16,6 +17,10 @@ export function ProfileMoreMenu({ targetProfileId, onUnfollow }: ProfileMoreMenu
   const { isBlocked, toggle, loading } = useBlock(targetProfileId);
 
   if (!targetProfileId || (viewerId && viewerId === targetProfileId)) return null;
+
+  const onToggle = () => {
+    void toggle().catch(toastOnFailure(isBlocked ? "ブロックを解除できませんでした" : "ブロックできませんでした"));
+  };
 
   return (
     <DropdownMenu.Root>
@@ -40,7 +45,7 @@ export function ProfileMoreMenu({ targetProfileId, onUnfollow }: ProfileMoreMenu
           )}
           <DropdownMenu.Item
             disabled={loading}
-            onSelect={toggle}
+            onSelect={onToggle}
             className="cursor-pointer rounded-lg px-3 py-2 text-sm text-text-primary outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-bg-secondary"
           >
             {isBlocked ? "ブロック解除" : "ブロック"}

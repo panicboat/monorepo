@@ -9,6 +9,7 @@ import { useNotifications, describeNotificationAction, notificationHref } from "
 import type { NotificationView } from "@/modules/notifications/types";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
 import { useProfile } from "@/modules/profile/hooks";
+import { toastOnFailure } from "@/stores/toastStore";
 
 export function NotificationsHeader() {
   return <PageHeader title="通知" description={getFeatureDescription("notifications")} />;
@@ -65,7 +66,7 @@ export default function NotificationsPage() {
           <NotificationsHeader />
           <p className="pt-1 text-sm text-text-secondary">未読 {unreadCount} 件</p>
         </div>
-        <NotificationsActions unreadCount={unreadCount} onMarkAllRead={() => markAllRead().catch(() => {})} />
+        <NotificationsActions unreadCount={unreadCount} onMarkAllRead={() => markAllRead().catch(toastOnFailure("既読にできませんでした"))} />
       </div>
 
       {loading && notifications.length === 0 && (

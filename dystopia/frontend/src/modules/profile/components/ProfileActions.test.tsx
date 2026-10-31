@@ -74,9 +74,9 @@ beforeEach(() => {
   mocks.isFollowing = false;
   mocks.isPending = false;
   mocks.approvalRequired = false;
-  mocks.follow.mockReset();
-  mocks.unfollow.mockReset();
-  mocks.cancelRequest.mockReset();
+  mocks.follow.mockReset().mockResolvedValue(undefined);
+  mocks.unfollow.mockReset().mockResolvedValue(undefined);
+  mocks.cancelRequest.mockReset().mockResolvedValue(undefined);
   mocks.onUnfollow = undefined;
   vi.stubGlobal("confirm", () => true);
 });

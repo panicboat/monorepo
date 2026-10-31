@@ -10,7 +10,7 @@ import { useToastStore } from "@/stores/toastStore";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({ authFetch: vi.fn(), activeProfileId: "author-1" as string | null }));
+const mocks = vi.hoisted(() => ({ authFetch: vi.fn(), toggleBookmark: vi.fn(), toggleLike: vi.fn(), activeProfileId: "author-1" as string | null }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }) }));
 vi.mock("@/lib/auth", () => ({ authFetch: mocks.authFetch }));
@@ -19,10 +19,10 @@ vi.mock("@/stores/authStore", () => ({
   selectActiveProfileId: (state: { activeProfileId: string | null }) => state.activeProfileId,
 }));
 vi.mock("@/modules/bookmarks", () => ({
-  useBookmark: () => ({ isBookmarked: false, toggle: vi.fn(), loading: false }),
+  useBookmark: () => ({ isBookmarked: false, toggle: mocks.toggleBookmark, loading: false }),
 }));
 vi.mock("@/modules/post/hooks/usePostLike", () => ({
-  usePostLike: () => ({ isLiked: () => false, getLikesCount: () => 0, toggleLike: vi.fn(), loading: false }),
+  usePostLike: () => ({ isLiked: () => false, getLikesCount: () => 0, toggleLike: mocks.toggleLike, loading: false }),
 }));
 
 const { PostCardBinding } = await import("./PostCardBinding");
@@ -69,6 +69,20 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   document.body.innerHTML = "";
+});
+
+describe("PostCardBinding reactions", () => {
+  it.each([
+    ["いいね", "toggleLike", "いいねできませんでした"],
+    ["ブックマーク", "toggleBookmark", "ブックマークできませんでした"],
+  ] as const)("reports a failed %s in a toast", async (label, mock, message) => {
+    mocks[mock].mockRejectedValue(new Error("boom"));
+    const container = await mount();
+
+    await act(async () => container.querySelector<HTMLButtonElement>(`button[aria-label^="${label}"]`)!.click());
+
+    expect(useToastStore.getState().message).toBe(message);
+  });
 });
 
 describe("PostCardBinding deleting a post", () => {
