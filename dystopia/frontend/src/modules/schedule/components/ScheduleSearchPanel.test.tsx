@@ -80,11 +80,6 @@ function click(el: Element) {
 
 const selectNamed = (label: string) => container.querySelector(`select[aria-label="${label}"]`) as HTMLSelectElement | null;
 
-async function pickDay(dateKey: string) {
-  await click(chipsIn("予定日")[2]);
-  await click(dayCell(dateKey)!);
-}
-
 async function choose(label: string, value: string) {
   const select = selectNamed(label)!;
   await act(async () => {
@@ -117,7 +112,7 @@ describe("ScheduleSearchPanel filters", () => {
     await mount();
 
     expect(lastFilters().date).toBe("2026-10-23");
-    expect(chip("予定日", "今日").getAttribute("aria-pressed")).toBe("true");
+    expect(dayCell("2026-10-23")!.getAttribute("aria-pressed")).toBe("true");
   });
 
   it("starts on today in Japan when the device is already a day ahead of Japan", async () => {
@@ -128,16 +123,14 @@ describe("ScheduleSearchPanel filters", () => {
     await mount();
 
     expect(lastFilters().date).toBe("2026-10-22");
-    expect(chip("予定日", "今日").getAttribute("aria-pressed")).toBe("true");
+    expect(dayCell("2026-10-22")!.getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("offers today, tomorrow and a calendar through the end of next month", async () => {
+  it("shows a calendar from today through the end of next month with no date buttons", async () => {
     await mount();
 
-    expect(chipsIn("予定日").map((b) => b.textContent)).toEqual(["今日", "明日", "日付を選ぶ"]);
-    expect(dayCell("2026-10-23")).toBeNull();
-
-    await click(chip("予定日", "日付を選ぶ"));
+    expect(container.textContent).not.toContain("日付を選ぶ");
+    expect(chip("予定日", "今日")).toBeUndefined();
     expect(container.textContent).toContain("2026年 10月");
     expect(dayCell("2026-10-22")).toBeNull();
     expect(dayCell("2026-10-23")!.getAttribute("aria-pressed")).toBe("true");
@@ -148,41 +141,30 @@ describe("ScheduleSearchPanel filters", () => {
     expect((container.querySelector('button[aria-label="次の月"]') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("shows a later date on the third chip and closes the calendar once it is chosen", async () => {
+  it("moves the selection to the chosen date and keeps a date when it is chosen again", async () => {
     await mount();
 
-    await pickDay("2026-10-25");
-
+    await click(dayCell("2026-10-25")!);
     expect(lastFilters().date).toBe("2026-10-25");
-    expect(chipsIn("予定日").map((b) => b.textContent)).toEqual(["今日", "明日", "10/25(日)"]);
-    expect(chipsIn("予定日")[2].getAttribute("aria-pressed")).toBe("true");
-    expect(dayCell("2026-10-25")).toBeNull();
+    expect(dayCell("2026-10-25")!.getAttribute("aria-pressed")).toBe("true");
+    expect(dayCell("2026-10-23")!.getAttribute("aria-pressed")).toBe("false");
+
+    await click(dayCell("2026-10-25")!);
+    expect(lastFilters().date).toBe("2026-10-25");
+    expect(dayCell("2026-10-25")!.getAttribute("aria-pressed")).toBe("true");
   });
 
   it("opens the calendar on the month of the chosen date", async () => {
     await mount("", { date: "2026-11-20" });
 
-    await click(chipsIn("予定日")[2]);
-
     expect(container.textContent).toContain("2026年 11月");
     expect(dayCell("2026-11-20")!.getAttribute("aria-pressed")).toBe("true");
-  });
-
-  it("closes the calendar when today or tomorrow is chosen", async () => {
-    await mount();
-
-    await click(chipsIn("予定日")[2]);
-    await click(chip("予定日", "明日"));
-
-    expect(lastFilters().date).toBe("2026-10-24");
-    expect(dayCell("2026-10-24")).toBeNull();
   });
 
   it("keeps one cell per day when the device zone leaves daylight saving time inside the range", async () => {
     vi.setSystemTime(new Date("2026-10-31T03:00:00Z"));
 
     await mount();
-    await click(chipsIn("予定日")[2]);
     await click(container.querySelector('button[aria-label="次の月"]')!);
 
     const cells = Array.from(container.querySelectorAll("button[data-day]")).map((b) => b.getAttribute("data-day"));
@@ -208,10 +190,8 @@ describe("ScheduleSearchPanel filters", () => {
   it("passes the date, area, start band and following switch that are chosen", async () => {
     await mount();
 
-    await pickDay("2026-10-25");
+    await click(dayCell("2026-10-25")!);
     expect(lastFilters().date).toBe("2026-10-25");
-    expect(chipsIn("予定日")[2].getAttribute("aria-pressed")).toBe("true");
-    expect(chip("予定日", "今日").getAttribute("aria-pressed")).toBe("false");
 
     await choose("都道府県", "大阪府");
     expect(lastFilters().prefecture).toBe("大阪府");
@@ -275,7 +255,7 @@ describe("ScheduleSearchPanel filters", () => {
     await mount("", { date: "2026-10-25", prefecture: "東京都", area: "", industry: "", timeBand: "night", followingOnly: true });
 
     expect(lastFilters()).toEqual({ date: "2026-10-25", prefecture: "東京都", area: "", industry: "", timeBand: "night", followingOnly: true, query: "" });
-    expect(chipsIn("予定日")[2].getAttribute("aria-pressed")).toBe("true");
+    expect(dayCell("2026-10-25")!.getAttribute("aria-pressed")).toBe("true");
     expect((container.querySelector("select") as HTMLSelectElement).value).toBe("東京都");
     expect(chip("時間帯", "深夜（21時〜翌5時）").getAttribute("aria-pressed")).toBe("true");
     expect(container.querySelector('[role="switch"]')!.getAttribute("aria-checked")).toBe("true");
@@ -284,7 +264,7 @@ describe("ScheduleSearchPanel filters", () => {
   it("reports the whole set of choices each time one changes", async () => {
     await mount();
 
-    await click(chipsIn("予定日")[1]);
+    await click(dayCell("2026-10-24")!);
     expect(mocks.onChoicesChange).toHaveBeenLastCalledWith({ date: "2026-10-24", prefecture: "", area: "", industry: "", timeBand: "", followingOnly: false });
 
     await choose("都道府県", "大阪府");
@@ -319,7 +299,7 @@ describe("ScheduleSearchPanel results", () => {
     expect(container.textContent).toContain("キャストが公開した予定です。予約の空きや受付可否を保証するものではありません。");
     expect(container.textContent).not.toContain("この日の予定はまだありません");
 
-    await click(chipsIn("予定日")[1]);
+    await click(dayCell("2026-10-24")!);
     expect(container.querySelector("h2")?.textContent).toBe("10/24（土）の予定");
   });
 
@@ -368,7 +348,7 @@ describe("ScheduleSearchPanel results", () => {
   it("keeps the plain empty text when only the date is changed or the name is blank", async () => {
     await mount("  ");
 
-    await pickDay("2026-10-26");
+    await click(dayCell("2026-10-26")!);
 
     expect(container.textContent).toContain("この日の予定はまだありません");
     expect(container.textContent).not.toContain("条件に合う予定はありません");
