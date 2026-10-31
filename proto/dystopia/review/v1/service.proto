@@ -118,6 +118,7 @@ message ListReviewsByTargetResponse {
   string next_cursor = 2;
   bool has_more = 3;
   RatingSummary summary = 4;
+  bool hidden_by_lock = 5;
 }
 
 message ListReviewsByAuthorRequest {
@@ -129,6 +130,7 @@ message ListReviewsByAuthorResponse {
   repeated Review reviews = 1;
   string next_cursor = 2;
   bool has_more = 3;
+  bool hidden_by_lock = 4;
 }
 
 message ListMyReviewsRequest {

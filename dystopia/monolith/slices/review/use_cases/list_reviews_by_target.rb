@@ -20,16 +20,22 @@ module Review
         raise Errors::Invalid, "Unknown profile" unless Ids.valid?(target_profile_id)
 
         limit = page_reviews.limit_for(limit)
-        return { reviews: [], next_cursor: nil, has_more: false, summary: NO_SUMMARY } unless visible?(target_profile_id)
+        return { reviews: [], next_cursor: nil, has_more: false, summary: NO_SUMMARY, hidden_by_lock: false } unless visible?(target_profile_id)
+        return locked_page(viewer_profile_id, target_profile_id) unless filter_visible_reviews.lock_passable?(viewer_profile_id: viewer_profile_id, profile_id: target_profile_id)
 
         page_reviews.call(
           fetch: ->(after) { review_repo.list_by_target(target_profile_id: target_profile_id, limit: limit, cursor: after) },
           cursor: cursor, limit: limit, viewer_account_id: viewer_account_id,
           visible: ->(page) { filter_visible_reviews.call(viewer_profile_id: viewer_profile_id, page_owner_profile_id: target_profile_id, reviews: page) }
-        ).merge(summary: review_repo.rating_summary(target_profile_id: target_profile_id))
+        ).merge(summary: review_repo.rating_summary(target_profile_id: target_profile_id), hidden_by_lock: false)
       end
 
       private
+
+      def locked_page(viewer_profile_id, target_profile_id)
+        hidden_by_lock = !filter_visible_reviews.blocked?(viewer_profile_id: viewer_profile_id, profile_id: target_profile_id)
+        { reviews: [], next_cursor: nil, has_more: false, summary: NO_SUMMARY, hidden_by_lock: hidden_by_lock }
+      end
 
       def visible?(profile_id)
         list_visible_profile_ids.call(profile_ids: [profile_id]).any?

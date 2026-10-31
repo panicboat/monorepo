@@ -150,7 +150,12 @@ RSpec.describe "Review list use cases", type: :database do
       write(target: disabled_cast, at: Time.now - 10).tap { db[:profile__profiles].where(id: disabled_cast).update(disabled_at: Time.now) }
     end
 
-    it "shows a review about a locked cast the viewer does not follow" do
+    it "leaves out a review about a locked cast the viewer does not follow and shows it to a follower" do
+      expect(by_author(viewer_account: viewer_account, viewer: viewer)).not_to include(about_locked[:id])
+
+      locked_cast = db[:review__reviews].where(id: about_locked[:id]).get(:target_profile_id)
+      Social::Slice["repositories.follow_repository"].follow(follower_profile_id: viewer, followee_profile_id: locked_cast, status: "approved")
+
       expect(by_author(viewer_account: viewer_account, viewer: viewer)).to include(about_locked[:id])
     end
 
