@@ -105,9 +105,3 @@ pnpm proto:gen
 ```
 
 Start the development server. MSW will automatically activate in the browser/server to mock API responses.
-
-## Infrastructure
-
-frontend has an empty Terragrunt stack at `dystopia/frontend/infrastructure/aws/{develop,production}`.
-When each environment is applied is described in [Deployment](../../README.md).
-Its AWS resources (Cognito) live in [dystopia/infrastructure/aws/production/](../infrastructure/aws/production/), shared with [dystopia/monolith](../monolith).
