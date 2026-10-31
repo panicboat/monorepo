@@ -8,7 +8,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { AppError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { useDeleteSchedule, useSaveSchedule, useSchedules } from "@/modules/schedule/hooks";
-import { buildDateRangeThroughNextMonth, crossesMidnight, formatDayLabel, formatMonthDay } from "@/modules/schedule/lib/dates";
+import { buildDateRangeThroughNextMonth, crossesMidnight, formatMonthDay } from "@/modules/schedule/lib/dates";
 import type { ScheduleAnnouncement } from "@/modules/schedule/types";
 import { useToastStore } from "@/stores/toastStore";
 import { ScheduleMonthCalendar } from "./ScheduleMonthCalendar";
@@ -31,18 +31,18 @@ const chipClass = (selected: boolean) =>
 interface ScheduleBulkSheetProps {
   profileId: string;
   open: boolean;
-  todayOnly?: boolean;
   onClose: () => void;
   onSaved: () => void;
 }
 
-export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose, onSaved }: ScheduleBulkSheetProps) {
+export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: ScheduleBulkSheetProps) {
   const days = useMemo(() => buildDateRangeThroughNextMonth(new Date()), []);
+  const today = days[0];
   const { schedules, loading, error, refresh } = useSchedules(profileId, days[0], days[days.length - 1]);
   const saveSchedule = useSaveSchedule();
   const deleteSchedule = useDeleteSchedule();
   const showToast = useToastStore((s) => s.show);
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(todayOnly ? [days[0]] : []));
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [mode, setMode] = useState<Mode>("work");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
@@ -109,41 +109,18 @@ export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose,
       onOpenChange={(next) => {
         if (!next && !saving) onClose();
       }}
-      title={todayOnly ? "今日の予定" : "予定をまとめて編集"}
+      title="予定を編集"
+      footer={
+        <div className="flex w-full items-center justify-between gap-3">
+          <p className="text-sm font-bold text-text-primary">選択した日：{selected.size}日</p>
+          <Button type="button" disabled={!ready || saving} onClick={() => void apply()}>
+            選択した日に反映
+          </Button>
+        </div>
+      }
     >
       <div className="flex flex-col gap-5">
-        {todayOnly ? (
-          <div className="flex flex-col gap-1.5">
-            {days.slice(0, 1).map((dateKey) => {
-              const plan = byDate.get(dateKey);
-              const isSelected = selected.has(dateKey);
-              return (
-                <button
-                  key={dateKey}
-                  type="button"
-                  data-day={dateKey}
-                  aria-pressed={isSelected}
-                  onClick={() => toggle(dateKey)}
-                  className={cn(
-                    "flex min-h-11 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm",
-                    isSelected ? "border-accent bg-accent/15 text-text-primary" : "border-border text-text-secondary"
-                  )}
-                >
-                  <span className="font-bold">{formatDayLabel(dateKey)}</span>
-                  {plan ? (
-                    <span className="font-bold tabular-nums text-text-primary">
-                      {plan.startTime} 〜 {plan.endTime}
-                    </span>
-                  ) : (
-                    <span>未設定</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <ScheduleMonthCalendar days={days} selected={selected} plans={byDate} onToggle={toggle} />
-        )}
+        <ScheduleMonthCalendar days={days} selected={selected} plans={byDate} onToggle={toggle} />
 
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex gap-2">
@@ -152,6 +129,11 @@ export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose,
             </button>
             <button type="button" aria-pressed={mode === "clear"} onClick={() => setMode("clear")} className={chipClass(mode === "clear")}>
               予定を消す
+            </button>
+          </div>
+          <div className="mt-3">
+            <button type="button" aria-pressed={selected.has(today)} onClick={() => toggle(today)} className={chipClass(selected.has(today))}>
+              今日
             </button>
           </div>
           {mode === "work" && (
@@ -207,12 +189,6 @@ export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose,
             {failureReasons.length > 0 && `（${failureReasons.join("、")}）`}
           </p>
         )}
-        <div className="sticky bottom-0 -mx-4 -mb-8 flex items-center justify-between gap-3 border-t border-divider bg-bg-elevated px-4 py-3 md:-mx-5 md:px-5">
-          <p className="text-sm font-bold text-text-primary">選択した日：{selected.size}日</p>
-          <Button type="button" disabled={!ready || saving} onClick={() => void apply()}>
-            選択した日に反映
-          </Button>
-        </div>
       </div>
     </SideSheet>
   );

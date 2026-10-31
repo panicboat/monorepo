@@ -12,13 +12,14 @@ export interface SideSheetProps {
   title: string;
   onBack?: () => void;
   stepKey?: string;
+  footer?: React.ReactNode;
   children: React.ReactNode;
 }
 
 const ICON_BUTTON =
   "flex size-11 shrink-0 items-center justify-center rounded-xl text-text-secondary hover:bg-bg-secondary hover:text-text-primary";
 
-export function SideSheet({ open, onOpenChange, title, onBack, stepKey, children }: SideSheetProps) {
+export function SideSheet({ open, onOpenChange, title, onBack, stepKey, footer, children }: SideSheetProps) {
   const pathname = usePathname();
   const openedOn = useRef(pathname);
   const opener = useRef<HTMLElement | null>(null);
@@ -74,6 +75,7 @@ export function SideSheet({ open, onOpenChange, title, onBack, stepKey, children
               {children}
             </div>
           </div>
+          {footer && <div className="flex min-h-[62px] shrink-0 items-center border-t border-divider px-4 md:px-5">{footer}</div>}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
