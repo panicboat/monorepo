@@ -8,11 +8,10 @@ import { Toggle } from "@/components/ui/toggle";
 import { ToggleChip } from "@/components/ui/toggle-chip";
 import { useSearchSchedules } from "@/modules/discovery";
 import { INDUSTRIES, PREFECTURES, areasOf } from "@/modules/profile/lib/constants";
-import { formatDayLabel, formatScheduleDay } from "@/modules/schedule/lib/dates";
+import { formatScheduleDay } from "@/modules/schedule/lib/dates";
 import { TIME_BANDS, searchDays, type ScheduleSearchChoices } from "@/modules/schedule/lib/searchChoices";
+import { ScheduleMonthCalendar } from "./ScheduleMonthCalendar";
 import { ScheduleSearchCard } from "./ScheduleSearchCard";
-
-const dayLabel = (dateKey: string, index: number) => (index === 0 ? "今日" : index === 1 ? "明日" : formatDayLabel(dateKey));
 
 function FilterGroup({ title, children }: { title: string; children: ReactNode }) {
   const titleId = useId();
@@ -44,15 +43,7 @@ export function ScheduleSearchPanel({ query, choices, onChoicesChange }: Schedul
   return (
     <div>
       <FilterGroup title="予定日">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4">
-          {days.map((dateKey, index) => (
-            <div key={dateKey} className="shrink-0 whitespace-nowrap">
-              <ToggleChip pressed={dateKey === date} onClick={() => onChoicesChange({ ...choices, date: dateKey })}>
-                {dayLabel(dateKey, index)}
-              </ToggleChip>
-            </div>
-          ))}
-        </div>
+        <ScheduleMonthCalendar days={days} selected={new Set([date])} onToggle={(nextDate) => onChoicesChange({ ...choices, date: nextDate })} />
       </FilterGroup>
       <FilterGroup title="エリア">
         <div className="flex flex-col gap-2 sm:flex-row">

@@ -8,7 +8,7 @@ import { WEEKDAYS, formatDayLabel, toDateKey } from "@/modules/schedule/lib/date
 interface ScheduleMonthCalendarProps {
   days: string[];
   selected: ReadonlySet<string>;
-  plans: ReadonlyMap<string, { startTime: string; endTime: string }>;
+  plans?: ReadonlyMap<string, { startTime: string; endTime: string }>;
   onToggle: (dateKey: string) => void;
 }
 
@@ -16,7 +16,7 @@ const monthArrowClass = "flex size-10 items-center justify-center rounded-full t
 
 export function ScheduleMonthCalendar({ days, selected, plans, onToggle }: ScheduleMonthCalendarProps) {
   const months = [...new Set(days.map((dateKey) => dateKey.slice(0, 7)))];
-  const [monthIndex, setMonthIndex] = useState(0);
+  const [monthIndex, setMonthIndex] = useState(() => Math.max(0, months.findIndex((month) => [...selected].some((dateKey) => dateKey.startsWith(month)))));
   const [year, month] = months[monthIndex].split("-").map(Number);
   const selectable = new Set(days);
   const leadingBlanks = new Date(year, month - 1, 1).getDay();
@@ -57,7 +57,7 @@ export function ScheduleMonthCalendar({ days, selected, plans, onToggle }: Sched
               </span>
             );
           }
-          const plan = plans.get(dateKey);
+          const plan = plans?.get(dateKey);
           const isSelected = selected.has(dateKey);
           return (
             <button
@@ -65,7 +65,7 @@ export function ScheduleMonthCalendar({ days, selected, plans, onToggle }: Sched
               type="button"
               data-day={dateKey}
               aria-pressed={isSelected}
-              aria-label={`${formatDayLabel(dateKey)} ${plan ? `${plan.startTime} 〜 ${plan.endTime}` : "未設定"}`}
+              aria-label={plans ? `${formatDayLabel(dateKey)} ${plan ? `${plan.startTime} 〜 ${plan.endTime}` : "未設定"}` : formatDayLabel(dateKey)}
               onClick={() => onToggle(dateKey)}
               className={cn(
                 "flex h-10 min-w-0 flex-col items-center justify-center rounded-lg border text-sm leading-none",
