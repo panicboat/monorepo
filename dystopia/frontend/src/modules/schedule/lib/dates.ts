@@ -1,4 +1,4 @@
-const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+export const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 const MS_PER_DAY = 86_400_000;
 const BUSINESS_DAY_START = "05:00";
 
@@ -22,6 +22,12 @@ export function formatScheduleDay(dateKey: string): string {
 
 export function buildDateRange(start: Date, days: number): string[] {
   return Array.from({ length: days }, (_, i) => toDateKey(new Date(start.getTime() + i * MS_PER_DAY)));
+}
+
+export function buildDateRangeThroughNextMonth(start: Date): string[] {
+  const today = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const endOfNextMonth = new Date(start.getFullYear(), start.getMonth() + 2, 0);
+  return buildDateRange(start, Math.round((endOfNextMonth.getTime() - today.getTime()) / MS_PER_DAY) + 1);
 }
 
 export function formatMonthDay(dateKey: string): string {

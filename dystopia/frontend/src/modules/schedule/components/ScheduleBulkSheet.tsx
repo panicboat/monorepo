@@ -8,19 +8,14 @@ import { Toggle } from "@/components/ui/toggle";
 import { AppError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { useDeleteSchedule, useSaveSchedule, useSchedules } from "@/modules/schedule/hooks";
-import { buildDateRange, crossesMidnight, formatDayLabel, formatMonthDay } from "@/modules/schedule/lib/dates";
+import { buildDateRangeThroughNextMonth, crossesMidnight, formatDayLabel, formatMonthDay } from "@/modules/schedule/lib/dates";
 import type { ScheduleAnnouncement } from "@/modules/schedule/types";
 import { useToastStore } from "@/stores/toastStore";
+import { ScheduleMonthCalendar } from "./ScheduleMonthCalendar";
 import { TimeSelect } from "./TimeSelect";
 
-const DAYS = 14;
 const DEFAULT_ANNOUNCE_TIME = "09:00";
 const MAX_ANNOUNCE_NOTE_LENGTH = 200;
-const PRESETS = [
-  ["20:00", "02:00"],
-  ["18:00", "23:00"],
-  ["21:00", "03:00"],
-] as const;
 
 type Mode = "work" | "clear";
 
@@ -42,8 +37,8 @@ interface ScheduleBulkSheetProps {
 }
 
 export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose, onSaved }: ScheduleBulkSheetProps) {
-  const days = useMemo(() => buildDateRange(new Date(), DAYS), []);
-  const { schedules, loading, error, refresh } = useSchedules(profileId, days[0], days[DAYS - 1]);
+  const days = useMemo(() => buildDateRangeThroughNextMonth(new Date()), []);
+  const { schedules, loading, error, refresh } = useSchedules(profileId, days[0], days[days.length - 1]);
   const saveSchedule = useSaveSchedule();
   const deleteSchedule = useDeleteSchedule();
   const showToast = useToastStore((s) => s.show);
@@ -75,16 +70,6 @@ export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose,
       else next.add(dateKey);
       return next;
     });
-
-  const selectWeekdays = () =>
-    setSelected(
-      new Set(
-        days.filter((dateKey) => {
-          const weekday = new Date(`${dateKey}T00:00:00`).getDay();
-          return weekday >= 1 && weekday <= 5;
-        })
-      )
-    );
 
   const apply = async () => {
     setSaving(true);
@@ -124,54 +109,44 @@ export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose,
       onOpenChange={(next) => {
         if (!next && !saving) onClose();
       }}
-      title={todayOnly ? "今日の予定を入れる" : "予定をまとめて編集"}
+      title={todayOnly ? "今日の予定" : "予定をまとめて編集"}
     >
       <div className="flex flex-col gap-5">
-        {!todayOnly && (
-          <div>
-            <p className="text-xs font-bold tracking-wide text-text-secondary">予定 / 2週間まとめて編集</p>
-            <p className="mt-1 text-sm text-text-secondary">日付を複数選択して、同じ時間帯を一括で設定できます。1日ずつ入力する必要はありません。</p>
+        {todayOnly ? (
+          <div className="flex flex-col gap-1.5">
+            {days.slice(0, 1).map((dateKey) => {
+              const plan = byDate.get(dateKey);
+              const isSelected = selected.has(dateKey);
+              return (
+                <button
+                  key={dateKey}
+                  type="button"
+                  data-day={dateKey}
+                  aria-pressed={isSelected}
+                  onClick={() => toggle(dateKey)}
+                  className={cn(
+                    "flex min-h-11 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm",
+                    isSelected ? "border-accent bg-accent/15 text-text-primary" : "border-border text-text-secondary"
+                  )}
+                >
+                  <span className="font-bold">{formatDayLabel(dateKey)}</span>
+                  {plan ? (
+                    <span className="font-bold tabular-nums text-text-primary">
+                      {plan.startTime} 〜 {plan.endTime}
+                    </span>
+                  ) : (
+                    <span>未設定</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+        ) : (
+          <ScheduleMonthCalendar days={days} selected={selected} plans={byDate} onToggle={toggle} />
         )}
 
-        <div className="flex flex-col gap-1.5">
-          {(todayOnly ? days.slice(0, 1) : days).map((dateKey) => {
-            const plan = byDate.get(dateKey);
-            const isSelected = selected.has(dateKey);
-            return (
-              <button
-                key={dateKey}
-                type="button"
-                data-day={dateKey}
-                aria-pressed={isSelected}
-                onClick={() => toggle(dateKey)}
-                className={cn(
-                  "flex min-h-11 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm",
-                  isSelected ? "border-accent bg-accent/15 text-text-primary" : "border-border text-text-secondary"
-                )}
-              >
-                <span className="font-bold">{formatDayLabel(dateKey)}</span>
-                {plan ? (
-                  <span className="font-bold tabular-nums text-text-primary">
-                    {plan.startTime} 〜 {plan.endTime}
-                  </span>
-                ) : (
-                  <span>未設定</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
         <div className="rounded-xl border border-border bg-surface p-4">
-          {!todayOnly && (
-            <div className="flex justify-end">
-              <button type="button" onClick={selectWeekdays} className="min-h-11 text-sm text-accent hover:underline">
-                平日を選択
-              </button>
-            </div>
-          )}
-          <div className={cn("flex gap-2", !todayOnly && "mt-3")}>
+          <div className="flex gap-2">
             <button type="button" aria-pressed={mode === "work"} onClick={() => setMode("work")} className={chipClass(mode === "work")}>
               予定を入れる
             </button>
@@ -188,22 +163,6 @@ export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose,
               <div className="flex items-center gap-3 text-sm text-text-secondary">
                 <span className="w-8 shrink-0">終了</span>
                 <TimeSelect label="終了" value={end} onChange={setEnd} />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {PRESETS.map(([presetStart, presetEnd]) => (
-                  <button
-                    key={presetStart}
-                    type="button"
-                    aria-pressed={start === presetStart && end === presetEnd}
-                    onClick={() => {
-                      setStart(presetStart);
-                      setEnd(presetEnd);
-                    }}
-                    className={chipClass(start === presetStart && end === presetEnd)}
-                  >
-                    {presetStart}〜{presetEnd}
-                  </button>
-                ))}
               </div>
               <div className="flex flex-col gap-3 border-t border-divider pt-3">
                 <label className="flex items-center gap-2 text-sm text-text-primary">

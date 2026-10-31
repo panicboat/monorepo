@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toDateKey, formatDayLabel, formatScheduleDay, buildDateRange, formatMonthDay, crossesMidnight } from "./dates";
+import { toDateKey, formatDayLabel, formatScheduleDay, buildDateRange, buildDateRangeThroughNextMonth, formatMonthDay, crossesMidnight } from "./dates";
 
 describe("toDateKey", () => {
   it("formats a local date as YYYY-MM-DD", () => {
@@ -21,6 +21,20 @@ describe("formatScheduleDay", () => {
   it("formats a date key with the weekday in full-width parentheses", () => {
     expect(formatScheduleDay("2026-10-24")).toBe("10/24（土）");
     expect(formatScheduleDay("2026-01-05")).toBe("1/5（月）");
+  });
+});
+
+describe("buildDateRangeThroughNextMonth", () => {
+  it("runs from the start date through the last day of the next month", () => {
+    const days = buildDateRangeThroughNextMonth(new Date(2026, 9, 12, 9, 0));
+    expect(days[0]).toBe("2026-10-12");
+    expect(days[days.length - 1]).toBe("2026-11-30");
+    expect(days).toHaveLength(50);
+  });
+
+  it("crosses the year and keeps the short month when the start date is late in the month", () => {
+    expect(buildDateRangeThroughNextMonth(new Date(2026, 11, 31)).at(-1)).toBe("2027-01-31");
+    expect(buildDateRangeThroughNextMonth(new Date(2027, 0, 31)).at(-1)).toBe("2027-02-28");
   });
 });
 

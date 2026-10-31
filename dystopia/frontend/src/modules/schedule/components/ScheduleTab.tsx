@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LockedNotice } from "@/components/ui/locked-notice";
 import { useSchedules } from "@/modules/schedule/hooks";
-import { buildDateRange, formatDayLabel } from "@/modules/schedule/lib/dates";
+import { buildDateRangeThroughNextMonth, formatDayLabel } from "@/modules/schedule/lib/dates";
 import { ScheduleBulkSheet } from "./ScheduleBulkSheet";
 
-const DAYS = 14;
+const OWNER_UNPLANNED_DAYS = 14;
 
 interface Editing {
   session: number;
@@ -16,12 +16,12 @@ interface Editing {
 }
 
 export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner: boolean }) {
-  const days = buildDateRange(new Date(), DAYS);
+  const days = buildDateRangeThroughNextMonth(new Date());
   const { schedules, hiddenByLock, loading, refresh } = useSchedules(profileId, days[0], days[days.length - 1]);
   // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
   const [editing, setEditing] = useState<Editing | null>(null);
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
-  const visibleDays = isOwner ? days : days.filter((dateKey) => byDate.has(dateKey));
+  const visibleDays = days.filter((dateKey, index) => byDate.has(dateKey) || (isOwner && index < OWNER_UNPLANNED_DAYS));
   const openSheet = (todayOnly: boolean) =>
     setEditing((current) => ({ session: (current?.session ?? 0) + 1, open: true, todayOnly }));
 
@@ -32,7 +32,7 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
         {isOwner && (
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" size="sm" onClick={() => openSheet(true)}>
-              今日の予定を入れる
+              今日の予定
             </Button>
             <Button type="button" variant="secondary" size="sm" onClick={() => openSheet(false)}>
               まとめて編集
