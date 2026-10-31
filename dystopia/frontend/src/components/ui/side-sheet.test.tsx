@@ -46,6 +46,17 @@ describe("SideSheet", () => {
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain("本文");
   });
 
+  it("keeps the footer out of the scrolling body and renders no footer area without one", async () => {
+    const view = await render(sheet({ onOpenChange: vi.fn(), footer: createElement("p", { id: "footer" }, "フッター") }));
+
+    const footer = document.getElementById("footer") as HTMLElement;
+    expect(footer.closest('[role="dialog"]')).not.toBeNull();
+    expect(footer.closest("[data-sheet-body]")).toBeNull();
+
+    await view.rerender(sheet({ onOpenChange: vi.fn() }));
+    expect(document.querySelector("[data-sheet-body]")?.nextElementSibling).toBeNull();
+  });
+
   it("shows nothing while closed", async () => {
     await render(sheet({ onOpenChange: vi.fn(), open: false }));
 

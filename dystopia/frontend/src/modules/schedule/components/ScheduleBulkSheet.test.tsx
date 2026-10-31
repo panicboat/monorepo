@@ -127,7 +127,27 @@ describe("ScheduleBulkSheet", () => {
     expect(text()).toContain("選択した日：0日");
   });
 
-  it("lays the days out in a seven-column calendar, marks a selected day and keeps the apply bar at the bottom", async () => {
+  it("toggles today from the chip placed before the mode chips, even while another month is shown", async () => {
+    await mount();
+
+    const chips = Array.from(button("予定を入れる")!.parentElement!.querySelectorAll("button")).map((b) => b.textContent);
+    expect(chips).toEqual(["今日", "予定を入れる", "予定を消す"]);
+    expect(button("今日")!.getAttribute("aria-pressed")).toBe("false");
+
+    await click(button("次の月")!);
+    await click(button("今日")!);
+    expect(button("今日")!.getAttribute("aria-pressed")).toBe("true");
+    expect(text()).toContain("選択した日：1日");
+
+    await click(button("前の月")!);
+    expect(day("2026-10-12").getAttribute("aria-pressed")).toBe("true");
+
+    await click(day("2026-10-12"));
+    expect(button("今日")!.getAttribute("aria-pressed")).toBe("false");
+    expect(text()).toContain("選択した日：0日");
+  });
+
+  it("lays the days out in a seven-column calendar, marks a selected day and keeps the apply bar out of the scrolling body", async () => {
     await mount();
 
     expect((day("2026-10-12").parentElement as HTMLElement).className).toContain("grid-cols-7");
@@ -136,7 +156,7 @@ describe("ScheduleBulkSheet", () => {
     expect(day("2026-10-12").className).toContain("border-accent");
 
     const bar = button("選択した日に反映")!.parentElement as HTMLElement;
-    expect(bar.className).toContain("sticky");
+    expect(bar.closest("[data-sheet-body]")).toBeNull();
     expect(bar.textContent).toContain("選択した日：1日");
   });
 
