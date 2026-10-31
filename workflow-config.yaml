@@ -18,7 +18,6 @@ services:
         path: "."
         attributes:
           type: container
-          repository: ghcr.io/panicboat/monorepo/{service}
 
       - id: aws
         path: "infrastructure/aws/{environment}"
