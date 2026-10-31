@@ -815,6 +815,49 @@ func TestHandleMention_PermalinkInThreadHistory(t *testing.T) {
 	}
 }
 
+func TestHandleMention_AlertInThreadHistory(t *testing.T) {
+	var repliesQueries []string
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/conversations.replies":
+			query := r.URL.Query().Get("channel") + "/" + r.URL.Query().Get("ts")
+			repliesQueries = append(repliesQueries, query)
+			messages := []slackclient.Message{{Attachments: []slackclient.Attachment{
+				{Text: "KubePodCrashLooping firing, runbook <https://example.slack.com/archives/C999/p1700000000123456>"},
+			}, Ts: "50"}}
+			json.NewEncoder(w).Encode(map[string]any{"ok": true, "messages": messages})
+		case "/chat.postMessage", "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			t.Errorf("unexpected slack path: %s", r.URL.Path)
+		}
+	}))
+	defer slackServer.Close()
+
+	var gotAsk string
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req map[string]string
+		json.NewDecoder(r.Body).Decode(&req)
+		gotAsk = req["ask"]
+		json.NewEncoder(w).Encode(map[string]string{"analysis": "ok"})
+	}))
+	defer holmesServer.Close()
+
+	h := &Handler{
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	}
+
+	h.handleMention(slackInnerEvent{Type: "app_mention", Channel: "C123", User: "U1", Text: "<@BOT> why?", Ts: "60", ThreadTs: "50"})
+
+	if !strings.Contains(gotAsk, "KubePodCrashLooping firing") {
+		t.Errorf("expected ask sent to HolmesGPT to include the alert, got: %q", gotAsk)
+	}
+	if len(repliesQueries) != 2 || repliesQueries[1] != "C999/1700000000.123456" {
+		t.Errorf("expected the link in the alert to be fetched, got: %v", repliesQueries)
+	}
+}
+
 func TestHandleMention_PermalinkUnreadable(t *testing.T) {
 	var posted []map[string]string
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

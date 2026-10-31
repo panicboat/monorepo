@@ -114,7 +114,7 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 		} else if len(history) > 0 {
 			ask = slackclient.BuildAskWithHistory(history, ask)
 			for _, m := range history {
-				linkSources = append(linkSources, m.Text)
+				linkSources = append(linkSources, m.Contents()...)
 			}
 		}
 	}

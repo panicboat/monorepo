@@ -84,3 +84,17 @@ func TestBuildAskWithHistory(t *testing.T) {
 		t.Errorf("expected ask text in result, got: %s", got)
 	}
 }
+
+func TestBuildAskWithHistory_IncludesAttachmentText(t *testing.T) {
+	history := []Message{
+		{Attachments: []Attachment{{Text: "KubePodCrashLooping firing severity=critical"}}},
+		{Text: "please investigate"},
+	}
+	got := BuildAskWithHistory(history, "what's the root cause?")
+	if !strings.Contains(got, "KubePodCrashLooping firing severity=critical") {
+		t.Errorf("expected attachment text in result, got: %s", got)
+	}
+	if strings.Contains(got, "- \n") {
+		t.Errorf("expected no empty history line, got: %q", got)
+	}
+}
