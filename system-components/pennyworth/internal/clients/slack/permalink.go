@@ -52,13 +52,8 @@ func BuildAskWithLinkedThreads(ask string, threads []LinkedThread) string {
 			continue
 		}
 		for _, m := range t.Messages {
-			if m.Text != "" {
-				b.WriteString(fmt.Sprintf("- %s\n", m.Text))
-			}
-			for _, a := range m.Attachments {
-				if a.Text != "" {
-					b.WriteString(fmt.Sprintf("- %s\n", a.Text))
-				}
+			for _, content := range m.Contents() {
+				b.WriteString(fmt.Sprintf("- %s\n", content))
 			}
 		}
 	}

@@ -56,11 +56,26 @@ type Attachment struct {
 	Text string `json:"text"`
 }
 
+func (m Message) Contents() []string {
+	var contents []string
+	if m.Text != "" {
+		contents = append(contents, m.Text)
+	}
+	for _, a := range m.Attachments {
+		if a.Text != "" {
+			contents = append(contents, a.Text)
+		}
+	}
+	return contents
+}
+
 func BuildAskWithHistory(history []Message, ask string) string {
 	var b strings.Builder
 	b.WriteString("Slack thread context:\n")
 	for _, m := range history {
-		b.WriteString(fmt.Sprintf("- %s\n", m.Text))
+		for _, content := range m.Contents() {
+			b.WriteString(fmt.Sprintf("- %s\n", content))
+		}
 	}
 	b.WriteString("\nInvestigation request: ")
 	b.WriteString(ask)
