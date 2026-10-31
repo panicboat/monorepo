@@ -1,36 +1,16 @@
 "use client";
 
-import useSWRInfinite from "swr/infinite";
-import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import type { PaginatedProfilesResponse } from "../types";
 
 export function useFollowList(profileId?: string) {
-  const activeProfileId = useAuthStore((s) => s.activeProfileId);
-
-  const getKey = (pageIndex: number, prev: PaginatedProfilesResponse | null): string | null => {
-    if (!activeProfileId) return null;
-    if (prev && !prev.hasMore) return null;
-    const profileQs = profileId ? `profile_id=${encodeURIComponent(profileId)}` : "";
-    const cursorQs = pageIndex === 0 ? "" : `cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    const sep = profileQs && cursorQs ? "&" : "";
-    const qs = (profileQs || cursorQs) ? `?${profileQs}${sep}${cursorQs}` : "";
-    return `/api/social/following${qs}`;
-  };
-
-  const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedProfilesResponse>(getKey, fetcher, { revalidateOnFocus: false });
-
-  const pages = data || [];
-  const profiles = pages.flatMap((p) => p.profiles || []);
-  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
-
+  const { pages, hasMore, loading, error, loadMore, refresh } = useCursorPages<PaginatedProfilesResponse>(`/api/social/following${profileId ? `?profile_id=${encodeURIComponent(profileId)}` : ""}`);
   return {
-    profiles,
+    profiles: pages.flatMap((p) => p.profiles || []),
     hasMore,
-    loading: isLoading || isValidating,
+    loading,
     error,
-    loadMore: () => setSize(size + 1),
-    refresh: () => mutate(),
+    loadMore,
+    refresh,
   };
 }

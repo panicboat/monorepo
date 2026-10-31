@@ -1,31 +1,18 @@
 "use client";
 
 import { useSWRConfig } from "swr";
-import useSWRInfinite from "swr/infinite";
 import { useCallback } from "react";
-import { fetcher } from "@/lib/swr";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import { authFetch } from "@/lib/auth/fetch";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedNotificationsResponse } from "../types";
 import { UNREAD_COUNT_KEY } from "./useUnreadCount";
 
 export function useNotifications() {
-  const profileId = useAuthStore((s) => s.activeProfileId);
   const { mutate: mutateGlobal } = useSWRConfig();
 
-  const getKey = (pageIndex: number, prev: PaginatedNotificationsResponse | null): string | null => {
-    if (!profileId) return null;
-    if (prev && !prev.hasMore) return null;
-    const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/notifications${cursorQs}`;
-  };
-
-  const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedNotificationsResponse>(getKey, fetcher, { revalidateOnFocus: false });
-
-  const pages = data || [];
+  const { pages, hasMore, loading, error, loadMore, refresh, mutate } = useCursorPages<PaginatedNotificationsResponse>("/api/notifications");
   const notifications = pages.flatMap((p) => p.notifications || []);
-  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
   const unreadCount = pages.length > 0 ? pages[0].unreadCount : 0;
 
   const markAllRead = useCallback(async () => {
@@ -64,11 +51,11 @@ export function useNotifications() {
     notifications,
     hasMore,
     unreadCount,
-    loading: isLoading || isValidating,
+    loading,
     error,
-    loadMore: () => setSize(size + 1),
+    loadMore,
     markRead,
     markAllRead,
-    refresh: () => mutate(),
+    refresh,
   };
 }

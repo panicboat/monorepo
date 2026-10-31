@@ -1,43 +1,18 @@
 "use client";
 
-import useSWRInfinite from "swr/infinite";
-import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import type { PaginatedFootprintsResponse } from "../types";
 
 export function useFootprints() {
-  const profileId = useAuthStore((s) => s.activeProfileId);
-
-  const getKey = (
-    pageIndex: number,
-    prev: PaginatedFootprintsResponse | null
-  ): string | null => {
-    if (!profileId) return null;
-    if (prev && !prev.hasMore) return null;
-    const cursorQs =
-      pageIndex === 0
-        ? ""
-        : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/footprints/list${cursorQs}`;
-  };
-
-  const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedFootprintsResponse>(getKey, fetcher, {
-      revalidateOnFocus: false,
-    });
-
-  const pages = data || [];
-  const footprints = pages.flatMap((p) => p.footprints || []);
-  const hasMore =
-    pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
+  const { pages, hasMore, loading, error, loadMore, refresh } = useCursorPages<PaginatedFootprintsResponse>("/api/footprints/list");
 
   return {
-    footprints,
+    footprints: pages.flatMap((p) => p.footprints || []),
     hasMore,
-    loading: isLoading || isValidating,
+    loading,
     loaded: pages.length > 0,
     error,
-    loadMore: () => setSize(size + 1),
-    refresh: () => mutate(),
+    loadMore,
+    refresh,
   };
 }

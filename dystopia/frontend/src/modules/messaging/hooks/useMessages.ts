@@ -1,32 +1,16 @@
 "use client";
 
-import useSWRInfinite from "swr/infinite";
 import { MESSAGING_POLL_INTERVAL_MS } from "../lib/polling";
-import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import { authFetch } from "@/lib/auth";
 import { useCallback } from "react";
 import type { PaginatedMessagesResponse } from "../types";
 
 export function useMessages(threadId: string | null | undefined) {
-  const profileId = useAuthStore((s) => s.activeProfileId);
-
-  const getKey = (pageIndex: number, prev: PaginatedMessagesResponse | null): string | null => {
-    if (!profileId || !threadId) return null;
-    if (prev && !prev.hasMore) return null;
-    const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/messaging/threads/${encodeURIComponent(threadId)}/messages${cursorQs}`;
-  };
-
-  const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedMessagesResponse>(getKey, fetcher, {
-      revalidateOnFocus: false,
-      refreshInterval: MESSAGING_POLL_INTERVAL_MS,
-    });
-
-  const pages = data || [];
-  const messages = pages.flatMap((p) => p.messages || []);
-  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
+  const { pages, hasMore, loading, error, loadMore, refresh, mutate } = useCursorPages<PaginatedMessagesResponse>(
+    threadId ? `/api/messaging/threads/${encodeURIComponent(threadId)}/messages` : null,
+    { refreshInterval: MESSAGING_POLL_INTERVAL_MS }
+  );
 
   const send = useCallback(
     async (content: string) => {
@@ -52,13 +36,13 @@ export function useMessages(threadId: string | null | undefined) {
   );
 
   return {
-    messages,
+    messages: pages.flatMap((p) => p.messages || []),
     hasMore,
-    loading: isLoading || isValidating,
+    loading,
     error,
-    loadMore: () => setSize(size + 1),
+    loadMore,
     send,
     markRead,
-    refresh: () => mutate(),
+    refresh,
   };
 }

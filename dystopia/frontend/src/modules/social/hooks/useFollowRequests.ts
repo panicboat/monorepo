@@ -1,8 +1,8 @@
 "use client";
 
 import useSWR from "swr";
-import useSWRInfinite from "swr/infinite";
 import { useCallback } from "react";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import { fetcher } from "@/lib/swr";
 import { authFetch } from "@/lib/auth/fetch";
 import { useAuthStore } from "@/stores/authStore";
@@ -20,16 +20,9 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
   const profileId = useAuthStore((s) => s.activeProfileId);
   const active = enabled && !!profileId;
 
-  const getKey = (pageIndex: number, prev: ListResponse | null): string | null => {
-    if (!active) return null;
-    if (prev && !prev.hasMore) return null;
-    return pageIndex === 0 ? "/api/social/follow/requests" : `/api/social/follow/requests?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-  };
-
-  const { data: pages, error: listError, isLoading, isValidating, size, setSize, mutate: mutateList } = useSWRInfinite<ListResponse>(
-    getKey,
-    fetcher,
-    { revalidateOnFocus: false, dedupingInterval: 5000 }
+  const { pages, hasMore, isLoading, isValidating, error: listError, loadMore, mutate: mutateList } = useCursorPages<ListResponse>(
+    active ? "/api/social/follow/requests" : null,
+    { dedupingInterval: 5000 }
   );
 
   const { data: countData, mutate: mutateCount } = useSWR<CountResponse>(
@@ -58,12 +51,10 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
     await Promise.all([mutateList(), mutateCount()]);
   }, [mutateList, mutateCount]);
 
-  const loaded = pages || [];
-
   return {
-    requests: loaded.flatMap((page) => page.requests || []),
-    hasMore: loaded.length > 0 ? !!loaded[loaded.length - 1].hasMore : false,
-    loadMore: () => setSize(size + 1),
+    requests: pages.flatMap((page) => page.requests || []),
+    hasMore,
+    loadMore,
     pendingCount: countData?.count || 0,
     loading: isLoading,
     loadingMore: isValidating,

@@ -1,33 +1,16 @@
 "use client";
 
-import useSWRInfinite from "swr/infinite";
-import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import type { PaginatedAuthorPostsResponse } from "@/modules/post/lib/author-tab-view";
 
 export function useAuthorLikedPosts(profileId: string | null | undefined) {
-  const activeProfileId = useAuthStore((s) => s.activeProfileId);
-
-  const getKey = (pageIndex: number, prev: PaginatedAuthorPostsResponse | null): string | null => {
-    if (!activeProfileId || !profileId) return null;
-    if (prev && !prev.hasMore) return null;
-    const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/posts/liked-by?profile_id=${encodeURIComponent(profileId)}${cursorQs}`;
-  };
-
-  const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedAuthorPostsResponse>(getKey, fetcher, { revalidateOnFocus: false });
-
-  const pages = data || [];
-  const posts = pages.flatMap((p) => p.posts || []);
-  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
-
+  const { pages, hasMore, loading, error, loadMore, refresh } = useCursorPages<PaginatedAuthorPostsResponse>(profileId ? `/api/posts/liked-by?profile_id=${encodeURIComponent(profileId)}` : null);
   return {
-    posts,
+    posts: pages.flatMap((p) => p.posts || []),
     hasMore,
-    loading: isLoading || isValidating,
+    loading,
     error,
-    loadMore: () => setSize(size + 1),
-    refresh: () => mutate(),
+    loadMore,
+    refresh,
   };
 }
