@@ -4,7 +4,7 @@ import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
 import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
-import { profileRequestHeaders } from "@/lib/auth/profile-headers";
+import { authFetch } from "@/lib/auth/fetch";
 import { useAuthStore } from "@/stores/authStore";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 
@@ -40,42 +40,21 @@ export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}
 
   const approve = useCallback(async (requesterProfileId: string) => {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
-    const res = await fetch(`/api/social/follow/requests/${requesterProfileId}/approve`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "Failed to approve");
-    }
+    await authFetch(`/api/social/follow/requests/${requesterProfileId}/approve`, { method: "POST" });
     mutateList((cur) => cur?.map((page) => ({ ...page, requests: page.requests.filter((r) => r.profileId !== requesterProfileId) })), { revalidate: false });
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 
   const reject = useCallback(async (requesterProfileId: string) => {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
-    const res = await fetch(`/api/social/follow/requests/${requesterProfileId}/reject`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "Failed to reject");
-    }
+    await authFetch(`/api/social/follow/requests/${requesterProfileId}/reject`, { method: "POST" });
     mutateList((cur) => cur?.map((page) => ({ ...page, requests: page.requests.filter((r) => r.profileId !== requesterProfileId) })), { revalidate: false });
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 
   const approveAll = useCallback(async () => {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
-    const res = await fetch("/api/social/follow/requests/approve-all", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "Failed to approve all");
-    }
+    await authFetch("/api/social/follow/requests/approve-all", { method: "POST" });
     await Promise.all([mutateList(), mutateCount()]);
   }, [mutateList, mutateCount]);
 

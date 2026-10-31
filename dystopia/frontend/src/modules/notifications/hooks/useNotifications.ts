@@ -4,7 +4,7 @@ import { useSWRConfig } from "swr";
 import useSWRInfinite from "swr/infinite";
 import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
-import { profileRequestHeaders } from "@/lib/auth/profile-headers";
+import { authFetch } from "@/lib/auth/fetch";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedNotificationsResponse } from "../types";
 import { UNREAD_COUNT_KEY } from "./useUnreadCount";
@@ -30,14 +30,7 @@ export function useNotifications() {
 
   const markAllRead = useCallback(async () => {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
-    const res = await fetch(`/api/notifications/mark-all-read`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "Failed to mark all read");
-    }
+    await authFetch(`/api/notifications/mark-all-read`, { method: "POST" });
     const now = new Date().toISOString();
     mutate(
       (cur) =>
@@ -53,14 +46,7 @@ export function useNotifications() {
 
   const markRead = useCallback(async (id: string) => {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
-    const res = await fetch(`/api/notifications/${id}/read`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "Failed to mark read");
-    }
+    await authFetch(`/api/notifications/${id}/read`, { method: "POST" });
     const now = new Date().toISOString();
     mutate(
       (cur) =>

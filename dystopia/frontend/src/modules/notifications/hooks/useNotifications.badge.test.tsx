@@ -24,10 +24,10 @@ vi.mock("@/lib/swr", () => ({
 }));
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: Object.assign((selector: (state: { activeProfileId: string }) => unknown) => selector({ activeProfileId: "p-1" }), {
-    getState: () => ({ activeProfileId: "p-1" }),
+    getState: () => ({ accountId: "a-1", activeProfileId: "p-1" }),
   }),
 }));
-vi.mock("@/lib/auth/profile-headers", () => ({ profileRequestHeaders: () => ({}) }));
+vi.mock("@/lib/auth/profile-headers", () => ({ PROFILE_ID_HEADER: "x-profile-id", profileRequestHeaders: () => ({}) }));
 
 const { useNotifications } = await import("./useNotifications");
 const { useUnreadCount } = await import("./useUnreadCount");
