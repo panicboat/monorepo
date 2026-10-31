@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import useSWRInfinite from "swr/infinite";
-import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import type { PaginatedSchedulesResponse, ScheduleSearchFilters } from "../types";
 
 const DEBOUNCE_MS = 300;
 
 export function useSearchSchedules({ date, prefecture, area, industry, timeBand, followingOnly, query }: ScheduleSearchFilters) {
-  const profileId = useAuthStore((s) => s.activeProfileId);
   const [debounced, setDebounced] = useState(query);
 
   useEffect(() => {
@@ -19,22 +16,15 @@ export function useSearchSchedules({ date, prefecture, area, industry, timeBand,
 
   const name = debounced.trim();
 
-  const getKey = (pageIndex: number, prev: PaginatedSchedulesResponse | null): string | null => {
-    if (!profileId) return null;
-    if (prev && !prev.hasMore) return null;
-    const params = new URLSearchParams({ date });
-    if (prefecture) params.set("prefecture", prefecture);
-    if (area) params.set("area", area);
-    if (industry) params.set("industry", industry);
-    if (timeBand) params.set("timeBand", timeBand);
-    if (followingOnly) params.set("followingOnly", "true");
-    if (name) params.set("q", name);
-    if (pageIndex > 0) params.set("cursor", prev?.nextCursor || "");
-    return `/api/discovery/schedules?${params}`;
-  };
+  const params = new URLSearchParams({ date });
+  if (prefecture) params.set("prefecture", prefecture);
+  if (area) params.set("area", area);
+  if (industry) params.set("industry", industry);
+  if (timeBand) params.set("timeBand", timeBand);
+  if (followingOnly) params.set("followingOnly", "true");
+  if (name) params.set("q", name);
 
-  const { data, error, size, setSize, isLoading, isValidating } =
-    useSWRInfinite<PaginatedSchedulesResponse>(getKey, fetcher, { revalidateOnFocus: false });
+  const { pages, hasMore, loading, error, loadMore, size, setSize } = useCursorPages<PaginatedSchedulesResponse>(`/api/discovery/schedules?${params}`);
 
   const filterKey = JSON.stringify([date, prefecture, area, industry, timeBand, followingOnly, name]);
   const lastFilterKey = useRef(filterKey);
@@ -45,15 +35,11 @@ export function useSearchSchedules({ date, prefecture, area, industry, timeBand,
     if (size > 1) setSize(1);
   }, [filterKey, size, setSize]);
 
-  const pages = data || [];
-  const results = pages.flatMap((p) => p.results || []);
-  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
-
   return {
-    results,
+    results: pages.flatMap((p) => p.results || []),
     hasMore,
-    loading: isLoading || isValidating,
+    loading,
     error,
-    loadMore: () => setSize(size + 1),
+    loadMore,
   };
 }

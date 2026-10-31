@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import useSWRInfinite from "swr/infinite";
-import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import type { PaginatedUsersResponse } from "../types";
 
 const DEBOUNCE_MS = 300;
@@ -11,7 +9,6 @@ const DEBOUNCE_MS = 300;
 export type SearchUsersRoleFilter = 0 | 1 | 2;
 
 export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter = 0) {
-  const profileId = useAuthStore((s) => s.activeProfileId);
   const [debounced, setDebounced] = useState(query);
 
   useEffect(() => {
@@ -19,30 +16,18 @@ export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter 
     return () => clearTimeout(t);
   }, [query]);
 
-  const getKey = (pageIndex: number, prev: PaginatedUsersResponse | null): string | null => {
-    if (!profileId) return null;
-    const trimmed = debounced.trim();
-    if (trimmed.length === 0) return null;
-    if (prev && !prev.hasMore) return null;
-    const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    const roleQs = roleFilter > 0 ? `&role=${roleFilter}` : "";
-    return `/api/discovery/users?q=${encodeURIComponent(trimmed)}${cursorQs}${roleQs}`;
-  };
-
-  const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedUsersResponse>(getKey, fetcher, { revalidateOnFocus: false });
-
-  const pages = data || [];
-  const profiles = pages.flatMap((p) => p.profiles || []);
-  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
+  const trimmed = debounced.trim();
+  const { pages, hasMore, loading, error, loadMore, refresh } = useCursorPages<PaginatedUsersResponse>(
+    trimmed ? `/api/discovery/users?q=${encodeURIComponent(trimmed)}${roleFilter > 0 ? `&role=${roleFilter}` : ""}` : null
+  );
 
   return {
-    profiles,
+    profiles: pages.flatMap((p) => p.profiles || []),
     hasMore,
-    loading: isLoading || isValidating,
+    loading,
     error,
-    loadMore: () => setSize(size + 1),
-    refresh: () => mutate(),
+    loadMore,
+    refresh,
     debouncedQuery: debounced,
   };
 }

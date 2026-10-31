@@ -1,33 +1,16 @@
 "use client";
 
-import useSWRInfinite from "swr/infinite";
-import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useCursorPages } from "@/lib/hooks/useCursorPages";
 import type { PaginatedPostsResponse, RankPeriodLiteral } from "../types";
 
 export function useRankPosts(period: RankPeriodLiteral) {
-  const profileId = useAuthStore((s) => s.activeProfileId);
-
-  const getKey = (pageIndex: number, prev: PaginatedPostsResponse | null): string | null => {
-    if (!profileId) return null;
-    if (prev && !prev.hasMore) return null;
-    const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/discovery/ranking?period=${encodeURIComponent(period)}${cursorQs}`;
-  };
-
-  const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedPostsResponse>(getKey, fetcher, { revalidateOnFocus: false });
-
-  const pages = data || [];
-  const posts = pages.flatMap((p) => p.posts || []);
-  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
-
+  const { pages, hasMore, loading, error, loadMore, refresh } = useCursorPages<PaginatedPostsResponse>(`/api/discovery/ranking?period=${encodeURIComponent(period)}`);
   return {
-    posts,
+    posts: pages.flatMap((p) => p.posts || []),
     hasMore,
-    loading: isLoading || isValidating,
+    loading,
     error,
-    loadMore: () => setSize(size + 1),
-    refresh: () => mutate(),
+    loadMore,
+    refresh,
   };
 }
