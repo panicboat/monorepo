@@ -36,17 +36,18 @@ const chipClass = (selected: boolean) =>
 interface ScheduleBulkSheetProps {
   profileId: string;
   open: boolean;
+  todayOnly?: boolean;
   onClose: () => void;
   onSaved: () => void;
 }
 
-export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: ScheduleBulkSheetProps) {
+export function ScheduleBulkSheet({ profileId, open, todayOnly = false, onClose, onSaved }: ScheduleBulkSheetProps) {
   const days = useMemo(() => buildDateRange(new Date(), DAYS), []);
   const { schedules, loading, error, refresh } = useSchedules(profileId, days[0], days[DAYS - 1]);
   const saveSchedule = useSaveSchedule();
   const deleteSchedule = useDeleteSchedule();
   const showToast = useToastStore((s) => s.show);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(todayOnly ? [days[0]] : []));
   const [mode, setMode] = useState<Mode>("work");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
@@ -123,16 +124,18 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
       onOpenChange={(next) => {
         if (!next && !saving) onClose();
       }}
-      title="予定をまとめて編集"
+      title={todayOnly ? "今日の予定を入れる" : "予定をまとめて編集"}
     >
       <div className="flex flex-col gap-5">
-        <div>
-          <p className="text-xs font-bold tracking-wide text-text-secondary">予定 / 2週間まとめて編集</p>
-          <p className="mt-1 text-sm text-text-secondary">日付を複数選択して、同じ時間帯を一括で設定できます。1日ずつ入力する必要はありません。</p>
-        </div>
+        {!todayOnly && (
+          <div>
+            <p className="text-xs font-bold tracking-wide text-text-secondary">予定 / 2週間まとめて編集</p>
+            <p className="mt-1 text-sm text-text-secondary">日付を複数選択して、同じ時間帯を一括で設定できます。1日ずつ入力する必要はありません。</p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-1.5">
-          {days.map((dateKey) => {
+          {(todayOnly ? days.slice(0, 1) : days).map((dateKey) => {
             const plan = byDate.get(dateKey);
             const isSelected = selected.has(dateKey);
             return (
@@ -161,12 +164,14 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
         </div>
 
         <div className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex justify-end">
-            <button type="button" onClick={selectWeekdays} className="min-h-11 text-sm text-accent hover:underline">
-              平日を選択
-            </button>
-          </div>
-          <div className="mt-3 flex gap-2">
+          {!todayOnly && (
+            <div className="flex justify-end">
+              <button type="button" onClick={selectWeekdays} className="min-h-11 text-sm text-accent hover:underline">
+                平日を選択
+              </button>
+            </div>
+          )}
+          <div className={cn("flex gap-2", !todayOnly && "mt-3")}>
             <button type="button" aria-pressed={mode === "work"} onClick={() => setMode("work")} className={chipClass(mode === "work")}>
               予定を入れる
             </button>

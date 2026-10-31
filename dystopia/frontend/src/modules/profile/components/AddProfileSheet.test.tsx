@@ -23,7 +23,7 @@ describe("AddProfileSheet", () => {
     });
 
     expect(document.body.textContent).toContain("プロフィールを追加");
-    expect(document.body.textContent).toContain("別の活動名で使うプロフィールを追加できます。");
+    expect(document.body.textContent).toContain("別の名前で使うプロフィールを追加できます。");
     expect(document.querySelector('[role="dialog"] form')).not.toBeNull();
   });
 

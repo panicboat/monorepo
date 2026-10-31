@@ -12,6 +12,7 @@ const DAYS = 14;
 interface Editing {
   session: number;
   open: boolean;
+  todayOnly: boolean;
 }
 
 export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner: boolean }) {
@@ -20,29 +21,34 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
   // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
   const [editing, setEditing] = useState<Editing | null>(null);
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
+  const visibleDays = isOwner ? days : days.filter((dateKey) => byDate.has(dateKey));
+  const openSheet = (todayOnly: boolean) =>
+    setEditing((current) => ({ session: (current?.session ?? 0) + 1, open: true, todayOnly }));
 
   return (
     <div className="px-4 py-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold text-text-primary">予定</h2>
         {isOwner && (
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => setEditing((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}
-          >
-            まとめて編集
-          </Button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button type="button" size="sm" onClick={() => openSheet(true)}>
+              今日の予定を入れる
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={() => openSheet(false)}>
+              まとめて編集
+            </Button>
+          </div>
         )}
       </div>
       {hiddenByLock ? (
         <LockedNotice />
       ) : loading ? (
         <p className="mt-3 text-sm text-text-secondary">読み込み中…</p>
+      ) : visibleDays.length === 0 ? (
+        <p className="mt-3 text-sm text-text-secondary">予定はありません</p>
       ) : (
         <ol className="mt-3 flex flex-col gap-2">
-          {days.map((dateKey) => {
+          {visibleDays.map((dateKey) => {
             const plan = byDate.get(dateKey);
             if (!plan) {
               return (
@@ -63,12 +69,13 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
           })}
         </ol>
       )}
-      {!hiddenByLock && <p className="mt-3 text-xs text-text-secondary">予定は予約可能枠を保証するものではありません。</p>}
+      {!hiddenByLock && visibleDays.length > 0 && <p className="mt-3 text-xs text-text-secondary">予定は予約可能枠を保証するものではありません。</p>}
       {editing && (
         <ScheduleBulkSheet
           key={editing.session}
           profileId={profileId}
           open={editing.open}
+          todayOnly={editing.todayOnly}
           onClose={() => setEditing((current) => current && { ...current, open: false })}
           onSaved={refresh}
         />
