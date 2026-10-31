@@ -1,4 +1,4 @@
-FROM node:24.22.2-slim AS frontend-builder
+FROM node:26.13.0-slim AS frontend-builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV CI=true
@@ -31,7 +31,7 @@ RUN apt-get update -qq && \
 
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:1.1.0 /lambda-adapter /opt/extensions/lambda-adapter
 # Copy only the binary because the Next.js standalone server needs no other part of the Node.js distribution.
-COPY --from=node:24.22.2-slim /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:26.13.0-slim /usr/local/bin/node /usr/local/bin/node
 
 # Point HOME at /tmp because Lambda mounts every other path read-only.
 ENV BUNDLE_PATH=/usr/local/bundle \
