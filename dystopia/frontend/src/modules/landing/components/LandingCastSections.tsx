@@ -113,7 +113,7 @@ export function CastHeroArt() {
             <div className="float-data">フォロワーと投稿を、自分に。</div>
           </div>
         </div>
-        <span className="smallchip">活動名を切り替えられる</span>
+        <span className="smallchip">見せたい顔を切り替えられる</span>
       </div>
     </div>
   );
@@ -144,13 +144,13 @@ export function CastValues() {
         <div className="values">
           <article className="value" data-num="01">
             <div aria-hidden="true" className="value-icon">✦</div>
-            <h3>主役は、お店ではなく個人。</h3>
-            <p>所属先が変わっても、自分の名前で発信できる。活動名を使い分けながら、あなた自身のつながりを育てられる場所に。</p>
+            <h3>主役は、お店ではなくあなた。</h3>
+            <p>お店が変わっても、働き方が変わっても、自分の名前で発信できる。見せたい顔を使い分けながら、あなた自身のつながりを育てられる場所に。</p>
           </article>
           <article className="value" data-num="02">
             <div aria-hidden="true" className="value-icon">☾</div>
             <h3>仕事を、隠さなくていい。</h3>
-            <p>夜職であることや、その仕事の発信を理由に排除しない。働く人が安心して言葉を届けられる街を目指します。</p>
+            <p>夜職であることを理由に排除しない。働く人が安心して言葉を届けられる街を目指します。</p>
           </article>
           <article className="value" data-num="03">
             <div aria-hidden="true" className="value-icon">♡</div>
@@ -196,57 +196,49 @@ export function CastStories() {
                   <p>@mio_24 · プロフィールB</p>
                 </div>
               </div>
-              <div className="identity-meta">ひとつのログインで活動名を切り替える</div>
+              <div className="identity-meta">ひとつのログインで見せたい顔を切り替える</div>
             </div>
           </div>
           <div className="story-copy">
             <span className="count">01 / IDENTITY</span>
             <h3>
-              お店の数だけ、
+              見せたい顔の数だけ、
               <br />
               名前を持てる。
             </h3>
-            <p>掛け持ちのお店や活動名ごとに、プロフィールを使い分ける。誰かの看板ではなく、あなた自身の名前で発信できます。</p>
-            <p className="fine">※ 活動名の関連は画面上で表示しない設計です。同一人物と推測されないことを保証するものではありません。</p>
+            <p>お店や見せたい顔ごとに、プロフィールを使い分ける。誰かの看板ではなく、あなた自身の名前で発信できます。</p>
+            <p className="fine">※ プロフィール同士の関連は画面上で表示しない設計です。同一人物と推測されないことを保証するものではありません。</p>
           </div>
         </article>
         <article className="story-row reverse">
           <div className="story-visual">
             <div className="schedule-ui">
-              <div className="bar">
-                <h4>今週の予定</h4>
-                <small>プロフィールに表示 ↗</small>
-              </div>
-              <div className="dates">
-                <div className="date on">
-                  <b>11</b>
-                  <small>20:00〜</small>
+              <div className="schedule-post">
+                <div className="post-user">
+                  <div className="avatar">✦</div>
+                  <div className="post-names">
+                    <strong>Rin</strong>
+                    <small>@rin_night · 12分前</small>
+                  </div>
                 </div>
-                <div className="date">
-                  <b>12</b>
-                  <small>お休み</small>
-                </div>
-                <div className="date on">
-                  <b>13</b>
-                  <small>21:00〜</small>
-                </div>
-                <div className="date">
-                  <b>14</b>
-                  <small>未登録</small>
+                <p>今日は気分がいいので、今夜少しだけ 🌙</p>
+                <div className="schedule-summary">
+                  <small>予定</small>
+                  <b>21:30〜</b>
                 </div>
               </div>
-              <div className="schedule-msg">✦ 「今夜いるよ」を、投稿とプロフィールで。</div>
+              <div className="schedule-msg">✦ 「今夜会えるよ」を、投稿とプロフィールで。</div>
             </div>
           </div>
           <div className="story-copy">
             <span className="count">02 / CONNECTION</span>
             <h3>
-              「今夜いるよ」が、
+              「今夜会えるよ」が、
               <br />
               ちゃんと見つかる。
             </h3>
-            <p>日々の投稿からあなたを知った人が、プロフィールで予定を確認できる。発信と仕事の情報を、離れた場所に置かなくていい。</p>
-            <p className="fine">※ 予定の表示例です。空き枠確認や自動通知を表すものではありません。</p>
+            <p>日々の投稿からあなたを知った人が、プロフィールで予定を確認できる。会える日も、会えない日も、つながりは続きます。</p>
+            <p className="fine">※ 予定の表示例です。空き枠確認や自動通知を表すものではありません。お店を通さない約束や取引には使えません。</p>
           </div>
         </article>
         <article className="story-row">

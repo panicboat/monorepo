@@ -129,6 +129,13 @@
   .date small { display: block; font-size: 9px; color: #b8afc9; margin-top: 7px }
   .date.on { border-color: #bb8be9; background: #50366768 }
   .date.on small { color: #edb9e7 }
+  .schedule-post { display: grid; gap: 10px }
+  .schedule-post .post-names strong { font-size: 13px }
+  .schedule-post .post-names small { font-size: 10px }
+  .schedule-post p { font-size: 12px; line-height: 1.8; color: #e6e1f0 }
+  .schedule-summary { border: 1px solid #bb8be9; border-radius: 10px; background: #50366768; padding: 11px 13px }
+  .schedule-summary small { display: block; font-size: 10px; color: #edb9e7 }
+  .schedule-summary b { font-size: 16px; font-variant-numeric: tabular-nums }
   .schedule-msg { margin-top: 15px; border-radius: 9px; padding: 11px 13px; background: #252338; color: #d5cae4; font-size: 10px }
   .tiny-heart { color: #fa90c0 }
   .end { background: radial-gradient(ellipse at 50% 100%,#5f2b6e85 0%,transparent 51%),linear-gradient(180deg,#110e1c,#171024); border-top: 1px solid #ffffff12; text-align: center; padding: 126px 0 102px }
