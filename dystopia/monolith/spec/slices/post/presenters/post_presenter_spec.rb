@@ -10,7 +10,7 @@ RSpec.describe Post::Presenters::PostPresenter do
     let(:post) do
       double(
         :post, id: "post-1", author_profile_id: "author-1", content: "hi", created_at: Time.now,
-        published_at: Time.now, expires_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
+        published_at: Time.now, expires_at: nil, pinned_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
       )
     end
 
@@ -35,7 +35,7 @@ RSpec.describe Post::Presenters::PostPresenter do
     let(:post) do
       double(
         :post, id: "post-1", author_profile_id: "author-1", content: "hi", created_at: Time.now,
-        published_at: Time.now, expires_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
+        published_at: Time.now, expires_at: nil, pinned_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
       )
     end
 
@@ -64,6 +64,7 @@ RSpec.describe Post::Presenters::PostPresenter do
         created_at: Time.now,
         published_at: Time.now,
         expires_at: nil,
+        pinned_at: nil,
         post_media: [],
         hashtags: [],
         post_mentions: [mention],
@@ -90,7 +91,7 @@ RSpec.describe Post::Presenters::PostPresenter do
     it "defaults to no mentions when the post has none" do
       no_mention_post = double(
         :post, id: "post-2", author_profile_id: "author-1", content: "hi", created_at: Time.now,
-        published_at: Time.now, expires_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
+        published_at: Time.now, expires_at: nil, pinned_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
       )
 
       proto = described_class.to_post_proto(no_mention_post)
@@ -106,11 +107,11 @@ RSpec.describe Post::Presenters::PostPresenter do
       expires_at = Time.utc(2026, 10, 3, 9, 0, 0)
       post = double(
         :post, id: "post-3", author_profile_id: "author-1", content: "hi", created_at: created_at,
-        published_at: published_at, expires_at: expires_at, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
+        published_at: published_at, expires_at: expires_at, pinned_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
       )
       endless = double(
         :post, id: "post-4", author_profile_id: "author-1", content: "hi", created_at: created_at,
-        published_at: published_at, expires_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
+        published_at: published_at, expires_at: nil, pinned_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
       )
 
       proto = described_class.to_post_proto(post)

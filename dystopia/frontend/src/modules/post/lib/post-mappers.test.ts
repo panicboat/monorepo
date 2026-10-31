@@ -80,6 +80,21 @@ describe("mapPostToView schedule", () => {
   });
 });
 
+describe("mapPostToView pinned", () => {
+  const base = {
+    id: "p1", authorProfileId: "a1", content: "", media: [], createdAt: "",
+    likesCount: 0, commentsCount: 0, visibility: "public", hashtags: [], liked: false, mentions: [],
+  };
+
+  it("carries the pin of the post", () => {
+    expect(mapPostToView({ ...base, pinned: true } as unknown as Post).pinned).toBe(true);
+  });
+
+  it("defaults to not pinned", () => {
+    expect(mapPostToView(base as unknown as Post).pinned).toBe(false);
+  });
+});
+
 describe("post display window", () => {
   const base = {
     id: "p1", authorProfileId: "a1", content: "hi", media: [], createdAt: "2026-10-01T00:00:00Z",

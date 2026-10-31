@@ -52,6 +52,7 @@ const feedPost: PostView = {
   mentions: [],
   liked: false,
   schedule: null,
+  pinned: false,
 };
 
 let serverCount: number;

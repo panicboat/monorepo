@@ -32,6 +32,24 @@ module Post
         posts.dataset.where(id: id).delete
       end
 
+      def pin_post(id:, author_profile_id:)
+        transaction do
+          posts.dataset.where(author_profile_id: author_profile_id).exclude(pinned_at: nil).update(pinned_at: nil)
+          posts.dataset.where(id: id).update(pinned_at: Time.now)
+        end
+      end
+
+      def unpin_post(id)
+        posts.dataset.where(id: id).update(pinned_at: nil)
+      end
+
+      def find_pinned(author_profile_id:, include_private:, live_only:)
+        scope = posts.combine(:post_media, :hashtags, :post_mentions).where(author_profile_id: author_profile_id).exclude(pinned_at: nil)
+        scope = scope.where(visibility: "public") unless include_private
+        scope = scope.where(live_condition) if live_only
+        scope.one
+      end
+
       def media_ids_of(post_id)
         post_media.dataset.where(post_id: post_id).select_map(:media_id)
       end
@@ -74,8 +92,9 @@ module Post
         end
       end
 
-      def list_posts(limit: 20, cursor: nil, author_profile_id: nil, media_only: false, include_private: false, live_only: true)
+      def list_posts(limit: 20, cursor: nil, author_profile_id: nil, media_only: false, include_private: false, live_only: true, exclude_pinned: false)
         scope = posts.combine(:post_media, :hashtags, :post_mentions).exclude(author_profile_id: nil)
+        scope = scope.where(pinned_at: nil) if exclude_pinned
         scope = scope.where(visibility: "public") unless include_private
         scope = scope.where(live_condition) if live_only
         scope = scope.where(author_profile_id: author_profile_id) if author_profile_id
