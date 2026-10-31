@@ -80,7 +80,7 @@ describe("BottomTab", () => {
     const html = renderToStaticMarkup(<BottomTab />);
 
     expect(html).not.toContain('href="/search"');
-    expect(Array.from(html.matchAll(/<span>([^<]+)<\/span>/g), (m) => m[1])).toEqual(["ホーム", "予定", "通知", "メッセージ", "カルテ"]);
+    expect(Array.from(html.matchAll(/<span>([^<]+)<\/span>/g), (m) => m[1])).toEqual(["ホーム", "予定", "メッセージ", "カルテ", "通知"]);
     expect(html).not.toContain("schedule-sheet");
   });
 
@@ -111,6 +111,7 @@ describe("BottomTab", () => {
 
     expect(html).toContain('href="/search"');
     expect(html).not.toContain("予定");
+    expect(Array.from(html.matchAll(/<span>([^<]+)<\/span>/g), (m) => m[1])).toEqual(["ホーム", "検索", "メッセージ", "クチコミ", "通知"]);
   });
 
   it("shows the review tab for a Guest viewer and hides the karte tab", () => {

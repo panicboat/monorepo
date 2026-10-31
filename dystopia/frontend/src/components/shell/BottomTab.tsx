@@ -43,11 +43,11 @@ export function BottomTab() {
   // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
   const [scheduling, setScheduling] = useState<{ session: number; open: boolean } | null>(null);
 
-  const [home, search, ...rest] = TABS;
+  const [home, search, notifications, messages] = TABS;
   const tabs: BottomTabItem[] =
     role === "cast"
-      ? [home, SCHEDULE_TAB, ...rest, KARTE_TAB]
-      : [home, search, ...rest, ...(role === "guest" ? [REVIEWS_TAB] : [])];
+      ? [home, SCHEDULE_TAB, messages, KARTE_TAB, notifications]
+      : [home, search, messages, ...(role === "guest" ? [REVIEWS_TAB] : []), notifications];
 
   return (
     <>
