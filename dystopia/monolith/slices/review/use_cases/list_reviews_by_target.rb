@@ -19,6 +19,7 @@ module Review
       def call(viewer_account_id:, viewer_profile_id:, target_profile_id:, limit:, cursor:)
         raise Errors::Invalid, "Unknown profile" unless Ids.valid?(target_profile_id)
 
+        target_profile_id = target_profile_id.downcase
         limit = page_reviews.limit_for(limit)
         return { reviews: [], next_cursor: nil, has_more: false, summary: NO_SUMMARY, hidden_by_lock: false } unless visible?(target_profile_id)
         return locked_page(viewer_profile_id, target_profile_id) unless filter_visible_reviews.lock_passable?(viewer_profile_id: viewer_profile_id, profile_id: target_profile_id)

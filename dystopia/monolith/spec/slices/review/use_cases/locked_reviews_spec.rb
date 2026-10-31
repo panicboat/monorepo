@@ -37,15 +37,15 @@ RSpec.describe "Review visibility of a locked profile", type: :database do
     follow_repo.follow(follower_profile_id: follower.profile, followee_profile_id: followee.profile, status: status)
   end
 
-  def by_target(who, cast:, limit: 20)
+  def by_target(who, cast:, limit: 20, profile_id: cast.profile)
     uc(:list_reviews_by_target).call(
-      viewer_account_id: who.account, viewer_profile_id: who.profile, target_profile_id: cast.profile, limit: limit, cursor: nil
+      viewer_account_id: who.account, viewer_profile_id: who.profile, target_profile_id: profile_id, limit: limit, cursor: nil
     )
   end
 
-  def by_author(who, author:, limit: 20, cursor: nil)
+  def by_author(who, author:, limit: 20, cursor: nil, profile_id: author.profile)
     uc(:list_reviews_by_author).call(
-      viewer_account_id: who.account, viewer_profile_id: who.profile, author_profile_id: author.profile, limit: limit, cursor: cursor
+      viewer_account_id: who.account, viewer_profile_id: who.profile, author_profile_id: profile_id, limit: limit, cursor: cursor
     )
   end
 
@@ -198,6 +198,46 @@ RSpec.describe "Review visibility of a locked profile", type: :database do
 
       expect([ids(first), first[:has_more]]).to eq([[about_open[:id]], true])
       expect([ids(second), second[:has_more]]).to eq([[older_open[:id]], false])
+    end
+  end
+
+  describe "a profile id written in uppercase" do
+    let!(:about_open) { write(guest, open_cast, rating: 5, at: now - 20) }
+    let!(:about_locked) { write(guest, locked_cast, rating: 3, at: now - 10) }
+    let!(:from_locked_guest) { write(locked_guest, open_cast, at: now - 5) }
+
+    it "hides the list of a locked cast from a viewer who cannot pass" do
+      result = by_target(viewer, cast: locked_cast, profile_id: locked_cast.profile.upcase)
+
+      expect(result).to eq(reviews: [], next_cursor: nil, has_more: false, summary: no_summary, hidden_by_lock: true)
+    end
+
+    it "does not report the lock of a locked cast to a blocked viewer" do
+      block_repo.block(blocker_profile_id: locked_cast.profile, blocked_profile_id: viewer.profile)
+
+      result = by_target(viewer, cast: locked_cast, profile_id: locked_cast.profile.upcase)
+
+      expect(result).to eq(reviews: [], next_cursor: nil, has_more: false, summary: no_summary, hidden_by_lock: false)
+    end
+
+    it "hides the written reviews of a locked guest from a viewer who cannot pass" do
+      result = by_author(viewer, author: locked_guest, profile_id: locked_guest.profile.upcase)
+
+      expect(result).to eq(reviews: [], next_cursor: nil, has_more: false, hidden_by_lock: true)
+    end
+
+    it "drops the reviews of a locked cast from the written reviews of an unlocked guest" do
+      result = by_author(viewer, author: guest, profile_id: guest.profile.upcase)
+
+      expect(ids(result)).to eq([about_open[:id]])
+    end
+
+    it "answers for an unlocked cast as for the lowercase id" do
+      follow(viewer, locked_cast)
+
+      expect(by_target(viewer, cast: open_cast, profile_id: open_cast.profile.upcase)).to eq(by_target(viewer, cast: open_cast))
+      expect(by_author(viewer, author: guest, profile_id: guest.profile.upcase)).to eq(by_author(viewer, author: guest))
+      expect(ids(by_target(viewer, cast: open_cast, profile_id: open_cast.profile.upcase))).to eq([from_locked_guest[:id], about_open[:id]])
     end
   end
 

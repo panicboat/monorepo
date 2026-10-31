@@ -52,6 +52,18 @@ RSpec.describe "lock judgment in social", type: :database do
     expect(pass?(viewer, disabled)).to be true
   end
 
+  it "judges an uppercase id as the profile it names and returns lowercase ids" do
+    open = create_account_with_profile(username: "open", is_private: false)
+
+    expect(uc.call(viewer_profile_id: viewer, profile_ids: [target.upcase])).to eq(Set.new)
+    expect(uc.call(viewer_profile_id: viewer, profile_ids: [open.upcase])).to eq(Set[open])
+
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: target, status: "approved")
+
+    expect(uc.call(viewer_profile_id: viewer.upcase, profile_ids: [target.upcase])).to eq(Set[target])
+    expect(uc.call(viewer_profile_id: target.upcase, profile_ids: [target.upcase])).to eq(Set[target])
+  end
+
   it "reflects the lock turned off without any data change" do
     expect(pass?(viewer, target)).to be false
 

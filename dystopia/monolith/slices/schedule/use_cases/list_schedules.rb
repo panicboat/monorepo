@@ -10,6 +10,7 @@ module Schedule
       DATE_FORMAT = /\A\d{4}-\d{2}-\d{2}\z/
 
       def call(profile_id:, viewer_profile_id:, from_date:, to_date:)
+        profile_id = profile_id.to_s.downcase
         validate_format!(from_date, "取得開始日")
         validate_format!(to_date, "取得終了日")
         return [] unless viewer_profile_id
@@ -21,6 +22,7 @@ module Schedule
       end
 
       def hidden_by_lock?(profile_id:, viewer_profile_id:)
+        profile_id = profile_id.to_s.downcase
         return false unless viewer_profile_id
         return false if blocked_between?(profile_id, viewer_profile_id)
         return false unless get_profile.call(profile_id: profile_id)

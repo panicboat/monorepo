@@ -43,7 +43,7 @@ module Review
       end
 
       def lock_passable?(viewer_profile_id:, profile_id:)
-        lock_passable_ids(viewer_profile_id, [profile_id]).include?(profile_id.to_s)
+        lock_passable_ids(viewer_profile_id, [profile_id]).include?(profile_id.to_s.downcase)
       end
 
       def blocked?(viewer_profile_id:, profile_id:)
