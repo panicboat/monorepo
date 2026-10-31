@@ -81,22 +81,6 @@ export function mapProfileToView(p: Profile): ProfileView {
   };
 }
 
-export function profileViewToSavePayload(p: ProfileView): SaveProfilePayload {
-  return {
-    username: p.username,
-    displayName: p.displayName,
-    bio: p.bio,
-    snsLinks: { ...p.snsLinks },
-    prefecture: p.prefecture,
-    area: p.area,
-    isPrivate: p.isPrivate,
-    followApprovalRequired: p.followApprovalRequired,
-    age: p.age,
-    bodyStats: { ...p.bodyStats },
-    industry: p.industry,
-  };
-}
-
 export function buildSaveProfileRequest(payload: SaveProfilePayload) {
   const sns = payload.snsLinks;
   const stats = payload.bodyStats;

@@ -9,15 +9,6 @@ export const fetcher = async <T>(url: string): Promise<T> => {
   });
 };
 
-export const authFetcher = async <T>(url: string): Promise<T> => {
-  const { authFetch } = await import("@/lib/auth/fetch");
-  return authFetch<T>(url, {
-    method: "GET",
-    requireAuth: true,
-    cache: "no-store",
-  });
-};
-
 export const swrConfig: SWRConfiguration = {
   fetcher,
   revalidateOnFocus: false,
