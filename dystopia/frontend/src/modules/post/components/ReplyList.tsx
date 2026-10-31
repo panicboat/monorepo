@@ -8,6 +8,7 @@ import { useReplies } from "@/modules/post/hooks/useReplies";
 import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
 import { PostText } from "@/modules/post/lib/post-text";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
+import { toastOnFailure } from "@/stores/toastStore";
 
 interface ReplyListProps {
   postId: string;
@@ -31,7 +32,7 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
 
   const onDelete = async (id: string) => {
     if (!confirm("この返信を削除しますか?")) return;
-    await deleteComment(id, commentId).catch(() => {});
+    await deleteComment(id, commentId).catch(toastOnFailure("返信を削除できませんでした"));
   };
 
   return (

@@ -22,6 +22,7 @@ vi.mock("@/stores/authStore", () => ({
 }));
 
 const { ProfileMoreMenu } = await import("./ProfileMoreMenu");
+const { useToastStore } = await import("@/stores/toastStore");
 
 async function openMenu(onUnfollow?: () => void) {
   const container = document.createElement("div");
@@ -47,7 +48,8 @@ const menuItems = () => Array.from(document.querySelectorAll('[role="menuitem"]'
 
 beforeEach(() => {
   mocks.isBlocked = false;
-  mocks.toggle.mockReset();
+  mocks.toggle.mockReset().mockResolvedValue(undefined);
+  useToastStore.setState({ message: null });
 });
 
 describe("ProfileMoreMenu", () => {
@@ -71,6 +73,19 @@ describe("ProfileMoreMenu", () => {
       (menuItems()[0] as HTMLElement).click();
     });
     expect(mocks.toggle).toHaveBeenCalledTimes(1);
+
+    await close();
+  });
+
+  it("reports a failed block in a toast", async () => {
+    mocks.toggle.mockRejectedValue(new Error("boom"));
+    const close = await openMenu();
+
+    await act(async () => {
+      (menuItems()[0] as HTMLElement).click();
+    });
+
+    expect(useToastStore.getState().message).toBe("ブロックできませんでした");
 
     await close();
   });

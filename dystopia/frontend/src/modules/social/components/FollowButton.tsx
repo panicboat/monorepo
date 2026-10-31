@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useFollow } from "@/modules/social/hooks";
 import { FollowStatus } from "@/modules/social/types";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
+import { toastOnFailure } from "@/stores/toastStore";
 
 interface FollowButtonProps {
   targetProfileId: string;
@@ -20,12 +21,12 @@ export function FollowButton({ targetProfileId, className }: FollowButtonProps) 
   const onClick = async () => {
     if (isFollowing) {
       if (!confirm("フォローを解除しますか?")) return;
-      await unfollow();
+      await unfollow().catch(toastOnFailure("フォローを解除できませんでした"));
     } else if (isPending) {
       if (!confirm("フォロー申請をキャンセルしますか?")) return;
-      await cancelRequest();
+      await cancelRequest().catch(toastOnFailure("フォロー申請をキャンセルできませんでした"));
     } else {
-      await follow();
+      await follow().catch(toastOnFailure("フォローできませんでした"));
     }
   };
 

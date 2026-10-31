@@ -53,6 +53,7 @@ vi.mock("@/modules/post/hooks/useDeleteComment", () => ({
 }));
 
 const { ReplyList } = await import("./ReplyList");
+const { useToastStore } = await import("@/stores/toastStore");
 
 describe("ReplyList", () => {
   it("links the reply author's avatar and name to their profile when a username is present", () => {
@@ -152,6 +153,33 @@ describe("ReplyList", () => {
     });
 
     expect(repliesMocks.deleteComment).toHaveBeenCalledWith("reply-1", "comment-1");
+    vi.unstubAllGlobals();
+  });
+
+  it("reports a failed delete in a toast", async () => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    authMocks.activeProfileId = "author-1";
+    repliesMocks.deleteComment.mockRejectedValue(new Error("boom"));
+    repliesMocks.useReplies.mockReturnValue({
+      replies: [reply],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+    vi.stubGlobal("confirm", () => true);
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    act(() => {
+      root.render(<ReplyList postId="post-1" commentId="comment-1" />);
+    });
+
+    const button = [...container.querySelectorAll("button")].find((b) => b.textContent === "削除");
+    await act(async () => {
+      button!.click();
+    });
+
+    expect(useToastStore.getState().message).toBe("返信を削除できませんでした");
     vi.unstubAllGlobals();
   });
 });

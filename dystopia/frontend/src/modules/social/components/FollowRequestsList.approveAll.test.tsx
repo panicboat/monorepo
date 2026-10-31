@@ -6,7 +6,7 @@ import type { ProfileSummaryView } from "@/modules/profile/types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const state = vi.hoisted(() => ({ requests: [] as ProfileSummaryView[], approveAll: vi.fn() }));
+const state = vi.hoisted(() => ({ requests: [] as ProfileSummaryView[], approveAll: vi.fn().mockResolvedValue(undefined) }));
 
 vi.mock("../hooks/useFollowRequests", () => ({
   useFollowRequests: () => ({
@@ -38,7 +38,7 @@ const approveAllButton = (container: HTMLElement) =>
 
 afterEach(() => {
   document.body.innerHTML = "";
-  state.approveAll.mockReset();
+  state.approveAll.mockReset().mockResolvedValue(undefined);
   vi.unstubAllGlobals();
 });
 

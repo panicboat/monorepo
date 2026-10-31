@@ -4,13 +4,14 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { useFollowRequests } from "../hooks/useFollowRequests";
+import { toastOnFailure } from "@/stores/toastStore";
 
 export function FollowRequestsList() {
   const { requests, pendingCount, loading, loadingMore, error, approve, reject, approveAll, hasMore, loadMore } = useFollowRequests();
 
   const onApproveAll = async () => {
     if (!confirm(`${pendingCount} 件の申請をすべて承認しますか？`)) return;
-    await approveAll();
+    await approveAll().catch(toastOnFailure("フォロー申請を承認できませんでした"));
   };
 
   return (
@@ -38,10 +39,10 @@ export function FollowRequestsList() {
               <p className="truncate text-sm text-text-secondary">@{r.username}</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="primary" size="sm" onClick={() => approve(r.profileId)}>
+              <Button variant="primary" size="sm" onClick={() => void approve(r.profileId).catch(toastOnFailure("フォロー申請を承認できませんでした"))}>
                 承認
               </Button>
-              <Button variant="secondary" size="sm" onClick={() => reject(r.profileId)}>
+              <Button variant="secondary" size="sm" onClick={() => void reject(r.profileId).catch(toastOnFailure("フォロー申請を拒否できませんでした"))}>
                 拒否
               </Button>
             </div>

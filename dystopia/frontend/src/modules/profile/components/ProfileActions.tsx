@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { StartChatButton } from "@/modules/messaging";
 import { ProfileMoreMenu, useFollow } from "@/modules/social";
 import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
+import { toastOnFailure } from "@/stores/toastStore";
 
 interface ProfileActionsProps {
   targetProfileId: string;
@@ -18,12 +19,12 @@ export function ProfileActions({ targetProfileId }: ProfileActionsProps) {
 
   const onUnfollow = async () => {
     if (!confirm("フォローを解除しますか?")) return;
-    await unfollow();
+    await unfollow().catch(toastOnFailure("フォローを解除できませんでした"));
   };
 
   const onCancelRequest = async () => {
     if (!confirm("フォロー申請をキャンセルしますか?")) return;
-    await cancelRequest();
+    await cancelRequest().catch(toastOnFailure("フォロー申請をキャンセルできませんでした"));
   };
 
   if (isFollowing) {
@@ -46,7 +47,7 @@ export function ProfileActions({ targetProfileId }: ProfileActionsProps) {
           申請中
         </Button>
       ) : (
-        <Button variant="primary" size="sm" onClick={() => void follow()} disabled={loading}>
+        <Button variant="primary" size="sm" onClick={() => void follow().catch(toastOnFailure("フォローできませんでした"))} disabled={loading}>
           {approvalRequired ? "フォローを申請" : "フォロー"}
         </Button>
       )}
