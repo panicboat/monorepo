@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/panicboat/monorepo/compare/pennyworth-v1.2.2...pennyworth-v1.2.3) (2026-10-31)
+
+
+### Bug Fixes
+
+* **pennyworth:** read alert text in thread history ([#1881](https://github.com/panicboat/monorepo/issues/1881)) ([c47a82b](https://github.com/panicboat/monorepo/commit/c47a82b01cca33afbfbc1ca12279d3f5c9f75ca0))
+
 ## [1.2.2](https://github.com/panicboat/monorepo/compare/pennyworth-v1.2.1...pennyworth-v1.2.2) (2026-10-29)
 
 
