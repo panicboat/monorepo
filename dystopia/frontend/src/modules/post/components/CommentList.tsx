@@ -73,16 +73,13 @@ export function CommentList({ postId }: CommentListProps) {
                   >
                     {replying === c.id ? "返信を閉じる" : "返信する"}
                   </button>
-                  {c.repliesCount > 0 && (
+                  {c.repliesCount > 0 && !isExpanded && (
                     <button
                       type="button"
-                      onClick={() =>
-                        setExpanded((prev) => ({ ...prev, [c.id]: !prev[c.id] }))
-                      }
+                      onClick={() => setExpanded((prev) => ({ ...prev, [c.id]: true }))}
                       className="text-text-secondary hover:text-text-primary"
-                      aria-expanded={isExpanded}
                     >
-                      {isExpanded ? "返信を隠す" : `${c.repliesCount} 件の返信を見る`}
+                      {`${c.repliesCount} 件の返信を見る`}
                     </button>
                   )}
                   {isOwn && (
