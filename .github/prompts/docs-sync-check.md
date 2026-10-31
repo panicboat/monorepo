@@ -40,18 +40,18 @@ In `terms.ts` (`numbering: "article"`), the N-th element of `sections` is 第N�
 In `privacy.ts` (`numbering: "section"`), the N-th element of `sections` is 第N節.
 Cite them by these numbers and the `heading`.
 
-The terms and the privacy policy state rights, obligations and principles, not screen-level behavior.
-They need an update only when the PR does one of these:
-- adds or removes a kind of information that is collected
-- adds a purpose of use
+The terms and the privacy policy state rights, obligations and principles, and a feature change does not change their text.
+Their text changes only when the law or a premise of operating the service changes.
+A PR needs an update to them only when it does one of these:
+- collects information that fits none of the categories in the privacy policy's `取得する情報`
+- adds a purpose of use that fits none of the privacy policy's `利用目的`
 - adds a recipient of information (a third party, a kind of contractor, or a business in a foreign country)
-- changes the principle of who can see what (for example, showing kartes to guests, or showing DMs to people outside the conversation)
 - changes what remains after an account is deactivated or a profile is deleted
 - changes users' obligations, prohibited acts, or the operator's powers
 - starts a paid feature
 
-Any other change, such as the name of a screen or a setting, a number, or a detail of what a screen shows, needs no update to the terms or the privacy policy, even when they say nothing about it.
-Text the terms or the privacy policy already have must still not contradict the code in the PR head.
+Any other change, such as adding, removing or changing a feature or a setting, what a setting hides and from whom, the name of a screen, or a number, needs no update to the terms or the privacy policy, even when they say nothing about it.
+Text the terms or the privacy policy already have must still not contradict the code in the PR head (for example, showing kartes to guests, or showing DMs to people outside the conversation).
 
 ## 4. Decide the verdict
 
@@ -66,6 +66,8 @@ Set `passed: false` when any one of these holds:
    - A box is checked but the PR does not update the matching document.
    - The matching document needs an update, and the box is neither checked nor the document updated.
    - Skip this condition when the PR body has no `## Impact` section.
+4. Text the PR adds to `terms.ts` or `privacy.ts` describes a feature's behavior, so that changing that feature would change the text (for example, what a setting hides, the name of a screen, or who can send a DM).
+   - Text that states one of the kinds listed in section 3 does not fail this condition.
 
 Otherwise set `passed: true`.
 
@@ -95,6 +97,7 @@ Use these sections in this order:
    - the document location: `path` and its heading, or 第N条 / 第N条第M項 / 第N節 with the `heading` for the terms and the privacy policy
    - what does not match, in one or two sentences
    For an `## Impact` mismatch, name the checkbox and the document instead of a code location.
+   For feature detail added to the legal text (condition 4), give the document location only.
 3. `### 確認してほしい点` — points you were unsure about. Omit the section when there are none.
 4. Only when `passed` is false, as the last line, exactly:
 
@@ -102,7 +105,7 @@ Use these sections in this order:
    判定が誤っている場合は、内容を確かめて `docs-check-approved` ラベルを付けると通ります。
    ```
 
-Every finding must cite both a code location and a document location, except an `## Impact` mismatch, which cites the checkbox and the document.
+Every finding must cite both a code location and a document location, except an `## Impact` mismatch, which cites the checkbox and the document, and feature detail added to the legal text, which cites the document.
 
 ## Output
 
