@@ -79,9 +79,3 @@ message GetPostRequest {
 message GetPostResponse {
   Post post = 1;
 }
-
-message DeletePostRequest {
-  string id = 1;
-}
-
-message DeletePostResponse {}
