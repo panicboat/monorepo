@@ -13,12 +13,12 @@ afterEach(() => {
 });
 
 describe("searchDays", () => {
-  it("lists 14 days starting from today in Japan", () => {
+  it("lists the days from today in Japan through the end of next month", () => {
     const days = searchDays();
 
-    expect(days).toHaveLength(14);
+    expect(days).toHaveLength(39);
     expect(days[0]).toBe("2026-10-23");
-    expect(days.at(-1)).toBe("2026-11-05");
+    expect(days.at(-1)).toBe("2026-11-30");
   });
 });
 
@@ -111,11 +111,11 @@ describe("parseSearchChoices", () => {
     expect(parseSearchChoices(null)).toEqual(defaultSearchChoices());
   });
 
-  it("falls back to today for a date outside the 14 days or one that is not a date", () => {
-    for (const date of ["2026-10-22", "2026-11-06", "2026-13-01", "tomorrow", ""]) {
+  it("falls back to today for a date outside the range or one that is not a date", () => {
+    for (const date of ["2026-10-22", "2026-12-01", "2026-13-01", "tomorrow", ""]) {
       expect(parseSearchChoices(query(`date=${date}`)).date).toBe("2026-10-23");
     }
-    expect(parseSearchChoices(query("date=2026-11-05")).date).toBe("2026-11-05");
+    expect(parseSearchChoices(query("date=2026-11-30")).date).toBe("2026-11-30");
   });
 
   it("falls back to every area for an unknown prefecture", () => {

@@ -25,9 +25,10 @@ export function buildDateRange(start: Date, days: number): string[] {
 }
 
 export function buildDateRangeThroughNextMonth(start: Date): string[] {
-  const today = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  const endOfNextMonth = new Date(start.getFullYear(), start.getMonth() + 2, 0);
-  return buildDateRange(start, Math.round((endOfNextMonth.getTime() - today.getTime()) / MS_PER_DAY) + 1);
+  // Noon keeps every key on its own date when the device zone changes its UTC offset inside the range.
+  const today = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 12);
+  const endOfNextMonth = new Date(start.getFullYear(), start.getMonth() + 2, 0, 12);
+  return buildDateRange(today, Math.round((endOfNextMonth.getTime() - today.getTime()) / MS_PER_DAY) + 1);
 }
 
 export function formatMonthDay(dateKey: string): string {

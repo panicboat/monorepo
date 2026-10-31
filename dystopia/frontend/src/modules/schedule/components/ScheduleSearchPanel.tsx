@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useMemo, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
+import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Select } from "@/components/ui/select";
@@ -10,9 +11,8 @@ import { useSearchSchedules } from "@/modules/discovery";
 import { INDUSTRIES, PREFECTURES, areasOf } from "@/modules/profile/lib/constants";
 import { formatDayLabel, formatScheduleDay } from "@/modules/schedule/lib/dates";
 import { TIME_BANDS, searchDays, type ScheduleSearchChoices } from "@/modules/schedule/lib/searchChoices";
+import { ScheduleMonthCalendar } from "./ScheduleMonthCalendar";
 import { ScheduleSearchCard } from "./ScheduleSearchCard";
-
-const dayLabel = (dateKey: string, index: number) => (index === 0 ? "今日" : index === 1 ? "明日" : formatDayLabel(dateKey));
 
 function FilterGroup({ title, children }: { title: string; children: ReactNode }) {
   const titleId = useId();
@@ -36,23 +36,39 @@ interface ScheduleSearchPanelProps {
 
 export function ScheduleSearchPanel({ query, choices, onChoicesChange }: ScheduleSearchPanelProps) {
   const days = useMemo(searchDays, []);
+  const [pickingDate, setPickingDate] = useState(false);
   const { date, prefecture, area, industry, timeBand, followingOnly } = choices;
   const { results, hasMore, loading, error, loadMore } = useSearchSchedules({ date, prefecture, area, industry, timeBand, followingOnly, query });
   const narrowed = prefecture !== "" || area !== "" || industry !== "" || timeBand !== "" || followingOnly || query.trim() !== "";
   const areaChoices = areasOf(prefecture);
+  const isLaterDate = date !== days[0] && date !== days[1];
+  const chooseDate = (nextDate: string) => {
+    setPickingDate(false);
+    onChoicesChange({ ...choices, date: nextDate });
+  };
 
   return (
     <div>
       <FilterGroup title="予定日">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4">
-          {days.map((dateKey, index) => (
-            <div key={dateKey} className="shrink-0 whitespace-nowrap">
-              <ToggleChip pressed={dateKey === date} onClick={() => onChoicesChange({ ...choices, date: dateKey })}>
-                {dayLabel(dateKey, index)}
-              </ToggleChip>
-            </div>
-          ))}
+        <div className="flex flex-wrap gap-2">
+          <ToggleChip pressed={date === days[0]} onClick={() => chooseDate(days[0])}>
+            今日
+          </ToggleChip>
+          <ToggleChip pressed={date === days[1]} onClick={() => chooseDate(days[1])}>
+            明日
+          </ToggleChip>
+          <ToggleChip pressed={isLaterDate} onClick={() => setPickingDate(!pickingDate)}>
+            <span className="flex items-center gap-1.5">
+              <CalendarDays className="size-4" aria-hidden="true" />
+              {isLaterDate ? formatDayLabel(date) : "日付を選ぶ"}
+            </span>
+          </ToggleChip>
         </div>
+        {pickingDate && (
+          <div className="mt-3">
+            <ScheduleMonthCalendar days={days} selected={new Set([date])} onToggle={chooseDate} />
+          </div>
+        )}
       </FilterGroup>
       <FilterGroup title="エリア">
         <div className="flex flex-col gap-2 sm:flex-row">

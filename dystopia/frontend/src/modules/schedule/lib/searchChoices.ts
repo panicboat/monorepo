@@ -1,11 +1,9 @@
 import type { ScheduleSearchFilters, ScheduleTimeBand } from "@/modules/discovery/types";
 import { todayInJapan } from "@/lib/utils/japan-date";
 import { INDUSTRIES, PREFECTURES, areasOf } from "@/modules/profile/lib/constants";
-import { buildDateRange } from "./dates";
+import { buildDateRangeThroughNextMonth } from "./dates";
 
 export type ScheduleSearchChoices = Omit<ScheduleSearchFilters, "query">;
-
-const DAYS = 14;
 
 export const TIME_BANDS: Array<{ id: ScheduleTimeBand; label: string }> = [
   { id: "", label: "すべて" },
@@ -14,8 +12,7 @@ export const TIME_BANDS: Array<{ id: ScheduleTimeBand; label: string }> = [
   { id: "night", label: "深夜（21時〜翌5時）" },
 ];
 
-// Noon keeps every key on its own date when the device zone changes its UTC offset inside the range.
-export const searchDays = () => buildDateRange(new Date(`${todayInJapan()}T12:00:00`), DAYS);
+export const searchDays = () => buildDateRangeThroughNextMonth(new Date(`${todayInJapan()}T12:00:00`));
 
 export interface SearchHome {
   prefecture: string;
