@@ -12,7 +12,6 @@ const OWNER_UNPLANNED_DAYS = 14;
 interface Editing {
   session: number;
   open: boolean;
-  todayOnly: boolean;
 }
 
 export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner: boolean }) {
@@ -22,22 +21,16 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
   const [editing, setEditing] = useState<Editing | null>(null);
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
   const visibleDays = days.filter((dateKey, index) => byDate.has(dateKey) || (isOwner && index < OWNER_UNPLANNED_DAYS));
-  const openSheet = (todayOnly: boolean) =>
-    setEditing((current) => ({ session: (current?.session ?? 0) + 1, open: true, todayOnly }));
+  const openSheet = () => setEditing((current) => ({ session: (current?.session ?? 0) + 1, open: true }));
 
   return (
     <div className="px-4 py-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold text-text-primary">予定</h2>
         {isOwner && (
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button type="button" size="sm" onClick={() => openSheet(true)}>
-              今日の予定
-            </Button>
-            <Button type="button" variant="secondary" size="sm" onClick={() => openSheet(false)}>
-              まとめて編集
-            </Button>
-          </div>
+          <Button type="button" size="sm" onClick={openSheet}>
+            予定を編集
+          </Button>
         )}
       </div>
       {hiddenByLock ? (
@@ -75,7 +68,6 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
           key={editing.session}
           profileId={profileId}
           open={editing.open}
-          todayOnly={editing.todayOnly}
           onClose={() => setEditing((current) => current && { ...current, open: false })}
           onSaved={refresh}
         />

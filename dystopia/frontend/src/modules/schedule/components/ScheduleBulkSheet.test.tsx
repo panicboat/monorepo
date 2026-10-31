@@ -47,13 +47,13 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-async function mount(todayOnly = false) {
+async function mount() {
   onClose = vi.fn<() => void>();
   onSaved = vi.fn<() => void>();
   const container = document.createElement("div");
   document.body.appendChild(container);
   await act(async () => {
-    createRoot(container).render(createElement(ScheduleBulkSheet, { profileId: "p-1", open: true, todayOnly, onClose, onSaved }));
+    createRoot(container).render(createElement(ScheduleBulkSheet, { profileId: "p-1", open: true, onClose, onSaved }));
   });
 }
 
@@ -91,7 +91,7 @@ describe("ScheduleBulkSheet", () => {
   it("opens the current month of a calendar that runs through the end of next month", async () => {
     await mount();
 
-    expect(text()).toContain("予定をまとめて編集");
+    expect(text()).toContain("予定を編集");
     expect(text()).not.toContain("2週間");
     expect(text()).toContain("2026年 10月");
     expect(document.querySelectorAll("button[data-day]")).toHaveLength(20);
@@ -120,16 +120,11 @@ describe("ScheduleBulkSheet", () => {
     expect(day("2026-10-12").getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("opens with only today selected and without the calendar for a single day", async () => {
-    await mount(true);
+  it("opens with no day selected", async () => {
+    await mount();
 
-    const dayRows = Array.from(document.querySelectorAll("button[data-day]"));
-    expect(dayRows.map((b) => b.getAttribute("data-day"))).toEqual(["2026-10-12"]);
-    expect(dayRows[0].getAttribute("aria-pressed")).toBe("true");
-    expect(document.body.textContent).toContain("今日の予定");
-    expect(document.body.textContent).toContain("選択した日：1日");
-    expect(document.body.textContent).not.toContain("次の月");
-    expect(document.querySelector('[aria-label="次の月"]')).toBeNull();
+    expect(document.querySelectorAll('button[data-day][aria-pressed="true"]')).toHaveLength(0);
+    expect(text()).toContain("選択した日：0日");
   });
 
   it("lays the days out in a seven-column calendar, marks a selected day and keeps the apply bar at the bottom", async () => {

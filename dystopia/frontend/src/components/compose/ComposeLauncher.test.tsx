@@ -23,9 +23,9 @@ vi.mock("@/stores/postFeedStore", () => ({
   usePostFeedStore: (selector: (state: { notifyPostCreated: () => void }) => unknown) => selector({ notifyPostCreated: mocks.notifyPostCreated }),
 }));
 vi.mock("@/modules/schedule/components/ScheduleBulkSheet", () => ({
-  ScheduleBulkSheet: ({ profileId, open, todayOnly, onSaved }: { profileId: string; open: boolean; todayOnly?: boolean; onSaved: () => void }) => (
+  ScheduleBulkSheet: ({ profileId, open, onSaved }: { profileId: string; open: boolean; onSaved: () => void }) => (
     <button type="button" data-testid="schedule-sheet" onClick={onSaved}>
-      schedule-sheet:{profileId}:{open ? "open" : "closed"}:{todayOnly ? "today" : "calendar"}
+      schedule-sheet:{profileId}:{open ? "open" : "closed"}
     </button>
   ),
 }));
@@ -97,7 +97,7 @@ describe("ComposeLauncher", () => {
   it("opens the calendar of the active profile for a schedule", async () => {
     mocks.role = "cast";
 
-    expect(await choose("予定")).toContain("schedule-sheet:p-1:open:calendar");
+    expect(await choose("予定")).toContain("schedule-sheet:p-1:open");
   });
 
   it("refreshes the post lists after saving a schedule, since it can announce a post", async () => {

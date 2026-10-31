@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({ range: [] as string[], calls: [] as string[][], hasPlan: true, laterPlan: false, sheetTodayOnly: null as null | boolean, sheetOpen: null as null | boolean, hiddenByLock: false }));
+const mocks = vi.hoisted(() => ({ range: [] as string[], calls: [] as string[][], hasPlan: true, laterPlan: false, sheetOpen: null as null | boolean, hiddenByLock: false }));
 
 vi.mock("@/modules/schedule/hooks", () => ({
   useSchedules: (_id: string, fromDate: string, toDate: string) => {
@@ -24,9 +24,8 @@ vi.mock("@/modules/schedule/hooks", () => ({
   },
 }));
 vi.mock("./ScheduleBulkSheet", () => ({
-  ScheduleBulkSheet: ({ open, todayOnly }: { open: boolean; todayOnly: boolean }) => {
+  ScheduleBulkSheet: ({ open }: { open: boolean }) => {
     mocks.sheetOpen = open;
-    mocks.sheetTodayOnly = todayOnly;
     return <div>bulk-sheet:{String(open)}</div>;
   },
 }));
@@ -37,7 +36,6 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-12T09:00:00"));
   mocks.sheetOpen = null;
-  mocks.sheetTodayOnly = null;
   mocks.hasPlan = true;
   mocks.laterPlan = false;
   mocks.calls = [];
@@ -106,17 +104,6 @@ describe("ScheduleTab", () => {
     expect(container.textContent).not.toContain("予定は予約可能枠を保証するものではありません。");
   });
 
-  it("lets the owner open the sheet for today only", async () => {
-    const container = await mount(true);
-
-    await act(async () => {
-      (Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "今日の予定") as HTMLButtonElement).click();
-    });
-
-    expect(mocks.sheetOpen).toBe(true);
-    expect(mocks.sheetTodayOnly).toBe(true);
-  });
-
   it("has no もっと見る button", async () => {
     const container = await mount(false);
 
@@ -135,14 +122,20 @@ describe("ScheduleTab", () => {
     expect(container.textContent).not.toContain("予定は予約可能枠を保証するものではありません。");
   });
 
-  it("lets the owner open the bulk sheet", async () => {
+  it("gives the owner a single button that opens the editor", async () => {
     const container = await mount(true);
 
+    expect(Array.from(container.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["予定を編集"]);
     await act(async () => {
-      (Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "まとめて編集") as HTMLButtonElement).click();
+      (container.querySelector("button") as HTMLButtonElement).click();
     });
 
     expect(mocks.sheetOpen).toBe(true);
-    expect(mocks.sheetTodayOnly).toBe(false);
+  });
+
+  it("gives other viewers no button to open the editor", async () => {
+    const container = await mount(false);
+
+    expect(container.querySelectorAll("button")).toHaveLength(0);
   });
 });
