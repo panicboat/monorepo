@@ -22,7 +22,7 @@ module Social
             encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
           end
 
-          profiles = result[:items].filter_map { |row| get_profile.call(profile_id: row.followee_profile_id) }
+          profiles = list_visible_profiles.call(profile_ids: result[:items].map(&:followee_profile_id))
 
           { profiles: profiles, next_cursor: result[:next_cursor], has_more: result[:has_more] }
         end
@@ -31,6 +31,10 @@ module Social
 
         def get_profile
           @get_profile ||= Profile::Slice["use_cases.get_profile"]
+        end
+
+        def list_visible_profiles
+          @list_visible_profiles ||= Profile::Slice["use_cases.list_visible_profiles"]
         end
 
         def profile_repo

@@ -27,7 +27,7 @@ module Discovery
           encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
         end
 
-        profiles = result[:items].filter_map { |row| get_profile.call(profile_id: row.id) }
+        profiles = list_visible_profiles.call(profile_ids: result[:items].map(&:id))
 
         { profiles: profiles, next_cursor: result[:next_cursor], has_more: result[:has_more] }
       end
@@ -48,8 +48,8 @@ module Discovery
         @profile_repo ||= Profile::Slice["repositories.profile_repository"]
       end
 
-      def get_profile
-        @get_profile ||= Profile::Slice["use_cases.get_profile"]
+      def list_visible_profiles
+        @list_visible_profiles ||= Profile::Slice["use_cases.list_visible_profiles"]
       end
 
       def follow_repo

@@ -69,6 +69,13 @@ module Profile
         visible_profiles.where(id: ids, is_private: true).pluck(:id)
       end
 
+      def list_visible_by_ids(ids)
+        ids = ids.select { |id| uuid?(id) }
+        return [] if ids.empty?
+
+        visible_profiles.where(id: ids).to_a
+      end
+
       def visible_by_ids(ids)
         ids = ids.select { |id| uuid?(id) }
         return [] if ids.empty?

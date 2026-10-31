@@ -13,10 +13,6 @@ module Messaging
       end
 
       # Callers must pass the pair ordered because chk_threads_profile_order requires profile_a < profile_b.
-      def find_thread_by_pair(profile_a:, profile_b:)
-        thread_records.where(profile_a: profile_a, profile_b: profile_b).one
-      end
-
       def upsert_thread(profile_a:, profile_b:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
