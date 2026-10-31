@@ -210,6 +210,7 @@ module Review
           id: review[:id],
           author_profile_id: review[:author_profile_id],
           author: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(review[:author]),
+          author_hidden: review[:author_hidden],
           target_profile_id: review[:target_profile_id],
           target: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(review[:target]),
           is_mine: review[:is_mine],

@@ -57,6 +57,7 @@ message Review {
   google.protobuf.Timestamp last_activity_at = 17;
   profile.v1.ProfileSummary author = 18;
   profile.v1.ProfileSummary target = 19;
+  bool author_hidden = 20;
   reserved 3, 4, 5, 7, 8, 9, 12, 16;
   reserved "author_username", "author_display_name", "author_avatar_url", "target_username", "target_display_name", "target_avatar_url";
 }

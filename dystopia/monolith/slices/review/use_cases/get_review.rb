@@ -18,7 +18,7 @@ module Review
         review = Ids.valid?(review_id) ? review_repo.find(review_id) : nil
         raise Errors::Invalid, "Review not found" unless review && visible?(review, viewer_account_id, viewer_profile_id)
 
-        present_reviews.call(reviews: [review], viewer_account_id: viewer_account_id).first
+        present_reviews.call(reviews: [review], viewer_account_id: viewer_account_id, viewer_profile_id: viewer_profile_id).first
       end
 
       private

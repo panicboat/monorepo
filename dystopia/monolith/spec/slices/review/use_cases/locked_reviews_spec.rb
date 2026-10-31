@@ -277,4 +277,78 @@ RSpec.describe "Review visibility of a locked profile", type: :database do
       expect(read(locked_guest, review)[:id]).to eq(review[:id])
     end
   end
+
+  describe "the author of a review by a locked guest on an unlocked cast" do
+    let!(:review) { write(locked_guest, open_cast, rating: 4, at: now - 10) }
+    let!(:plain) { write(guest, open_cast, rating: 2, at: now - 20) }
+
+    def row_of(result, target) = result[:reviews].find { |row| row[:id] == target[:id] }
+
+    def surfaces(who, of: review)
+      [row_of(by_target(who, cast: open_cast), of), row_of(recent(who), of), read(who, of)]
+    end
+
+    def expect_masked(row)
+      expect(row.slice(:author, :author_profile_id, :author_hidden, :rating)).to eq(author: nil, author_profile_id: "", author_hidden: true, rating: 4)
+      expect(row[:events].length).to eq(1)
+      expect(row[:target].profile_id).to eq(open_cast.profile)
+    end
+
+    def expect_shown(row, author)
+      expect(row[:author].profile_id).to eq(author.profile)
+      expect(row.slice(:author_profile_id, :author_hidden)).to eq(author_profile_id: author.profile, author_hidden: false)
+    end
+
+    it "is masked for a viewer who cannot pass the guest's lock, in the cast list, recent reviews and a single review" do
+      surfaces(viewer).each { |row| expect_masked(row) }
+    end
+
+    it "is masked for a pending follower" do
+      follow(viewer, locked_guest, status: "pending")
+
+      surfaces(viewer).each { |row| expect_masked(row) }
+    end
+
+    it "is shown to a follower of the guest" do
+      follow(viewer, locked_guest)
+
+      surfaces(viewer).each { |row| expect_shown(row, locked_guest) }
+    end
+
+    it "is shown in the written list of the guest to a follower of the guest" do
+      follow(viewer, locked_guest)
+
+      expect_shown(row_of(by_author(viewer, author: locked_guest), review), locked_guest)
+    end
+
+    it "is shown to the target cast" do
+      surfaces(open_cast).each { |row| expect_shown(row, locked_guest) }
+    end
+
+    it "is shown to the author account, on another profile of the same account too" do
+      other = actor_struct.new(locked_guest.account, create_account_with_profile(account_id: locked_guest.account, username: "locked_guest_alt"))
+
+      [locked_guest, other].each do |who|
+        surfaces(who).each do |row|
+          expect_shown(row, locked_guest)
+          expect(row[:is_mine]).to be(true)
+        end
+      end
+    end
+
+    it "does not mask the author of an unlocked guest" do
+      surfaces(viewer, of: plain).each do |row|
+        expect(row[:author].profile_id).to eq(guest.profile)
+        expect(row.slice(:author_profile_id, :author_hidden)).to eq(author_profile_id: guest.profile, author_hidden: false)
+      end
+    end
+
+    it "reports a disabled author as missing, not masked, even when locked" do
+      db[:profile__profiles].where(id: locked_guest.profile).update(disabled_at: Time.now)
+
+      surfaces(viewer).each do |row|
+        expect(row.slice(:author, :author_profile_id, :author_hidden)).to eq(author: nil, author_profile_id: locked_guest.profile, author_hidden: false)
+      end
+    end
+  end
 end

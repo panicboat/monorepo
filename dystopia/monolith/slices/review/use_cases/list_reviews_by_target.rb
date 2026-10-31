@@ -26,7 +26,7 @@ module Review
 
         page_reviews.call(
           fetch: ->(after) { review_repo.list_by_target(target_profile_id: target_profile_id, limit: limit, cursor: after) },
-          cursor: cursor, limit: limit, viewer_account_id: viewer_account_id,
+          cursor: cursor, limit: limit, viewer_account_id: viewer_account_id, viewer_profile_id: viewer_profile_id,
           visible: ->(page) { filter_visible_reviews.call(viewer_profile_id: viewer_profile_id, page_owner_profile_id: target_profile_id, reviews: page) }
         ).merge(summary: review_repo.rating_summary(target_profile_id: target_profile_id), hidden_by_lock: false)
       end
