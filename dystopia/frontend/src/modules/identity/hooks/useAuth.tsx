@@ -1,36 +1,14 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useCallback,
-} from "react";
+import { createContext, useContext, ReactNode, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 
-import {
-  useAuthStore,
-  selectRole,
-  selectIsHydrated,
-  selectAccountId,
-} from "@/stores/authStore";
+import { useAuthStore, selectIsHydrated, selectAccountId } from "@/stores/authStore";
 import { useToastStore } from "@/stores/toastStore";
 import { syncIdentityWithAccount, toStoreRole } from "@/lib/auth/identity-sync";
 
-export type User = {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  isGuest: boolean;
-  role: number | string;
-  isNew?: boolean;
-};
-
 type AuthContextType = {
-  user: User | null;
-  isLoading: boolean;
   register: (phoneNumber: string, password: string) => Promise<void>;
   verify: (
     phoneNumber: string,
@@ -38,10 +16,6 @@ type AuthContextType = {
     password: string,
     role: 1 | 2,
   ) => Promise<void>;
-  signIn: (
-    phoneNumber: string,
-    password: string,
-  ) => Promise<{ reactivated: boolean }>;
   login: (phoneNumber: string, password: string) => Promise<void>;
   forgotPassword: (phoneNumber: string) => Promise<void>;
   confirmForgotPassword: (
@@ -54,11 +28,9 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [newUserFlag, setNewUserFlag] = useState(false);
   const router = useRouter();
 
   const accountId = useAuthStore(selectAccountId);
-  const role = useAuthStore(selectRole);
   const isHydrated = useAuthStore(selectIsHydrated);
   const setIdentity = useAuthStore((state) => state.setIdentity);
   const clearIdentity = useAuthStore((state) => state.clearIdentity);
@@ -80,30 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [clearIdentity],
   );
 
-  const {
-    data: userData,
-    isLoading: swrLoading,
-    mutate,
-  } = useSWR(isHydrated && accountId ? "/api/identity/me" : null, meFetcher, {
+  useSWR(isHydrated && accountId ? "/api/identity/me" : null, meFetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 5000,
   });
-
-  const isLoading = !isHydrated || swrLoading;
-
-  const user: User | null = userData
-    ? {
-        id: userData.id,
-        name: userData.phoneNumber,
-        isGuest: userData.role === 1 || userData.role === "ROLE_GUEST",
-        role: userData.role,
-        isNew: newUserFlag,
-      }
-    : null;
-
-  // Keep role in the dependency list because auth state must react to role changes.
-  void role;
-  void accountId;
 
   const register = async (phoneNumber: string, password: string) => {
     const res = await fetch("/api/identity/register", {
@@ -138,19 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       accountId: data.account.id,
       role: toStoreRole(data.account.role),
     });
-
-    setNewUserFlag(true);
-    mutate(
-      {
-        id: data.account.id,
-        phoneNumber,
-        role: data.account.role,
-      },
-      { revalidate: false },
-    );
   };
 
-  const signIn = async (phoneNumber: string, password: string) => {
+  const login = async (phoneNumber: string, password: string) => {
     const res = await fetch("/api/identity/sign-in", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -173,22 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       useToastStore.getState().show("お帰りなさい。アカウントは復活しました。");
     }
 
-    setNewUserFlag(false);
-    mutate(
-      {
-        id: data.account.id,
-        phoneNumber,
-        role: data.account.role,
-      },
-      { revalidate: false },
-    );
-
     router.push("/");
-    return { reactivated: data.reactivated === true };
-  };
-
-  const login = async (phoneNumber: string, password: string) => {
-    await signIn(phoneNumber, password);
   };
 
   const forgotPassword = async (phoneNumber: string) => {
@@ -220,11 +147,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user,
-        isLoading,
         register,
         verify,
-        signIn,
         login,
         forgotPassword,
         confirmForgotPassword,
