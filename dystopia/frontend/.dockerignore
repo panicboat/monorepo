@@ -5,6 +5,7 @@ node_modules
 *.log
 
 kubernetes/
+infrastructure/
 aws/
 CHANGELOG.md
 README.md

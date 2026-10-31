@@ -93,3 +93,9 @@ import { colors } from '@/config/theme';
 npm install
 COGNITO_ADAPTER=fake npm run dev
 ```
+
+## Infrastructure
+
+frontend は `dystopia/frontend/infrastructure/aws/{develop,production}` に空の Terragrunt stack を持つ。
+各 environment が apply されるタイミングは [Deployment](../../README-ja.md) に従う。
+AWS リソース（Cognito）は [dystopia/infrastructure/aws/production/](../infrastructure/aws/production/) にあり、[dystopia/monolith](../monolith) と共有している。

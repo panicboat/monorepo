@@ -94,7 +94,7 @@ flowchart LR
 
 - production の environment ディレクトリを持つ service は、それぞれ release-please の設定（`release-please-config.json` / `release-please-manifest.json`）を持つ。
 - production 以外の environment ディレクトリを変える commit は、その service の release-please package の変更として数えられる。
-- production の environment ディレクトリを持たない service（例: [dystopia/frontend](dystopia/frontend)）は `terragrunt` の target がないため、`Release - Plan` は何も plan せず、`Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
+- production の environment ディレクトリを持たない service は `terragrunt` の target がないため、`Release - Plan` は何も plan せず、`Release - Deploy` は skip される。`Release - Build` はイメージをビルドする。
 - `Release - Plan` は、その service の production の overlay について、前回の release tag との kustomize diff を投稿する。release PR を merge したときに cluster に入る変更である。
   - 前回の release がない service には diff を出さない。
 - production の environment が除外されている間も release PR は作られるが、plan も apply もされない。
