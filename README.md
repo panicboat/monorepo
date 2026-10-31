@@ -94,7 +94,7 @@ flowchart LR
 
 - Each service that has a production environment directory has its own release-please config (`release-please-config.json` / `release-please-manifest.json`).
 - Commits that touch non-production environment directories count as changes to the service's release-please package.
-- A service with no production environment directory, such as [dystopia/frontend](dystopia/frontend), has no `terragrunt` target, so `Release - Plan` plans nothing and `Release - Deploy` skips it. `Release - Build` still builds its image.
+- A service with no production environment directory has no `terragrunt` target, so `Release - Plan` plans nothing and `Release - Deploy` skips it. `Release - Build` still builds its image.
 - `Release - Plan` posts the kustomize diff of the service's production overlay against the previous release tag, which is what merging the release PR brings to the cluster.
   - A service with no previous release gets no diff.
 - While the production environment is excluded, the release PR is still created, but nothing is planned or applied.
