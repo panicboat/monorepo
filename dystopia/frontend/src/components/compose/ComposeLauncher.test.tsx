@@ -7,11 +7,34 @@ import { describe, expect, it, vi } from "vitest";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({ role: "cast" as "cast" | "guest" | null }));
+const mocks = vi.hoisted(() => ({
+  role: "cast" as "cast" | "guest" | null,
+  mutate: vi.fn(),
+  revalidatePostLists: vi.fn(),
+  notifyPostCreated: vi.fn(),
+}));
+
+vi.mock("swr", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("swr")>()),
+  useSWRConfig: () => ({ mutate: mocks.mutate }),
+}));
+vi.mock("@/modules/post/lib/revalidate", () => ({ revalidatePostLists: mocks.revalidatePostLists }));
+vi.mock("@/stores/postFeedStore", () => ({
+  usePostFeedStore: (selector: (state: { notifyPostCreated: () => void }) => unknown) => selector({ notifyPostCreated: mocks.notifyPostCreated }),
+}));
+vi.mock("@/modules/schedule/components/ScheduleBulkSheet", () => ({
+  ScheduleBulkSheet: ({ profileId, open, todayOnly, onSaved }: { profileId: string; open: boolean; todayOnly?: boolean; onSaved: () => void }) => (
+    <button type="button" data-testid="schedule-sheet" onClick={onSaved}>
+      schedule-sheet:{profileId}:{open ? "open" : "closed"}:{todayOnly ? "today" : "calendar"}
+    </button>
+  ),
+}));
 
 vi.mock("@/stores/authStore", () => ({
-  useAuthStore: (selector: (state: { role: string | null }) => unknown) => selector({ role: mocks.role }),
+  useAuthStore: (selector: (state: { role: string | null; activeProfileId: string }) => unknown) =>
+    selector({ role: mocks.role, activeProfileId: "p-1" }),
   selectRole: (state: { role: string | null }) => state.role,
+  selectActiveProfileId: (state: { activeProfileId: string }) => state.activeProfileId,
 }));
 vi.mock("@/modules/post/components/PostComposerSheet", () => ({
   PostComposerSheet: ({ open }: { open: boolean }) => (open ? <div>post-composer</div> : null),
@@ -47,10 +70,10 @@ async function choose(label: string) {
 }
 
 describe("ComposeLauncher", () => {
-  it("offers a cast a post, a message and a karte", () => {
+  it("offers a cast a post, a schedule, a message and a karte", () => {
     mocks.role = "cast";
 
-    expect(labels(renderToStaticMarkup(<ComposeLauncher variant="fab" />))).toEqual(["投稿", "メッセージ", "カルテ"]);
+    expect(labels(renderToStaticMarkup(<ComposeLauncher variant="fab" />))).toEqual(["投稿", "予定", "メッセージ", "カルテ"]);
   });
 
   it("offers a guest a post, a message and a review", () => {
@@ -63,6 +86,42 @@ describe("ComposeLauncher", () => {
     mocks.role = "cast";
 
     expect(await choose("投稿")).toContain("post-composer");
+  });
+
+  it("offers a cast the schedule in the sidebar too", () => {
+    mocks.role = "cast";
+
+    expect(labels(renderToStaticMarkup(<ComposeLauncher variant="sidebar" />))).toContain("予定");
+  });
+
+  it("opens the calendar of the active profile for a schedule", async () => {
+    mocks.role = "cast";
+
+    expect(await choose("予定")).toContain("schedule-sheet:p-1:open:calendar");
+  });
+
+  it("refreshes the post lists after saving a schedule, since it can announce a post", async () => {
+    mocks.role = "cast";
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(createElement(ComposeLauncher, { variant: "fab" }));
+    });
+    await act(async () => {
+      (Array.from(container.querySelectorAll('[role="menuitem"]')).find((el) => el.textContent?.includes("予定")) as HTMLElement).click();
+    });
+    await act(async () => {
+      (container.querySelector('[data-testid="schedule-sheet"]') as HTMLButtonElement).click();
+    });
+
+    expect(mocks.mutate).toHaveBeenCalled();
+    expect(mocks.revalidatePostLists).toHaveBeenCalled();
+    expect(mocks.notifyPostCreated).toHaveBeenCalled();
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 
   it("asks for a recipient for a message and for a karte entry", async () => {

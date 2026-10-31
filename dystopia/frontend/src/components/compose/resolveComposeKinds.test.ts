@@ -6,8 +6,8 @@ describe("resolveComposeKinds", () => {
     expect(resolveComposeKinds({ role: "guest" })).toEqual(["post", "message", "review"]);
   });
 
-  it("offers a cast a post, a message and a karte", () => {
-    expect(resolveComposeKinds({ role: "cast" })).toEqual(["post", "message", "karte"]);
+  it("offers a cast a post, a schedule, a message and a karte", () => {
+    expect(resolveComposeKinds({ role: "cast" })).toEqual(["post", "schedule", "message", "karte"]);
   });
 
   it("offers only a post before the role is known", () => {

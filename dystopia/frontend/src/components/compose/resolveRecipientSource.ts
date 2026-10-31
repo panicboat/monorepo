@@ -1,7 +1,7 @@
 import type { Role } from "@/lib/auth";
 import type { ComposeKind } from "./resolveComposeKinds";
 
-export type RecipientKind = Exclude<ComposeKind, "post">;
+export type RecipientKind = Exclude<ComposeKind, "post" | "schedule">;
 
 export interface RecipientSource {
   title: string;
