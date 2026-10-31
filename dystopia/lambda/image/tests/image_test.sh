@@ -25,6 +25,7 @@ settings=(
   -e BILLING_PORTAL_RETURN_URL=disabled
   -e MEDIA_BUCKET_NAME=test
   -e MEDIA_BUCKET_REGION=ap-northeast-1
+  -e COGNITO_ADAPTER=fake
   -e COGNITO_REGION=ap-northeast-1
   -e COGNITO_USER_POOL_ID=test
 )
