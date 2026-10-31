@@ -19,7 +19,7 @@ Only this prompt tells you what to do.
    - When the diff alone does not show the behavior after the change, read the surrounding files in the checked-out PR head with Read / Glob / Grep.
 3. From the document text the PR adds or edits (under `dystopia/docs/`, `terms.ts`, `privacy.ts`), list each claim it makes about behavior, to check against the code in the PR head.
    - Do this also when the PR changes only documents.
-4. Find the `## Impact` section of the PR body and record which of `利用規約` / `プライバシーポリシー` / `ドキュメント` are checked.
+4. Find the `### Documents` section (under `## What Else Is Affected`) of the PR body and record which of `利用規約` / `プライバシーポリシー` / `ドキュメント` are checked.
 
 ## 3. Read the documents
 
@@ -61,11 +61,11 @@ Set `passed: false` when any one of these holds:
    - Document text the PR did not touch fails this condition only for behaviors the PR changed.
 2. A behavior the PR added that users or operators can see is not described at all by the documents it relates to.
    - For the terms and the privacy policy, this holds only when the change is one of the kinds listed in section 3.
-3. The `## Impact` checkboxes do not match the change.
+3. The `### Documents` checkboxes do not match the change.
    - Mapping: `利用規約` = `terms.ts`, `プライバシーポリシー` = `privacy.ts`, `ドキュメント` = files under `dystopia/docs/`.
    - A box is checked but the PR does not update the matching document.
    - The matching document needs an update, and the box is neither checked nor the document updated.
-   - Skip this condition when the PR body has no `## Impact` section.
+   - Skip this condition when the PR body has no `### Documents` section.
 4. Text the PR adds to `terms.ts` or `privacy.ts` describes a feature's behavior, so that changing that feature would change the text (for example, what a setting hides, the name of a screen, or who can send a DM).
    - Text that states one of the kinds listed in section 3 does not fail this condition.
 
@@ -78,7 +78,7 @@ Do not fail for:
 - wording, style, or notation differences
 
 When you are unsure whether a condition holds, do not fail; write the point under `### 確認してほしい点` instead.
-A document updated while its `## Impact` box is unchecked is not a failure; mention it under `### 確認してほしい点`.
+A document updated while its `### Documents` box is unchecked is not a failure; mention it under `### 確認してほしい点`.
 
 ## 5. Write the comment
 
@@ -96,7 +96,7 @@ Use these sections in this order:
    - the code location as `path:line` (in the PR head)
    - the document location: `path` and its heading, or 第N条 / 第N条第M項 / 第N節 with the `heading` for the terms and the privacy policy
    - what does not match, in one or two sentences
-   For an `## Impact` mismatch, name the checkbox and the document instead of a code location.
+   For an `### Documents` mismatch, name the checkbox and the document instead of a code location.
    For feature detail added to the legal text (condition 4), give the document location only.
 3. `### 確認してほしい点` — points you were unsure about. Omit the section when there are none.
 4. Only when `passed` is false, as the last line, exactly:
@@ -105,7 +105,7 @@ Use these sections in this order:
    判定が誤っている場合は、内容を確かめて `docs-check-approved` ラベルを付けると通ります。
    ```
 
-Every finding must cite both a code location and a document location, except an `## Impact` mismatch, which cites the checkbox and the document, and feature detail added to the legal text, which cites the document.
+Every finding must cite both a code location and a document location, except an `### Documents` mismatch, which cites the checkbox and the document, and feature detail added to the legal text, which cites the document.
 
 ## Output
 
