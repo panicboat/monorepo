@@ -31,6 +31,7 @@ vi.mock("@/modules/post/hooks/usePostLike", () => ({
 const { PostCardBinding } = await import("./PostCardBinding");
 const { usePost } = await import("../hooks/usePost");
 const { useAddComment } = await import("../hooks/useAddComment");
+const { useDeleteComment } = await import("../hooks/useDeleteComment");
 const { usePostCommentCountStore } = await import("@/stores/postCommentCountStore");
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -58,11 +59,13 @@ let root: Root;
 let container: HTMLElement;
 const actions: {
   add?: (content: string) => Promise<void>;
+  del?: (commentId: string) => Promise<void>;
 } = {};
 
 function DetailProbe() {
   usePost("post-1");
   actions.add = useAddComment("post-1").addComment;
+  actions.del = useDeleteComment("post-1").deleteComment;
   return null;
 }
 
@@ -105,5 +108,13 @@ describe("PostCardBinding comment count", () => {
     await flush();
 
     expect(feedCardCount()).toBe("4");
+  });
+
+  it("shows the server count on a feed card after a comment is deleted in the detail", async () => {
+    serverCount = 2;
+    await act(async () => { await actions.del?.("c1"); });
+    await flush();
+
+    expect(feedCardCount()).toBe("2");
   });
 });

@@ -9,6 +9,7 @@ service PostService {
   rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
   rpc GetPost(GetPostRequest) returns (GetPostResponse);
   rpc SavePost(SavePostRequest) returns (SavePostResponse);
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
 }
 
 message PostMention {
@@ -59,7 +60,8 @@ message ListPostsResponse {
 }
 
 message SavePostRequest {
-  string id = 1;
+  reserved 1;
+  reserved "id";
   string content = 2;
   repeated PostMedia media = 3;
   string visibility = 4;
@@ -79,3 +81,9 @@ message GetPostRequest {
 message GetPostResponse {
   Post post = 1;
 }
+
+message DeletePostRequest {
+  string id = 1;
+}
+
+message DeletePostResponse {}

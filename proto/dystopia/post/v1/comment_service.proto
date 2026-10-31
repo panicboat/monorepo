@@ -7,6 +7,7 @@ import "profile/v1/service.proto";
 
 service CommentService {
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
+  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
   rpc ListReplies(ListRepliesRequest) returns (ListRepliesResponse);
 }
@@ -42,6 +43,14 @@ message AddCommentRequest {
 message AddCommentResponse {
   Comment comment = 1;
   int32 comments_count = 2;
+}
+
+message DeleteCommentRequest {
+  string comment_id = 1;
+}
+
+message DeleteCommentResponse {
+  int32 comments_count = 1;
 }
 
 message ListCommentsRequest {

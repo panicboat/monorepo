@@ -45,7 +45,6 @@ export interface SavePostMediaInput {
 }
 
 export interface SavePostPayload {
-  id?: string;
   content: string;
   media?: SavePostMediaInput[];
   visibility?: "public" | "private";

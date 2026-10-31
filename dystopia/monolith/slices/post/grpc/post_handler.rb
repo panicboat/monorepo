@@ -19,10 +19,12 @@ module Post
       rpc :ListPosts, ::Post::V1::ListPostsRequest, ::Post::V1::ListPostsResponse
       rpc :GetPost, ::Post::V1::GetPostRequest, ::Post::V1::GetPostResponse
       rpc :SavePost, ::Post::V1::SavePostRequest, ::Post::V1::SavePostResponse
+      rpc :DeletePost, ::Post::V1::DeletePostRequest, ::Post::V1::DeletePostResponse
 
       include Post::Concerns::ProfileAuthorResolvable
       include Post::Deps[
-        extract_mentions: "use_cases.extract_mentions"
+        extract_mentions: "use_cases.extract_mentions",
+        discard_detached_media: "use_cases.discard_detached_media"
       ]
 
       AuthorRef = Struct.new(:author_profile_id)
@@ -81,26 +83,16 @@ module Post
         end
         hashtags = m.hashtags.to_a
         mentions = extract_mentions.call(content: content)
-        is_create = m.id.empty?
         now = Time.now
+        published_at, expires_at = display_window(m, now: now)
+        post = post_repo.create_post(author_profile_id: current_profile_id, content: content, visibility: visibility, published_at: published_at, expires_at: expires_at)
 
-        if is_create
-          published_at, expires_at = display_window(m, now: now)
-          post = post_repo.create_post(author_profile_id: current_profile_id, content: content, visibility: visibility, published_at: published_at, expires_at: expires_at)
-        else
-          existing = post_repo.find_by_id_and_author(id: m.id, author_profile_id: current_profile_id)
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
-          published_at, expires_at = display_window(m, now: now, existing: existing)
-          post_repo.update_post(m.id, content: content, visibility: visibility, published_at: published_at, expires_at: expires_at)
-          post = post_repo.find_by_id(m.id)
-        end
-
-        post_repo.save_media(post_id: post.id, media_data: media_data) if media_data.any? || !is_create
-        post_repo.save_hashtags(post_id: post.id, hashtags: hashtags) if hashtags.any? || !is_create
+        post_repo.save_media(post_id: post.id, media_data: media_data) if media_data.any?
+        post_repo.save_hashtags(post_id: post.id, hashtags: hashtags) if hashtags.any?
         post_repo.save_mentions(post_id: post.id, mentions: mentions)
         post = post_repo.find_by_id(post.id)
 
-        if is_create && published_at <= now
+        if published_at <= now
           mentions.uniq { |mention| mention[:profile_id] }
             .select { |mention| mention_visible?(mention[:profile_id], post) }
             .each do |mention|
@@ -120,30 +112,30 @@ module Post
         ::Post::V1::SavePostResponse.new(post: present_post(post, mentioned_usernames: mentioned_usernames))
       end
 
+      def delete_post
+        authenticate_user!
+
+        existing = post_repo.find_by_id_and_author(id: request.message.id, author_profile_id: current_profile_id)
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
+
+        media_ids = post_repo.media_ids_of(existing.id) + comment_repo.media_ids_on_post(existing.id)
+        post_repo.delete_post(existing.id)
+        discard_detached_media.call(ids: media_ids)
+        ::Post::V1::DeletePostResponse.new
+      end
+
       private
 
-      def display_window(message, now:, existing: nil)
-        requested_start = parse_display_time(message.published_at)
-        requested_end = parse_display_time(message.expires_at)
+      def display_window(message, now:)
+        published_at = parse_display_time(message.published_at)
+        expires_at = parse_display_time(message.expires_at)
 
-        published_at = if existing && existing.published_at <= now
-          if requested_start && requested_start.to_i != existing.published_at.to_i
-            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示開始は予約中の投稿だけ変更できます")
-          end
-
-          existing.published_at
-        else
-          if requested_start && requested_start <= now
-            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示開始は今より後の時刻を指定してください")
-          end
-
-          requested_start || now
+        if published_at && published_at <= now
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示開始は今より後の時刻を指定してください")
         end
 
-        # An end sent back unchanged may be past, so an expired post can still be edited.
-        unchanged_end = existing&.expires_at && requested_end&.to_i == existing.expires_at.to_i
-        expires_at = unchanged_end ? existing.expires_at : requested_end
-        if expires_at && (expires_at <= published_at || (!unchanged_end && expires_at <= now))
+        published_at ||= now
+        if expires_at && (expires_at <= published_at || expires_at <= now)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示終了は表示開始と今より後の時刻を指定してください")
         end
 

@@ -53,6 +53,7 @@ describe("typography scale", () => {
       search,
       karte,
       commentList,
+      replyList,
       formField,
       imageUpload,
     ] = await Promise.all([
@@ -62,6 +63,7 @@ describe("typography scale", () => {
       readSource("src/app/search/page.tsx"),
       readSource("src/modules/karte/components/KarteDetailSheet.tsx"),
       readSource("src/modules/post/components/CommentList.tsx"),
+      readSource("src/modules/post/components/ReplyList.tsx"),
       readSource("src/components/ui/form-field.tsx"),
       readSource("src/modules/profile/components/ImageUpload.tsx"),
     ]);
@@ -82,6 +84,7 @@ describe("typography scale", () => {
     expect(commentList).toContain(
       'className="mt-2 flex items-center gap-4 text-sm"',
     );
+    expect(replyList).toContain('className="mt-2 text-sm text-text-muted');
     expect(formField).toContain('className="text-sm text-error"');
     expect(imageUpload).toContain("bg-black/50 text-sm text-white");
   });

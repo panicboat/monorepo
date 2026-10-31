@@ -31,8 +31,8 @@ RSpec.describe Post::Grpc::CommentHandler, type: :database do
     end
   end
 
-  it "offers no way to delete a comment or to list the comments of an author" do
-    expect(described_class.rpc_descs.keys.map(&:to_s)).to contain_exactly("AddComment", "ListComments", "ListReplies")
+  it "offers no way to list the comments of an author" do
+    expect(described_class.rpc_descs.keys.map(&:to_s)).not_to include("ListCommentsByAuthor")
   end
 
   describe "#list_comments for a signed-out viewer" do

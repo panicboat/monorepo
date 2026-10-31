@@ -67,7 +67,6 @@ export function mapPostsListResponse(res: {
 
 export function buildSavePostRequest(payload: SavePostPayload) {
   return {
-    id: payload.id || "",
     content: payload.content,
     media: (payload.media || []).map((m) => ({
       id: "",

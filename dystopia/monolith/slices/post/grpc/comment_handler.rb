@@ -15,11 +15,13 @@ module Post
       self.rpc_descs.clear
 
       rpc :AddComment, ::Post::V1::AddCommentRequest, ::Post::V1::AddCommentResponse
+      rpc :DeleteComment, ::Post::V1::DeleteCommentRequest, ::Post::V1::DeleteCommentResponse
       rpc :ListComments, ::Post::V1::ListCommentsRequest, ::Post::V1::ListCommentsResponse
       rpc :ListReplies, ::Post::V1::ListRepliesRequest, ::Post::V1::ListRepliesResponse
 
       include Post::Deps[
         add_comment_uc: "use_cases.comments.add_comment",
+        delete_comment_uc: "use_cases.comments.delete_comment",
         list_comments_uc: "use_cases.comments.list_comments",
         list_replies_uc: "use_cases.comments.list_replies"
       ]
@@ -69,6 +71,22 @@ module Post
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Cannot reply to a reply")
       rescue AddComment::CreateFailedError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INTERNAL, "Failed to create comment")
+      end
+
+      def delete_comment
+        authenticate_user!
+
+        result = delete_comment_uc.call(
+          comment_id: request.message.comment_id,
+          author_profile_id: current_profile_id
+        )
+
+        blocked_profile_ids = get_blocked_profile_ids
+        comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_author_profile_ids: blocked_profile_ids)
+
+        ::Post::V1::DeleteCommentResponse.new(comments_count: comments_count)
+      rescue DeleteComment::CommentNotFoundOrUnauthorizedError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Comment not found or unauthorized")
       end
 
       def list_comments
@@ -122,6 +140,7 @@ module Post
       private
 
       AddComment = Post::UseCases::Comments::AddComment
+      DeleteComment = Post::UseCases::Comments::DeleteComment
 
       def readable_comment?(comment_id)
         comment = comment_repo.find_by_id(comment_id)

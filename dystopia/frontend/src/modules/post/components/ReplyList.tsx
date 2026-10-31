@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { ProfileName } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { useReplies } from "@/modules/post/hooks/useReplies";
+import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
 import { PostText } from "@/modules/post/lib/post-text";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface ReplyListProps {
   postId: string;
@@ -13,7 +15,9 @@ interface ReplyListProps {
 }
 
 export function ReplyList({ postId, commentId }: ReplyListProps) {
+  const viewerId = useAuthStore(selectActiveProfileId);
   const { replies, hasMore, loading, error, loadMore } = useReplies(postId, commentId, true);
+  const { deleteComment, submitting: deleting } = useDeleteComment(postId);
 
   if (loading && replies.length === 0) {
     return <p className="py-2 pl-12 pr-4 text-sm text-text-secondary">読み込み中…</p>;
@@ -25,9 +29,15 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
     return <p className="py-2 pl-12 pr-4 text-sm text-text-secondary">返信はまだありません</p>;
   }
 
+  const onDelete = async (id: string) => {
+    if (!confirm("この返信を削除しますか?")) return;
+    await deleteComment(id, commentId).catch(() => {});
+  };
+
   return (
     <div className="bg-bg-secondary/30">
       {replies.map((r) => {
+        const isOwn = !!viewerId && r.authorProfileId === viewerId;
         const authorHref = r.author?.username ? `/u/${encodeURIComponent(r.author.username)}` : undefined;
         const avatar = (
           <Avatar
@@ -48,6 +58,16 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
               <p className="mt-1 whitespace-pre-wrap text-text-primary">
                 <PostText content={r.content} mentions={r.mentions} />
               </p>
+              {isOwn && (
+                <button
+                  type="button"
+                  onClick={() => onDelete(r.id)}
+                  disabled={deleting}
+                  className="mt-2 text-sm text-text-muted hover:text-error disabled:opacity-50"
+                >
+                  削除
+                </button>
+              )}
             </div>
           </article>
         );

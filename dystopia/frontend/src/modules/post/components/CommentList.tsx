@@ -6,16 +6,20 @@ import { Button } from "@/components/ui/button";
 import { ProfileName } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { useComments } from "@/modules/post/hooks/useComments";
+import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
 import { PostText } from "@/modules/post/lib/post-text";
 import { ReplyList } from "./ReplyList";
 import { ReplyComposer } from "./ReplyComposer";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface CommentListProps {
   postId: string;
 }
 
 export function CommentList({ postId }: CommentListProps) {
+  const viewerId = useAuthStore(selectActiveProfileId);
   const { comments, hasMore, loading, error, loadMore } = useComments(postId);
+  const { deleteComment, submitting: deleting } = useDeleteComment(postId);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [replying, setReplying] = useState<string | null>(null);
 
@@ -29,9 +33,15 @@ export function CommentList({ postId }: CommentListProps) {
     return <p className="px-4 py-4 text-text-secondary">まだコメントはありません</p>;
   }
 
+  const onDelete = async (commentId: string) => {
+    if (!confirm("このコメントを削除しますか?")) return;
+    await deleteComment(commentId).catch(() => {});
+  };
+
   return (
     <div>
       {comments.map((c) => {
+        const isOwn = !!viewerId && c.authorProfileId === viewerId;
         const isExpanded = !!expanded[c.id];
         const authorHref = c.author?.username ? `/u/${encodeURIComponent(c.author.username)}` : undefined;
         const avatar = (
@@ -72,6 +82,16 @@ export function CommentList({ postId }: CommentListProps) {
                       aria-expanded={isExpanded}
                     >
                       {isExpanded ? "返信を隠す" : `${c.repliesCount} 件の返信を見る`}
+                    </button>
+                  )}
+                  {isOwn && (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(c.id)}
+                      disabled={deleting}
+                      className="text-text-muted hover:text-error disabled:opacity-50"
+                    >
+                      削除
                     </button>
                   )}
                 </div>
