@@ -2,7 +2,9 @@ FROM node:26.13.0-slim AS frontend-builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV CI=true
-RUN corepack enable && \
+# Install corepack from npm because Node.js stopped bundling it in v25.
+RUN npm install -g corepack@0.36.0 && \
+    corepack enable && \
     apt-get update -qq && \
     apt-get install -y --no-install-recommends git ca-certificates
 
@@ -26,7 +28,7 @@ RUN bundle config set --local frozen true && \
 
 FROM ruby:4.0.9-slim AS runner
 RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends libpq5 postgresql-client-17 libstdc++6 && \
+    apt-get install -y --no-install-recommends libpq5 postgresql-client-17 libstdc++6 libatomic1 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:1.1.0 /lambda-adapter /opt/extensions/lambda-adapter
