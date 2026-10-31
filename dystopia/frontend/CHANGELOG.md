@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.12.0](https://github.com/panicboat/monorepo/compare/frontend-v0.11.0...frontend-v0.12.0) (2026-10-31)
+
+
+### Features
+
+* **dystopia/frontend:** keep opened replies open ([#1884](https://github.com/panicboat/monorepo/issues/1884)) ([0561c84](https://github.com/panicboat/monorepo/commit/0561c84b14516028cd1867e8227843bf5c9d235a))
+* **dystopia:** hide schedules and reviews of a locked profile from viewers who do not follow ([#1870](https://github.com/panicboat/monorepo/issues/1870)) ([9b1dbd8](https://github.com/panicboat/monorepo/commit/9b1dbd8757eec82e5b4de0aee20e7b60a320aacb))
+* **dystopia:** keep feature behavior out of the terms and the privacy policy ([#1869](https://github.com/panicboat/monorepo/issues/1869)) ([3f94bc1](https://github.com/panicboat/monorepo/commit/3f94bc193ced5a2530f57751df8e57124fad2ef9))
+* **dystopia:** remove the replies tab and post editing, and add deleting a post ([#1873](https://github.com/panicboat/monorepo/issues/1873)) ([48090b4](https://github.com/panicboat/monorepo/commit/48090b4281f3636d41cb6369bca56dfbb953d70f))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** tell the user when a follow, block or reaction fails ([#1877](https://github.com/panicboat/monorepo/issues/1877)) ([cf8ce38](https://github.com/panicboat/monorepo/commit/cf8ce388606da266e40eee9cc7393bd69750feac))
+* **dystopia/frontend:** update dependency @aws-sdk/client-cognito-identity-provider to ^3.1158.0 ([#1855](https://github.com/panicboat/monorepo/issues/1855)) ([835286f](https://github.com/panicboat/monorepo/commit/835286f307ca3255584e01be081dfc33e3c4901d))
+* **dystopia/frontend:** update dependency @connectrpc/connect to ^2.3.0 ([#1856](https://github.com/panicboat/monorepo/issues/1856)) ([716e21c](https://github.com/panicboat/monorepo/commit/716e21c348563c2a2249f5fa6ffe0e3ec3cc8351))
+* **dystopia/frontend:** update dependency @connectrpc/connect-node to ^2.3.0 ([#1857](https://github.com/panicboat/monorepo/issues/1857)) ([2c179e0](https://github.com/panicboat/monorepo/commit/2c179e06872bbc682d3573aa63d522545508be43))
+
+
+### Code Refactoring
+
+* **dystopia/frontend:** remove code nothing reaches ([#1874](https://github.com/panicboat/monorepo/issues/1874)) ([f903ce3](https://github.com/panicboat/monorepo/commit/f903ce3248b60924b10de537037efc82d5bdbc85))
+* **dystopia/frontend:** send every profile-scoped request through authFetch ([#1875](https://github.com/panicboat/monorepo/issues/1875)) ([c5a9526](https://github.com/panicboat/monorepo/commit/c5a952687db0da9f7af870a1f343547e31014bd2))
+* **dystopia/frontend:** share one hook across the cursor paginated lists ([#1876](https://github.com/panicboat/monorepo/issues/1876)) ([67d213e](https://github.com/panicboat/monorepo/commit/67d213e6e70379b4a8927180ba8ec6efa76667d7))
+* **dystopia/frontend:** untangle the profile module, nav badges and useAuth ([#1878](https://github.com/panicboat/monorepo/issues/1878)) ([81699e7](https://github.com/panicboat/monorepo/commit/81699e7e32b50df6e4d24aceae97a6341e702fef))
+
+
+### Miscellaneous Chores
+
+* **dystopia:** add an empty terragrunt stack to frontend ([#1871](https://github.com/panicboat/monorepo/issues/1871)) ([8c115fd](https://github.com/panicboat/monorepo/commit/8c115fd57774f850ffda88dfde51b9a452233e7e))
+
 ## [0.11.0](https://github.com/panicboat/monorepo/compare/frontend-v0.10.0...frontend-v0.11.0) (2026-10-29)
 
 
