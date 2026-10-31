@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { usePublicProfile, useProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileSheet } from "@/modules/profile/components/EditProfileSheet";
-import { ProfileActions } from "@/modules/profile/components/ProfileActions";
+import { ProfileActions } from "./ProfileActions";
 import { SocialCountsLinks } from "@/modules/social";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
 import { useRecordVisit } from "@/modules/footprints";

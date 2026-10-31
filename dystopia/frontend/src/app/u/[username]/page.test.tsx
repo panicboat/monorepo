@@ -31,7 +31,7 @@ vi.mock("@/modules/social", () => ({
   useSocialCounts: () => ({ followingCount: 0, followersCount: 0 }),
 }));
 
-vi.mock("@/modules/profile/components/ProfileActions", () => ({
+vi.mock("./ProfileActions", () => ({
   ProfileActions: ({ targetProfileId }: { targetProfileId: string }) => <span>{`profile-actions:${targetProfileId}`}</span>,
 }));
 

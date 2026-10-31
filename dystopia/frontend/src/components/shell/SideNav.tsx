@@ -6,24 +6,18 @@ import { Avatar } from "@/components/ui/avatar";
 import { BrandMark } from "./BrandMark";
 import { ComposeLauncher } from "@/components/compose/ComposeLauncher";
 import { useProfile } from "@/modules/profile/hooks";
-import { useUnreadCount, useNotificationPreferences } from "@/modules/notifications/hooks";
-import { useTotalUnread } from "@/modules/messaging";
-import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { PROFILE_NAV_PATH, resolveNavItems } from "./resolveNavItems";
+import { useNavBadgeCount } from "./useNavBadgeCount";
 import { cn } from "@/lib/utils";
 
 export function SideNav() {
   const pathname = usePathname();
   const { profile } = useProfile();
-  const { count: unread } = useUnreadCount();
-  const { count: msgUnread } = useTotalUnread();
-  const { count: footprintsUnread } = useFootprintsUnreadCount();
-  const { preferences } = useNotificationPreferences();
+  const badgeCountOf = useNavBadgeCount();
   const role = useAuthStore(selectRole);
 
-  const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
   // FALLBACK: Use /profile until the own profile has loaded.
   const profileHref = profile?.username ? `/u/${profile.username}` : "/profile";
 
@@ -34,11 +28,7 @@ export function SideNav() {
         {resolveNavItems({ role }).map((item) => {
           const href = item.path === PROFILE_NAV_PATH ? profileHref : item.path;
           const active = pathname === href;
-          const badgeCount =
-            item.badgeKey === "unread" ? unread :
-            item.badgeKey === "messaging_unread" ? msgUnread :
-            item.badgeKey === "footprints_unread" ? (footprintsBadgeEnabled ? footprintsUnread : 0) :
-            0;
+          const badgeCount = badgeCountOf(item.badgeKey);
           return (
             <Link
               key={item.path}

@@ -6,14 +6,11 @@ import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { useProfile } from "@/modules/profile/hooks";
 import { useSocialCounts } from "@/modules/social";
-import { useUnreadCount } from "@/modules/notifications/hooks";
-import { useTotalUnread } from "@/modules/messaging";
-import { useFootprintsUnreadCount } from "@/modules/footprints";
-import { useNotificationPreferences } from "@/modules/notifications/hooks";
 import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { classifySwipeDirection, clampDrawerOffset, shouldToggleDrawer, type SwipeDirection } from "./drawerSwipe";
 import { PROFILE_NAV_PATH, resolveNavItems } from "./resolveNavItems";
+import { useNavBadgeCount } from "./useNavBadgeCount";
 
 interface DrawerProps {
   open: boolean;
@@ -37,11 +34,7 @@ function isWithinHorizontalScrollable(element: Element | null): boolean {
 export function Drawer({ open, onClose, onOpen }: DrawerProps) {
   const { profile } = useProfile();
   const { followingCount, followersCount } = useSocialCounts(profile?.id);
-  const { count: unread } = useUnreadCount();
-  const { count: msgUnread } = useTotalUnread();
-  const { count: footprintsUnread } = useFootprintsUnreadCount();
-  const { preferences } = useNotificationPreferences();
-  const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
+  const badgeCountOf = useNavBadgeCount();
   const role = useAuthStore(selectRole);
   // The bottom tab bar already carries home on the widths where this menu shows.
   const navItems = resolveNavItems({ role }).filter((item) => item.path !== "/");
@@ -191,11 +184,7 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
 
         <nav className="flex-1 overflow-y-auto py-2">
           {navItems.map((item) => {
-            const badgeCount =
-              item.badgeKey === "unread" ? unread :
-              item.badgeKey === "messaging_unread" ? msgUnread :
-              item.badgeKey === "footprints_unread" ? (footprintsBadgeEnabled ? footprintsUnread : 0) :
-              0;
+            const badgeCount = badgeCountOf(item.badgeKey);
             const showBadge = badgeCount > 0;
             // FALLBACK: Use /profile until the own profile has loaded.
             const href = item.path === PROFILE_NAV_PATH ? (profile?.username ? `/u/${profile.username}` : "/profile") : item.path;
