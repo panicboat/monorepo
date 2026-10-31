@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { profileRequestHeaders } from "@/lib/auth/profile-headers";
-import { AppError, httpStatusToErrorCode } from "@/lib/errors";
-import { getDefaultMessage } from "@/lib/error-messages";
+import { AppError } from "@/lib/errors";
 
 export interface PaginatedResult<T> {
   items: T[];
@@ -16,7 +14,7 @@ export interface UsePaginatedFetchOptions<T, R> {
   mapResponse: (data: R) => PaginatedResult<T>;
   getItemId: (item: T) => string;
   buildParams?: (params: URLSearchParams) => void;
-  fetchFn?: (url: string) => Promise<R>;
+  fetchFn: (url: string) => Promise<R>;
 }
 
 export interface UsePaginatedFetchReturn<T> {
@@ -61,29 +59,6 @@ export function usePaginatedFetch<T, R = unknown>(
     [apiUrl, buildParams]
   );
 
-  const doFetch = useCallback(
-    async (url: string): Promise<R> => {
-      if (fetchFn) {
-        return fetchFn(url);
-      }
-
-      const res = await fetch(url, {
-        cache: "no-store",
-        headers: profileRequestHeaders(),
-      });
-
-      if (!res.ok) {
-        // FALLBACK: Use an empty object when the error body is not JSON.
-        const errBody = await res.json().catch(() => ({}));
-        const code = httpStatusToErrorCode(res.status);
-        throw new AppError(code, errBody.error || getDefaultMessage(code), res.status, errBody);
-      }
-
-      return res.json();
-    },
-    [fetchFn]
-  );
-
   const fetchInitial = useCallback(async () => {
     if (initializedRef.current || loadingRef.current) {
       return;
@@ -95,7 +70,7 @@ export function usePaginatedFetch<T, R = unknown>(
 
     try {
       const url = buildUrl();
-      const data = await doFetch(url);
+      const data = await fetchFn(url);
       const result = mapResponse(data);
 
       setItems(result.items);
@@ -113,7 +88,7 @@ export function usePaginatedFetch<T, R = unknown>(
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [buildUrl, doFetch, mapResponse]);
+  }, [buildUrl, fetchFn, mapResponse]);
 
   const fetchMore = useCallback(async () => {
     if (!initializedRef.current || !hasMoreRef.current || loadingMoreRef.current || !cursorRef.current) {
@@ -125,7 +100,7 @@ export function usePaginatedFetch<T, R = unknown>(
 
     try {
       const url = buildUrl(cursorRef.current);
-      const data = await doFetch(url);
+      const data = await fetchFn(url);
       const result = mapResponse(data);
 
       setItems((prev) => {
@@ -145,7 +120,7 @@ export function usePaginatedFetch<T, R = unknown>(
       loadingMoreRef.current = false;
       setLoadingMore(false);
     }
-  }, [buildUrl, doFetch, mapResponse, getItemId]);
+  }, [buildUrl, fetchFn, mapResponse, getItemId]);
 
   const reset = useCallback(() => {
     setItems([]);

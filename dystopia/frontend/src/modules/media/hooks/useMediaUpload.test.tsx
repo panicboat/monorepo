@@ -17,11 +17,12 @@ vi.mock("../lib/video-metadata", async (importOriginal) => ({
   stripVideoMetadata: videoMocks.stripVideoMetadata,
 }));
 vi.mock("@/stores/authStore", () => ({
-  useAuthStore: Object.assign(() => null, { getState: () => ({ activeProfileId: "p-1" }) }),
+  useAuthStore: Object.assign(() => null, { getState: () => ({ accountId: "a-1", activeProfileId: "p-1" }) }),
 }));
-vi.mock("@/lib/auth/profile-headers", () => ({ profileRequestHeaders: () => ({}) }));
+vi.mock("@/lib/auth/profile-headers", () => ({ PROFILE_ID_HEADER: "x-profile-id", profileRequestHeaders: () => ({}) }));
 
 const { useMediaUpload } = await import("./useMediaUpload");
+const { AppError } = await import("@/lib/errors");
 
 type Hook = ReturnType<typeof useMediaUpload>;
 let hook: Hook | null = null;
@@ -133,6 +134,15 @@ describe("useMediaUpload", () => {
     );
 
     expect(calls).toEqual([]);
+  });
+
+  it("reports the server's message as an AppError when no upload URL is issued", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 400, json: async () => ({ error: "このファイルは添付できません" }) })));
+
+    const failure = upload(new File(["webm"], "clip.webm", { type: "video/webm" }));
+
+    await expect(failure).rejects.toBeInstanceOf(AppError);
+    await expect(failure).rejects.toThrow("このファイルは添付できません");
   });
 
   it("uploads a WebM video as it is", async () => {

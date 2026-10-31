@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { profileRequestHeaders } from "@/lib/auth/profile-headers";
+import { authFetch } from "@/lib/auth/fetch";
 import { useAuthStore } from "@/stores/authStore";
 import type { UploadedMedia, MediaType, MediaUploadOptions } from "../types";
 import { getMediaTypeFromMime, toProtoMediaType } from "../lib/mappers";
@@ -38,26 +38,14 @@ async function prepareUpload(file: File): Promise<PreparedUpload> {
 }
 
 async function putObject(body: Blob, filename: string, contentType: string, mediaType: MediaType) {
-  const res = await fetch("/api/media/upload-url", {
+  const { uploadUrl, mediaKey, mediaId } = await authFetch<{ uploadUrl: string; mediaKey: string; mediaId: string }>("/api/media/upload-url", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...profileRequestHeaders(),
-    },
-    body: JSON.stringify({
+    body: {
       filename,
       contentType,
       mediaType: toProtoMediaType(mediaType),
-    }),
+    },
   });
-
-  if (!res.ok) {
-    // FALLBACK: Use an empty object when JSON parsing fails.
-    const err = await res.json().catch(() => ({} as { error?: string }));
-    throw new Error(err.error || "アップロードに失敗しました");
-  }
-
-  const { uploadUrl, mediaKey, mediaId } = (await res.json()) as { uploadUrl: string; mediaKey: string; mediaId: string };
 
   const uploadRes = await fetch(uploadUrl, {
     method: "PUT",
@@ -91,13 +79,9 @@ export function useMediaUpload(): UseMediaUploadResult {
       throw new Error("ログインしてください");
     }
 
-    const res = await fetch("/api/media/register", {
+    await authFetch("/api/media/register", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...profileRequestHeaders(),
-      },
-      body: JSON.stringify({
+      body: {
         mediaId: uploaded.mediaId,
         mediaKey: uploaded.mediaKey,
         ...(uploaded.thumbnailKey ? { thumbnailKey: uploaded.thumbnailKey } : {}),
@@ -105,14 +89,8 @@ export function useMediaUpload(): UseMediaUploadResult {
         filename: uploaded.filename,
         contentType: uploaded.contentType,
         sizeBytes: uploaded.sizeBytes,
-      }),
+      },
     });
-
-    if (!res.ok) {
-      // FALLBACK: Use an empty object when JSON parsing fails.
-      const err = await res.json().catch(() => ({} as { error?: string }));
-      throw new Error(err.error || "メディアの登録に失敗しました");
-    }
   }, []);
 
   const uploadMedia = useCallback(
