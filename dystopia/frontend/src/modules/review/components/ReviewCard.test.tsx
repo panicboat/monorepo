@@ -21,6 +21,7 @@ const review = (overrides: Partial<Review> = {}): Review => ({
   id: "k-1",
   authorProfileId: "persona-a",
   author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
+  authorHidden: false,
   targetProfileId: "cast-1",
   target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
   isMine: true,
@@ -127,6 +128,22 @@ describe("ReviewCard", () => {
 
     expect(Array.from(container.querySelectorAll("a")).some((link) => link.getAttribute("href") === "/u/")).toBe(false);
     expect(container.textContent).toContain("（無効なゲスト）");
+  });
+
+  it("shows （非公開のゲスト） without a profile link when the author is hidden", async () => {
+    const container = await mount({ review: review({ authorProfileId: "", author: null, authorHidden: true }), variant: "feed" });
+
+    expect(container.textContent).toContain("（非公開のゲスト）");
+    expect(container.textContent).not.toContain("（無効なゲスト）");
+    expect(Array.from(container.querySelectorAll("a")).some((link) => link.getAttribute("href") === "/u/")).toBe(false);
+    expect(container.querySelector('a[href="/u/yuna"]')).toBeNull();
+  });
+
+  it("keeps （無効なゲスト） when the author is missing and not hidden", async () => {
+    const container = await mount({ review: review({ author: null, authorHidden: false }), variant: "feed" });
+
+    expect(container.textContent).toContain("（無効なゲスト）");
+    expect(container.textContent).not.toContain("（非公開のゲスト）");
   });
 
   it("shows a question mark as the avatar initial when the author is missing", async () => {

@@ -43,6 +43,7 @@ export function mapReviewToView(review: ReviewMessage): Review {
     id: review.id,
     authorProfileId: review.authorProfileId,
     author: review.author ? summaryToView(review.author) : null,
+    authorHidden: !!review.authorHidden,
     targetProfileId: review.targetProfileId,
     target: review.target ? summaryToView(review.target) : null,
     isMine: !!review.isMine,

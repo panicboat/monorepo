@@ -49,6 +49,7 @@ const review = (overrides: Partial<Review> = {}): Review => ({
   id: "k-1",
   authorProfileId: "persona-a",
   author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest", industry: "" },
+  authorHidden: false,
   targetProfileId: "cast-1",
   target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
   isMine: true,
@@ -121,6 +122,21 @@ describe("ReviewDetailSheet", () => {
     expect(text()).not.toContain("@");
     expect(document.querySelector(".rounded-full")?.textContent).toBe("?");
     expect(button("編集")).toBeDefined();
+  });
+
+  it("shows （非公開のゲスト） without a profile link when the author is hidden", async () => {
+    await mount(review({ authorProfileId: "", author: null, authorHidden: true }));
+
+    expect(text()).toContain("書いた人 （非公開のゲスト）");
+    expect(text()).not.toContain("（無効なゲスト）");
+    expect(document.querySelector('a[href^="/u/"]')).toBeNull();
+  });
+
+  it("keeps （無効なゲスト） when the author is missing and not hidden", async () => {
+    await mount(review({ author: null, authorHidden: false }));
+
+    expect(text()).toContain("書いた人 （無効なゲスト）");
+    expect(text()).not.toContain("（非公開のゲスト）");
   });
 
   it("explains that a star makes the review count toward the average", async () => {

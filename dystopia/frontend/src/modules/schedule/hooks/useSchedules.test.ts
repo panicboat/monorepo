@@ -19,4 +19,15 @@ describe("useSchedules", () => {
       null,
     ]);
   });
+
+  it("reports whether the lock hides the schedules", () => {
+    mocks.useSWR.mockReturnValue({ data: { schedules: [], hiddenByLock: true }, error: undefined, isLoading: false, mutate: vi.fn() });
+    expect(useSchedules("prof-1", "2026-10-01", "2026-10-31").hiddenByLock).toBe(true);
+
+    mocks.useSWR.mockReturnValue({ data: { schedules: [] }, error: undefined, isLoading: false, mutate: vi.fn() });
+    expect(useSchedules("prof-1", "2026-10-01", "2026-10-31").hiddenByLock).toBe(false);
+
+    mocks.useSWR.mockReturnValue({ data: undefined, error: undefined, isLoading: true, mutate: vi.fn() });
+    expect(useSchedules("prof-1", "2026-10-01", "2026-10-31").hiddenByLock).toBe(false);
+  });
 });

@@ -6,6 +6,7 @@ import type { ScheduleView } from "@/modules/schedule/types";
 
 interface ListSchedulesResponse {
   schedules: ScheduleView[];
+  hiddenByLock?: boolean;
 }
 
 export function useSchedules(profileId: string | null, fromDate: string, toDate: string) {
@@ -17,6 +18,7 @@ export function useSchedules(profileId: string | null, fromDate: string, toDate:
 
   return {
     schedules: data?.schedules || [],
+    hiddenByLock: !!data?.hiddenByLock,
     loading: isLoading,
     error,
     refresh: () => mutate(),

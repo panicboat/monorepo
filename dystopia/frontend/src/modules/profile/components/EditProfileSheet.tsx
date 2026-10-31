@@ -265,7 +265,7 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
         <div className="flex items-center justify-between gap-3 border-t border-divider pt-4">
           <div className="flex flex-col">
             <span className="text-sm font-medium text-text-primary">プロフィールに鍵をかける</span>
-            <span className="text-xs text-text-muted">プロフィールに鍵マークが付き、フォローが承認制になります。投稿を見られる人は、投稿ごとの公開範囲で決まります</span>
+            <span className="text-xs text-text-muted">プロフィールに鍵マークが付き、フォローしていない人から予定とクチコミが見えなくなります。フォローは承認制になります。投稿を見られる人は、投稿ごとの公開範囲で決まります</span>
           </div>
           <Toggle
             checked={form.isPrivate}

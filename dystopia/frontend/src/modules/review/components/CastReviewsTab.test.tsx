@@ -6,7 +6,7 @@ import type { ProfileSummaryView } from "@/modules/profile/types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const viewer = vi.hoisted(() => ({ role: "guest" as string, id: "guest-9" }));
+const viewer = vi.hoisted(() => ({ role: "guest" as string, id: "guest-9", hiddenByLock: false }));
 
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (state: { role: string; activeProfileId: string }) => unknown) =>
@@ -18,6 +18,7 @@ vi.mock("../hooks/useCastReviews", () => ({
   useCastReviews: () => ({
     reviews: [],
     summary: { averageRating: 4, raterCount: 1, reviewCount: 2 },
+    hiddenByLock: viewer.hiddenByLock,
     hasMore: false,
     loading: false,
     loadMore: vi.fn(),
@@ -51,6 +52,7 @@ describe("CastReviewsTab", () => {
   beforeEach(() => {
     viewer.role = "guest";
     viewer.id = "guest-9";
+    viewer.hiddenByLock = false;
   });
 
   it("shows the summary above the cast's reviews and lets a guest write one for this cast", async () => {
@@ -66,6 +68,23 @@ describe("CastReviewsTab", () => {
     });
 
     expect(container.textContent).toContain("compose:review:true:cast-1");
+  });
+
+  it("shows the notice instead of the summary and the list when hidden by lock", async () => {
+    viewer.hiddenByLock = true;
+    const container = await render();
+
+    expect(container.textContent).toContain("フォローすると見られます");
+    expect(container.textContent).not.toContain("list:");
+    expect(container.textContent).not.toContain("利用の満足度");
+  });
+
+  it("keeps the write button for a guest when hidden by lock", async () => {
+    viewer.hiddenByLock = true;
+    const container = await render();
+
+    expect(writeButton(container)).toBeDefined();
+    expect(container.textContent).toContain("このキャストのクチコミを書く");
   });
 
   it("hides the write button from a cast viewer", async () => {

@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
       reviews: (res.reviews || []).map(mapReviewToView),
       nextCursor: res.nextCursor || "",
       hasMore: !!res.hasMore,
+      hiddenByLock: !!res.hiddenByLock,
       summary: mapSummaryToView(res.summary),
     });
   } catch (error: unknown) {

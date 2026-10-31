@@ -31,6 +31,11 @@ describe("mapReviewToView", () => {
     });
   });
 
+  it("maps authorHidden", () => {
+    expect(mapReviewToView(create(ReviewSchema, { id: "k-1", authorHidden: true })).authorHidden).toBe(true);
+    expect(mapReviewToView(create(ReviewSchema, { id: "k-1" })).authorHidden).toBe(false);
+  });
+
   it("reads rating 0 as unrated and carries no status", () => {
     const view = mapReviewToView(create(ReviewSchema, { id: "k-1", rating: 0 }));
 

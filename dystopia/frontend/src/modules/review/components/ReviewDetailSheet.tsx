@@ -5,7 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
-import { MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
+import { HIDDEN_GUEST, MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
 import { useReview } from "../hooks/useReview";
@@ -120,7 +120,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
             <div className="min-w-0">
               <p className="truncate"><ProfileName profile={review.target} missing={MISSING_CAST} /></p>
               <p className="truncate text-xs text-text-secondary">
-                {review.target?.username ? `@${review.target?.username} · ` : ""}書いた人 <ProfileName profile={review.author} className="font-normal" missing={MISSING_GUEST} />
+                {review.target?.username ? `@${review.target?.username} · ` : ""}書いた人 <ProfileName profile={review.author} className="font-normal" missing={review.authorHidden ? HIDDEN_GUEST : MISSING_GUEST} />
               </p>
             </div>
           </div>
