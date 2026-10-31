@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
 import { ProfileSchema, ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
-import { emptyProfileView, mapProfileToView, profileViewToSavePayload, buildSaveProfileRequest, summaryToView } from "./mappers";
+import { emptyProfileView, mapProfileToView, buildSaveProfileRequest, summaryToView } from "./mappers";
 
 describe("mapProfileToView", () => {
   it("maps body_stats into a BodyStatsView", () => {
@@ -82,12 +82,12 @@ describe("emptyProfileView", () => {
   });
 });
 
-describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
+describe("buildSaveProfileRequest", () => {
   it("carries the litlink sns link through the save request", () => {
     const view = emptyProfileView("prof-1");
     view.snsLinks.litlink = "https://lit.link/yuna";
 
-    const request = buildSaveProfileRequest(profileViewToSavePayload(view));
+    const request = buildSaveProfileRequest(view);
 
     expect(request.snsLinks.litlink).toBe("https://lit.link/yuna");
   });
@@ -97,8 +97,7 @@ describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
     view.bodyStats = { heightCm: 158, bust: 88, waist: 58, hip: 86, cup: "D" };
     view.snsLinks.cityheaven = "https://www.cityheaven.net/example/";
 
-    const payload = profileViewToSavePayload(view);
-    const request = buildSaveProfileRequest(payload);
+    const request = buildSaveProfileRequest(view);
 
     expect(request.bodyStats).toEqual({ heightCm: 158, bustCm: 88, waistCm: 58, hipCm: 86, cup: "D" });
     expect(request.snsLinks.cityheaven).toBe("https://www.cityheaven.net/example/");
@@ -107,8 +106,8 @@ describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
   it("carries the follow approval flag from the view to the save request", () => {
     const view = { ...emptyProfileView("prof-1"), followApprovalRequired: true };
 
-    expect(profileViewToSavePayload(view).followApprovalRequired).toBe(true);
-    expect(buildSaveProfileRequest(profileViewToSavePayload(view)).followApprovalRequired).toBe(true);
+    expect(view.followApprovalRequired).toBe(true);
+    expect(buildSaveProfileRequest(view).followApprovalRequired).toBe(true);
   });
 
   it.each([true, false])("passes followApprovalRequired=%s through to the save request unchanged", (value) => {
@@ -120,7 +119,7 @@ describe("main area in the save request", () => {
   it("carries the prefecture and the area from the view to the save request", () => {
     const view = { ...emptyProfileView("prof-1"), displayName: "Coco", prefecture: "大阪府", area: "梅田" };
 
-    expect(buildSaveProfileRequest(profileViewToSavePayload(view))).toMatchObject({ prefecture: "大阪府", area: "梅田" });
+    expect(buildSaveProfileRequest(view)).toMatchObject({ prefecture: "大阪府", area: "梅田" });
   });
 });
 

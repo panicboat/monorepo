@@ -21,10 +21,6 @@ export class AppError extends Error {
   }
 }
 
-export function isAppError(error: unknown): error is AppError {
-  return error instanceof AppError;
-}
-
 export function httpStatusToErrorCode(status: number): ErrorCode {
   switch (status) {
     case 400:

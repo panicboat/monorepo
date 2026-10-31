@@ -35,7 +35,3 @@ export async function buildGrpcHeaders(
 
   return headers;
 }
-
-export function getOrCreateRequestId(headers: Headers): string {
-  return headers.get(HEADER_NAMES.REQUEST_ID) || generateRequestId();
-}

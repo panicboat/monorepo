@@ -27,17 +27,3 @@ export function formatDate(
 ): string {
   return new Date(dateString).toLocaleDateString("ja-JP", options);
 }
-
-export function formatTime(
-  dateString: string,
-  options: Intl.DateTimeFormatOptions = {
-    hour: "2-digit",
-    minute: "2-digit",
-  }
-): string {
-  return new Date(dateString).toLocaleTimeString("ja-JP", options);
-}
-
-export function formatDateTime(dateString: string): string {
-  return `${formatDate(dateString)} ${formatTime(dateString)}`;
-}
