@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file post/v1/post_service.proto.
  */
 export const file_post_v1_post_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJVCgtQb3N0TWVudGlvbhISCgpwcm9maWxlX2lkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEhAKCHBvc2l0aW9uGAMgASgFEg4KBmxlbmd0aBgEIAEoBSJhCglQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSL+AgoEUG9zdBIKCgJpZBgBIAEoCRIZChFhdXRob3JfcHJvZmlsZV9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEiEKBW1lZGlhGAQgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIqCgZhdXRob3IYBiABKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EhMKC2xpa2VzX2NvdW50GAcgASgFEhYKDmNvbW1lbnRzX2NvdW50GAggASgFEhIKCnZpc2liaWxpdHkYCSABKAkSEAoIaGFzaHRhZ3MYCiADKAkSDQoFbGlrZWQYCyABKAgSJgoIbWVudGlvbnMYDCADKAsyFC5wb3N0LnYxLlBvc3RNZW50aW9uEhQKDHB1Ymxpc2hlZF9hdBgNIAEoCRISCgpleHBpcmVzX2F0GA4gASgJEicKCHNjaGVkdWxlGA8gASgLMhUuc2NoZWR1bGUudjEuU2NoZWR1bGUicAoQTGlzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSGQoRYXV0aG9yX3Byb2ZpbGVfaWQYAyABKAkSDgoGZmlsdGVyGAQgASgJEhIKCm1lZGlhX29ubHkYBSABKAgiWAoRTGlzdFBvc3RzUmVzcG9uc2USHAoFcG9zdHMYASADKAsyDS5wb3N0LnYxLlBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAginwEKD1NhdmVQb3N0UmVxdWVzdBIPCgdjb250ZW50GAIgASgJEiEKBW1lZGlhGAMgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKdmlzaWJpbGl0eRgEIAEoCRIQCghoYXNodGFncxgFIAMoCRIUCgxwdWJsaXNoZWRfYXQYBiABKAkSEgoKZXhwaXJlc19hdBgHIAEoCUoECAEQAlICaWQiLwoQU2F2ZVBvc3RSZXNwb25zZRIbCgRwb3N0GAEgASgLMg0ucG9zdC52MS5Qb3N0IhwKDkdldFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIi4KD0dldFBvc3RSZXNwb25zZRIbCgRwb3N0GAEgASgLMg0ucG9zdC52MS5Qb3N0Ih8KEURlbGV0ZVBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIhQKEkRlbGV0ZVBvc3RSZXNwb25zZTKXAgoLUG9zdFNlcnZpY2USQgoJTGlzdFBvc3RzEhkucG9zdC52MS5MaXN0UG9zdHNSZXF1ZXN0GhoucG9zdC52MS5MaXN0UG9zdHNSZXNwb25zZRI8CgdHZXRQb3N0EhcucG9zdC52MS5HZXRQb3N0UmVxdWVzdBoYLnBvc3QudjEuR2V0UG9zdFJlc3BvbnNlEj8KCFNhdmVQb3N0EhgucG9zdC52MS5TYXZlUG9zdFJlcXVlc3QaGS5wb3N0LnYxLlNhdmVQb3N0UmVzcG9uc2USRQoKRGVsZXRlUG9zdBIaLnBvc3QudjEuRGVsZXRlUG9zdFJlcXVlc3QaGy5wb3N0LnYxLkRlbGV0ZVBvc3RSZXNwb25zZWIGcHJvdG8z", [file_profile_v1_service, file_schedule_v1_schedule_service]);
+  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJVCgtQb3N0TWVudGlvbhISCgpwcm9maWxlX2lkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEhAKCHBvc2l0aW9uGAMgASgFEg4KBmxlbmd0aBgEIAEoBSJhCglQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSKOAwoEUG9zdBIKCgJpZBgBIAEoCRIZChFhdXRob3JfcHJvZmlsZV9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEiEKBW1lZGlhGAQgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIqCgZhdXRob3IYBiABKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EhMKC2xpa2VzX2NvdW50GAcgASgFEhYKDmNvbW1lbnRzX2NvdW50GAggASgFEhIKCnZpc2liaWxpdHkYCSABKAkSEAoIaGFzaHRhZ3MYCiADKAkSDQoFbGlrZWQYCyABKAgSJgoIbWVudGlvbnMYDCADKAsyFC5wb3N0LnYxLlBvc3RNZW50aW9uEhQKDHB1Ymxpc2hlZF9hdBgNIAEoCRISCgpleHBpcmVzX2F0GA4gASgJEicKCHNjaGVkdWxlGA8gASgLMhUuc2NoZWR1bGUudjEuU2NoZWR1bGUSDgoGcGlubmVkGBAgASgIInAKEExpc3RQb3N0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJEhkKEWF1dGhvcl9wcm9maWxlX2lkGAMgASgJEg4KBmZpbHRlchgEIAEoCRISCgptZWRpYV9vbmx5GAUgASgIIlgKEUxpc3RQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIp8BCg9TYXZlUG9zdFJlcXVlc3QSDwoHY29udGVudBgCIAEoCRIhCgVtZWRpYRgDIAMoCzISLnBvc3QudjEuUG9zdE1lZGlhEhIKCnZpc2liaWxpdHkYBCABKAkSEAoIaGFzaHRhZ3MYBSADKAkSFAoMcHVibGlzaGVkX2F0GAYgASgJEhIKCmV4cGlyZXNfYXQYByABKAlKBAgBEAJSAmlkIi8KEFNhdmVQb3N0UmVzcG9uc2USGwoEcG9zdBgBIAEoCzINLnBvc3QudjEuUG9zdCIcCg5HZXRQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIuCg9HZXRQb3N0UmVzcG9uc2USGwoEcG9zdBgBIAEoCzINLnBvc3QudjEuUG9zdCIfChFEZWxldGVQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIUChJEZWxldGVQb3N0UmVzcG9uc2UiHAoOUGluUG9zdFJlcXVlc3QSCgoCaWQYASABKAkiEQoPUGluUG9zdFJlc3BvbnNlIh4KEFVucGluUG9zdFJlcXVlc3QSCgoCaWQYASABKAkiEwoRVW5waW5Qb3N0UmVzcG9uc2UymQMKC1Bvc3RTZXJ2aWNlEkIKCUxpc3RQb3N0cxIZLnBvc3QudjEuTGlzdFBvc3RzUmVxdWVzdBoaLnBvc3QudjEuTGlzdFBvc3RzUmVzcG9uc2USPAoHR2V0UG9zdBIXLnBvc3QudjEuR2V0UG9zdFJlcXVlc3QaGC5wb3N0LnYxLkdldFBvc3RSZXNwb25zZRI/CghTYXZlUG9zdBIYLnBvc3QudjEuU2F2ZVBvc3RSZXF1ZXN0GhkucG9zdC52MS5TYXZlUG9zdFJlc3BvbnNlEkUKCkRlbGV0ZVBvc3QSGi5wb3N0LnYxLkRlbGV0ZVBvc3RSZXF1ZXN0GhsucG9zdC52MS5EZWxldGVQb3N0UmVzcG9uc2USPAoHUGluUG9zdBIXLnBvc3QudjEuUGluUG9zdFJlcXVlc3QaGC5wb3N0LnYxLlBpblBvc3RSZXNwb25zZRJCCglVbnBpblBvc3QSGS5wb3N0LnYxLlVucGluUG9zdFJlcXVlc3QaGi5wb3N0LnYxLlVucGluUG9zdFJlc3BvbnNlYgZwcm90bzM", [file_profile_v1_service, file_schedule_v1_schedule_service]);
 
 /**
  * @generated from message post.v1.PostMention
@@ -163,6 +163,11 @@ export type Post = Message<"post.v1.Post"> & {
    * @generated from field: schedule.v1.Schedule schedule = 15;
    */
   schedule?: Schedule | undefined;
+
+  /**
+   * @generated from field: bool pinned = 16;
+   */
+  pinned: boolean;
 };
 
 /**
@@ -360,6 +365,66 @@ export const DeletePostResponseSchema: GenMessage<DeletePostResponse> = /*@__PUR
   messageDesc(file_post_v1_post_service, 10);
 
 /**
+ * @generated from message post.v1.PinPostRequest
+ */
+export type PinPostRequest = Message<"post.v1.PinPostRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message post.v1.PinPostRequest.
+ * Use `create(PinPostRequestSchema)` to create a new message.
+ */
+export const PinPostRequestSchema: GenMessage<PinPostRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 11);
+
+/**
+ * @generated from message post.v1.PinPostResponse
+ */
+export type PinPostResponse = Message<"post.v1.PinPostResponse"> & {
+};
+
+/**
+ * Describes the message post.v1.PinPostResponse.
+ * Use `create(PinPostResponseSchema)` to create a new message.
+ */
+export const PinPostResponseSchema: GenMessage<PinPostResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 12);
+
+/**
+ * @generated from message post.v1.UnpinPostRequest
+ */
+export type UnpinPostRequest = Message<"post.v1.UnpinPostRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message post.v1.UnpinPostRequest.
+ * Use `create(UnpinPostRequestSchema)` to create a new message.
+ */
+export const UnpinPostRequestSchema: GenMessage<UnpinPostRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 13);
+
+/**
+ * @generated from message post.v1.UnpinPostResponse
+ */
+export type UnpinPostResponse = Message<"post.v1.UnpinPostResponse"> & {
+};
+
+/**
+ * Describes the message post.v1.UnpinPostResponse.
+ * Use `create(UnpinPostResponseSchema)` to create a new message.
+ */
+export const UnpinPostResponseSchema: GenMessage<UnpinPostResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 14);
+
+/**
  * @generated from service post.v1.PostService
  */
 export const PostService: GenService<{
@@ -394,6 +459,22 @@ export const PostService: GenService<{
     methodKind: "unary";
     input: typeof DeletePostRequestSchema;
     output: typeof DeletePostResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.PostService.PinPost
+   */
+  pinPost: {
+    methodKind: "unary";
+    input: typeof PinPostRequestSchema;
+    output: typeof PinPostResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.PostService.UnpinPost
+   */
+  unpinPost: {
+    methodKind: "unary";
+    input: typeof UnpinPostRequestSchema;
+    output: typeof UnpinPostResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_post_v1_post_service, 0);

@@ -37,6 +37,7 @@ export interface PostView {
   mentions: MentionView[];
   liked: boolean;
   schedule: PostScheduleView | null;
+  pinned: boolean;
 }
 
 export interface SavePostMediaInput {

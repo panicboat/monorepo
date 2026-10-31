@@ -19,6 +19,8 @@ module Post
       rpc :GetPost, ::Post::V1::GetPostRequest, ::Post::V1::GetPostResponse
       rpc :SavePost, ::Post::V1::SavePostRequest, ::Post::V1::SavePostResponse
       rpc :DeletePost, ::Post::V1::DeletePostRequest, ::Post::V1::DeletePostResponse
+      rpc :PinPost, ::Post::V1::PinPostRequest, ::Post::V1::PinPostResponse
+      rpc :UnpinPost, ::Post::V1::UnpinPostRequest, ::Post::V1::UnpinPostResponse
 
       include Post::Concerns::ProfileAuthorResolvable
       include Post::Deps[
@@ -36,10 +38,11 @@ module Post
 
         live_only = author_profile_id.nil? || author_profile_id != current_profile_id
         include_private = author_profile_id ? followers_only_readable?(author_profile_id) : false
+        pinned_first = !author_profile_id.nil? && !request.message.media_only
         page = ::Concerns::VisiblePage.fill(
           limit: limit,
           cursor: cursor,
-          fetch: ->(after) { post_repo.list_posts(limit: limit, cursor: after, author_profile_id: author_profile_id, media_only: request.message.media_only, include_private: include_private, live_only: live_only) },
+          fetch: ->(after) { post_repo.list_posts(limit: limit, cursor: after, author_profile_id: author_profile_id, media_only: request.message.media_only, include_private: include_private, live_only: live_only, exclude_pinned: pinned_first) },
           keep: ->(rows) { filter_visible_posts.call(viewer_profile_id: current_profile_id, posts: rows) },
           cursor_of: ->(row) { { published_at: row.published_at, id: row.id } }
         )
@@ -49,9 +52,10 @@ module Post
         else
           ""
         end
+        pinned = pinned_first && cursor.nil? ? visible_pinned_post(author_profile_id: author_profile_id, include_private: include_private, live_only: live_only) : nil
 
         ::Post::V1::ListPostsResponse.new(
-          posts: present_posts(rows),
+          posts: present_posts([*pinned, *rows]),
           next_cursor: next_cursor,
           has_more: page[:has_more]
         )
@@ -96,7 +100,34 @@ module Post
         ::Post::V1::DeletePostResponse.new
       end
 
+      def pin_post
+        authenticate_user!
+
+        existing = post_repo.find_by_id_and_author(id: request.message.id, author_profile_id: current_profile_id)
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
+
+        post_repo.pin_post(id: existing.id, author_profile_id: current_profile_id)
+        ::Post::V1::PinPostResponse.new
+      end
+
+      def unpin_post
+        authenticate_user!
+
+        existing = post_repo.find_by_id_and_author(id: request.message.id, author_profile_id: current_profile_id)
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
+
+        post_repo.unpin_post(existing.id)
+        ::Post::V1::UnpinPostResponse.new
+      end
+
       private
+
+      def visible_pinned_post(author_profile_id:, include_private:, live_only:)
+        pinned = post_repo.find_pinned(author_profile_id: author_profile_id, include_private: include_private, live_only: live_only)
+        return nil unless pinned
+
+        filter_visible_posts.call(viewer_profile_id: current_profile_id, posts: [pinned]).first
+      end
 
       def load_media_files_for_posts(posts)
         media_ids = posts.flat_map do |post|

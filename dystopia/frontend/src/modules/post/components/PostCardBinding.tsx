@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, Heart, MessageCircle, Trash2 } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Pin, Trash2 } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
 import { profileDisplayName, profileInitial } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
@@ -17,6 +17,7 @@ import { PostScheduleCard } from "./PostScheduleCard";
 import { displayStateOf } from "@/modules/post/lib/display-window";
 import type { PostView } from "@/modules/post/lib/post-view";
 import { useDeletePost } from "@/modules/post/hooks/useDeletePost";
+import { usePinPost } from "@/modules/post/hooks/usePinPost";
 import { usePostLike } from "@/modules/post/hooks/usePostLike";
 import { useBookmark } from "@/modules/bookmarks";
 
@@ -24,13 +25,15 @@ export interface PostCardBindingProps {
   post: PostView;
   detailHref?: string;
   inDetail?: boolean;
+  showPinMark?: boolean;
   className?: string;
 }
 
-export function PostCardBinding({ post, detailHref, inDetail, className }: PostCardBindingProps) {
+export function PostCardBinding({ post, detailHref, inDetail, showPinMark, className }: PostCardBindingProps) {
   const { isLiked, getLikesCount, toggleLike, loading } = usePostLike();
   const { isBookmarked, toggle: toggleBookmark, loading: bookmarkLoading } = useBookmark(post.id);
   const { deletePost, submitting: deleting } = useDeletePost();
+  const { pinned, togglePin, submitting: pinning } = usePinPost(post);
   const deleted = usePostDeletionStore((s) => !!s.deleted[post.id]);
   const closeSheet = usePostSheetStore((s) => s.close);
   const showToast = useToastStore((s) => s.show);
@@ -84,6 +87,12 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
     e.preventDefault();
     e.stopPropagation();
     toggleBookmark().catch(() => showToast("ブックマークできませんでした"));
+  };
+
+  const handlePinClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    togglePin().catch(() => showToast("ピン留めを変更できませんでした"));
   };
 
   const handleDeleteClick = async (e: React.MouseEvent) => {
@@ -145,6 +154,18 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
       {isOwnPost && (
         <button
           type="button"
+          onClick={handlePinClick}
+          disabled={pinning}
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
+          aria-pressed={pinned}
+          aria-label={pinned ? "ピン留めを外す" : "ピン留めする"}
+        >
+          <Pin className={pinned ? "size-5 fill-current text-accent" : "size-5"} />
+        </button>
+      )}
+      {isOwnPost && (
+        <button
+          type="button"
           onClick={handleDeleteClick}
           disabled={deleting}
           className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-error disabled:opacity-50"
@@ -164,6 +185,7 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
       onDetailClick={inDetail ? undefined : openDetail}
       time={postedAt && displayState !== "scheduled" ? formatTimeAgo(postedAt) : ""}
       statusMark={statusMark}
+      pinMark={!!showPinMark && pinned}
       isPrivate={post.visibility === "private"}
       body={announcementOnly ? undefined : <PostText content={post.content} mentions={post.mentions} hashtags={post.hashtags} />}
       attachment={post.schedule && <PostScheduleCard schedule={post.schedule} author={post.author} />}

@@ -50,6 +50,7 @@ export function mapPostToView(p: Post): PostView {
     schedule: p.schedule
       ? { workDate: p.schedule.workDate, startTime: p.schedule.startTime, endTime: p.schedule.endTime }
       : null,
+    pinned: p.pinned || false,
   };
 }
 

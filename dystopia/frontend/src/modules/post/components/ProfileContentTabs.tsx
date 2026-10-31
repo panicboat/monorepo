@@ -81,7 +81,7 @@ function AuthorPostsPane({ profileId, mediaOnly }: { profileId: string; mediaOnl
   return (
     <div>
       {posts.map((p) => (
-        <PostCardBinding key={p.id} post={p} />
+        <PostCardBinding key={p.id} post={p} showPinMark={!mediaOnly} />
       ))}
       <LoadMore hasMore={hasMore} loading={loading} onClick={loadMore} />
     </div>

@@ -43,6 +43,7 @@ const basePost: PostView = {
   mentions: [],
   liked: false,
   schedule: null,
+  pinned: false,
 };
 
 describe("PostCardBinding", () => {

@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Users, X } from "lucide-react";
+import { Pin, Users, X } from "lucide-react";
 import { Avatar } from "./avatar";
 import { LockMark } from "./lock-mark";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ export interface PostCardProps {
   time: string;
   isPrivate?: boolean;
   statusMark?: string;
+  pinMark?: boolean;
   body?: React.ReactNode;
   attachment?: React.ReactNode;
   images?: PostCardImage[];
@@ -42,6 +43,7 @@ export function PostCard({
   time,
   isPrivate,
   statusMark,
+  pinMark,
   body,
   attachment,
   images,
@@ -77,6 +79,12 @@ export function PostCard({
 
   return (
     <article className={cn("border-b border-divider px-4 py-3", className)}>
+      {pinMark && (
+        <p className="mb-1 flex items-center gap-1 pl-[3.25rem] text-xs text-text-secondary">
+          <Pin className="size-3 fill-current" aria-hidden="true" />
+          ピン留めされた投稿
+        </p>
+      )}
       <div className="flex gap-3">
         {avatar}
         <div className="min-w-0 flex-1">
@@ -137,7 +145,7 @@ export function PostCard({
             </div>
           )}
           {reactions && (
-            <div className="mt-3 flex items-center gap-6 text-text-secondary">
+            <div className="mt-3 flex items-center gap-2 text-text-secondary sm:gap-6">
               {reactions}
             </div>
           )}

@@ -12,6 +12,7 @@ module Post
         attribute :updated_at, Types::Time
         attribute :published_at, Types::Time
         attribute :expires_at, Types::Time.optional
+        attribute :pinned_at, Types::Time.optional
 
         primary_key :id
 

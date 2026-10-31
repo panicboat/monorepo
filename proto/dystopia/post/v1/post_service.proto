@@ -10,6 +10,8 @@ service PostService {
   rpc GetPost(GetPostRequest) returns (GetPostResponse);
   rpc SavePost(SavePostRequest) returns (SavePostResponse);
   rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+  rpc PinPost(PinPostRequest) returns (PinPostResponse);
+  rpc UnpinPost(UnpinPostRequest) returns (UnpinPostResponse);
 }
 
 message PostMention {
@@ -43,6 +45,7 @@ message Post {
   string published_at = 13;
   string expires_at = 14;
   schedule.v1.Schedule schedule = 15;
+  bool pinned = 16;
 }
 
 message ListPostsRequest {
@@ -87,3 +90,15 @@ message DeletePostRequest {
 }
 
 message DeletePostResponse {}
+
+message PinPostRequest {
+  string id = 1;
+}
+
+message PinPostResponse {}
+
+message UnpinPostRequest {
+  string id = 1;
+}
+
+message UnpinPostResponse {}

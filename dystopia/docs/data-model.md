@@ -97,6 +97,7 @@ erDiagram
         text visibility "public / private"
         timestamptz published_at "公開開始"
         timestamptz expires_at "公開終了、NULL は無期限"
+        timestamptz pinned_at "ピン留めの日時、NULL はピン留めなし"
     }
     post_post_media {
         uuid id PK
@@ -146,6 +147,7 @@ erDiagram
 
 - `post.posts`: 投稿本体。
   - 公開範囲（`visibility`）と表示期間（`published_at` から `expires_at` まで）を持つ。
+  - `pinned_at` のある行は、プロフィールごとに1行まで（部分ユニークインデックス）。
 - `post.post_media`: 投稿に添付したメディア。
   - メディアを削除しても、そのメディアを指す添付の行は消えない。
     - 配信 URL は空になる。
