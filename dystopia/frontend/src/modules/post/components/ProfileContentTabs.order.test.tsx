@@ -16,9 +16,6 @@ vi.mock("@/lib/motion/useEnterAnimation", () => ({
 const emptyPosts = { posts: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn() };
 vi.mock("@/modules/post/hooks/useAuthorPosts", () => ({ useAuthorPosts: () => emptyPosts }));
 vi.mock("@/modules/post/hooks/useAuthorLikedPosts", () => ({ useAuthorLikedPosts: () => emptyPosts }));
-vi.mock("@/modules/post/hooks/useAuthorComments", () => ({
-  useAuthorComments: () => ({ comments: [], postsById: {}, hasMore: false, loading: false, error: undefined, loadMore: vi.fn() }),
-}));
 
 const { ProfileContentTabs } = await import("./ProfileContentTabs");
 
@@ -41,7 +38,7 @@ describe("ProfileContentTabs order and initial tab", () => {
     });
 
     expect(Array.from(container.querySelectorAll('[role="tab"]')).map((t) => t.textContent)).toEqual([
-      "投稿", "予定", "クチコミ", "返信", "メディア", "いいね", "おまけ",
+      "投稿", "予定", "クチコミ", "メディア", "いいね", "おまけ",
     ]);
   });
 

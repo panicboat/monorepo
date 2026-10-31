@@ -248,17 +248,14 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(comment_repo.list_replies(parent_id: parent.id)).to be_empty
     end
 
-    it "adds, lists and deletes comments by author profile" do
+    it "adds, lists and deletes comments as the author profile" do
       act_as(viewer)
       added = rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: public_post.id, content: "hello"))
       listed = rpc(Post::Grpc::CommentHandler, :list_comments, Post::V1::ListCommentsRequest.new(post_id: public_post.id))
-      by_author = rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: viewer))
 
       expect(added.comment.author_profile_id).to eq(viewer)
       expect(added.comment.author.profile_id).to eq(viewer)
       expect(listed.comments.map(&:author_profile_id)).to eq([viewer])
-      expect(by_author.comments.map(&:id)).to eq([added.comment.id])
-      expect(by_author.posts_by_id[public_post.id].author_profile_id).to eq(public_author)
 
       act_as(public_author)
       expect {

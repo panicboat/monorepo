@@ -19,7 +19,7 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
     let(:author_username) { "author_user" }
     let(:author_profile_id) { create_account_with_profile(display_name: "Author", username: author_username) }
     let(:handler) do
-      message = Post::V1::SavePostRequest.new(id: "", content: content, visibility: visibility)
+      message = Post::V1::SavePostRequest.new(content: content, visibility: visibility)
       described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: message)
     end
 
@@ -78,7 +78,7 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: message)
     end
     let(:message) do
-      Post::V1::SavePostRequest.new(id: "", content: "hi @mentioned_user", visibility: "public")
+      Post::V1::SavePostRequest.new(content: "hi @mentioned_user", visibility: "public")
     end
 
     before do
@@ -111,19 +111,8 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       expect(calls.map { |c| [c[:type], c[:excerpt]] }).to eq([["mention", "hi @mentioned_user"]])
     end
 
-    it "does not emit a mention notification on edit" do
-      created = handler.save_post
-
-      edit_message = Post::V1::SavePostRequest.new(id: created.post.id, content: "hi @mentioned_user again", visibility: "public")
-      edit_handler = described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: edit_message)
-      edit_handler.save_post
-
-      notifications = notification_repo.list(recipient_profile_id: mentioned_id)
-      expect(notifications.map(&:type).count("mention")).to eq(1)
-    end
-
     it "collapses repeated mentions of the same profile into a single notification" do
-      repeated_message = Post::V1::SavePostRequest.new(id: "", content: "@mentioned_user @mentioned_user", visibility: "public")
+      repeated_message = Post::V1::SavePostRequest.new(content: "@mentioned_user @mentioned_user", visibility: "public")
       repeated_handler = described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: repeated_message)
 
       repeated_handler.save_post
@@ -295,9 +284,13 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       Current.profile_id = author_profile_id
     end
 
-    def save(id: "", content: "window", published_at: "", expires_at: "")
-      message = Post::V1::SavePostRequest.new(id: id, content: content, visibility: "public", published_at: published_at, expires_at: expires_at)
+    def save(content: "window", published_at: "", expires_at: "")
+      message = Post::V1::SavePostRequest.new(content: content, visibility: "public", published_at: published_at, expires_at: expires_at)
       described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: message).save_post
+    end
+
+    it "takes no id, so a saved post cannot be edited" do
+      expect(Post::V1::SavePostRequest.descriptor.lookup("id")).to be_nil
     end
 
     def expect_invalid(&block)
@@ -335,57 +328,6 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
 
     it "rejects a time it cannot read" do
       expect_invalid { save(published_at: "tomorrow") }
-    end
-
-    it "rejects a new start on a live post and keeps the start when none is sent" do
-      live = save
-      original = post_repo.find_by_id(live.post.id).published_at
-
-      expect_invalid { save(id: live.post.id, published_at: (now + 3600).iso8601) }
-      save(id: live.post.id, content: "edited")
-      expect(post_repo.find_by_id(live.post.id).published_at).to eq(original)
-    end
-
-    it "accepts the live post's own start sent back unchanged" do
-      live = save
-
-      expect { save(id: live.post.id, content: "edited", published_at: live.post.published_at) }.not_to raise_error
-    end
-
-    it "moves a scheduled post's start, and starts it now when the start is cleared" do
-      scheduled = save(published_at: (now + 3600).iso8601)
-
-      save(id: scheduled.post.id, published_at: (now + 600).iso8601)
-      expect(post_repo.find_by_id(scheduled.post.id).published_at.to_i).to eq((now + 600).to_i)
-
-      save(id: scheduled.post.id)
-      expect(post_repo.find_by_id(scheduled.post.id).published_at).to be_within(5).of(now)
-    end
-
-    it "changes or clears the end at any time" do
-      live = save(expires_at: (now + 3600).iso8601)
-
-      save(id: live.post.id, expires_at: (now + 7200).iso8601)
-      expect(post_repo.find_by_id(live.post.id).expires_at.to_i).to eq((now + 7200).to_i)
-
-      save(id: live.post.id)
-      expect(post_repo.find_by_id(live.post.id).expires_at).to be_nil
-    end
-
-    it "edits an expired post that sends its past end back unchanged" do
-      expired = post_repo.create_post(author_profile_id: author_profile_id, content: "old", visibility: "public", published_at: now - 7200, expires_at: now - 3600)
-
-      save(id: expired.id, content: "edited", expires_at: (now - 3600).iso8601)
-
-      edited = post_repo.find_by_id(expired.id)
-      expect([edited.content, edited.expires_at.to_i]).to eq(["edited", (now - 3600).to_i])
-      expect_invalid { save(id: expired.id, expires_at: (now - 1800).iso8601) }
-    end
-
-    it "rejects moving a scheduled start past its unchanged end" do
-      scheduled = save(published_at: (now + 3600).iso8601, expires_at: (now + 7200).iso8601)
-
-      expect_invalid { save(id: scheduled.post.id, published_at: (now + 10_800).iso8601, expires_at: scheduled.post.expires_at) }
     end
 
     it "does not notify mentions on a post created as scheduled" do

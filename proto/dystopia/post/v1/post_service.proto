@@ -60,7 +60,8 @@ message ListPostsResponse {
 }
 
 message SavePostRequest {
-  string id = 1;
+  reserved 1;
+  reserved "id";
   string content = 2;
   repeated PostMedia media = 3;
   string visibility = 4;

@@ -29,9 +29,9 @@ RSpec.describe "Attaching media and discarding it with what it was attached to",
     end
   end
 
-  def save_post(media_ids, id: "")
+  def save_post(media_ids)
     media = media_ids.map { |media_id| Post::V1::PostMedia.new(media_id: media_id, media_type: "image") }
-    rpc(Post::Grpc::PostHandler, :save_post, Post::V1::SavePostRequest.new(id: id, content: "with media", media: media)).post
+    rpc(Post::Grpc::PostHandler, :save_post, Post::V1::SavePostRequest.new(content: "with media", media: media)).post
   end
 
   def add_comment(post_id, media_ids, parent_id: "")
@@ -58,23 +58,12 @@ RSpec.describe "Attaching media and discarding it with what it was attached to",
       foreign = upload(other)
 
       expect { save_post([foreign]) }.to invalid_argument
-      expect { save_post([foreign], id: own_post.id) }.to invalid_argument
       expect { add_comment(own_post.id, [foreign]) }.to invalid_argument
       expect { rpc(Profile::Grpc::ProfileHandler, :save_profile_media, Profile::V1::SaveProfileMediaRequest.new(avatar_media_id: foreign)) }.to invalid_argument
       expect { rpc(Profile::Grpc::ProfileHandler, :save_profile_media, Profile::V1::SaveProfileMediaRequest.new(cover_media_id: foreign)) }.to invalid_argument
       expect(db[:post__posts].where(author_profile_id: owner).count).to eq(1)
       expect(db[:post__post_media].where(media_id: foreign).count + db[:post__comment_media].where(media_id: foreign).count).to eq(0)
       expect(db[:profile__profiles].where(id: owner).get(%i[avatar_media_id cover_media_id])).to eq([nil, nil])
-    end
-
-    it "removes every attachment when a post is saved again without any" do
-      act_as(owner)
-      post = save_post([upload(owner)])
-
-      saved = save_post([], id: post.id)
-
-      expect(saved.media).to be_empty
-      expect(db[:post__post_media].where(post_id: post.id).count).to eq(0)
     end
 
     it "refuses media that does not exist" do

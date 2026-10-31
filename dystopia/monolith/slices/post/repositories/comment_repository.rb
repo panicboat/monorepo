@@ -92,19 +92,6 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_by_author(author_profile_id:, limit: 20, cursor: nil)
-        scope = comments.combine(:comment_media, :comment_mentions).where(author_profile_id: author_profile_id)
-
-        if cursor
-          scope = scope.where {
-            (created_at < cursor[:created_at]) |
-              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
-          }
-        end
-
-        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
-      end
-
       def comments_count(post_id:, exclude_author_profile_ids: nil)
         scope = comments.where(post_id: post_id, parent_id: nil)
         scope = scope.exclude(author_profile_id: exclude_author_profile_ids) if exclude_author_profile_ids && !exclude_author_profile_ids.empty?

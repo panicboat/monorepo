@@ -15,9 +15,7 @@ vi.mock("@/stores/authStore", () => ({
 }));
 
 import { useAuthorPosts } from "./useAuthorPosts";
-import { useAuthorComments } from "./useAuthorComments";
 import { useAddComment } from "./useAddComment";
-import { useDeleteComment } from "./useDeleteComment";
 import { revalidatePostLists } from "../lib/revalidate";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -72,30 +70,5 @@ describe("author list refresh", () => {
     await flush();
 
     expect(hook.current.posts).toHaveLength(2);
-  });
-
-  it("shows a newly added reply in useAuthorComments", async () => {
-    const hook = mount(() => ({ list: useAuthorComments("profile-1"), add: useAddComment("p1") }));
-    await flush();
-    expect(hook.current.list.comments).toHaveLength(1);
-
-    serverIds = ["a1", "a2"];
-    await act(async () => { await hook.current.add.addComment("hi", "c1"); });
-    await flush();
-
-    expect(hook.current.list.comments).toHaveLength(2);
-  });
-
-  it("drops a deleted reply from useAuthorComments", async () => {
-    serverIds = ["a1", "a2"];
-    const hook = mount(() => ({ list: useAuthorComments("profile-1"), del: useDeleteComment("p1") }));
-    await flush();
-    expect(hook.current.list.comments).toHaveLength(2);
-
-    serverIds = ["a1"];
-    await act(async () => { await hook.current.del.deleteComment("a2", "c1"); });
-    await flush();
-
-    expect(hook.current.list.comments).toHaveLength(1);
   });
 });

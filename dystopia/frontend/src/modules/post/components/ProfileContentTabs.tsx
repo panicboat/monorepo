@@ -6,14 +6,11 @@ import { Tabs } from "@/components/ui/tab";
 import { Button } from "@/components/ui/button";
 import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
 import { PostCardBinding } from "./PostCardBinding";
-import { ReplyWithParentRow } from "./ReplyWithParentRow";
 import { useAuthorPosts } from "@/modules/post/hooks/useAuthorPosts";
-import { useAuthorComments } from "@/modules/post/hooks/useAuthorComments";
 import { useAuthorLikedPosts } from "@/modules/post/hooks/useAuthorLikedPosts";
 
 const TAB_ITEMS = [
   { id: "posts", label: "投稿" },
-  { id: "replies", label: "返信" },
   { id: "media", label: "メディア" },
   { id: "likes", label: "いいね" },
 ] as const;
@@ -52,7 +49,6 @@ export function ProfileContentTabs({ profileId, isOwnProfile = true, leadingTabs
       <Tabs items={allItems} value={tab} onValueChange={setTab} />
       <div ref={contentRef}>
         {tab === "posts" && <AuthorPostsPane profileId={profileId} mediaOnly={false} />}
-        {tab === "replies" && <AuthorRepliesPane profileId={profileId} />}
         {tab === "media" && <AuthorPostsPane profileId={profileId} mediaOnly={true} />}
         {tab === "likes" && isOwnProfile && <AuthorLikesPane profileId={profileId} />}
         {customTab?.content}
@@ -86,21 +82,6 @@ function AuthorPostsPane({ profileId, mediaOnly }: { profileId: string; mediaOnl
     <div>
       {posts.map((p) => (
         <PostCardBinding key={p.id} post={p} />
-      ))}
-      <LoadMore hasMore={hasMore} loading={loading} onClick={loadMore} />
-    </div>
-  );
-}
-
-function AuthorRepliesPane({ profileId }: { profileId: string }) {
-  const { comments, postsById, hasMore, loading, error, loadMore } = useAuthorComments(profileId);
-  if (loading && comments.length === 0) return <EmptyState message="読み込み中…" />;
-  if (error) return <EmptyState message="読み込みに失敗しました" />;
-  if (comments.length === 0) return <EmptyState message="まだ返信はありません" />;
-  return (
-    <div>
-      {comments.map((c) => (
-        <ReplyWithParentRow key={c.id} comment={c} parentPost={postsById[c.postId] || null} />
       ))}
       <LoadMore hasMore={hasMore} loading={loading} onClick={loadMore} />
     </div>

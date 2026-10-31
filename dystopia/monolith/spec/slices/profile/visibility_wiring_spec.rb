@@ -197,7 +197,6 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
           posts: [posts.posts.length, posts.has_more, posts.next_cursor],
           received_reviews: [received.reviews.length, received.has_more, received.next_cursor],
           written_reviews: [written.reviews.length, written.has_more, written.next_cursor],
-          comments: rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: profile_id)).comments.length,
           followers: rpc(Social::Grpc::FollowHandler, :list_followers, Social::V1::ListFollowersRequest.new(profile_id: profile_id)).profiles.length,
           following: rpc(Social::Grpc::FollowHandler, :list_following, Social::V1::ListFollowingRequest.new(profile_id: profile_id)).profiles.length,
           counts: [counts.following_count, counts.followers_count]
@@ -246,10 +245,6 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       expect {
         rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: shown_post.id, content: "anyone?", parent_id: under_ghost_post.id))
       }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
-      by_shown = rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: shown)).comments
-      by_viewer = rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: viewer)).comments
-      expect(by_shown).to be_empty
-      expect(by_viewer.map(&:id)).to eq([shown_comment.id])
       expect(db[:post__likes].where(profile_id: stranger).count).to eq(0)
       expect(db[:post__comments].where(author_profile_id: stranger).count).to eq(0)
       expect(db[:notifications__notifications].count).to eq(notifications_before)

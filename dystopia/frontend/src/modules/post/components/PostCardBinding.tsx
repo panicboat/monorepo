@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, Heart, MessageCircle } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Trash2 } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
 import { profileDisplayName, profileInitial } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
@@ -9,11 +9,14 @@ import { formatMonthDayTimeInJapan } from "@/lib/utils/japan-date";
 import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
+import { usePostDeletionStore } from "@/stores/postDeletionStore";
+import { useToastStore } from "@/stores/toastStore";
 import { selectActiveProfileId, useAuthStore } from "@/stores/authStore";
 import { PostText } from "@/modules/post/lib/post-text";
 import { PostScheduleCard } from "./PostScheduleCard";
 import { displayStateOf } from "@/modules/post/lib/display-window";
 import type { PostView } from "@/modules/post/lib/post-view";
+import { useDeletePost } from "@/modules/post/hooks/useDeletePost";
 import { usePostLike } from "@/modules/post/hooks/usePostLike";
 import { useBookmark } from "@/modules/bookmarks";
 
@@ -27,6 +30,10 @@ export interface PostCardBindingProps {
 export function PostCardBinding({ post, detailHref, inDetail, className }: PostCardBindingProps) {
   const { isLiked, getLikesCount, toggleLike, loading } = usePostLike();
   const { isBookmarked, toggle: toggleBookmark, loading: bookmarkLoading } = useBookmark(post.id);
+  const { deletePost, submitting: deleting } = useDeletePost();
+  const deleted = usePostDeletionStore((s) => !!s.deleted[post.id]);
+  const closeSheet = usePostSheetStore((s) => s.close);
+  const showToast = useToastStore((s) => s.show);
 
   const liked = isLiked(post.id, post.liked);
   const likesCount = getLikesCount(post.id, post.likesCount);
@@ -79,6 +86,20 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
     toggleBookmark().catch(() => {});
   };
 
+  const handleDeleteClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("この投稿を削除しますか?")) return;
+    try {
+      await deletePost(post.id);
+      if (inDetail) closeSheet();
+    } catch {
+      showToast("投稿を削除できませんでした");
+    }
+  };
+
+  if (deleted) return null;
+
   const reactions = (
     <>
       <button
@@ -121,6 +142,17 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
       >
         <Bookmark className={isBookmarked ? "size-5 fill-current text-accent" : "size-5"} />
       </button>
+      {isOwnPost && (
+        <button
+          type="button"
+          onClick={handleDeleteClick}
+          disabled={deleting}
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-error disabled:opacity-50"
+          aria-label="投稿を削除"
+        >
+          <Trash2 className="size-5" />
+        </button>
+      )}
     </>
   );
 
