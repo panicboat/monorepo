@@ -5,14 +5,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({ range: [] as string[], calls: [] as string[][], hasPlan: true, sheetTodayOnly: null as null | boolean, sheetOpen: null as null | boolean, hiddenByLock: false }));
+const mocks = vi.hoisted(() => ({ range: [] as string[], calls: [] as string[][], hasPlan: true, laterPlan: false, sheetTodayOnly: null as null | boolean, sheetOpen: null as null | boolean, hiddenByLock: false }));
 
 vi.mock("@/modules/schedule/hooks", () => ({
   useSchedules: (_id: string, fromDate: string, toDate: string) => {
     mocks.range = [fromDate, toDate];
     mocks.calls.push([fromDate, toDate]);
     return {
-      schedules: mocks.hasPlan ? [{ profileId: "p-1", workDate: "2026-10-13", startTime: "20:00", endTime: "02:00" }] : [],
+      schedules: [
+        ...(mocks.hasPlan ? [{ profileId: "p-1", workDate: "2026-10-13", startTime: "20:00", endTime: "02:00" }] : []),
+        ...(mocks.laterPlan ? [{ profileId: "p-1", workDate: "2026-11-20", startTime: "21:00", endTime: "23:00" }] : []),
+      ],
       hiddenByLock: mocks.hiddenByLock,
       loading: false,
       error: undefined,
@@ -36,6 +39,7 @@ beforeEach(() => {
   mocks.sheetOpen = null;
   mocks.sheetTodayOnly = null;
   mocks.hasPlan = true;
+  mocks.laterPlan = false;
   mocks.calls = [];
   mocks.hiddenByLock = false;
 });
@@ -53,10 +57,10 @@ async function mount(isOwner: boolean) {
 }
 
 describe("ScheduleTab", () => {
-  it("shows the owner two weeks from today with the planned hours in a card and unplanned days as plain rows", async () => {
+  it("shows the owner two weeks of days from today with the planned hours in a card and unplanned days as plain rows", async () => {
     const container = await mount(true);
 
-    expect(mocks.range).toEqual(["2026-10-12", "2026-10-25"]);
+    expect(mocks.range).toEqual(["2026-10-12", "2026-11-30"]);
     expect(container.querySelectorAll("li")).toHaveLength(14);
     expect(container.textContent).toContain("予定");
     expect(container.textContent).not.toContain("出勤");
@@ -73,7 +77,7 @@ describe("ScheduleTab", () => {
   it("shows other viewers only the days with a plan and no edit buttons", async () => {
     const container = await mount(false);
 
-    expect(mocks.range).toEqual(["2026-10-12", "2026-10-25"]);
+    expect(mocks.range).toEqual(["2026-10-12", "2026-11-30"]);
     expect(container.querySelectorAll("li")).toHaveLength(1);
     expect(container.textContent).toContain("20:00 〜 02:00");
     expect(container.textContent).not.toContain("未設定");
@@ -81,7 +85,19 @@ describe("ScheduleTab", () => {
     expect(container.textContent).toContain("予定は予約可能枠を保証するものではありません。");
   });
 
-  it("tells other viewers there is no plan when none falls in the two weeks", async () => {
+  it("shows a plan after the first two weeks to the owner and to other viewers", async () => {
+    mocks.laterPlan = true;
+
+    const owner = await mount(true);
+    expect(owner.querySelectorAll("li")).toHaveLength(15);
+    expect(owner.textContent).toContain("11/20(金)");
+
+    const viewer = await mount(false);
+    expect(viewer.querySelectorAll("li")).toHaveLength(2);
+    expect(viewer.textContent).toContain("11/20(金)");
+  });
+
+  it("tells other viewers there is no plan when none falls in the range", async () => {
     mocks.hasPlan = false;
     const container = await mount(false);
 
@@ -94,7 +110,7 @@ describe("ScheduleTab", () => {
     const container = await mount(true);
 
     await act(async () => {
-      (Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "今日の予定を入れる") as HTMLButtonElement).click();
+      (Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "今日の予定") as HTMLButtonElement).click();
     });
 
     expect(mocks.sheetOpen).toBe(true);
@@ -105,7 +121,7 @@ describe("ScheduleTab", () => {
     const container = await mount(false);
 
     expect(Array.from(container.querySelectorAll("button")).some((b) => b.textContent === "もっと見る")).toBe(false);
-    expect(mocks.calls).toEqual([["2026-10-12", "2026-10-25"]]);
+    expect(mocks.calls).toEqual([["2026-10-12", "2026-11-30"]]);
   });
 
   it("shows the notice instead of the days and the footnote when hidden by lock", async () => {

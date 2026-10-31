@@ -82,40 +82,60 @@ const setTime = async (label: string, value: string) => {
   await setValue(document.querySelector(`select[aria-label="${label}（時）"]`) as HTMLSelectElement, hour);
   await setValue(document.querySelector(`select[aria-label="${label}（分）"]`) as HTMLSelectElement, minute);
 };
+const setTimes = async (start: string, end: string) => {
+  await setTime("開始", start);
+  await setTime("終了", end);
+};
 
 describe("ScheduleBulkSheet", () => {
-  it("shows two weeks from today with each day's current plan", async () => {
+  it("opens the current month of a calendar that runs through the end of next month", async () => {
     await mount();
 
     expect(text()).toContain("予定をまとめて編集");
-    expect(text()).toContain("予定 / 2週間まとめて編集");
-    expect(text()).not.toContain("SHIFT");
-    expect(text()).toContain("日付を複数選択して、同じ時間帯を一括で設定できます。1日ずつ入力する必要はありません。");
-    expect(document.querySelectorAll("button[data-day]")).toHaveLength(14);
-    expect(day("2026-10-12").textContent).toContain("10/12(月)");
-    expect(day("2026-10-12").textContent).toContain("未設定");
-    expect(day("2026-10-13").textContent).toContain("19:00 〜 01:00");
-    expect(day("2026-10-25")).not.toBeNull();
+    expect(text()).not.toContain("2週間");
+    expect(text()).toContain("2026年 10月");
+    expect(document.querySelectorAll("button[data-day]")).toHaveLength(20);
+    expect(day("2026-10-11")).toBeNull();
+    expect(day("2026-10-12").textContent).toBe("12");
+    expect(day("2026-10-12").getAttribute("aria-label")).toBe("10/12(月) 未設定");
+    expect(day("2026-10-13").textContent).toContain("19:00");
+    expect(day("2026-10-13").getAttribute("aria-label")).toBe("10/13(火) 19:00 〜 01:00");
+    expect(day("2026-10-31")).not.toBeNull();
   });
 
-  it("opens with only today selected and without the bulk controls for a single day", async () => {
+  it("keeps the selection while moving between the two months and stops at both ends", async () => {
+    await mount();
+
+    expect(button("前の月")!.disabled).toBe(true);
+    await click(day("2026-10-12"));
+    await click(button("次の月")!);
+
+    expect(text()).toContain("2026年 11月");
+    expect(button("次の月")!.disabled).toBe(true);
+    expect(document.querySelectorAll("button[data-day]")).toHaveLength(30);
+    await click(day("2026-11-30"));
+    expect(text()).toContain("選択した日：2日");
+
+    await click(button("前の月")!);
+    expect(day("2026-10-12").getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("opens with only today selected and without the calendar for a single day", async () => {
     await mount(true);
 
     const dayRows = Array.from(document.querySelectorAll("button[data-day]"));
     expect(dayRows.map((b) => b.getAttribute("data-day"))).toEqual(["2026-10-12"]);
     expect(dayRows[0].getAttribute("aria-pressed")).toBe("true");
-    expect(document.body.textContent).toContain("今日の予定を入れる");
+    expect(document.body.textContent).toContain("今日の予定");
     expect(document.body.textContent).toContain("選択した日：1日");
-    expect(document.body.textContent).not.toContain("2週間まとめて編集");
-    expect(document.body.textContent).not.toContain("平日を選択");
+    expect(document.body.textContent).not.toContain("次の月");
+    expect(document.querySelector('[aria-label="次の月"]')).toBeNull();
   });
 
-  it("lists the days one per row, marks a selected day and keeps the apply bar at the bottom", async () => {
+  it("lays the days out in a seven-column calendar, marks a selected day and keeps the apply bar at the bottom", async () => {
     await mount();
 
-    const list = day("2026-10-12").parentElement as HTMLElement;
-    expect(list.className).toContain("flex-col");
-    expect(list.className).not.toContain("grid-cols-7");
+    expect((day("2026-10-12").parentElement as HTMLElement).className).toContain("grid-cols-7");
     expect(day("2026-10-12").className).not.toContain("border-accent");
     await click(day("2026-10-12"));
     expect(day("2026-10-12").className).toContain("border-accent");
@@ -132,7 +152,7 @@ describe("ScheduleBulkSheet", () => {
     expect(label("開始").parentElement).not.toBe(label("終了").parentElement);
   });
 
-  it("selects days, counts them and selects the weekdays", async () => {
+  it("selects days and counts them", async () => {
     await mount();
 
     await click(day("2026-10-12"));
@@ -143,22 +163,18 @@ describe("ScheduleBulkSheet", () => {
     await click(day("2026-10-12"));
     expect(text()).toContain("選択した日：1日");
 
-    await click(button("平日を選択")!);
-    expect(text()).toContain("選択した日：10日");
-    expect(day("2026-10-17").getAttribute("aria-pressed")).toBe("false");
+    expect(text()).not.toContain("平日を選択");
   });
 
-  it("fills the times from a preset and waits for times and days before applying", async () => {
+  it("waits for times and days before applying and suggests no times", async () => {
     await mount();
 
     expect(button("選択した日に反映")!.disabled).toBe(true);
     await click(day("2026-10-14"));
     expect(button("選択した日に反映")!.disabled).toBe(true);
+    expect(button("20:00〜02:00")).toBeUndefined();
 
-    expect(button("20:00〜02:00")!.getAttribute("aria-pressed")).toBe("false");
-    await click(button("20:00〜02:00")!);
-    expect(button("20:00〜02:00")!.getAttribute("aria-pressed")).toBe("true");
-    expect(button("18:00〜23:00")!.getAttribute("aria-pressed")).toBe("false");
+        await setTimes("20:00", "02:00");
     expect(button("選択した日に反映")!.disabled).toBe(false);
   });
 
@@ -166,7 +182,7 @@ describe("ScheduleBulkSheet", () => {
     await mount();
     await click(day("2026-10-14"));
     await click(day("2026-10-15"));
-    await click(button("18:00〜23:00")!);
+    await setTimes("18:00", "23:00");
 
     await click(button("選択した日に反映")!);
 
@@ -195,7 +211,7 @@ describe("ScheduleBulkSheet", () => {
     await mount();
     await click(day("2026-10-14"));
     await click(day("2026-10-15"));
-    await click(button("20:00〜02:00")!);
+    await setTimes("20:00", "02:00");
     await setValue(timeSelect("時")!, "08");
     await setValue(timeSelect("分")!, "30");
     await setValue(noteField()!, "お待ちしてます！");
@@ -212,7 +228,7 @@ describe("ScheduleBulkSheet", () => {
   it("waits for the announcement time while announcing", async () => {
     await mount();
     await click(day("2026-10-14"));
-    await click(button("18:00〜23:00")!);
+    await setTimes("18:00", "23:00");
     expect(button("選択した日に反映")!.disabled).toBe(false);
 
     await setValue(timeSelect("時")!, "");
@@ -239,7 +255,7 @@ describe("ScheduleBulkSheet", () => {
     expect(text()).not.toContain("お知らせする時刻");
 
     await click(day("2026-10-14"));
-    await click(button("18:00〜23:00")!);
+    await setTimes("18:00", "23:00");
     await click(button("選択した日に反映")!);
 
     expect(mocks.save.mock.calls).toEqual([
@@ -385,7 +401,7 @@ describe("ScheduleBulkSheet", () => {
     await click(day("2026-10-13"));
     await click(button("予定を消す")!);
 
-    expect(document.body.textContent).not.toContain("20:00〜02:00");
+    expect(document.body.textContent).not.toContain("開始");
     await click(button("選択した日に反映")!);
 
     expect(mocks.remove.mock.calls).toEqual([["2026-10-13"]]);
@@ -400,7 +416,7 @@ describe("ScheduleBulkSheet", () => {
     await mount();
     await click(day("2026-10-15"));
     await click(day("2026-10-16"));
-    await click(button("21:00〜03:00")!);
+    await setTimes("21:00", "03:00");
 
     await click(button("選択した日に反映")!);
 
@@ -422,7 +438,7 @@ describe("ScheduleBulkSheet", () => {
     const selectBoth = async () => {
       await click(day("2026-10-24"));
       await click(day("2026-10-25"));
-      await click(button("18:00〜23:00")!);
+      await setTimes("18:00", "23:00");
     };
 
     it("shows the validation message once after the failed days", async () => {
@@ -489,7 +505,7 @@ describe("ScheduleBulkSheet", () => {
     mocks.error = new Error("failed");
     await mount();
     await click(day("2026-10-14"));
-    await click(button("18:00〜23:00")!);
+    await setTimes("18:00", "23:00");
     expect(button("選択した日に反映")!.disabled).toBe(true);
   });
 
@@ -508,7 +524,7 @@ describe("ScheduleBulkSheet", () => {
     mocks.save.mockImplementation(() => new Promise<void>((resolve) => { finish = resolve; }));
     await mount();
     await click(day("2026-10-14"));
-    await click(button("18:00〜23:00")!);
+    await setTimes("18:00", "23:00");
 
     await click(button("選択した日に反映")!);
     await click(button("閉じる")!);
