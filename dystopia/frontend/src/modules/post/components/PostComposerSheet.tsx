@@ -28,6 +28,8 @@ export function PostComposerSheet({ open, onClose }: PostComposerSheetProps) {
     notifyPostCreated();
     if (payload.publishedAt && new Date(payload.publishedAt) > new Date()) {
       showToast(`予約しました（${formatMonthDayTimeInJapan(payload.publishedAt)} から表示。プロフィールで確認できます）`);
+    } else {
+      showToast("投稿しました");
     }
     onClose();
   }, [mutate, notifyPostCreated, showToast, onClose]);

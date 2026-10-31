@@ -103,12 +103,12 @@ describe("PostComposerSheet", () => {
     expect(mocks.showToast.mock.calls).toEqual([["予約しました（10/25 09:05 から表示。プロフィールで確認できます）"]]);
   });
 
-  it("shows no confirmation for a post that is shown now", async () => {
+  it("confirms a post that is shown now", async () => {
     mocks.payload = { content: "こんにちは", publishedAt: "2020-10-25T00:05:00.000Z", expiresAt: "2099-10-26T00:00:00.000Z" };
     await submitPayload();
     mocks.payload = { content: "こんにちは" };
     await submitPayload();
 
-    expect(mocks.showToast).not.toHaveBeenCalled();
+    expect(mocks.showToast.mock.calls).toEqual([["投稿しました"], ["投稿しました"]]);
   });
 });

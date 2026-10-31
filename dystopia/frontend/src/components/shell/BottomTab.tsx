@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CalendarDays, type LucideIcon } from "lucide-react";
+import { ScheduleComposeSheet } from "@/components/compose/ScheduleComposeSheet";
 import { useUnreadCount } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
 import { useAuthStore, selectRole } from "@/stores/authStore";
@@ -17,21 +20,52 @@ const TABS = [
 const KARTE_TAB = { id: "karte", path: "/karte/my", label: "カルテ", icon: FEATURE_ICONS.karte };
 const REVIEWS_TAB = { id: "reviews", path: "/reviews/my", label: "クチコミ", icon: FEATURE_ICONS.reviews };
 
+interface BottomTabItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  path?: string;
+}
+
+const SCHEDULE_TAB: BottomTabItem = { id: "schedule", label: "予定", icon: CalendarDays };
+
+const tabClass = (active: boolean) =>
+  `relative flex min-h-[61px] flex-1 flex-col items-center justify-center gap-0.5 text-[0.6875rem] ${
+    active ? "text-accent" : "text-text-secondary hover:text-text-primary"
+  }`;
+
 export function BottomTab() {
   const pathname = usePathname();
   const { count: notifCount } = useUnreadCount();
   const { count: msgCount } = useTotalUnread();
   const role = useAuthStore(selectRole);
 
-  const tabs = [
-    ...TABS,
-    ...(role === "cast" ? [KARTE_TAB] : []),
-    ...(role === "guest" ? [REVIEWS_TAB] : []),
-  ];
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [scheduling, setScheduling] = useState<{ session: number; open: boolean } | null>(null);
+
+  const [home, search, notifications, messages] = TABS;
+  const tabs: BottomTabItem[] =
+    role === "cast"
+      ? [home, SCHEDULE_TAB, messages, KARTE_TAB, notifications]
+      : [home, search, messages, ...(role === "guest" ? [REVIEWS_TAB] : []), notifications];
 
   return (
+    <>
     <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-divider bg-bg px-1 md:hidden">
       {tabs.map((tab) => {
+        if (!tab.path) {
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setScheduling((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}
+              className={tabClass(false)}
+            >
+              <tab.icon className="size-[23px]" strokeWidth={2} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        }
         const active = pathname === tab.path;
         const badgeCount =
           tab.id === "notifications" ? notifCount : tab.id === "messages" ? msgCount : 0;
@@ -45,9 +79,7 @@ export function BottomTab() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }
             }}
-            className={`relative flex min-h-[61px] flex-1 flex-col items-center justify-center gap-0.5 text-[0.6875rem] ${
-              active ? "text-accent" : "text-text-secondary hover:text-text-primary"
-            }`}
+            className={tabClass(active)}
             aria-current={active ? "page" : undefined}
           >
             <tab.icon className="size-[23px]" strokeWidth={active ? 2.5 : 2} />
@@ -61,5 +93,13 @@ export function BottomTab() {
         );
       })}
     </nav>
+      {scheduling && (
+        <ScheduleComposeSheet
+          key={scheduling.session}
+          open={scheduling.open}
+          onClose={() => setScheduling((current) => current && { ...current, open: false })}
+        />
+      )}
+    </>
   );
 }

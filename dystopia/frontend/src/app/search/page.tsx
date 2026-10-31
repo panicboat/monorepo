@@ -27,9 +27,9 @@ const ROLE_CHIPS: Array<{ id: SearchUsersRoleFilter; label: string }> = [
 ];
 
 const TABS: TabItem[] = [
+  { id: "schedules", label: "予定" },
   { id: "users", label: "ユーザー" },
   { id: "posts", label: "投稿" },
-  { id: "schedules", label: "予定" },
 ];
 
 const HASHTAG_QUERY = /^[#＃]/;
@@ -56,7 +56,8 @@ function SearchFromUrl() {
 
 function initialTabFor(urlTab: string, query: string): string {
   if (TABS.some((t) => t.id === urlTab)) return urlTab;
-  return HASHTAG_QUERY.test(query) ? "posts" : "users";
+  if (HASHTAG_QUERY.test(query)) return "posts";
+  return query ? "users" : "schedules";
 }
 
 interface SearchViewProps {
