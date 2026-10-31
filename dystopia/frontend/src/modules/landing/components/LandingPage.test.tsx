@@ -43,8 +43,19 @@ describe("LandingPage", () => {
 
     expect(html).toMatch(/<h1>夜に生きる人の、<br\/><em>もうひとつの街。<\/em><\/h1>/);
     expect(html).toContain('data-audience="cast"');
-    expect(html).toContain("お店の数だけ、");
+    expect(html).toContain("見せたい顔の数だけ、");
     expect(html).not.toContain("気になる人を、");
+  });
+
+  it("shows the cast schedule as a post without assuming fixed shifts", () => {
+    const html = renderToStaticMarkup(<LandingPage />);
+
+    expect(html).toContain("「今夜会えるよ」が、");
+    expect(html).toContain("今日は気分がいいので、今夜少しだけ");
+    expect(html).toContain("21:30〜");
+    expect(html).toContain("お店を通さない約束や取引には使えません。");
+    expect(html).not.toContain("今週の予定");
+    expect(html).not.toContain("活動名");
   });
 
   it("leads a cast to sign up as a cast from both entry buttons", () => {
@@ -83,7 +94,7 @@ describe("LandingPage", () => {
     expect(container.querySelector("a.login")!.textContent).toContain("街で遊ぶ");
     expect(container.textContent).not.toContain("街で働く");
     expect(container.textContent).toContain("気になる人を、");
-    expect(container.textContent).not.toContain("お店の数だけ、");
+    expect(container.textContent).not.toContain("見せたい顔の数だけ、");
     expect(container.querySelector('a[href="#guest-values"]')).not.toBeNull();
     expect(window.location.search).toBe("?role=guest");
   });
