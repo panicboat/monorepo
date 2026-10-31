@@ -343,11 +343,32 @@ RSpec.describe "Review visibility of a locked profile", type: :database do
       end
     end
 
-    it "reports a disabled author as missing, not masked, even when locked" do
-      db[:profile__profiles].where(id: locked_guest.profile).update(disabled_at: Time.now)
+    describe "when the author is disabled" do
+      def disable(who) = db[:profile__profiles].where(id: who.profile).update(disabled_at: Time.now)
 
-      surfaces(viewer).each do |row|
-        expect(row.slice(:author, :author_profile_id, :author_hidden)).to eq(author: nil, author_profile_id: locked_guest.profile, author_hidden: false)
+      def expect_missing(row, author_profile_id)
+        expect(row.slice(:author, :author_profile_id, :author_hidden)).to eq(author: nil, author_profile_id: author_profile_id, author_hidden: false)
+      end
+
+      it "reports a locked author as missing, not masked, and withholds the id from a viewer who cannot pass the lock" do
+        disable(locked_guest)
+
+        surfaces(viewer).each { |row| expect_missing(row, "") }
+      end
+
+      it "reports an unlocked author as missing and withholds the id from an unrelated viewer" do
+        disable(guest)
+
+        surfaces(viewer, of: plain).each { |row| expect_missing(row, "") }
+      end
+
+      it "keeps the id for the author account and for the target cast" do
+        other = actor_struct.new(locked_guest.account, create_account_with_profile(account_id: locked_guest.account, username: "locked_guest_alt"))
+        disable(locked_guest)
+
+        [other, open_cast].each do |who|
+          surfaces(who).each { |row| expect_missing(row, locked_guest.profile) }
+        end
       end
     end
   end

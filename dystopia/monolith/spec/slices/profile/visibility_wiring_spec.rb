@@ -176,8 +176,8 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
 
       expect(by_target.call(ghost)).to be_empty
       expect(by_author.call(ghost)).to be_empty
-      expect(recent.map { |review| [review.author_profile_id, review.target_profile_id] }).to contain_exactly([viewer, shown], [ghost, shown])
-      expect(recent.find { |review| review.author_profile_id == ghost }.author).to be_nil
+      expect(recent.map { |review| [review.author_profile_id, review.target_profile_id] }).to contain_exactly([viewer, shown], ["", shown])
+      expect(recent.find { |review| review.author_profile_id.empty? }.author).to be_nil
       expect {
         rpc(Review::Grpc::ReviewHandler, :create_review, Review::V1::CreateReviewRequest.new(target_profile_id: ghost, event: Review::V1::ReviewEventInput.new(stage: :REVIEW_STAGE_SERVICE, outcome: "satisfied", occurred_on: "2026-10-01")))
       }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
@@ -212,8 +212,8 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       received = rpc(Review::Grpc::ReviewHandler, :list_reviews_by_target, Review::V1::ListReviewsByTargetRequest.new(target_profile_id: shown)).reviews
       written = rpc(Review::Grpc::ReviewHandler, :list_reviews_by_author, Review::V1::ListReviewsByAuthorRequest.new(author_profile_id: viewer)).reviews
 
-      expect(received.map(&:author_profile_id)).to contain_exactly(viewer, ghost)
-      expect(received.find { |review| review.author_profile_id == ghost }.author).to be_nil
+      expect(received.map(&:author_profile_id)).to contain_exactly(viewer, "")
+      expect(received.find { |review| review.author_profile_id.empty? }.author).to be_nil
       expect(written.map(&:target_profile_id)).to contain_exactly(shown, ghost)
       expect(written.find { |review| review.target_profile_id == ghost }.target).to be_nil
     end

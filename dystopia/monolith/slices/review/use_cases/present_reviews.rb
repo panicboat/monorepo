@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "set"
+
 module Review
   module UseCases
     class PresentReviews
@@ -15,7 +17,9 @@ module Review
         events = event_repo.list_for(reviews.map(&:id))
         summaries = summarize_profiles.call(profile_ids: reviews.flat_map { |review| [review.author_profile_id, review.target_profile_id] })
         masked = masked_review_ids(reviews, summaries, viewer_account_id, viewer_profile_id)
-        reviews.map { |review| present(review, events.fetch(review.id, []), summaries, viewer_account_id, masked.include?(review.id)) }
+        reviews.map do |review|
+          present(review, events.fetch(review.id, []), summaries, viewer_account_id, viewer_profile_id, masked.include?(review.id))
+        end
       end
 
       private
@@ -29,16 +33,20 @@ module Review
       end
 
       def locked_author?(review, summaries, viewer_account_id, viewer_profile_id)
-        summaries[review.author_profile_id.to_s]&.is_private &&
-          review.author_account_id != viewer_account_id &&
-          review.target_profile_id != viewer_profile_id
+        summaries[review.author_profile_id.to_s]&.is_private && !author_known_to?(review, viewer_account_id, viewer_profile_id)
       end
 
-      def present(review, events, summaries, viewer_account_id, author_hidden)
+      def author_known_to?(review, viewer_account_id, viewer_profile_id)
+        review.author_account_id == viewer_account_id || review.target_profile_id == viewer_profile_id
+      end
+
+      def present(review, events, summaries, viewer_account_id, viewer_profile_id, author_hidden)
+        author = author_hidden ? nil : summaries[review.author_profile_id.to_s]
+        show_author_id = !author.nil? || author_known_to?(review, viewer_account_id, viewer_profile_id)
         {
           id: review.id,
-          author_profile_id: author_hidden ? "" : review.author_profile_id,
-          author: author_hidden ? nil : summaries[review.author_profile_id.to_s],
+          author_profile_id: show_author_id ? review.author_profile_id : "",
+          author: author,
           author_hidden: author_hidden,
           target_profile_id: review.target_profile_id,
           target: summaries[review.target_profile_id.to_s],
