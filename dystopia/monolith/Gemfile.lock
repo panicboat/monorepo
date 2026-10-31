@@ -17,11 +17,11 @@ GEM
     addressable (2.8.8)
       public_suffix (>= 2.0.2, < 8.0)
     aws-eventstream (1.4.1)
-    aws-partitions (1.1297.0)
-    aws-sdk-cognitoidentityprovider (1.157.0)
-      aws-sdk-core (~> 3, >= 3.260.0)
+    aws-partitions (1.1300.0)
+    aws-sdk-cognitoidentityprovider (1.159.0)
+      aws-sdk-core (~> 3, >= 3.263.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-core (3.260.0)
+    aws-sdk-core (3.263.0)
       aws-eventstream (~> 1, >= 1.4.1)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
@@ -667,7 +667,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  aws-sdk-cognitoidentityprovider (~> 1.157)
+  aws-sdk-cognitoidentityprovider (~> 1.159)
   aws-sdk-s3 (~> 1.235)
   capybara
   database_cleaner-sequel
