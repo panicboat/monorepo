@@ -2,7 +2,6 @@
 
 require "concerns/visible_page"
 require "post/v1/post_service_services_pb"
-require "text"
 require_relative "handler"
 
 module Post
@@ -23,7 +22,7 @@ module Post
 
       include Post::Concerns::ProfileAuthorResolvable
       include Post::Deps[
-        extract_mentions: "use_cases.extract_mentions",
+        create_post: "use_cases.create_post",
         discard_detached_media: "use_cases.discard_detached_media"
       ]
 
@@ -69,47 +68,20 @@ module Post
         authenticate_user!
 
         m = request.message
-        content = m.content.to_s
-        if Text.blank?(content)
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "本文を入力してください")
-        end
-        visibility = m.visibility.empty? ? "public" : m.visibility
-        unless %w[public private].include?(visibility)
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "公開範囲が正しくありません")
-        end
-        media_data = m.media.map { |x| { media_id: x.media_id, media_type: x.media_type } }
-        unless media_adapter.owned_all?(profile_id: current_profile_id, ids: media_data.map { |x| x[:media_id] })
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "添付できないメディアが含まれています")
-        end
-        hashtags = m.hashtags.to_a
-        mentions = extract_mentions.call(content: content)
-        now = Time.now
-        published_at, expires_at = display_window(m, now: now)
-        post = post_repo.create_post(author_profile_id: current_profile_id, content: content, visibility: visibility, published_at: published_at, expires_at: expires_at)
+        result = create_post.call(
+          author_profile_id: current_profile_id,
+          content: m.content,
+          visibility: m.visibility,
+          media: m.media.map { |x| { media_id: x.media_id, media_type: x.media_type } },
+          hashtags: m.hashtags.to_a,
+          published_at: m.published_at,
+          expires_at: m.expires_at
+        )
+        mentioned_usernames = mentioned_usernames_for(result[:mentions].map { |mention| mention[:profile_id] })
 
-        post_repo.save_media(post_id: post.id, media_data: media_data) if media_data.any?
-        post_repo.save_hashtags(post_id: post.id, hashtags: hashtags) if hashtags.any?
-        post_repo.save_mentions(post_id: post.id, mentions: mentions)
-        post = post_repo.find_by_id(post.id)
-
-        if published_at <= now
-          mentions.uniq { |mention| mention[:profile_id] }
-            .select { |mention| mention_visible?(mention[:profile_id], post) }
-            .each do |mention|
-            notifications_emit.call(
-              recipient_profile_id: mention[:profile_id],
-              type: "mention",
-              target_resource_id: post.id,
-              actor_profile_id: current_profile_id,
-              target_post_id: post.id,
-              excerpt: content
-            )
-          end
-        end
-
-        mentioned_usernames = mentioned_usernames_for(mentions.map { |m| m[:profile_id] })
-
-        ::Post::V1::SavePostResponse.new(post: present_post(post, mentioned_usernames: mentioned_usernames))
+        ::Post::V1::SavePostResponse.new(post: present_post(result[:post], mentioned_usernames: mentioned_usernames))
+      rescue UseCases::CreatePost::InvalidPostError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
       def delete_post
@@ -125,38 +97,6 @@ module Post
       end
 
       private
-
-      def display_window(message, now:)
-        published_at = parse_display_time(message.published_at)
-        expires_at = parse_display_time(message.expires_at)
-
-        if published_at && published_at <= now
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示開始は今より後の時刻を指定してください")
-        end
-
-        published_at ||= now
-        if expires_at && (expires_at <= published_at || expires_at <= now)
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "表示終了は表示開始と今より後の時刻を指定してください")
-        end
-
-        [published_at, expires_at]
-      end
-
-      def parse_display_time(value)
-        return nil if value.empty?
-
-        Time.iso8601(value)
-      rescue ArgumentError
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "日時の形式が正しくありません")
-      end
-
-      def mention_visible?(profile_id, post)
-        viewer_can_see_post.call(viewer_profile_id: profile_id, post: post)
-      rescue StandardError => e
-        Hanami.logger.warn("Mention visibility check failed: #{e.class}: #{e.message}")
-        # SILENT: A failed visibility check skips that mention and must not fail the saved post.
-        false
-      end
 
       def load_media_files_for_posts(posts)
         media_ids = posts.flat_map do |post|
@@ -237,10 +177,6 @@ module Post
         return {} if ids.empty?
 
         summarize_profiles.call(profile_ids: ids).transform_values(&:username)
-      end
-
-      def notifications_emit
-        @notifications_emit ||= Notifications::Slice["use_cases.emit"]
       end
 
       def filter_visible_posts

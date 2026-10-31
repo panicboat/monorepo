@@ -25,6 +25,23 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
       end
     end
 
+    context "when a later step fails" do
+      it "leaves no comment and keeps the replies count" do
+        db = Hanami.app["db.gateway"].connection
+        parent = comment_repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "parent")
+        allow(comment_repo).to receive(:save_mentions).and_raise(Sequel::DatabaseError, "boom")
+
+        db.transaction(savepoint: true, auto_savepoint: true) do
+          expect {
+            comment_repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "reply", parent_id: parent.id, mentions: [{ profile_id: author_profile_id, position: 0, length: 1 }])
+          }.to raise_error(Sequel::DatabaseError)
+        end
+
+        expect(db[:post__comments].where(parent_id: parent.id).count).to eq(0)
+        expect(db[:post__comments].where(id: parent.id).get(:replies_count)).to eq(0)
+      end
+    end
+
     context "when profile exists" do
       it "creates a comment successfully" do
         result = use_case.call(

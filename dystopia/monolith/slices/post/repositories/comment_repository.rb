@@ -19,18 +19,20 @@ module Post
           replies_count: 0
         }
 
-        comment = comments.changeset(:create, comment_data).commit
+        transaction do
+          comment = comments.changeset(:create, comment_data).commit
 
-        save_media(comment_id: comment.id, media_data: media) if media.any?
-        save_mentions(comment_id: comment.id, mentions: mentions) if mentions.any?
+          save_media(comment_id: comment.id, media_data: media) if media.any?
+          save_mentions(comment_id: comment.id, mentions: mentions) if mentions.any?
 
-        if parent_id
-          comments.dataset.where(id: parent_id).update(
-            replies_count: Sequel.expr(:replies_count) + 1
-          )
+          if parent_id
+            comments.dataset.where(id: parent_id).update(
+              replies_count: Sequel.expr(:replies_count) + 1
+            )
+          end
+
+          find_by_id(comment.id)
         end
-
-        find_by_id(comment.id)
       end
 
       def delete_comment(id:, author_profile_id:)
