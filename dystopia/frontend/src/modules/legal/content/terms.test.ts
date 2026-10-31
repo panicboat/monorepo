@@ -41,6 +41,7 @@ describe("TERMS", () => {
   });
 
   it("shows the karte to casts only", () => {
+    expect(article("定義")).toContain("「カルテ」とは、キャストがゲストについて書き、キャストの間で共有する記録をいいます。");
     expect(article("カルテ")).toContain("カルテは、キャストの間で共有されます。ゲストは、自分についてのカルテも見ることができません。");
   });
 
