@@ -145,11 +145,6 @@ module Profile
         scope.dataset.select_map([:id, :prefecture, :area]).to_h { |id, pref, area_name| [id, { prefecture: pref.to_s, area: area_name.to_s }] }
       end
 
-      def media_ids_in_use(ids)
-        profiles.dataset.where(avatar_media_id: ids).select_map(:avatar_media_id) +
-          profiles.dataset.where(cover_media_id: ids).select_map(:cover_media_id)
-      end
-
       def save_media(profile_id:, avatar_media_id: nil, cover_media_id: nil)
         attrs = {}
         attrs[:avatar_media_id] = avatar_media_id unless avatar_media_id.nil?

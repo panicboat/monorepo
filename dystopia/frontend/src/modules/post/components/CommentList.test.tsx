@@ -44,9 +44,6 @@ vi.mock("@/modules/post/hooks/useComments", () => ({
   useComments: commentsMocks.useComments,
 }));
 
-vi.mock("@/modules/post/hooks/useDeleteComment", () => ({
-  useDeleteComment: () => ({ deleteComment: vi.fn(), submitting: false }),
-}));
 
 const { CommentList } = await import("./CommentList");
 
@@ -112,7 +109,7 @@ describe("CommentList", () => {
     expect(html).toContain('role="link"');
   });
 
-  it("renders the delete control for a comment authored by the active profile", () => {
+  it("offers no delete control, even for a comment by the active profile", () => {
     authMocks.activeProfileId = "author-1";
     commentsMocks.useComments.mockReturnValue({
       comments: [comment],
@@ -124,36 +121,6 @@ describe("CommentList", () => {
 
     const html = renderToStaticMarkup(<CommentList postId="post-1" />);
 
-    expect(html).toContain(">削除</button>");
-  });
-
-  it("does not render the delete control for another active profile", () => {
-    authMocks.activeProfileId = "viewer-1";
-    commentsMocks.useComments.mockReturnValue({
-      comments: [comment],
-      hasMore: false,
-      loading: false,
-      error: undefined,
-      loadMore: vi.fn(),
-    });
-
-    const html = renderToStaticMarkup(<CommentList postId="post-1" />);
-
-    expect(html).not.toContain(">削除</button>");
-  });
-
-  it("does not render the delete control when no profile is active", () => {
-    authMocks.activeProfileId = null;
-    commentsMocks.useComments.mockReturnValue({
-      comments: [comment],
-      hasMore: false,
-      loading: false,
-      error: undefined,
-      loadMore: vi.fn(),
-    });
-
-    const html = renderToStaticMarkup(<CommentList postId="post-1" />);
-
-    expect(html).not.toContain(">削除</button>");
+    expect(html).not.toContain("削除");
   });
 });

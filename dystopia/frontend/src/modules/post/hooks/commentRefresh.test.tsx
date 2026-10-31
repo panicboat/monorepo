@@ -17,7 +17,6 @@ vi.mock("@/stores/authStore", () => ({
 import { useComments } from "./useComments";
 import { useReplies } from "./useReplies";
 import { useAddComment } from "./useAddComment";
-import { useDeleteComment } from "./useDeleteComment";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -79,29 +78,5 @@ describe("comment list refresh", () => {
     await act(async () => { await hook.current.add.addComment("hi", "c1"); });
     await flush();
     expect(hook.current.list.replies).toHaveLength(2);
-  });
-
-  it("drops a deleted comment from useComments", async () => {
-    fetcherMock.mockImplementation(async () =>
-      fetcherMock.mock.calls.length === 1 ? page(["c1", "c2"]) : page(["c1"])
-    );
-    const hook = mount(() => ({ list: useComments("p1"), del: useDeleteComment("p1") }));
-    await flush();
-    expect(hook.current.list.comments).toHaveLength(2);
-    await act(async () => { await hook.current.del.deleteComment("c2"); });
-    await flush();
-    expect(hook.current.list.comments).toHaveLength(1);
-  });
-
-  it("drops a deleted reply from useReplies", async () => {
-    fetcherMock.mockImplementation(async () =>
-      fetcherMock.mock.calls.length === 1 ? page(["r1", "r2"]) : page(["r1"])
-    );
-    const hook = mount(() => ({ list: useReplies("p1", "c1", true), del: useDeleteComment("p1") }));
-    await flush();
-    expect(hook.current.list.replies).toHaveLength(2);
-    await act(async () => { await hook.current.del.deleteComment("r2", "c1"); });
-    await flush();
-    expect(hook.current.list.replies).toHaveLength(1);
   });
 });

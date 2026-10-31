@@ -7,10 +7,8 @@ import "profile/v1/service.proto";
 
 service CommentService {
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
-  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
   rpc ListReplies(ListRepliesRequest) returns (ListRepliesResponse);
-  rpc ListCommentsByAuthor(ListCommentsByAuthorRequest) returns (ListCommentsByAuthorResponse);
 }
 
 message CommentMedia {
@@ -46,14 +44,6 @@ message AddCommentResponse {
   int32 comments_count = 2;
 }
 
-message DeleteCommentRequest {
-  string comment_id = 1;
-}
-
-message DeleteCommentResponse {
-  int32 comments_count = 1;
-}
-
 message ListCommentsRequest {
   string post_id = 1;
   int32 limit = 2;
@@ -76,17 +66,4 @@ message ListRepliesResponse {
   repeated Comment replies = 1;
   string next_cursor = 2;
   bool has_more = 3;
-}
-
-message ListCommentsByAuthorRequest {
-  string author_profile_id = 1;
-  int32 limit = 2;
-  string cursor = 3;
-}
-
-message ListCommentsByAuthorResponse {
-  repeated Comment comments = 1;
-  string next_cursor = 2;
-  bool has_more = 3;
-  map<string, post.v1.Post> posts_by_id = 4;
 }

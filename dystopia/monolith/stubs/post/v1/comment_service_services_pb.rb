@@ -16,10 +16,8 @@ module Post
         self.service_name = 'post.v1.CommentService'
 
         rpc :AddComment, ::Post::V1::AddCommentRequest, ::Post::V1::AddCommentResponse
-        rpc :DeleteComment, ::Post::V1::DeleteCommentRequest, ::Post::V1::DeleteCommentResponse
         rpc :ListComments, ::Post::V1::ListCommentsRequest, ::Post::V1::ListCommentsResponse
         rpc :ListReplies, ::Post::V1::ListRepliesRequest, ::Post::V1::ListRepliesResponse
-        rpc :ListCommentsByAuthor, ::Post::V1::ListCommentsByAuthorRequest, ::Post::V1::ListCommentsByAuthorResponse
       end
 
       Stub = Service.rpc_stub_class

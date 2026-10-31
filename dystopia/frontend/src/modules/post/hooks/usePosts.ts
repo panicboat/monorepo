@@ -85,14 +85,6 @@ export function usePosts(options: UsePostsOptions = {}) {
     [setPosts]
   );
 
-  const deletePost = useCallback(
-    async (id: string) => {
-      await authFetch(`/api/posts/${encodeURIComponent(id)}`, { method: "DELETE" });
-      setPosts((prev) => prev.filter((p) => p.id !== id));
-    },
-    [setPosts]
-  );
-
   return {
     posts,
     setPosts,
@@ -106,6 +98,5 @@ export function usePosts(options: UsePostsOptions = {}) {
     reset,
     createPost,
     updatePost,
-    deletePost,
   };
 }

@@ -63,42 +63,6 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
     end
   end
 
-  describe "#delete_comment" do
-    it "deletes a comment by the owner" do
-      comment = repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "To delete")
-      result = repo.delete_comment(id: comment.id, author_profile_id: author_profile_id)
-
-      expect(result).not_to be_nil
-      expect(repo.find_by_id(comment.id)).to be_nil
-    end
-
-    it "does not delete a comment by non-owner" do
-      comment = repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Protected")
-      other_author_profile_id = SecureRandom.uuid_v7
-      result = repo.delete_comment(id: comment.id, author_profile_id: other_author_profile_id)
-
-      expect(result).to be_nil
-      expect(repo.find_by_id(comment.id)).not_to be_nil
-    end
-
-    it "decrements parent replies_count when deleting a reply" do
-      parent = repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Parent")
-      reply = repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Reply", parent_id: parent.id)
-
-      repo.delete_comment(id: reply.id, author_profile_id: author_profile_id)
-      updated_parent = repo.find_by_id(parent.id)
-      expect(updated_parent.replies_count).to eq(0)
-    end
-
-    it "deletes replies when deleting a parent comment" do
-      parent = repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Parent")
-      reply = repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Reply", parent_id: parent.id)
-
-      repo.delete_comment(id: parent.id, author_profile_id: author_profile_id)
-      expect(repo.find_by_id(reply.id)).to be_nil
-    end
-  end
-
   describe "#list_by_post_id" do
     it "returns only top-level comments" do
       parent = repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Parent")

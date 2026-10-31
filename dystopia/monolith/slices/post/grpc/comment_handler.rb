@@ -15,17 +15,13 @@ module Post
       self.rpc_descs.clear
 
       rpc :AddComment, ::Post::V1::AddCommentRequest, ::Post::V1::AddCommentResponse
-      rpc :DeleteComment, ::Post::V1::DeleteCommentRequest, ::Post::V1::DeleteCommentResponse
       rpc :ListComments, ::Post::V1::ListCommentsRequest, ::Post::V1::ListCommentsResponse
       rpc :ListReplies, ::Post::V1::ListRepliesRequest, ::Post::V1::ListRepliesResponse
-      rpc :ListCommentsByAuthor, ::Post::V1::ListCommentsByAuthorRequest, ::Post::V1::ListCommentsByAuthorResponse
 
       include Post::Deps[
         add_comment_uc: "use_cases.comments.add_comment",
-        delete_comment_uc: "use_cases.comments.delete_comment",
         list_comments_uc: "use_cases.comments.list_comments",
-        list_replies_uc: "use_cases.comments.list_replies",
-        list_comments_by_author_uc: "use_cases.comments.list_comments_by_author"
+        list_replies_uc: "use_cases.comments.list_replies"
       ]
       include Post::Concerns::ProfileAuthorResolvable
 
@@ -73,22 +69,6 @@ module Post
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Cannot reply to a reply")
       rescue AddComment::CreateFailedError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INTERNAL, "Failed to create comment")
-      end
-
-      def delete_comment
-        authenticate_user!
-
-        result = delete_comment_uc.call(
-          comment_id: request.message.comment_id,
-          author_profile_id: current_profile_id
-        )
-
-        blocked_profile_ids = get_blocked_profile_ids
-        comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_author_profile_ids: blocked_profile_ids)
-
-        ::Post::V1::DeleteCommentResponse.new(comments_count: comments_count)
-      rescue DeleteComment::CommentNotFoundOrUnauthorizedError
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Comment not found or unauthorized")
       end
 
       def list_comments
@@ -139,35 +119,9 @@ module Post
         )
       end
 
-      def list_comments_by_author
-        authenticate_user!
-
-        # FALLBACK: Use the default page size when the client sends zero.
-        limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
-
-        result = list_comments_by_author_uc.call(
-          author_profile_id: request.message.author_profile_id,
-          viewer_profile_id: current_profile_id,
-          limit: limit,
-          cursor: cursor,
-          exclude_author_profile_ids: get_blocked_profile_ids
-        )
-
-        media_files = load_media_files_for_comments(result[:comments])
-
-        ::Post::V1::ListCommentsByAuthorResponse.new(
-          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors], media_files: media_files, mentioned_usernames: result[:mentioned_usernames] || {}),
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more],
-          posts_by_id: result[:posts_by_id] || {}
-        )
-      end
-
       private
 
       AddComment = Post::UseCases::Comments::AddComment
-      DeleteComment = Post::UseCases::Comments::DeleteComment
 
       def readable_comment?(comment_id)
         comment = comment_repo.find_by_id(comment_id)

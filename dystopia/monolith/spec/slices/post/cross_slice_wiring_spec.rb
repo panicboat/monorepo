@@ -169,19 +169,16 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
         .to status(GRPC::Core::StatusCodes::NOT_FOUND)
     end
 
-    it "saves a post as the acting profile and lets only that profile delete it" do
+    it "saves a post as the acting profile" do
       act_as(viewer)
       saved = rpc(Post::Grpc::PostHandler, :save_post, Post::V1::SavePostRequest.new(content: "mine", visibility: "public")).post
 
-      act_as(public_author)
-      expect { rpc(Post::Grpc::PostHandler, :delete_post, Post::V1::DeletePostRequest.new(id: saved.id)) }
-        .to status(GRPC::Core::StatusCodes::NOT_FOUND)
-
-      act_as(viewer)
-      rpc(Post::Grpc::PostHandler, :delete_post, Post::V1::DeletePostRequest.new(id: saved.id))
-
       expect(saved.author_profile_id).to eq(viewer)
-      expect(post_repo.find_by_id(saved.id)).to be_nil
+      expect(post_repo.find_by_id(saved.id)).not_to be_nil
+    end
+
+    it "offers no way to delete a post" do
+      expect(Post::Grpc::PostHandler.rpc_descs.keys.map(&:to_s)).not_to include("DeletePost")
     end
 
     it "likes, reports like status, lists liked posts for the acting profile only, and unlikes" do
@@ -248,26 +245,14 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(comment_repo.list_replies(parent_id: parent.id)).to be_empty
     end
 
-    it "adds, lists and deletes comments by author profile" do
+    it "adds and lists comments by author profile" do
       act_as(viewer)
       added = rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: public_post.id, content: "hello"))
       listed = rpc(Post::Grpc::CommentHandler, :list_comments, Post::V1::ListCommentsRequest.new(post_id: public_post.id))
-      by_author = rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: viewer))
 
       expect(added.comment.author_profile_id).to eq(viewer)
       expect(added.comment.author.profile_id).to eq(viewer)
       expect(listed.comments.map(&:author_profile_id)).to eq([viewer])
-      expect(by_author.comments.map(&:id)).to eq([added.comment.id])
-      expect(by_author.posts_by_id[public_post.id].author_profile_id).to eq(public_author)
-
-      act_as(public_author)
-      expect {
-        rpc(Post::Grpc::CommentHandler, :delete_comment, Post::V1::DeleteCommentRequest.new(comment_id: added.comment.id))
-      }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
-
-      act_as(viewer)
-      deleted = rpc(Post::Grpc::CommentHandler, :delete_comment, Post::V1::DeleteCommentRequest.new(comment_id: added.comment.id))
-      expect(deleted.comments_count).to eq(0)
     end
 
     it "excludes a blocked profile's comments and replies" do

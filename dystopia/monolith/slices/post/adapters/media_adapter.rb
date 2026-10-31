@@ -22,10 +22,6 @@ module Post
         select_owned_media_ids.call(profile_id: profile_id, ids: ids).map(&:to_s).sort == ids.sort
       end
 
-      def discard(ids)
-        discard_media.call(ids: ids)
-      end
-
       private
 
       def build_media_file(file)
@@ -45,10 +41,6 @@ module Post
 
       def select_owned_media_ids
         @select_owned_media_ids ||= Media::Slice["use_cases.select_owned_media_ids"]
-      end
-
-      def discard_media
-        @discard_media ||= Media::Slice["use_cases.discard_media"]
       end
     end
   end

@@ -32,14 +32,6 @@ module Post
         posts.dataset.where(id: id).delete
       end
 
-      def media_ids_of(post_id)
-        post_media.dataset.where(post_id: post_id).select_map(:media_id)
-      end
-
-      def attached_media_ids(ids)
-        post_media.dataset.where(media_id: ids).select_map(:media_id)
-      end
-
       def save_media(post_id:, media_data:)
         post_media.dataset.where(post_id: post_id).delete
         media_data.each_with_index do |media, index|

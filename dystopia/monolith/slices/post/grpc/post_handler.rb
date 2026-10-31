@@ -19,12 +19,10 @@ module Post
       rpc :ListPosts, ::Post::V1::ListPostsRequest, ::Post::V1::ListPostsResponse
       rpc :GetPost, ::Post::V1::GetPostRequest, ::Post::V1::GetPostResponse
       rpc :SavePost, ::Post::V1::SavePostRequest, ::Post::V1::SavePostResponse
-      rpc :DeletePost, ::Post::V1::DeletePostRequest, ::Post::V1::DeletePostResponse
 
       include Post::Concerns::ProfileAuthorResolvable
       include Post::Deps[
-        extract_mentions: "use_cases.extract_mentions",
-        discard_detached_media: "use_cases.discard_detached_media"
+        extract_mentions: "use_cases.extract_mentions"
       ]
 
       AuthorRef = Struct.new(:author_profile_id)
@@ -120,18 +118,6 @@ module Post
         mentioned_usernames = mentioned_usernames_for(mentions.map { |m| m[:profile_id] })
 
         ::Post::V1::SavePostResponse.new(post: present_post(post, mentioned_usernames: mentioned_usernames))
-      end
-
-      def delete_post
-        authenticate_user!
-
-        existing = post_repo.find_by_id_and_author(id: request.message.id, author_profile_id: current_profile_id)
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
-
-        media_ids = post_repo.media_ids_of(existing.id) + comment_repo.media_ids_on_post(existing.id)
-        post_repo.delete_post(existing.id)
-        discard_detached_media.call(ids: media_ids)
-        ::Post::V1::DeletePostResponse.new
       end
 
       private

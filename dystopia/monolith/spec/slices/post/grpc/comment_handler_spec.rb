@@ -31,79 +31,8 @@ RSpec.describe Post::Grpc::CommentHandler, type: :database do
     end
   end
 
-  describe "#list_comments_by_author" do
-    let(:handler) do
-      described_class.new(
-        method_key: :list_comments_by_author,
-        service: double,
-        rpc_desc: double,
-        active_call: double,
-        message: message
-      )
-    end
-    let(:message) do
-      Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: reply_author_profile_id, limit: 20, cursor: "")
-    end
-
-    let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
-    let(:comment_repo) { Hanami.app.slices[:post]["repositories.comment_repository"] }
-
-    let(:post_author_profile_id) { create_account_with_profile }
-    let(:reply_author_profile_id) { create_account_with_profile(display_name: "テストゲスト", username: "test_guest_2") }
-
-    after { Current.clear }
-
-    it "hydrates the reply author's display name and avatar instead of leaving them blank" do
-      Current.account_id = SecureRandom.uuid_v7
-      Current.profile_id = post_author_profile_id
-      post = post_repo.create_post(author_profile_id: post_author_profile_id, content: "元の投稿")
-      comment_repo.create_comment(post_id: post.id, author_profile_id: reply_author_profile_id, content: "bbbb")
-
-      response = handler.list_comments_by_author
-
-      author = response.comments.first.author
-      expect(author).not_to be_nil
-      expect(author.display_name).to eq("テストゲスト")
-    end
-
-    it "leaves out the comments of an author the viewer blocks, and keeps them for a viewer the author blocks" do
-      post = post_repo.create_post(author_profile_id: post_author_profile_id, content: "元の投稿")
-      comment_repo.create_comment(post_id: post.id, author_profile_id: reply_author_profile_id, content: "bbbb")
-      blocker = create_account_with_profile(username: "replies_blocker")
-      blocked = create_account_with_profile(username: "replies_blocked")
-      blocks = Social::Slice["repositories.block_repository"]
-      blocks.block(blocker_profile_id: blocker, blocked_profile_id: reply_author_profile_id)
-      blocks.block(blocker_profile_id: reply_author_profile_id, blocked_profile_id: blocked)
-
-      listed = [blocker, blocked].map do |viewer|
-        Current.account_id = SecureRandom.uuid_v7
-        Current.profile_id = viewer
-        handler.list_comments_by_author.comments.length
-      end
-
-      expect(listed).to eq([0, 1])
-    end
-
-    it "fills the page past comments on posts the viewer cannot see and reports no more" do
-      db = Hanami.app["db.gateway"].connection
-      hidden_author = create_account_with_profile(username: "lcba_hidden")
-      hidden_post = post_repo.create_post(author_profile_id: hidden_author, content: "hidden")
-      shown = comment_repo.create_comment(post_id: post_repo.create_post(author_profile_id: post_author_profile_id, content: "shown").id, author_profile_id: reply_author_profile_id, content: "shown")
-      db[:post__comments].where(id: shown.id).update(created_at: Time.now - 60)
-      2.times do |i|
-        hidden_comment = comment_repo.create_comment(post_id: hidden_post.id, author_profile_id: reply_author_profile_id, content: "hidden")
-        db[:post__comments].where(id: hidden_comment.id).update(created_at: Time.now - (3600 * (i + 1)))
-      end
-      db[:profile__profiles].where(id: hidden_author).update(disabled_at: Time.now)
-      Current.account_id = SecureRandom.uuid_v7
-      Current.profile_id = post_author_profile_id
-      first_page = described_class.new(
-        method_key: :list_comments_by_author, service: double, rpc_desc: double, active_call: double,
-        message: Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: reply_author_profile_id, limit: 1)
-      ).list_comments_by_author
-
-      expect([first_page.comments.map(&:id), first_page.has_more]).to eq([[shown.id], false])
-    end
+  it "offers no way to delete a comment or to list the comments of an author" do
+    expect(described_class.rpc_descs.keys.map(&:to_s)).to contain_exactly("AddComment", "ListComments", "ListReplies")
   end
 
   describe "#list_comments for a signed-out viewer" do

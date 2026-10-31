@@ -9,7 +9,6 @@ service PostService {
   rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
   rpc GetPost(GetPostRequest) returns (GetPostResponse);
   rpc SavePost(SavePostRequest) returns (SavePostResponse);
-  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
 }
 
 message PostMention {
