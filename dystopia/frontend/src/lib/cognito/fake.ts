@@ -1,4 +1,4 @@
-import { generateKeyPairSync, randomUUID } from "node:crypto";
+import { generateKeyPairSync, randomUUID, type KeyObject } from "node:crypto";
 import { exportJWK, SignJWT, type JWK } from "jose";
 import { GrpcCode, isConnectError } from "@/lib/grpc-errors";
 import type { CognitoAdapter, Tokens } from "./adapter";
@@ -31,7 +31,7 @@ function seedDevUsers(): void {
 seedDevUsers();
 
 // The proxy and the route handlers load this module separately, so a per-module key would sign tokens the routes reject.
-const keyHolder = globalThis as typeof globalThis & { fakeCognitoKeyPair?: ReturnType<typeof generateKeyPairSync> };
+const keyHolder = globalThis as typeof globalThis & { fakeCognitoKeyPair?: { publicKey: KeyObject; privateKey: KeyObject } };
 keyHolder.fakeCognitoKeyPair ??= generateKeyPairSync("rsa", { modulusLength: 2048 });
 const { publicKey, privateKey } = keyHolder.fakeCognitoKeyPair;
 
