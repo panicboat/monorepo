@@ -88,6 +88,7 @@ async function typeQuery(input: HTMLInputElement, value: string) {
 }
 
 async function searchUsersHtml(isPrivate: boolean) {
+  navigation.tab = "users";
   hookMocks.useSearchUsers.mockReturnValue({
     profiles: [{ profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate }],
     hasMore: false,
@@ -119,6 +120,7 @@ async function searchUsersHtml(isPrivate: boolean) {
     root.unmount();
   });
   container.remove();
+  navigation.tab = null;
   return html;
 }
 
@@ -150,7 +152,7 @@ describe("SearchPage", () => {
     await act(async () => {
       root.render(<SearchPage />);
     });
-    expect(enterKeys.at(-1)).toBe("users");
+    expect(enterKeys.at(-1)).toBe("schedules");
 
     await act(async () => {
       (Array.from(container.querySelectorAll('[role="tab"]')).find((t) => t.textContent === "投稿") as HTMLElement).click();
@@ -242,12 +244,13 @@ describe("SearchPage", () => {
       };
     }
 
-    it("adds a 予定 tab after the user and post tabs", async () => {
+    it("puts the 予定 tab first and opens on it when nothing is searched", async () => {
       navigation.query = null;
       const view = await open();
 
-      expect(view.tabLabels()).toEqual(["ユーザー", "投稿", "予定"]);
-      expect(view.panel()).toBeNull();
+      expect(view.tabLabels()).toEqual(["予定", "ユーザー", "投稿"]);
+      expect(view.selectedTab()).toBe("予定");
+      expect(view.panel()).not.toBeNull();
 
       await view.unmount();
     });
@@ -279,11 +282,11 @@ describe("SearchPage", () => {
       navigation.query = null;
       const view = await open();
 
-      expect(view.container.textContent).toContain("ユーザー名や投稿内容で検索できます");
-      await view.select("予定");
       expect(view.container.textContent).not.toContain("ユーザー名や投稿内容で検索できます");
       await view.select("ユーザー");
       expect(view.container.textContent).toContain("ユーザー名や投稿内容で検索できます");
+      await view.select("予定");
+      expect(view.container.textContent).not.toContain("ユーザー名や投稿内容で検索できます");
 
       await view.unmount();
     });
@@ -318,8 +321,8 @@ describe("SearchPage", () => {
       await view.unmount();
     });
 
-    it("ignores an unknown tab in the URL", async () => {
-      navigation.tab = "nope";
+    it("opens on the user results for a name given in the URL", async () => {
+      navigation.query = "yuna";
       const view = await open();
 
       expect(view.selectedTab()).toBe("ユーザー");
@@ -327,12 +330,18 @@ describe("SearchPage", () => {
       await view.unmount();
     });
 
+    it("ignores an unknown tab in the URL", async () => {
+      navigation.tab = "nope";
+      const view = await open();
+
+      expect(view.selectedTab()).toBe("予定");
+
+      await view.unmount();
+    });
+
     it("asks for a name on the schedules tab and keeps the other placeholder elsewhere", async () => {
       navigation.query = null;
       const view = await open();
-      expect(view.input().placeholder).toBe("ユーザーや投稿を検索");
-
-      await view.select("予定");
       expect(view.input().placeholder).toBe("名前で絞り込む");
       expect(view.input().getAttribute("aria-label")).toBe("検索");
 

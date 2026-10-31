@@ -2,14 +2,11 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useSWRConfig } from "swr";
 import { FlowerMenu } from "@/components/ui/flower-menu";
 import { PostComposerSheet } from "@/modules/post/components/PostComposerSheet";
-import { revalidatePostLists } from "@/modules/post/lib/revalidate";
-import { ScheduleBulkSheet } from "@/modules/schedule/components/ScheduleBulkSheet";
-import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
-import { usePostFeedStore } from "@/stores/postFeedStore";
+import { useAuthStore, selectRole } from "@/stores/authStore";
 import { ComposeToSheet } from "./ComposeToSheet";
+import { ScheduleComposeSheet } from "./ScheduleComposeSheet";
 import { COMPOSE_ICONS, COMPOSE_LABELS } from "./compose-icons";
 import { resolveComposeKinds, type ComposeKind } from "./resolveComposeKinds";
 
@@ -45,19 +42,11 @@ interface Composing {
 
 export function ComposeLauncher({ variant }: { variant: keyof typeof VARIANTS }) {
   const role = useAuthStore(selectRole);
-  const profileId = useAuthStore(selectActiveProfileId);
-  const { mutate } = useSWRConfig();
-  const notifyPostCreated = usePostFeedStore((s) => s.notifyPostCreated);
   // Keep the chosen kind after closing: dropping it would unmount the sheet before it slides out.
   const [composing, setComposing] = useState<Composing | null>(null);
   const { content, ...menu } = VARIANTS[variant];
   const kinds = resolveComposeKinds({ role });
   const close = () => setComposing((current) => current && { ...current, open: false });
-  const onScheduleSaved = () => {
-    mutate((key) => typeof key === "string" && (key.startsWith("/api/posts") || key.startsWith("/api/feed")), undefined, { revalidate: true });
-    void revalidatePostLists();
-    notifyPostCreated();
-  };
 
   return (
     <>
@@ -72,9 +61,7 @@ export function ComposeLauncher({ variant }: { variant: keyof typeof VARIANTS })
         {content}
       </FlowerMenu>
       <PostComposerSheet open={composing?.kind === "post" && composing.open} onClose={close} />
-      {composing?.kind === "schedule" && profileId && (
-        <ScheduleBulkSheet key={composing.session} profileId={profileId} open={composing.open} onClose={close} onSaved={onScheduleSaved} />
-      )}
+      {composing?.kind === "schedule" && <ScheduleComposeSheet key={composing.session} open={composing.open} onClose={close} />}
       {composing && composing.kind !== "post" && composing.kind !== "schedule" && (
         <ComposeToSheet key={composing.session} kind={composing.kind} open={composing.open} onClose={close} />
       )}

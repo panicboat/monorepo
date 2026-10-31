@@ -57,6 +57,10 @@ vi.mock("@/stores/authStore", () => ({
   selectRole: (s: { role: string | null }) => s.role,
 }));
 
+vi.mock("@/components/compose/ScheduleComposeSheet", () => ({
+  ScheduleComposeSheet: ({ open }: { open: boolean }) => <div data-testid="schedule-sheet">{open ? "open" : "closed"}</div>,
+}));
+
 const { BottomTab } = await import("./BottomTab");
 
 describe("BottomTab", () => {
@@ -68,6 +72,45 @@ describe("BottomTab", () => {
     expect(html).toContain("/karte/my");
     expect(html).toContain("カルテ");
     expect(html).not.toContain("/reviews/my");
+  });
+
+  it("replaces search with a schedule button for a Cast viewer", () => {
+    authMocks.useAuthStore.mockReturnValue("cast");
+
+    const html = renderToStaticMarkup(<BottomTab />);
+
+    expect(html).not.toContain('href="/search"');
+    expect(Array.from(html.matchAll(/<span>([^<]+)<\/span>/g), (m) => m[1])).toEqual(["ホーム", "予定", "通知", "メッセージ", "カルテ"]);
+    expect(html).not.toContain("schedule-sheet");
+  });
+
+  it("opens the schedule sheet from the schedule button without changing the page", async () => {
+    authMocks.useAuthStore.mockReturnValue("cast");
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(<BottomTab />);
+    });
+
+    await act(async () => {
+      (Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "予定") as HTMLButtonElement).click();
+    });
+
+    expect(container.querySelector('[data-testid="schedule-sheet"]')?.textContent).toBe("open");
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("keeps search and offers no schedule button for a Guest viewer", () => {
+    authMocks.useAuthStore.mockReturnValue("guest");
+
+    const html = renderToStaticMarkup(<BottomTab />);
+
+    expect(html).toContain('href="/search"');
+    expect(html).not.toContain("予定");
   });
 
   it("shows the review tab for a Guest viewer and hides the karte tab", () => {
