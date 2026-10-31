@@ -28,17 +28,14 @@ describe("PRIVACY", () => {
   it("names the contact and answers the operator's identity on request", () => {
     expect(section("運営者と窓口")).toContain(OPERATOR.contact);
     expect(section("運営者と窓口")).toContain(OPERATOR_IDENTITY_ON_REQUEST);
+    expect(all).not.toContain("【連絡先】");
     expect(all).not.toContain("【運営者氏名】");
     expect(all).not.toContain("【住所】");
   });
 
-  it("keeps the phone number and the password out of the database", () => {
-    expect(section("取得する情報")).toContain("電話番号、ハッシュ値、パスワードおよびパスワードを確認するための情報は、いずれも、本サービスのデータベースには保存しません。");
-  });
-
-  it("shows the karte to every cast and not to the guest it is about", () => {
-    expect(section("カルテ・クチコミ・足跡の共有")).toContain("カルテの内容（評価、段階、結果、タグ、補足および日付）、書いたキャストと対象のゲストのプロフィールの情報、および対象のゲストについてのカルテの評価の集計は、すべてのキャストに表示されます。");
-    expect(section("カルテ・クチコミ・足跡の共有")).toContain("ゲストには、本サービス上では、自分についてのカルテも表示されません。");
+  it("shows the karte to casts and not to the guest it is about", () => {
+    expect(section("カルテ・クチコミ・足跡の共有")).toContain("カルテの内容、書いたキャストと対象のゲストのプロフィールの情報、および評価の集計は、キャストに表示されます。");
+    expect(section("カルテ・クチコミ・足跡の共有")).toContain("ゲストには、自分についてのカルテも表示されません。");
   });
 
   it("lets the operator read DMs only in the cases the terms set", () => {
@@ -63,6 +60,12 @@ describe("PRIVACY", () => {
   it("leaves out implementation values, setting and infrastructure names, and words the app does not use", () => {
     expect(all).not.toMatch(/[0-9０-９一二三四五六七八九十百千]+\s*(?:日|時間|字|週間|か月|ヶ月|カ月|年|件|回|枚)/);
     for (const word of ["出勤", "通報", "メモ", "非表示", "個別のお知らせ", "この端末で受け取る", "他人のプロフィール訪問時に足跡を残す", "localStorage", "AWS", "Amazon", "東京リージョン"]) {
+      expect(all).not.toContain(word);
+    }
+  });
+
+  it("leaves out how features behave, so that a feature change does not change the text", () => {
+    for (const word of ["鍵", "承認制", "公開範囲", "ログアウト"]) {
       expect(all).not.toContain(word);
     }
   });

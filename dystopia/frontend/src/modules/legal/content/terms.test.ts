@@ -5,8 +5,8 @@ import { TERMS } from "./terms";
 
 const HEADINGS = [
   "目的と適用", "定義", "利用資格", "登録", "アカウントの管理", "プロフィール", "投稿等の責任と権利",
-  "売春・裏引き・店舗外の取引の禁止", "個人情報の書き込みと晒しの禁止", "カルテ", "クチコミ", "予定と予定検索",
-  "DM", "フォロー・ブロック・足跡", "禁止事項", "違反への措置", "権利侵害の申出", "退会",
+  "売春・裏引き・店舗外の取引の禁止", "個人情報の書き込みと晒しの禁止", "カルテ", "クチコミ",
+  "DM", "禁止事項", "違反への措置", "権利侵害の申出", "退会",
   "サービスの変更・中断・終了", "個人情報の取扱い", "免責", "知的財産権と外部リンク", "通知・連絡", "規約の変更",
   "有料機能", "分離可能性", "準拠法と管轄", "運営者",
 ];
@@ -30,6 +30,8 @@ describe("TERMS", () => {
   it("names the contact and answers the operator's identity on request", () => {
     expect(article("運営者")).toContain(OPERATOR.contact);
     expect(article("運営者")).toContain(OPERATOR_IDENTITY_ON_REQUEST);
+    expect(OPERATOR.contact).toBe("support@dystopia.city");
+    expect(all).not.toContain("【連絡先】");
     expect(all).not.toContain("【運営者氏名】");
     expect(all).not.toContain("【住所】");
   });
@@ -39,7 +41,8 @@ describe("TERMS", () => {
   });
 
   it("shows the karte to casts only", () => {
-    expect(article("カルテ")).toContain("カルテは、すべてのキャストで共有されます。本サービス上でカルテを見ることができるのは、キャストだけです。ゲストは、自分についてのカルテも見ることができません。");
+    expect(article("定義")).toContain("「カルテ」とは、キャストがゲストについて書き、キャストの間で共有する記録をいいます。");
+    expect(article("カルテ")).toContain("カルテは、キャストの間で共有されます。ゲストは、自分についてのカルテも見ることができません。");
   });
 
   it("lets the operator read DMs only on requests and under the law, with the user's consent", () => {
@@ -53,6 +56,12 @@ describe("TERMS", () => {
   it("leaves out implementation values and words the app does not use", () => {
     expect(all.replace("1か月前", "")).not.toMatch(/[0-9０-９一二三四五六七八九十百千]+\s*(?:日|時間|字|週間|か月|ヶ月|カ月|年|件|回|枚)/);
     for (const word of ["出勤", "通報", "メモ", "非表示", "個別のお知らせ", "別に定めるルール"]) {
+      expect(all).not.toContain(word);
+    }
+  });
+
+  it("leaves out how features behave, so that a feature change does not change the text", () => {
+    for (const word of ["鍵", "承認制", "公開範囲", "ログアウト"]) {
       expect(all).not.toContain(word);
     }
   });
