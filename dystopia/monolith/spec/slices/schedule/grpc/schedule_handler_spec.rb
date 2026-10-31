@@ -54,6 +54,23 @@ RSpec.describe Schedule::Grpc::ScheduleHandler, type: :database do
     expect(schedules_of(cast)).to eq([[cast, "2026-10-20", "20:00", "02:00"]])
   end
 
+  it "sets hidden_by_lock on the response for a viewer who cannot pass" do
+    locked_cast = create_account_with_profile(role: 2, username: "schedule_locked_cast", is_private: true)
+    act_as(locked_cast)
+    save("2026-10-20")
+    request = Schedule::V1::ListSchedulesRequest.new(profile_id: locked_cast, from_date: "2026-10-01", to_date: "2026-10-31")
+
+    act_as(guest)
+    response = rpc(:list_schedules, request)
+    expect(response.schedules).to be_empty
+    expect(response.hidden_by_lock).to be(true)
+
+    Social::Slice["repositories.follow_repository"].follow(follower_profile_id: guest, followee_profile_id: locked_cast, status: "approved")
+    response = rpc(:list_schedules, request)
+    expect(response.schedules.size).to eq(1)
+    expect(response.hidden_by_lock).to be(false)
+  end
+
   it "deletes only the acting profile's schedule for that date" do
     act_as(cast)
     save("2026-10-20")

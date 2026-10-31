@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { LockedNotice } from "@/components/ui/locked-notice";
 import { useSchedules } from "@/modules/schedule/hooks";
 import { buildDateRange, formatDayLabel } from "@/modules/schedule/lib/dates";
 import { ScheduleBulkSheet } from "./ScheduleBulkSheet";
@@ -15,7 +16,7 @@ interface Editing {
 
 export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner: boolean }) {
   const days = buildDateRange(new Date(), DAYS);
-  const { schedules, loading, refresh } = useSchedules(profileId, days[0], days[days.length - 1]);
+  const { schedules, hiddenByLock, loading, refresh } = useSchedules(profileId, days[0], days[days.length - 1]);
   // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
   const [editing, setEditing] = useState<Editing | null>(null);
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
@@ -35,7 +36,9 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
           </Button>
         )}
       </div>
-      {loading ? (
+      {hiddenByLock ? (
+        <LockedNotice />
+      ) : loading ? (
         <p className="mt-3 text-sm text-text-secondary">読み込み中…</p>
       ) : (
         <ol className="mt-3 flex flex-col gap-2">
@@ -60,7 +63,7 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
           })}
         </ol>
       )}
-      <p className="mt-3 text-xs text-text-secondary">予定は予約可能枠を保証するものではありません。</p>
+      {!hiddenByLock && <p className="mt-3 text-xs text-text-secondary">予定は予約可能枠を保証するものではありません。</p>}
       {editing && (
         <ScheduleBulkSheet
           key={editing.session}

@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({ range: [] as string[], calls: [] as string[][], sheetOpen: null as null | boolean }));
+const mocks = vi.hoisted(() => ({ range: [] as string[], calls: [] as string[][], sheetOpen: null as null | boolean, hiddenByLock: false }));
 
 vi.mock("@/modules/schedule/hooks", () => ({
   useSchedules: (_id: string, fromDate: string, toDate: string) => {
@@ -13,6 +13,7 @@ vi.mock("@/modules/schedule/hooks", () => ({
     mocks.calls.push([fromDate, toDate]);
     return {
       schedules: [{ profileId: "p-1", workDate: "2026-10-13", startTime: "20:00", endTime: "02:00" }],
+      hiddenByLock: mocks.hiddenByLock,
       loading: false,
       error: undefined,
       refresh: vi.fn(),
@@ -33,6 +34,7 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2026-10-12T09:00:00"));
   mocks.sheetOpen = null;
   mocks.calls = [];
+  mocks.hiddenByLock = false;
 });
 
 afterEach(() => {
@@ -71,6 +73,17 @@ describe("ScheduleTab", () => {
 
     expect(Array.from(container.querySelectorAll("button")).some((b) => b.textContent === "もっと見る")).toBe(false);
     expect(mocks.calls).toEqual([["2026-10-12", "2026-10-25"]]);
+  });
+
+  it("shows the notice instead of the days and the footnote when hidden by lock", async () => {
+    mocks.hiddenByLock = true;
+    const container = await mount(false);
+
+    expect(container.textContent).toContain("予定");
+    expect(container.textContent).toContain("フォローすると見られます");
+    expect(container.querySelectorAll("li")).toHaveLength(0);
+    expect(container.textContent).not.toContain("未設定");
+    expect(container.textContent).not.toContain("予定は予約可能枠を保証するものではありません。");
   });
 
   it("lets the owner open the bulk sheet", async () => {

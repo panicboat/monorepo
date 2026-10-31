@@ -132,6 +132,28 @@ describe("review lists", () => {
     expect(body.reviews).toHaveLength(1);
   });
 
+  it("passes hiddenByLock through on a cast's reviews and on an author's reviews", async () => {
+    reviewClient.listReviewsByTarget.mockResolvedValue({ reviews: [], nextCursor: "", hasMore: false, hiddenByLock: true });
+    reviewClient.listReviewsByAuthor.mockResolvedValue({ reviews: [], nextCursor: "", hasMore: false, hiddenByLock: true });
+
+    const target = await (await byTarget.GET(request("/api/review/by-target?profile_id=cast-1", "GET"))).json();
+    const author = await (await byAuthor.GET(request("/api/review/by-author?profile_id=author-1", "GET"))).json();
+
+    expect(target.hiddenByLock).toBe(true);
+    expect(author.hiddenByLock).toBe(true);
+  });
+
+  it("answers hiddenByLock false when the server does not hide the reviews", async () => {
+    reviewClient.listReviewsByTarget.mockResolvedValue({ reviews: [review], nextCursor: "", hasMore: false });
+    reviewClient.listReviewsByAuthor.mockResolvedValue({ reviews: [review], nextCursor: "", hasMore: false });
+
+    const target = await (await byTarget.GET(request("/api/review/by-target?profile_id=cast-1", "GET"))).json();
+    const author = await (await byAuthor.GET(request("/api/review/by-author?profile_id=author-1", "GET"))).json();
+
+    expect(target.hiddenByLock).toBe(false);
+    expect(author.hiddenByLock).toBe(false);
+  });
+
   it("requires the profile id for a cast's reviews", async () => {
     const res = await byTarget.GET(request("/api/review/by-target", "GET"));
 

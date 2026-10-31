@@ -25,6 +25,7 @@ export function useAuthorReviews(authorProfileId: string | null | undefined) {
   const pages = data || [];
   return {
     reviews: uniqueReviews(pages.flatMap((p) => p.reviews || [])),
+    hiddenByLock: !!pages[0]?.hiddenByLock,
     hasMore: pages.length > 0 ? !!pages[pages.length - 1].hasMore : false,
     loading: isLoading || isValidating,
     error,

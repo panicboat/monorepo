@@ -40,7 +40,8 @@ module Schedule
               start_time: r.start_time.to_s,
               end_time: r.end_time.to_s
             )
-          }
+          },
+          hidden_by_lock: list_schedules_uc.hidden_by_lock?(profile_id: m.profile_id, viewer_profile_id: current_profile_id)
         )
       rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)

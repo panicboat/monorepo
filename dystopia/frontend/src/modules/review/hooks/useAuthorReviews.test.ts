@@ -35,6 +35,17 @@ describe("useAuthorReviews", () => {
     expect(result.reviews.map((r) => r.id)).toEqual(["a", "b"]);
   });
 
+  it("reports whether the lock hides the reviews from the first page", () => {
+    mocks.data = [{ reviews: [], hasMore: false, nextCursor: "", hiddenByLock: true }];
+    expect(useAuthorReviews("author-1").hiddenByLock).toBe(true);
+
+    mocks.data = [{ reviews: [{ id: "a" }], hasMore: false, nextCursor: "" }];
+    expect(useAuthorReviews("author-1").hiddenByLock).toBe(false);
+
+    mocks.data = undefined;
+    expect(useAuthorReviews("author-1").hiddenByLock).toBe(false);
+  });
+
   it("does not request anything without an author profile id", () => {
     useAuthorReviews(null);
 

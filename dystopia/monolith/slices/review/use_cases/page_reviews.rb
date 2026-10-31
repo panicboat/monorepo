@@ -18,7 +18,7 @@ module Review
         limit <= 0 ? DEFAULT_LIMIT : [limit, MAX_LIMIT].min
       end
 
-      def call(fetch:, cursor:, limit:, viewer_account_id:, order: :activity, visible: ->(page) { page })
+      def call(fetch:, cursor:, limit:, viewer_account_id:, viewer_profile_id: nil, order: :activity, visible: ->(page) { page })
         page = ::Concerns::VisiblePage.fill(
           limit: limit,
           cursor: cursor,
@@ -28,7 +28,7 @@ module Review
         )
         reviews = page[:items]
         {
-          reviews: present_reviews.call(reviews: reviews, viewer_account_id: viewer_account_id),
+          reviews: present_reviews.call(reviews: reviews, viewer_account_id: viewer_account_id, viewer_profile_id: viewer_profile_id),
           next_cursor: page[:has_more] && reviews.any? ? review_repo.cursor_for(reviews.last, order: order) : nil,
           has_more: page[:has_more]
         }

@@ -186,11 +186,11 @@ describe("EditProfileSheet", () => {
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: false, followApprovalRequired: true }));
   });
 
-  it("explains that the lock shows a mark and that each post's visibility decides who sees it", async () => {
+  it("explains that the lock hides schedules and reviews from non-followers and that each post's visibility decides who sees it", async () => {
     await renderSheet(vi.fn(async () => {}));
 
     expect(document.body.textContent).toContain(
-      "プロフィールに鍵マークが付き、フォローが承認制になります。投稿を見られる人は、投稿ごとの公開範囲で決まります"
+      "プロフィールに鍵マークが付き、フォローしていない人から予定とクチコミが見えなくなります。フォローは承認制になります。投稿を見られる人は、投稿ごとの公開範囲で決まります"
     );
   });
 

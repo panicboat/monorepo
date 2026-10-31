@@ -1,0 +1,375 @@
+# frozen_string_literal: true
+
+require "spec_helper"
+
+RSpec.describe "Review visibility of a locked profile", type: :database do
+  def uc(name) = Review::Slice["use_cases.#{name}"]
+
+  let(:db) { Hanami.app["db.gateway"].connection }
+  let(:follow_repo) { Social::Slice["repositories.follow_repository"] }
+  let(:block_repo) { Social::Slice["repositories.block_repository"] }
+  let(:no_summary) { Review::UseCases::ListReviewsByTarget::NO_SUMMARY }
+  let(:now) { Time.now }
+  let(:actor_struct) { Struct.new(:account, :profile) }
+  let(:event_input) { { stage: "service", outcome: "satisfied", tags: [], note: "", occurred_on: "2026-10-01" } }
+
+  def actor(username, role: 1, **attrs)
+    account = create_account(role: role)
+    actor_struct.new(account, create_account_with_profile(account_id: account, username: username, **attrs))
+  end
+
+  let!(:locked_cast) { actor("locked_cast", role: 2, is_private: true) }
+  let!(:open_cast) { actor("open_cast", role: 2) }
+  let!(:guest) { actor("guest_one") }
+  let!(:locked_guest) { actor("locked_guest", is_private: true) }
+  let!(:viewer) { actor("viewer") }
+
+  def write(author, target, rating: nil, at: now)
+    review = uc(:create_review).call(
+      viewer_account_id: author.account, viewer_profile_id: author.profile,
+      target_profile_id: target.profile, rating: rating, event: event_input
+    )
+    db[:review__reviews].where(id: review[:id]).update(created_at: at, last_activity_at: at)
+    review
+  end
+
+  def follow(follower, followee, status: "approved")
+    follow_repo.follow(follower_profile_id: follower.profile, followee_profile_id: followee.profile, status: status)
+  end
+
+  def by_target(who, cast:, limit: 20, profile_id: cast.profile)
+    uc(:list_reviews_by_target).call(
+      viewer_account_id: who.account, viewer_profile_id: who.profile, target_profile_id: profile_id, limit: limit, cursor: nil
+    )
+  end
+
+  def by_author(who, author:, limit: 20, cursor: nil, profile_id: author.profile)
+    uc(:list_reviews_by_author).call(
+      viewer_account_id: who.account, viewer_profile_id: who.profile, author_profile_id: profile_id, limit: limit, cursor: cursor
+    )
+  end
+
+  def recent(who, limit: 20, cursor: nil)
+    uc(:list_recent_reviews).call(viewer_account_id: who.account, viewer_profile_id: who.profile, limit: limit, cursor: cursor)
+  end
+
+  def read(who, review)
+    uc(:get_review).call(viewer_account_id: who.account, viewer_profile_id: who.profile, review_id: review[:id])
+  end
+
+  def ids(result) = result[:reviews].map { |review| review[:id] }
+
+  describe "the list of a locked cast" do
+    let!(:from_guest) { write(guest, locked_cast, rating: 5, at: now - 20) }
+    let!(:from_locked_guest) { write(locked_guest, locked_cast, rating: 3, at: now - 10) }
+
+    it "returns nothing, NO_SUMMARY and hidden_by_lock for a viewer who cannot pass" do
+      expect(by_target(viewer, cast: locked_cast)).to eq(reviews: [], next_cursor: nil, has_more: false, summary: no_summary, hidden_by_lock: true)
+    end
+
+    it "does the same for a pending follower" do
+      follow(viewer, locked_cast, status: "pending")
+
+      expect(by_target(viewer, cast: locked_cast)).to eq(reviews: [], next_cursor: nil, has_more: false, summary: no_summary, hidden_by_lock: true)
+    end
+
+    it "returns the reviews and the summary of all reviews for a follower, the reviews of a locked guest included" do
+      follow(viewer, locked_cast)
+
+      result = by_target(viewer, cast: locked_cast)
+
+      expect(ids(result)).to eq([from_locked_guest[:id], from_guest[:id]])
+      expect(result[:summary]).to eq(average_rating: 4.0, rater_count: 2, review_count: 2)
+      expect(result[:hidden_by_lock]).to be(false)
+    end
+
+    it "returns them for the cast itself" do
+      result = by_target(locked_cast, cast: locked_cast)
+
+      expect(ids(result)).to eq([from_locked_guest[:id], from_guest[:id]])
+      expect(result[:summary]).to eq(average_rating: 4.0, rater_count: 2, review_count: 2)
+      expect(result[:hidden_by_lock]).to be(false)
+    end
+
+    it "hides the summary and does not report the lock to a blocked viewer" do
+      block_repo.block(blocker_profile_id: locked_cast.profile, blocked_profile_id: viewer.profile)
+
+      expect(by_target(viewer, cast: locked_cast)).to eq(reviews: [], next_cursor: nil, has_more: false, summary: no_summary, hidden_by_lock: false)
+    end
+  end
+
+  describe "the list of an unlocked cast" do
+    it "keeps the summary for every viewer and hidden_by_lock false" do
+      from_guest = write(guest, open_cast, rating: 5, at: now - 20)
+      from_locked_guest = write(locked_guest, open_cast, rating: 3, at: now - 10)
+
+      [viewer, open_cast, guest].each do |who|
+        result = by_target(who, cast: open_cast)
+
+        expect(result[:summary]).to eq(average_rating: 4.0, rater_count: 2, review_count: 2)
+        expect(result[:hidden_by_lock]).to be(false)
+      end
+      expect(ids(by_target(viewer, cast: open_cast))).to eq([from_locked_guest[:id], from_guest[:id]])
+    end
+  end
+
+  describe "the written reviews of a locked guest" do
+    let!(:about_open) { write(locked_guest, open_cast, at: now - 20) }
+    let!(:about_locked) { write(locked_guest, locked_cast, at: now - 10) }
+
+    it "returns nothing and hidden_by_lock for a viewer who cannot pass" do
+      expect(by_author(viewer, author: locked_guest)).to eq(reviews: [], next_cursor: nil, has_more: false, hidden_by_lock: true)
+    end
+
+    it "does not report the lock to a blocked viewer" do
+      block_repo.block(blocker_profile_id: locked_guest.profile, blocked_profile_id: viewer.profile)
+
+      expect(by_author(viewer, author: locked_guest)).to eq(reviews: [], next_cursor: nil, has_more: false, hidden_by_lock: false)
+    end
+
+    it "returns all of them to the guest, locked casts included" do
+      result = by_author(locked_guest, author: locked_guest)
+
+      expect(ids(result)).to eq([about_locked[:id], about_open[:id]])
+      expect(result[:hidden_by_lock]).to be(false)
+    end
+  end
+
+  describe "the written reviews of an unlocked guest" do
+    let!(:about_open) { write(guest, open_cast, at: now - 20) }
+    let!(:about_locked) { write(guest, locked_cast, at: now - 10) }
+
+    it "drops reviews of a locked cast the viewer does not follow" do
+      result = by_author(viewer, author: guest)
+
+      expect(ids(result)).to eq([about_open[:id]])
+      expect(result[:hidden_by_lock]).to be(false)
+    end
+
+    it "keeps them for a follower of the cast" do
+      follow(viewer, locked_cast)
+
+      expect(ids(by_author(viewer, author: guest))).to eq([about_locked[:id], about_open[:id]])
+    end
+
+    it "keeps them when the target cast is disabled" do
+      db[:profile__profiles].where(id: locked_cast.profile).update(disabled_at: Time.now)
+
+      expect(ids(by_author(viewer, author: guest))).to eq([about_locked[:id], about_open[:id]])
+    end
+
+    it "fills the page past dropped reviews and reports has_more correctly" do
+      other_open = actor("other_open_cast", role: 2)
+      older_open = write(guest, other_open, at: now - 30)
+      write(guest, locked_cast, at: now - 40)
+
+      first = by_author(viewer, author: guest, limit: 1)
+      second = by_author(viewer, author: guest, limit: 1, cursor: first[:next_cursor])
+
+      expect([ids(first), first[:has_more]]).to eq([[about_open[:id]], true])
+      expect([ids(second), second[:has_more]]).to eq([[older_open[:id]], false])
+    end
+  end
+
+  describe "recent reviews" do
+    let!(:about_open) { write(guest, open_cast, at: now - 20) }
+    let!(:about_locked) { write(guest, locked_cast, at: now - 10) }
+
+    it "drops reviews of a locked cast the viewer does not follow, and keeps them for a follower" do
+      expect(ids(recent(viewer))).to eq([about_open[:id]])
+
+      follow(viewer, locked_cast)
+
+      expect(ids(recent(viewer))).to eq([about_locked[:id], about_open[:id]])
+    end
+
+    it "keeps the reviews of a locked guest about an unlocked cast" do
+      from_locked_guest = write(locked_guest, open_cast, at: now - 5)
+
+      expect(ids(recent(viewer))).to eq([from_locked_guest[:id], about_open[:id]])
+    end
+
+    it "fills the page past dropped reviews and reports has_more correctly" do
+      older_open = write(guest, open_cast, at: now - 30)
+      write(guest, locked_cast, at: now - 40)
+
+      first = recent(viewer, limit: 1)
+      second = recent(viewer, limit: 1, cursor: first[:next_cursor])
+
+      expect([ids(first), first[:has_more]]).to eq([[about_open[:id]], true])
+      expect([ids(second), second[:has_more]]).to eq([[older_open[:id]], false])
+    end
+  end
+
+  describe "a profile id written in uppercase" do
+    let!(:about_open) { write(guest, open_cast, rating: 5, at: now - 20) }
+    let!(:about_locked) { write(guest, locked_cast, rating: 3, at: now - 10) }
+    let!(:from_locked_guest) { write(locked_guest, open_cast, at: now - 5) }
+
+    it "hides the list of a locked cast from a viewer who cannot pass" do
+      result = by_target(viewer, cast: locked_cast, profile_id: locked_cast.profile.upcase)
+
+      expect(result).to eq(reviews: [], next_cursor: nil, has_more: false, summary: no_summary, hidden_by_lock: true)
+    end
+
+    it "does not report the lock of a locked cast to a blocked viewer" do
+      block_repo.block(blocker_profile_id: locked_cast.profile, blocked_profile_id: viewer.profile)
+
+      result = by_target(viewer, cast: locked_cast, profile_id: locked_cast.profile.upcase)
+
+      expect(result).to eq(reviews: [], next_cursor: nil, has_more: false, summary: no_summary, hidden_by_lock: false)
+    end
+
+    it "hides the written reviews of a locked guest from a viewer who cannot pass" do
+      result = by_author(viewer, author: locked_guest, profile_id: locked_guest.profile.upcase)
+
+      expect(result).to eq(reviews: [], next_cursor: nil, has_more: false, hidden_by_lock: true)
+    end
+
+    it "drops the reviews of a locked cast from the written reviews of an unlocked guest" do
+      result = by_author(viewer, author: guest, profile_id: guest.profile.upcase)
+
+      expect(ids(result)).to eq([about_open[:id]])
+    end
+
+    it "answers for an unlocked cast as for the lowercase id" do
+      follow(viewer, locked_cast)
+
+      expect(by_target(viewer, cast: open_cast, profile_id: open_cast.profile.upcase)).to eq(by_target(viewer, cast: open_cast))
+      expect(by_author(viewer, author: guest, profile_id: guest.profile.upcase)).to eq(by_author(viewer, author: guest))
+      expect(ids(by_target(viewer, cast: open_cast, profile_id: open_cast.profile.upcase))).to eq([from_locked_guest[:id], about_open[:id]])
+    end
+  end
+
+  describe "a single review" do
+    def invalid = raise_error(Review::Errors::Invalid, "Review not found")
+
+    it "raises Errors::Invalid for a viewer who cannot pass the lock of the cast or the guest" do
+      from_guest = write(guest, locked_cast)
+      from_locked_guest = write(locked_guest, locked_cast)
+
+      expect { read(viewer, from_guest) }.to invalid
+      expect { read(viewer, from_locked_guest) }.to invalid
+
+      follow(viewer, locked_guest)
+
+      expect { read(viewer, from_locked_guest) }.to invalid
+    end
+
+    it "returns it when one of the lists would show it" do
+      about_open = write(locked_guest, open_cast)
+      about_locked = write(guest, locked_cast)
+      plain = write(guest, open_cast)
+
+      expect(read(viewer, about_open)[:id]).to eq(about_open[:id])
+      expect(read(viewer, plain)[:id]).to eq(plain[:id])
+      expect { read(viewer, about_locked) }.to invalid
+
+      follow(viewer, locked_cast)
+
+      expect(read(viewer, about_locked)[:id]).to eq(about_locked[:id])
+    end
+
+    it "returns it to the target cast and the author account" do
+      review = write(locked_guest, locked_cast)
+
+      expect(read(locked_cast, review)[:id]).to eq(review[:id])
+      expect(read(locked_guest, review)[:id]).to eq(review[:id])
+    end
+  end
+
+  describe "the author of a review by a locked guest on an unlocked cast" do
+    let!(:review) { write(locked_guest, open_cast, rating: 4, at: now - 10) }
+    let!(:plain) { write(guest, open_cast, rating: 2, at: now - 20) }
+
+    def row_of(result, target) = result[:reviews].find { |row| row[:id] == target[:id] }
+
+    def surfaces(who, of: review)
+      [row_of(by_target(who, cast: open_cast), of), row_of(recent(who), of), read(who, of)]
+    end
+
+    def expect_masked(row)
+      expect(row.slice(:author, :author_profile_id, :author_hidden, :rating)).to eq(author: nil, author_profile_id: "", author_hidden: true, rating: 4)
+      expect(row[:events].length).to eq(1)
+      expect(row[:target].profile_id).to eq(open_cast.profile)
+    end
+
+    def expect_shown(row, author)
+      expect(row[:author].profile_id).to eq(author.profile)
+      expect(row.slice(:author_profile_id, :author_hidden)).to eq(author_profile_id: author.profile, author_hidden: false)
+    end
+
+    it "is masked for a viewer who cannot pass the guest's lock, in the cast list, recent reviews and a single review" do
+      surfaces(viewer).each { |row| expect_masked(row) }
+    end
+
+    it "is masked for a pending follower" do
+      follow(viewer, locked_guest, status: "pending")
+
+      surfaces(viewer).each { |row| expect_masked(row) }
+    end
+
+    it "is shown to a follower of the guest" do
+      follow(viewer, locked_guest)
+
+      surfaces(viewer).each { |row| expect_shown(row, locked_guest) }
+    end
+
+    it "is shown in the written list of the guest to a follower of the guest" do
+      follow(viewer, locked_guest)
+
+      expect_shown(row_of(by_author(viewer, author: locked_guest), review), locked_guest)
+    end
+
+    it "is shown to the target cast" do
+      surfaces(open_cast).each { |row| expect_shown(row, locked_guest) }
+    end
+
+    it "is shown to the author account, on another profile of the same account too" do
+      other = actor_struct.new(locked_guest.account, create_account_with_profile(account_id: locked_guest.account, username: "locked_guest_alt"))
+
+      [locked_guest, other].each do |who|
+        surfaces(who).each do |row|
+          expect_shown(row, locked_guest)
+          expect(row[:is_mine]).to be(true)
+        end
+      end
+    end
+
+    it "does not mask the author of an unlocked guest" do
+      surfaces(viewer, of: plain).each do |row|
+        expect(row[:author].profile_id).to eq(guest.profile)
+        expect(row.slice(:author_profile_id, :author_hidden)).to eq(author_profile_id: guest.profile, author_hidden: false)
+      end
+    end
+
+    describe "when the author is disabled" do
+      def disable(who) = db[:profile__profiles].where(id: who.profile).update(disabled_at: Time.now)
+
+      def expect_missing(row, author_profile_id)
+        expect(row.slice(:author, :author_profile_id, :author_hidden)).to eq(author: nil, author_profile_id: author_profile_id, author_hidden: false)
+      end
+
+      it "reports a locked author as missing, not masked, and withholds the id from a viewer who cannot pass the lock" do
+        disable(locked_guest)
+
+        surfaces(viewer).each { |row| expect_missing(row, "") }
+      end
+
+      it "reports an unlocked author as missing and withholds the id from an unrelated viewer" do
+        disable(guest)
+
+        surfaces(viewer, of: plain).each { |row| expect_missing(row, "") }
+      end
+
+      it "keeps the id for the author account and for the target cast" do
+        other = actor_struct.new(locked_guest.account, create_account_with_profile(account_id: locked_guest.account, username: "locked_guest_alt"))
+        disable(locked_guest)
+
+        [other, open_cast].each do |who|
+          surfaces(who).each { |row| expect_missing(row, locked_guest.profile) }
+        end
+      end
+    end
+  end
+end

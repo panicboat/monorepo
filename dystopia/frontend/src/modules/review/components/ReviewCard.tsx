@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
+import { HIDDEN_GUEST, MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
@@ -37,7 +37,7 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ / ゲストからキャストへ</p>
           <p className="flex min-w-0 items-center gap-1 text-sm">
-            <ProfileName profile={review.author} link className="text-sm" missing={MISSING_GUEST} />
+            <ProfileName profile={review.author} link className="text-sm" missing={review.authorHidden ? HIDDEN_GUEST : MISSING_GUEST} />
             <span className="shrink-0 text-text-secondary">· {formatTimeAgo(review.lastActivityAt)}</span>
           </p>
           {writtenAsOtherProfile && (

@@ -13,7 +13,7 @@ module Review
         limit = page_reviews.limit_for(limit)
         page_reviews.call(
           fetch: ->(after) { review_repo.list_recent(limit: limit, cursor: after) },
-          cursor: cursor, limit: limit, viewer_account_id: viewer_account_id, order: :occurred,
+          cursor: cursor, limit: limit, viewer_account_id: viewer_account_id, viewer_profile_id: viewer_profile_id, order: :occurred,
           visible: ->(page) { filter_visible_reviews.recent(viewer_profile_id: viewer_profile_id, reviews: page) }
         )
       end

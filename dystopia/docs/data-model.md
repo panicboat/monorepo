@@ -65,7 +65,7 @@ erDiagram
         uuid account_id "参照（FK なし）"
         uuid avatar_media_id "参照（FK なし）"
         uuid cover_media_id "参照（FK なし）"
-        boolean is_private "鍵マークを付けるか"
+        boolean is_private "フォローしていない人から予定とクチコミを隠すか"
         boolean follow_approval_required "フォローに承認が必要"
         varchar prefecture "主要エリア（都道府県）"
         text area "都道府県内のエリア"

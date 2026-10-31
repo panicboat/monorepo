@@ -6,6 +6,7 @@ import { LockMark } from "./lock-mark";
 export const MISSING_USER = "（無効なユーザー）";
 export const MISSING_CAST = "（無効なキャスト）";
 export const MISSING_GUEST = "（無効なゲスト）";
+export const HIDDEN_GUEST = "（非公開のゲスト）";
 
 interface ProfileNameProps {
   profile: ProfileSummaryView | null;

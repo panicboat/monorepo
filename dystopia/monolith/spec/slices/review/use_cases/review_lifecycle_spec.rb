@@ -78,9 +78,13 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       expect { read_as(third_account, third, review) }.to invalid("Review not found")
     end
 
-    it "reads a review of a locked cast for a viewer who does not follow it" do
+    it "reads a review of a locked cast only for a viewer who follows it" do
       locked_cast = create_account_with_profile(account_id: create_account(role: 2), username: "locked_cast", is_private: true)
       review = create(target: locked_cast)
+
+      expect { read_as(other_guest_account, other_guest, review) }.to invalid("Review not found")
+
+      Social::Slice["repositories.follow_repository"].follow(follower_profile_id: other_guest, followee_profile_id: locked_cast, status: "approved")
 
       expect(read_as(other_guest_account, other_guest, review)[:id]).to eq(review[:id])
     end

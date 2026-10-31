@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const toDate = req.nextUrl.searchParams.get("toDate") || "";
 
     const res = await scheduleClient.listSchedules({ profileId, fromDate, toDate }, { headers });
-    return NextResponse.json({ schedules: (res.schedules || []).map(mapScheduleToView) });
+    return NextResponse.json({ schedules: (res.schedules || []).map(mapScheduleToView), hiddenByLock: !!res.hiddenByLock });
   } catch (error: unknown) {
     return handleApiError(error, "ListSchedules");
   }

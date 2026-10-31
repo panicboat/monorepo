@@ -124,7 +124,8 @@ module Review
           **page_to_proto(result),
           summary: ::Review::V1::RatingSummary.new(
             average_rating: summary[:average_rating], rater_count: summary[:rater_count], review_count: summary[:review_count]
-          )
+          ),
+          hidden_by_lock: result[:hidden_by_lock]
         )
       end
 
@@ -137,7 +138,7 @@ module Review
             author_profile_id: message.author_profile_id, limit: message.limit, cursor: cursor_from(message.cursor)
           )
         end
-        ::Review::V1::ListReviewsByAuthorResponse.new(**page_to_proto(result))
+        ::Review::V1::ListReviewsByAuthorResponse.new(**page_to_proto(result), hidden_by_lock: result[:hidden_by_lock])
       end
 
       def list_my_reviews
@@ -209,6 +210,7 @@ module Review
           id: review[:id],
           author_profile_id: review[:author_profile_id],
           author: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(review[:author]),
+          author_hidden: review[:author_hidden],
           target_profile_id: review[:target_profile_id],
           target: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(review[:target]),
           is_mine: review[:is_mine],

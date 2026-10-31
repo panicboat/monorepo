@@ -92,6 +92,46 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     expect([mine.counts.total_count, mine.counts.unrated_count]).to eq([1, 1])
   end
 
+  it "sets hidden_by_lock on the target and author lists for a viewer who cannot pass" do
+    locked_cast = create_account_with_profile(role: 2, username: "locked_cast", is_private: true)
+    locked_guest_account = create_account(role: 1)
+    locked_guest = create_account_with_profile(account_id: locked_guest_account, username: "locked_guest", is_private: true)
+    act_as(locked_guest_account, locked_guest)
+    create_review
+    act_as(guest_account, guest)
+    by_target = ->(id) { handler_for(::Review::V1::ListReviewsByTargetRequest.new(target_profile_id: id)).list_reviews_by_target }
+    by_author = ->(id) { handler_for(::Review::V1::ListReviewsByAuthorRequest.new(author_profile_id: id)).list_reviews_by_author }
+
+    expect([by_target.call(locked_cast).hidden_by_lock, by_author.call(locked_guest).hidden_by_lock]).to eq([true, true])
+    expect(by_author.call(locked_guest).reviews).to be_empty
+    expect([by_target.call(cast).hidden_by_lock, by_target.call(cast).reviews.length]).to eq([false, 1])
+
+    Social::Slice["repositories.follow_repository"].follow(follower_profile_id: guest, followee_profile_id: locked_guest, status: "approved")
+
+    expect([by_author.call(locked_guest).hidden_by_lock, by_author.call(locked_guest).reviews.length]).to eq([false, 1])
+  end
+
+  it "keeps the id and the summary of a locked author out of the proto for a viewer who cannot pass the lock" do
+    locked_guest_account = create_account(role: 1)
+    locked_guest = create_account_with_profile(account_id: locked_guest_account, username: "locked_guest", is_private: true)
+    act_as(locked_guest_account, locked_guest)
+    created = create_review
+    act_as(guest_account, guest)
+    listed = -> { handler_for(::Review::V1::ListReviewsByTargetRequest.new(target_profile_id: cast)).list_reviews_by_target.reviews.first }
+    single = -> { handler_for(::Review::V1::GetReviewRequest.new(review_id: created.id)).get_review.review }
+
+    expect([created.author_profile_id, created.author&.username, created.author_hidden]).to eq([locked_guest, "locked_guest", false])
+    [listed.call, single.call].each do |review|
+      expect([review.author_profile_id, review.author, review.author_hidden, review.target.username]).to eq(["", nil, true, "cast_one"])
+    end
+
+    Social::Slice["repositories.follow_repository"].follow(follower_profile_id: guest, followee_profile_id: locked_guest, status: "approved")
+
+    [listed.call, single.call].each do |review|
+      expect([review.author_profile_id, review.author.username, review.author_hidden]).to eq([locked_guest, "locked_guest", false])
+    end
+  end
+
   it "adds, updates and deletes events" do
     act_as(guest_account, guest)
     id = create_review.id

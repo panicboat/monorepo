@@ -28,6 +28,7 @@ export function useCastReviews(targetProfileId: string | null | undefined) {
   return {
     reviews: uniqueReviews(pages.flatMap((p) => p.reviews || [])),
     summary: pages[0]?.summary ?? NO_SUMMARY,
+    hiddenByLock: !!pages[0]?.hiddenByLock,
     hasMore: pages.length > 0 ? !!pages[pages.length - 1].hasMore : false,
     loading: isLoading || isValidating,
     error,

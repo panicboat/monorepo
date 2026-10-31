@@ -56,7 +56,9 @@ module Discovery
 
       def candidate_ids(ids, viewer_profile_id:, following_only:)
         ids &= follow_repo.following_profile_ids(profile_id: viewer_profile_id) if following_only
-        ids - block_repo.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
+        ids -= block_repo.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
+        passable = lock_passable_profile_ids.call(viewer_profile_id: viewer_profile_id, profile_ids: ids)
+        ids.select { |id| passable.include?(id.to_s) }
       end
 
       def build_results(rows, areas, viewer_profile_id)
@@ -99,6 +101,10 @@ module Discovery
 
       def block_repo
         @block_repo ||= Social::Slice["repositories.block_repository"]
+      end
+
+      def lock_passable_profile_ids
+        @lock_passable_profile_ids ||= Social::Slice["use_cases.list_lock_passable_profile_ids"]
       end
 
       def filter_visible_posts
