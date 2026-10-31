@@ -127,11 +127,12 @@ describe("ScheduleBulkSheet", () => {
     expect(text()).toContain("選択した日：0日");
   });
 
-  it("toggles today from the chip placed before the mode chips, even while another month is shown", async () => {
+  it("toggles today from the chip on the row below the mode chips, even while another month is shown", async () => {
     await mount();
 
-    const chips = Array.from(button("予定を入れる")!.parentElement!.querySelectorAll("button")).map((b) => b.textContent);
-    expect(chips).toEqual(["今日", "予定を入れる", "予定を消す"]);
+    const modeRow = button("予定を入れる")!.parentElement!;
+    expect(Array.from(modeRow.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["予定を入れる", "予定を消す"]);
+    expect(modeRow.nextElementSibling).toBe(button("今日")!.parentElement);
     expect(button("今日")!.getAttribute("aria-pressed")).toBe("false");
 
     await click(button("次の月")!);

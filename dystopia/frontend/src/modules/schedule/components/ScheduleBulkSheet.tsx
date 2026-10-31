@@ -24,7 +24,7 @@ const announcesAfterEnd = (start: string, end: string, announceTime: string) => 
 
 const chipClass = (selected: boolean) =>
   cn(
-    "min-h-11 rounded-full border px-3 text-sm",
+    "min-h-11 rounded-full border px-4 text-sm",
     selected ? "border-accent bg-accent/15 text-text-primary" : "border-border text-text-secondary hover:text-text-primary"
   );
 
@@ -123,15 +123,17 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
         <ScheduleMonthCalendar days={days} selected={selected} plans={byDate} onToggle={toggle} />
 
         <div className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex flex-wrap gap-2">
-            <button type="button" aria-pressed={selected.has(today)} onClick={() => toggle(today)} className={chipClass(selected.has(today))}>
-              今日
-            </button>
+          <div className="flex gap-2">
             <button type="button" aria-pressed={mode === "work"} onClick={() => setMode("work")} className={chipClass(mode === "work")}>
               予定を入れる
             </button>
             <button type="button" aria-pressed={mode === "clear"} onClick={() => setMode("clear")} className={chipClass(mode === "clear")}>
               予定を消す
+            </button>
+          </div>
+          <div className="mt-3">
+            <button type="button" aria-pressed={selected.has(today)} onClick={() => toggle(today)} className={chipClass(selected.has(today))}>
+              今日
             </button>
           </div>
           {mode === "work" && (
