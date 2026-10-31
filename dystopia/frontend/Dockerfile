@@ -1,7 +1,8 @@
-FROM node:24.22.2-alpine AS base
+FROM node:26.13.0-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+# Install corepack from npm because Node.js stopped bundling it in v25.
+RUN npm install -g corepack@0.36.0 && corepack enable
 
 FROM base AS builder
 # Install glibc compatibility because Alpine-based Node tooling requires it for native binaries.
