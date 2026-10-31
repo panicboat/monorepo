@@ -15,9 +15,7 @@ module Social
 
         author_profile_ids = posts.map(&:author_profile_id).compact.uniq
 
-        profile_by_author = author_profile_ids.each_with_object({}) do |aid, h|
-          h[aid] = get_profile.call(profile_id: aid)
-        end
+        visible_author_ids = list_visible_profiles.call(profile_ids: author_profile_ids).map { |profile| profile.id.to_s }.to_set
 
         if viewer_profile_id
           blocked_set = block_repo.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id).map(&:to_s).to_set
@@ -32,7 +30,7 @@ module Social
           author_profile_id = post.author_profile_id
           next true if viewer_profile_id && author_profile_id == viewer_profile_id
           next false unless live?(post, now)
-          next false unless profile_by_author[author_profile_id]
+          next false unless visible_author_ids.include?(author_profile_id.to_s)
           next false if blocked_set.include?(author_profile_id.to_s)
           next true unless follow_required?(post)
           next false unless viewer_profile_id
@@ -53,8 +51,8 @@ module Social
         post.respond_to?(:visibility) && post.visibility == "private"
       end
 
-      def get_profile
-        @get_profile ||= Profile::Slice["use_cases.get_profile"]
+      def list_visible_profiles
+        @list_visible_profiles ||= Profile::Slice["use_cases.list_visible_profiles"]
       end
     end
   end
