@@ -47,13 +47,13 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-async function mount() {
+async function mount(todayOnly = false) {
   onClose = vi.fn<() => void>();
   onSaved = vi.fn<() => void>();
   const container = document.createElement("div");
   document.body.appendChild(container);
   await act(async () => {
-    createRoot(container).render(createElement(ScheduleBulkSheet, { profileId: "p-1", open: true, onClose, onSaved }));
+    createRoot(container).render(createElement(ScheduleBulkSheet, { profileId: "p-1", open: true, todayOnly, onClose, onSaved }));
   });
 }
 
@@ -96,6 +96,18 @@ describe("ScheduleBulkSheet", () => {
     expect(day("2026-10-12").textContent).toContain("未設定");
     expect(day("2026-10-13").textContent).toContain("19:00 〜 01:00");
     expect(day("2026-10-25")).not.toBeNull();
+  });
+
+  it("opens with only today selected and without the bulk controls for a single day", async () => {
+    await mount(true);
+
+    const dayRows = Array.from(document.querySelectorAll("button[data-day]"));
+    expect(dayRows.map((b) => b.getAttribute("data-day"))).toEqual(["2026-10-12"]);
+    expect(dayRows[0].getAttribute("aria-pressed")).toBe("true");
+    expect(document.body.textContent).toContain("今日の予定を入れる");
+    expect(document.body.textContent).toContain("選択した日：1日");
+    expect(document.body.textContent).not.toContain("2週間まとめて編集");
+    expect(document.body.textContent).not.toContain("平日を選択");
   });
 
   it("lists the days one per row, marks a selected day and keeps the apply bar at the bottom", async () => {

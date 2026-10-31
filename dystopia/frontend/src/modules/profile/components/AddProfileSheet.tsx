@@ -19,7 +19,7 @@ export function AddProfileSheet({ open, onClose, onSubmit }: AddProfileSheetProp
       }}
       title="プロフィールを追加"
     >
-      <p className="mb-4 text-sm text-text-secondary">別の活動名で使うプロフィールを追加できます。</p>
+      <p className="mb-4 text-sm text-text-secondary">別の名前で使うプロフィールを追加できます。</p>
       <ProfileNameForm submitLabel="追加して切り替える" onCancel={onClose} onSubmit={onSubmit} />
     </SideSheet>
   );

@@ -5,14 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({ range: [] as string[], calls: [] as string[][], sheetOpen: null as null | boolean, hiddenByLock: false }));
+const mocks = vi.hoisted(() => ({ range: [] as string[], calls: [] as string[][], hasPlan: true, sheetTodayOnly: null as null | boolean, sheetOpen: null as null | boolean, hiddenByLock: false }));
 
 vi.mock("@/modules/schedule/hooks", () => ({
   useSchedules: (_id: string, fromDate: string, toDate: string) => {
     mocks.range = [fromDate, toDate];
     mocks.calls.push([fromDate, toDate]);
     return {
-      schedules: [{ profileId: "p-1", workDate: "2026-10-13", startTime: "20:00", endTime: "02:00" }],
+      schedules: mocks.hasPlan ? [{ profileId: "p-1", workDate: "2026-10-13", startTime: "20:00", endTime: "02:00" }] : [],
       hiddenByLock: mocks.hiddenByLock,
       loading: false,
       error: undefined,
@@ -21,8 +21,9 @@ vi.mock("@/modules/schedule/hooks", () => ({
   },
 }));
 vi.mock("./ScheduleBulkSheet", () => ({
-  ScheduleBulkSheet: ({ open }: { open: boolean }) => {
+  ScheduleBulkSheet: ({ open, todayOnly }: { open: boolean; todayOnly: boolean }) => {
     mocks.sheetOpen = open;
+    mocks.sheetTodayOnly = todayOnly;
     return <div>bulk-sheet:{String(open)}</div>;
   },
 }));
@@ -33,6 +34,8 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-12T09:00:00"));
   mocks.sheetOpen = null;
+  mocks.sheetTodayOnly = null;
+  mocks.hasPlan = true;
   mocks.calls = [];
   mocks.hiddenByLock = false;
 });
@@ -50,8 +53,8 @@ async function mount(isOwner: boolean) {
 }
 
 describe("ScheduleTab", () => {
-  it("shows two weeks from today with the planned hours in a card and unplanned days as plain rows", async () => {
-    const container = await mount(false);
+  it("shows the owner two weeks from today with the planned hours in a card and unplanned days as plain rows", async () => {
+    const container = await mount(true);
 
     expect(mocks.range).toEqual(["2026-10-12", "2026-10-25"]);
     expect(container.querySelectorAll("li")).toHaveLength(14);
@@ -65,7 +68,37 @@ describe("ScheduleTab", () => {
     expect(unplanned.querySelector("p")).toBeNull();
     expect(container.textContent).toContain("予定は予約可能枠を保証するものではありません。");
     expect(container.textContent).not.toContain("予定あり");
-    expect(container.textContent).not.toContain("まとめて編集");
+  });
+
+  it("shows other viewers only the days with a plan and no edit buttons", async () => {
+    const container = await mount(false);
+
+    expect(mocks.range).toEqual(["2026-10-12", "2026-10-25"]);
+    expect(container.querySelectorAll("li")).toHaveLength(1);
+    expect(container.textContent).toContain("20:00 〜 02:00");
+    expect(container.textContent).not.toContain("未設定");
+    expect(container.querySelectorAll("button")).toHaveLength(0);
+    expect(container.textContent).toContain("予定は予約可能枠を保証するものではありません。");
+  });
+
+  it("tells other viewers there is no plan when none falls in the two weeks", async () => {
+    mocks.hasPlan = false;
+    const container = await mount(false);
+
+    expect(container.querySelectorAll("li")).toHaveLength(0);
+    expect(container.textContent).toContain("予定はありません");
+    expect(container.textContent).not.toContain("予定は予約可能枠を保証するものではありません。");
+  });
+
+  it("lets the owner open the sheet for today only", async () => {
+    const container = await mount(true);
+
+    await act(async () => {
+      (Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "今日の予定を入れる") as HTMLButtonElement).click();
+    });
+
+    expect(mocks.sheetOpen).toBe(true);
+    expect(mocks.sheetTodayOnly).toBe(true);
   });
 
   it("has no もっと見る button", async () => {
@@ -94,5 +127,6 @@ describe("ScheduleTab", () => {
     });
 
     expect(mocks.sheetOpen).toBe(true);
+    expect(mocks.sheetTodayOnly).toBe(false);
   });
 });
