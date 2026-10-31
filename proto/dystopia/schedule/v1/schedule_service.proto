@@ -25,6 +25,7 @@ message ListSchedulesRequest {
 
 message ListSchedulesResponse {
   repeated Schedule schedules = 1;
+  bool hidden_by_lock = 2;
 }
 
 message SaveScheduleRequest {

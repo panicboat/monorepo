@@ -63,6 +63,7 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
     other_day = cast
     [private_cast, guest, disabled].each { |profile| schedule(profile) }
     schedule(other_day, date: "2026-10-23")
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_cast, status: "approved")
 
     expect(profile_ids(search)).to eq([private_cast])
   end
@@ -76,6 +77,40 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
     block_repo.block(blocker_profile_id: blocking_viewer, blocked_profile_id: viewer)
 
     expect(profile_ids(search)).to eq([visible])
+  end
+
+  describe "lock" do
+    let!(:open_cast) { cast.tap { |profile| schedule(profile, start_time: "20:00") } }
+    let!(:locked) { cast(is_private: true).tap { |profile| schedule(profile, start_time: "21:00") } }
+
+    it "excludes a locked cast from a viewer who does not follow" do
+      expect(profile_ids(search)).to eq([open_cast])
+    end
+
+    it "includes a locked cast for an approved follower and the cast itself" do
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: locked, status: "approved")
+
+      expect(profile_ids(search)).to eq([open_cast, locked])
+      expect(profile_ids(search(viewer_profile_id: locked))).to eq([open_cast, locked])
+    end
+
+    it "excludes a locked cast from a pending follower" do
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: locked, status: "pending")
+
+      expect(profile_ids(search)).to eq([open_cast])
+    end
+
+    it "keeps the page full and has_more correct when locked casts are excluded" do
+      last = cast.tap { |profile| schedule(profile, start_time: "22:00") }
+
+      first = search(limit: 1)
+      second = search(limit: 1, cursor: first[:next_cursor])
+
+      expect(profile_ids(first)).to eq([open_cast])
+      expect(first[:has_more]).to be(true)
+      expect(profile_ids(second)).to eq([last])
+      expect(second[:has_more]).to be(false)
+    end
   end
 
   it "limits following_only to approved follows" do
@@ -177,9 +212,10 @@ RSpec.describe Discovery::UseCases::SearchSchedules, type: :database do
       expect(search(viewer_profile_id: follower)[:results].map(&:note)).to eq(["followers only"])
     end
 
-    it "shows a locked cast's public announcement to every viewer" do
+    it "shows a locked cast's public announcement to an approved follower" do
       suzu = cast(is_private: true)
       announce(suzu, schedule(suzu), content: "locked cast")
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: suzu, status: "approved")
 
       expect(search[:results].map(&:note)).to eq(["locked cast"])
     end

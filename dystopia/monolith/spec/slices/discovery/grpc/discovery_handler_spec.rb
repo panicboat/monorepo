@@ -200,14 +200,15 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
       expect(search_schedules(industry: "ソープ").results).to be_empty
     end
 
-    it "shows locked casts, hides the ones the acting profile is blocked with, and limits following_only to approved follows" do
+    it "shows a locked cast only to an approved follower, hides the ones the acting profile is blocked with, and limits following_only to approved follows" do
       schedule(public_cast)
       schedule(locked_cast)
       act_as(viewer)
 
-      expect(search_schedules.results.map { |r| r.profile.profile_id }).to contain_exactly(public_cast, locked_cast)
+      expect(search_schedules.results.map { |r| r.profile.profile_id }).to eq([public_cast])
 
       follow_repo.follow(follower_profile_id: viewer, followee_profile_id: locked_cast, status: "approved")
+      expect(search_schedules.results.map { |r| r.profile.profile_id }).to contain_exactly(public_cast, locked_cast)
       expect(search_schedules(following_only: true).results.map { |r| r.profile.profile_id }).to eq([locked_cast])
 
       block_repo.block(blocker_profile_id: public_cast, blocked_profile_id: viewer)
