@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "set"
+require "concerns/cursor_pagination"
 
 module Social
   module UseCases
@@ -8,7 +9,8 @@ module Social
       include Social::Deps[follow_repo: "repositories.follow_repository"]
 
       def call(viewer_profile_id:, profile_ids:)
-        ids = profile_ids.compact.map { |id| id.to_s.downcase }.uniq
+        # The locked lookup drops malformed ids, so keeping them here would read a locked profile as unlocked.
+        ids = profile_ids.compact.map { |id| id.to_s.downcase }.uniq.grep(::Concerns::CursorPagination::UUID_FORMAT)
         locked = list_locked_profile_ids.call(profile_ids: ids).map(&:to_s)
         passable = (ids - locked).to_set
         return passable if viewer_profile_id.nil? || locked.empty?

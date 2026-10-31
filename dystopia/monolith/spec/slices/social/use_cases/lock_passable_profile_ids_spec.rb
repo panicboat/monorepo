@@ -64,6 +64,13 @@ RSpec.describe "lock judgment in social", type: :database do
     expect(uc.call(viewer_profile_id: target.upcase, profile_ids: [target.upcase])).to eq(Set[target])
   end
 
+  it "does not pass an id that is not a canonical UUID, a locked profile's id without hyphens included" do
+    open = create_account_with_profile(username: "open", is_private: false)
+
+    expect(uc.call(viewer_profile_id: viewer, profile_ids: [target.delete("-")])).to eq(Set.new)
+    expect(uc.call(viewer_profile_id: nil, profile_ids: [target.delete("-"), "not-a-uuid", open])).to eq(Set[open])
+  end
+
   it "reflects the lock turned off without any data change" do
     expect(pass?(viewer, target)).to be false
 
