@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.0](https://github.com/panicboat/monorepo/compare/monolith-v0.9.0...monolith-v0.10.0) (2026-10-31)
+
+
+### Features
+
+* **dystopia:** hide schedules and reviews of a locked profile from viewers who do not follow ([#1870](https://github.com/panicboat/monorepo/issues/1870)) ([9b1dbd8](https://github.com/panicboat/monorepo/commit/9b1dbd8757eec82e5b4de0aee20e7b60a320aacb))
+* **dystopia:** remove the replies tab and post editing, and add deleting a post ([#1873](https://github.com/panicboat/monorepo/issues/1873)) ([48090b4](https://github.com/panicboat/monorepo/commit/48090b4281f3636d41cb6369bca56dfbb953d70f))
+
+
+### Code Refactoring
+
+* **dystopia/monolith:** create posts and comments in one transaction ([#1880](https://github.com/panicboat/monorepo/issues/1880)) ([05894f1](https://github.com/panicboat/monorepo/commit/05894f178925786a69b45f0daf0437c9c13a7e0c))
+* **dystopia/monolith:** read list profiles in one query ([#1879](https://github.com/panicboat/monorepo/issues/1879)) ([d24cdbb](https://github.com/panicboat/monorepo/commit/d24cdbbc879cae862e783286598044bd8c1c07a9))
+
+
+### Miscellaneous Chores
+
+* **dystopia/monolith:** update dependency grpc-tools to v1.85.0 ([#1854](https://github.com/panicboat/monorepo/issues/1854)) ([d5dba8b](https://github.com/panicboat/monorepo/commit/d5dba8bed4d60e1b9dd095c9889c7d1c9909d78b))
+
 ## [0.9.0](https://github.com/panicboat/monorepo/compare/monolith-v0.8.0...monolith-v0.9.0) (2026-10-29)
 
 
