@@ -91,9 +91,13 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Close the detail first so two SideSheets are never open at once.
+    if (!usePostSheetStore.getState().open) {
+      openQuote(post);
+      return;
+    }
+    // Open after the detail's async history.back() lands: pushing first would let that back dismiss the composer.
+    window.addEventListener("popstate", () => openQuote(post), { once: true });
     closeSheet();
-    openQuote(post);
   };
 
   const handleBookmarkClick = (e: React.MouseEvent) => {

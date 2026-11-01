@@ -102,6 +102,12 @@ describe("PostCard", () => {
     expect(detailLink).not.toContain("<video");
   });
 
+  it("wraps the reactions onto another row instead of overflowing a narrow screen", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} reactions={<button type="button">いいね</button>} />);
+
+    expect(html).toMatch(/<div class="[^"]*\bflex-wrap\b[^"]*"><button[^>]*>いいね<\/button><\/div>/);
+  });
+
   it("renders no video element for a post without videos", () => {
     const html = renderToStaticMarkup(<PostCard {...baseProps} images={oneImage} />);
 

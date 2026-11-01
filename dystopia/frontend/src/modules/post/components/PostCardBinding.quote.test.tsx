@@ -99,14 +99,32 @@ describe("PostCardBinding quote icon", () => {
     expect(count.className).toContain("min-w-11");
   });
 
-  it("opens the quote composer from the icon and closes the detail sheet", async () => {
+  it("opens the quote composer from the icon", async () => {
+    const container = await mount();
+
+    await click(quoteButton(container));
+
+    expect(useQuoteComposeStore.getState()).toMatchObject({ post, open: true });
+  });
+
+  it("closes the open detail sheet and opens the composer once its history entry is gone", async () => {
     usePostSheetStore.setState({ postId: "post-1", session: 1, open: true });
     const container = await mount({ inDetail: true });
 
     await click(quoteButton(container));
 
-    expect(useQuoteComposeStore.getState()).toMatchObject({ post, open: true });
     expect(usePostSheetStore.getState().open).toBe(false);
+    expect(useQuoteComposeStore.getState().open).toBe(false);
+
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(useQuoteComposeStore.getState()).toMatchObject({ post, open: true });
+
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(useQuoteComposeStore.getState().session).toBe(1);
   });
 
   it("links the count to the quotes tab of the post", async () => {
