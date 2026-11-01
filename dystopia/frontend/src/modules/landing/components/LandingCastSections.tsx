@@ -238,7 +238,7 @@ export function CastStories() {
               ちゃんと見つかる。
             </h3>
             <p>日々の投稿からあなたを知った人が、プロフィールで予定を確認できる。会える日も、会えない日も、つながりは続きます。</p>
-            <p className="fine">※ 予定の表示例です。空き枠確認や自動通知を表すものではありません。お店を通さない約束や取引には使えません。</p>
+            <p className="fine">※ 予定の表示例です。空き枠確認や自動通知を表すものではありません。</p>
           </div>
         </article>
         <article className="story-row">
