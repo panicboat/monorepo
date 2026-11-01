@@ -65,7 +65,7 @@ function DetailProbe() {
 
 const flush = () => act(async () => { await new Promise((r) => setTimeout(r, 20)); });
 
-const feedCardCount = () => container.querySelector('a[aria-label^="引用 "]')?.textContent;
+const feedCardCount = () => container.querySelector('button[aria-label="引用する"]')?.textContent;
 
 beforeEach(async () => {
   usePostQuoteCountStore.setState({ counts: {} });

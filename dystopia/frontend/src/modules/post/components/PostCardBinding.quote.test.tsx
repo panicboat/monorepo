@@ -56,7 +56,7 @@ const quoted: QuotedPostView = {
 const stopNavigation = (event: Event) => event.preventDefault();
 
 beforeEach(() => {
-  usePostSheetStore.setState({ postId: null, session: 0, open: false, tab: "comments" });
+  usePostSheetStore.setState({ postId: null, session: 0, open: false });
   useQuoteComposeStore.setState({ post: null, session: 0, open: false });
   usePostQuoteCountStore.setState({ counts: {} });
   useAuthStore.setState({ activeProfileId: null });
@@ -77,9 +77,9 @@ async function mount(props: { inDetail?: boolean; post?: PostView; hideQuoteFram
   return container;
 }
 
-async function click(element: Element, init: MouseEventInit = {}) {
+async function click(element: Element) {
   await act(async () => {
-    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ...init }));
+    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
   });
 }
 
@@ -88,26 +88,24 @@ const reactionLabels = (container: Element) =>
 
 const quoteButton = (container: Element) => container.querySelector<HTMLButtonElement>('button[aria-label="引用する"]')!;
 
-describe("PostCardBinding quote icon", () => {
-  it("shows the Repeat2 icon and the quote count between the like and the comment, with no text label", async () => {
+describe("PostCardBinding quote button", () => {
+  it("shows the Repeat2 icon and the quote count in one button between the like and the comment", async () => {
     const container = await mount();
     const button = quoteButton(container);
-    const count = container.querySelector('a[aria-label="引用 2 件"]')!;
 
-    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント", "ブックマーク"]);
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "コメント", "ブックマーク"]);
     expect(button.querySelector("svg.lucide-repeat-2")).not.toBeNull();
-    expect(button.textContent).toBe("");
-    expect(count.textContent).toBe("2");
+    expect(button.textContent).toBe("2");
     expect(button.className).toContain("min-h-11");
-    expect(button.className).toContain("w-11");
-    expect(count.className).toContain("min-h-11");
-    expect(count.className).toContain("min-w-11");
+    expect(button.className).toContain("min-w-11");
+    expect(button.className).toContain("justify-start");
   });
 
   it("keeps the same order inside the detail", async () => {
     const container = await mount({ inDetail: true });
 
-    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント 3 件", "ブックマーク"]);
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "コメント 3 件", "ブックマーク"]);
+    expect(quoteButton(container).textContent).toBe("2");
   });
 
   it("puts the menu in the header on an own post, leaving the row the same as on any other post", async () => {
@@ -115,31 +113,8 @@ describe("PostCardBinding quote icon", () => {
 
     const container = await mount();
 
-    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント", "ブックマーク"]);
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "コメント", "ブックマーク"]);
     expect(container.querySelector('button[aria-label="その他の操作"]')).not.toBeNull();
-  });
-
-  it("puts the icon and its count in one group with no gap, the count against the icon", async () => {
-    const container = await mount();
-    const button = quoteButton(container);
-    const count = container.querySelector('a[aria-label="引用 2 件"]')!;
-    const group = button.parentElement!;
-
-    expect(count.parentElement).toBe(group);
-    expect(group.children).toHaveLength(2);
-    expect(group.className).toContain("flex");
-    expect(group.className).not.toMatch(/\bgap-/);
-    expect(count.className).toContain("justify-start");
-  });
-
-  it("keeps the count against the icon inside the detail too", async () => {
-    const container = await mount({ inDetail: true });
-    const count = container.querySelector('span[aria-label="引用 2 件"]')!;
-
-    expect(count.parentElement).toBe(quoteButton(container).parentElement);
-    expect(count.className).toContain("justify-start");
-    expect(count.className).toContain("min-h-11");
-    expect(count.className).toContain("min-w-11");
   });
 
   it("counts only the bookmark icon's width in the row, keeping its target at 44px", async () => {
@@ -157,8 +132,7 @@ describe("PostCardBinding quote icon", () => {
 
     const container = await mount();
 
-    expect(container.querySelector('a[aria-label="引用 7 件"]')?.textContent).toBe("7");
-    expect(container.querySelector('a[aria-label="引用 2 件"]')).toBeNull();
+    expect(quoteButton(container).textContent).toBe("7");
   });
 
   it("shows the quote count store's value inside the detail", async () => {
@@ -166,15 +140,24 @@ describe("PostCardBinding quote icon", () => {
 
     const container = await mount({ inDetail: true });
 
-    expect(container.querySelector('span[aria-label="引用 7 件"]')?.textContent).toBe("7");
+    expect(quoteButton(container).textContent).toBe("7");
   });
 
   it("opens the quote composer from the icon", async () => {
     const container = await mount();
 
-    await click(quoteButton(container));
+    await click(quoteButton(container).querySelector("svg")!);
 
     expect(useQuoteComposeStore.getState()).toMatchObject({ post, open: true });
+  });
+
+  it("opens the quote composer from the count", async () => {
+    const container = await mount();
+
+    await click(quoteButton(container).querySelector("span")!);
+
+    expect(useQuoteComposeStore.getState()).toMatchObject({ post, open: true });
+    expect(usePostSheetStore.getState().open).toBe(false);
   });
 
   it("closes the open detail sheet and opens the composer once its history entry is gone", async () => {
@@ -197,60 +180,31 @@ describe("PostCardBinding quote icon", () => {
     expect(useQuoteComposeStore.getState().session).toBe(1);
   });
 
-  it("links the count to the quotes tab of the post", async () => {
-    const container = await mount();
-
-    expect(container.querySelector('a[aria-label="引用 2 件"]')?.getAttribute("href")).toBe("/posts/post-1?tab=quotes");
-  });
-
-  it("opens the sheet on the quotes tab when the count is clicked", async () => {
-    const container = await mount();
-
-    await click(container.querySelector('a[aria-label="引用 2 件"]')!);
-
-    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", tab: "quotes", open: true });
-  });
-
-  it("leaves a modified click on the count to the link", async () => {
-    const container = await mount();
-
-    await click(container.querySelector('a[aria-label="引用 2 件"]')!, { metaKey: true });
-
-    expect(usePostSheetStore.getState().open).toBe(false);
-  });
-
-  it("opens the sheet on the comments tab from the comment icon", async () => {
+  it("opens the sheet from the comment icon", async () => {
     const container = await mount();
 
     await click(container.querySelector('a[aria-label="コメント"]')!);
 
-    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", tab: "comments", open: true });
-  });
-
-  it("shows the count as text inside the detail", async () => {
-    const container = await mount({ inDetail: true });
-
-    expect(container.querySelector('a[aria-label="引用 2 件"]')).toBeNull();
-    expect(container.querySelector('span[aria-label="引用 2 件"]')?.textContent).toBe("2");
+    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: true });
   });
 
   it.each([
     ["followers-only", { visibility: "private" as const }],
     ["scheduled", { publishedAt: new Date(Date.now() + 60 * 60 * 1000).toISOString() }],
     ["expired", { expiresAt: new Date(Date.now() - 60 * 1000).toISOString() }],
-  ])("disables the icon but keeps the count pressable on a %s post", async (_name, overrides) => {
+  ])("disables the icon and the count together on a %s post", async (_name, overrides) => {
     const container = await mount({ post: { ...post, ...overrides } });
 
     expect(quoteButton(container).disabled).toBe(true);
     expect(quoteButton(container).className).toContain("disabled:opacity-50");
-    expect(container.querySelector('a[aria-label="引用 2 件"]')?.getAttribute("href")).toBe("/posts/post-1?tab=quotes");
+    expect(quoteButton(container).textContent).toBe("2");
 
     await click(quoteButton(container));
 
     expect(useQuoteComposeStore.getState().open).toBe(false);
   });
 
-  it("keeps the icon pressable on a public post that is live", async () => {
+  it("keeps the button pressable on a public post that is live", async () => {
     const container = await mount();
 
     expect(quoteButton(container).disabled).toBe(false);

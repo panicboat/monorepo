@@ -32,12 +32,10 @@ vi.mock("next/navigation", () => ({
   },
 }));
 vi.mock("./PostDetailContent", () => ({
-  PostDetailContent: ({ postId, initialTab }: { postId: string; initialTab?: string }) => (
+  PostDetailContent: ({ postId }: { postId: string }) => (
     <div>
       detail:{postId}
-      tab:{initialTab}
       <a href="/u/yuna">author</a>
-      <a href="/posts/post-2?tab=quotes">quote count</a>
       <a href="/">here</a>
       <a href="/?q=tag">query</a>
       <a href="https://example.com/x">external</a>
@@ -50,7 +48,7 @@ const { PostDetailSheet } = await import("./PostDetailSheet");
 const preventNavigation = (e: Event) => e.preventDefault();
 
 beforeEach(() => {
-  usePostSheetStore.setState({ postId: null, session: 0, open: false, tab: "comments" });
+  usePostSheetStore.setState({ postId: null, session: 0, open: false });
   router.replace.mockClear();
   router.push.mockClear();
   search.value = "";
@@ -92,16 +90,6 @@ describe("PostDetailSheet", () => {
     expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: false });
   });
 
-  it("opens the comments tab by default and the quotes tab when asked", async () => {
-    await mount();
-
-    await act(async () => usePostSheetStore.getState().openPost("post-1"));
-    expect(document.body.textContent).toContain("tab:comments");
-
-    await act(async () => usePostSheetStore.getState().openPost("post-1", "quotes"));
-    expect(document.body.textContent).toContain("tab:quotes");
-  });
-
   describe("links inside the sheet", () => {
     async function clickLink(text: string, init: MouseEventInit = {}) {
       await mount();
@@ -118,13 +106,6 @@ describe("PostDetailSheet", () => {
       expect(router.replace).toHaveBeenCalledWith("/u/yuna");
       expect(router.push).not.toHaveBeenCalled();
       expect(usePostSheetStore.getState().open).toBe(true);
-    });
-
-    it("sends a quote count link to the quotes tab of that post", async () => {
-      await clickLink("quote count");
-
-      expect(router.replace).toHaveBeenCalledWith("/posts/post-2?tab=quotes");
-      expect(router.push).not.toHaveBeenCalled();
     });
 
     it("only closes the sheet when the link points at the current URL", async () => {

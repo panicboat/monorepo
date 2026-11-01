@@ -5,12 +5,13 @@ import { Tabs } from "@/components/ui/tab";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
 import { usePostDeletionStore } from "@/stores/postDeletionStore";
 import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
-import type { PostDetailTab } from "@/stores/postSheetStore";
 import { usePost } from "../hooks/usePost";
 import { CommentComposer } from "./CommentComposer";
 import { CommentList } from "./CommentList";
 import { PostCardBinding } from "./PostCardBinding";
 import { QuoteList } from "./QuoteList";
+
+type PostDetailTab = "comments" | "quotes";
 
 export function PostDetailContent({ postId, initialTab = "comments" }: { postId: string; initialTab?: PostDetailTab }) {
   const { post, loading, error } = usePost(postId || null);
