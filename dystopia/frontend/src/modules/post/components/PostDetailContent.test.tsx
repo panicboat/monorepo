@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, createElement } from "react";
+import { act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -20,7 +20,17 @@ vi.mock("./PostCardBinding", () => ({
     return <div>post-card</div>;
   },
 }));
-vi.mock("./CommentComposer", () => ({ CommentComposer: ({ postId }: { postId: string }) => <div>composer:{postId}</div> }));
+vi.mock("./CommentComposer", () => ({
+  CommentComposer: ({ postId }: { postId: string }) => {
+    const [draft, setDraft] = useState("");
+    return (
+      <div>
+        composer:{postId}
+        <textarea value={draft} onChange={(e) => setDraft(e.target.value)} />
+      </div>
+    );
+  },
+}));
 vi.mock("./CommentList", () => ({ CommentList: ({ postId }: { postId: string }) => <div>comments:{postId}</div> }));
 vi.mock("./QuoteList", () => ({ QuoteList: ({ postId }: { postId: string }) => <div>quotes:{postId}</div> }));
 
@@ -98,23 +108,40 @@ describe("PostDetailContent", () => {
     expect(container.textContent).toContain("quotes:post-1");
   });
 
-  it("shows the composer and comments only in the comments tab", async () => {
+  it("shows the composer and comments in the comments tab and the quotes in the quotes tab", async () => {
     mocks.usePost.mockReturnValue({ post, loading: false, error: undefined });
 
     const container = await mount();
+    const comments = () => container.querySelector("[hidden]");
+    expect(comments()).toBeNull();
     expect(container.textContent).toContain("composer:post-1");
     expect(container.textContent).toContain("comments:post-1");
     expect(container.textContent).not.toContain("quotes:post-1");
 
     await act(async () => tabButton(container, "引用 3").click());
-    expect(container.textContent).not.toContain("composer:post-1");
-    expect(container.textContent).not.toContain("comments:post-1");
+    expect(comments()?.textContent).toContain("composer:post-1");
+    expect(comments()?.textContent).toContain("comments:post-1");
+    expect(comments()?.textContent).not.toContain("quotes:post-1");
     expect(container.textContent).toContain("quotes:post-1");
 
     await act(async () => tabButton(container, "コメント 2").click());
-    expect(container.textContent).toContain("composer:post-1");
-    expect(container.textContent).toContain("comments:post-1");
+    expect(comments()).toBeNull();
     expect(container.textContent).not.toContain("quotes:post-1");
+  });
+
+  it("keeps a comment draft across a switch to the quotes tab and back", async () => {
+    mocks.usePost.mockReturnValue({ post, loading: false, error: undefined });
+    const container = await mount();
+    const textarea = () => container.querySelector("textarea") as HTMLTextAreaElement;
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(textarea(), "書きかけのコメント");
+      textarea().dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => tabButton(container, "引用 3").click());
+    await act(async () => tabButton(container, "コメント 2").click());
+
+    expect(textarea().value).toBe("書きかけのコメント");
   });
 
   it("says it is loading and that a missing post was not found", () => {

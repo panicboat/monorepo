@@ -41,14 +41,11 @@ export function PostDetailContent({ postId, initialTab = "comments" }: { postId:
           value={tab}
           onValueChange={(id) => setTab(id === "quotes" ? "quotes" : "comments")}
         />
-        {tab === "comments" ? (
-          <>
-            <CommentComposer postId={post.id} />
-            <CommentList postId={post.id} />
-          </>
-        ) : (
-          <QuoteList postId={post.id} />
-        )}
+        <div hidden={tab !== "comments"}>
+          <CommentComposer postId={post.id} />
+          <CommentList postId={post.id} />
+        </div>
+        {tab === "quotes" && <QuoteList postId={post.id} />}
       </section>
     </>
   );
