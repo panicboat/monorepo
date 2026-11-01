@@ -113,7 +113,7 @@ export function CastHeroArt() {
             <div className="float-data">フォロワーと投稿を、自分に。</div>
           </div>
         </div>
-        <span className="smallchip">見せたい顔を切り替えられる</span>
+        <span className="smallchip">自分自身を発信できる</span>
       </div>
     </div>
   );
@@ -145,7 +145,7 @@ export function CastValues() {
           <article className="value" data-num="01">
             <div aria-hidden="true" className="value-icon">✦</div>
             <h3>主役は、お店ではなくあなた。</h3>
-            <p>お店が変わっても、働き方が変わっても、自分の名前で発信できる。見せたい顔を使い分けながら、あなた自身のつながりを育てられる場所に。</p>
+            <p>お店が変わっても、働き方が変わっても、あなた自身のつながりを育てていける場所に。</p>
           </article>
           <article className="value" data-num="02">
             <div aria-hidden="true" className="value-icon">☾</div>
@@ -176,7 +176,7 @@ export function CastStories() {
               あなたのペースで。
             </h2>
           </div>
-          <p>SNSとして出会いを育てながら、夜の仕事に必要なことも、ひとつの場所で。</p>
+          <p>夜の仕事に必要なことも、ひとつの場所で。</p>
         </div>
         <article className="story-row">
           <div className="story-visual">
@@ -196,7 +196,7 @@ export function CastStories() {
                   <p>@mio_24 · プロフィールB</p>
                 </div>
               </div>
-              <div className="identity-meta">ひとつのログインで見せたい顔を切り替える</div>
+              <div className="identity-meta">ひとつのログインでプロフィールを切り替える</div>
             </div>
           </div>
           <div className="story-copy">
@@ -206,7 +206,7 @@ export function CastStories() {
               <br />
               名前を持てる。
             </h3>
-            <p>お店や見せたい顔ごとに、プロフィールを使い分ける。誰かの看板ではなく、あなた自身の名前で発信できます。</p>
+            <p>プロフィールを使い分ける。誰かの看板ではなく、あなた自身を発信できます。</p>
             <p className="fine">※ プロフィール同士の関連は画面上で表示しない設計です。同一人物と推測されないことを保証するものではありません。</p>
           </div>
         </article>
@@ -274,7 +274,7 @@ export function CastStories() {
               初めてにしない。
             </h3>
             <p>接客したゲストについての経験を記録する「カルテ」。自分のためのメモから、キャスト同士で支え合う仕組みへ。安心を、個人の努力だけに任せません。</p>
-            <p className="fine">※ 画面はコンセプトイメージ。共有範囲・訂正手続きなどは公開前に整備する予定です。</p>
+            <p className="fine">※ 画面はコンセプトイメージです。</p>
           </div>
         </article>
       </div>
