@@ -50,7 +50,7 @@ describe("ChatPage", () => {
     const html = renderToStaticMarkup(<ChatPage />);
 
     expect(html).toMatch(
-      /<\/h1>.*<p role="note"[^>]*>当DMでの直接の金銭交渉・店舗を介さない直接取引（裏引き）は固く禁じます。違反が確認された場合、アカウントを凍結することがあります。<\/p><\/header>/
+      /<\/h1>.*<p role="note"[^>]*>当DMでの直接の金銭交渉・店舗を介さない直接取引（裏引き）は固く禁じます。<\/p><\/header>/
     );
   });
 
