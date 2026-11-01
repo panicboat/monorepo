@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: pennyworth-slack
-          image: ghcr.io/panicboat/monorepo/pennyworth:v1.2.2 # x-release-please-version
+          image: ghcr.io/panicboat/monorepo/pennyworth:v1.2.3 # x-release-please-version
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -18,4 +18,4 @@ spec:
     spec:
       containers:
         - name: pennyworth-alertmanager
-          image: ghcr.io/panicboat/monorepo/pennyworth:v1.2.2 # x-release-please-version
+          image: ghcr.io/panicboat/monorepo/pennyworth:v1.2.3 # x-release-please-version
