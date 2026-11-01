@@ -21,6 +21,10 @@ describe("resolveNotificationOpen", () => {
     });
   });
 
+  it("keeps the query of the quotes tab in the destination", () => {
+    expect(resolveNotificationOpen({ ...base, to: "/posts/1?tab=quotes" }).destination).toBe("/posts/1?tab=quotes");
+  });
+
   it("opens the notification list instead of a page outside the app", () => {
     for (const to of [null, "", "https://evil.example", "//evil.example", "/\\evil.example", "posts/1", "/\t/evil.example", "/\n/evil.example"]) {
       expect(resolveNotificationOpen({ ...base, to }).destination).toBe("/notifications");

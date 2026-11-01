@@ -98,6 +98,7 @@ erDiagram
         timestamptz published_at "公開開始"
         timestamptz expires_at "公開終了、NULL は無期限"
         timestamptz pinned_at "ピン留めの日時、NULL はピン留めなし"
+        uuid quoted_post_id "引用元の投稿、NULL は引用でない、参照（FK なし）"
     }
     post_post_media {
         uuid id PK
@@ -135,6 +136,7 @@ erDiagram
         uuid comment_id FK
         uuid profile_id "参照（FK なし）"
     }
+    post_posts |o..o{ post_posts : "quoted_post_id"
     post_posts ||--o{ post_post_media : "post_id"
     post_posts ||--o{ post_hashtags : "post_id"
     post_posts ||--o{ post_post_mentions : "post_id"
@@ -148,6 +150,11 @@ erDiagram
 - `post.posts`: 投稿本体。
   - 公開範囲（`visibility`）と表示期間（`published_at` から `expires_at` まで）を持つ。
   - `pinned_at` のある行は、プロフィールごとに1行まで（部分ユニークインデックス）。
+  - `quoted_post_id` は、引用投稿が引用元の投稿を指す。
+    - 同じ slice の投稿同士の参照だが、FK 制約を持たない。
+      - 引用元を削除しても値を残し、引用投稿の枠を「この投稿は表示できません」にするため。
+      - `ON DELETE SET NULL` では値が消え、`ON DELETE CASCADE` では引用投稿まで消えるため。
+    - 引用元ごとの一覧は、引用元と公開開始時刻の降順で引く（部分インデックス）。
 - `post.post_media`: 投稿に添付したメディア。
   - メディアを削除しても、そのメディアを指す添付の行は消えない。
     - 配信 URL は空になる。
@@ -326,6 +333,7 @@ erDiagram
         boolean reply
         boolean follow
         boolean mention
+        boolean quote
         boolean message
         boolean footprint_unread_badge
         boolean footprints_record_my_visits
@@ -342,7 +350,7 @@ erDiagram
   - 同じ種類・対象の通知は 1 件にまとめられ、`actor_count` で件数を持つ。
     - 件数は発火したプロフィールの人数で、数えたプロフィールを `actor_profile_ids` に持つ。
     - 同じプロフィールが繰り返し発火しても件数は増えない。
-    - 同じプロフィールの再発火で最新の発火者・最新の発火時刻・未読を更新するのは、コメント・返信・メンションだけである。
+    - 同じプロフィールの再発火で最新の発火者・最新の発火時刻・未読を更新するのは、コメント・返信・メンション・引用だけである。
 - `notifications.preferences`: プロフィールごとの通知の設定と足跡の設定。
   - 種類別の設定はプッシュ通知の送信だけを制御する。
 - `notifications.push_subscriptions`: プロフィールごと・ブラウザごとのプッシュ通知の購読先。

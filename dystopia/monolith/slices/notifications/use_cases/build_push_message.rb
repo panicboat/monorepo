@@ -11,6 +11,7 @@ module Notifications
         "comment" => "あなたの投稿にコメントしました",
         "reply" => "あなたのコメントに返信しました",
         "mention" => "あなたをメンションしました",
+        "quote" => "あなたの投稿を引用しました",
         "follow_request" => "フォロー申請が届きました",
         "follow" => "あなたをフォローしました"
       }.freeze
@@ -45,6 +46,7 @@ module Notifications
       def path(kind, actor, recipient, post_id, thread_id)
         target =
           if POST_KINDS.include?(kind) then post_id && "/posts/#{segment(post_id)}"
+          elsif kind == "quote" then post_id && "/posts/#{segment(post_id)}?tab=quotes"
           elsif kind == "follow_request" then recipient.username && "/u/#{segment(recipient.username)}/requests"
           elsif kind == "follow" then actor.username && "/u/#{segment(actor.username)}"
           elsif kind == "message" then thread_id && "/messages/#{segment(thread_id)}"

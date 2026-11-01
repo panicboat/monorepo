@@ -31,6 +31,7 @@ export interface PostCardProps {
   attachment?: React.ReactNode;
   images?: PostCardImage[];
   videos?: PostCardVideo[];
+  quoteFrame?: React.ReactNode;
   reactions?: React.ReactNode;
   className?: string;
 }
@@ -48,6 +49,7 @@ export function PostCard({
   attachment,
   images,
   videos,
+  quoteFrame,
   reactions,
   className,
 }: PostCardProps) {
@@ -144,8 +146,9 @@ export function PostCard({
               ))}
             </div>
           )}
+          {quoteFrame && <div className="mt-2">{quoteFrame}</div>}
           {reactions && (
-            <div className="mt-3 flex items-center gap-2 text-text-secondary sm:gap-6">
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-text-secondary sm:gap-6">
               {reactions}
             </div>
           )}

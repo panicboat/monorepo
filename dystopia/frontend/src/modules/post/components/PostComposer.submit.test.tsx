@@ -35,4 +35,29 @@ describe("PostComposer submit", () => {
     });
     container.remove();
   });
+
+  it("shows what it is given below the input and still requires a body", async () => {
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(createElement(PostComposer, { onSubmit }, createElement("p", { "data-testid": "extra" }, "引用元")));
+    });
+
+    const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
+    const extra = container.querySelector('[data-testid="extra"]') as HTMLElement;
+    expect(textarea.compareDocumentPosition(extra) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(extra.compareDocumentPosition(container.querySelector('input[type="file"]')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    await act(async () => {
+      container.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
 });

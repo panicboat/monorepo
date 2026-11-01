@@ -197,6 +197,15 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
       expect(unread).to eq(1)
     end
 
+    it "lists a quote notification with the quote type and the original post" do
+      post_id = SecureRandom.uuid_v7
+      emit.call(recipient_profile_id: guest, type: "quote", target_resource_id: post_id, actor_profile_id: cast, target_post_id: post_id)
+
+      act_as(guest)
+
+      expect(notifications.notifications.map { |n| [n.type, n.target_post_id] }).to eq([[:NOTIFICATION_TYPE_QUOTE, post_id]])
+    end
+
     it "does not let a profile mark another profile's notification as read" do
       mine = emit.call(recipient_profile_id: guest, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: cast)
 

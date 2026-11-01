@@ -12,6 +12,7 @@ service PostService {
   rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
   rpc PinPost(PinPostRequest) returns (PinPostResponse);
   rpc UnpinPost(UnpinPostRequest) returns (UnpinPostResponse);
+  rpc ListPostQuotes(ListPostQuotesRequest) returns (ListPostsResponse);
 }
 
 message PostMention {
@@ -27,6 +28,18 @@ message PostMedia {
   string url = 3;
   string thumbnail_url = 4;
   string media_id = 5;
+}
+
+message QuotedPost {
+  bool available = 1;
+  string id = 2;
+  profile.v1.ProfileSummary author = 3;
+  string content = 4;
+  repeated PostMedia media = 5;
+  string published_at = 6;
+  schedule.v1.Schedule schedule = 7;
+  repeated PostMention mentions = 8;
+  repeated string hashtags = 9;
 }
 
 message Post {
@@ -46,6 +59,8 @@ message Post {
   string expires_at = 14;
   schedule.v1.Schedule schedule = 15;
   bool pinned = 16;
+  QuotedPost quoted_post = 17;
+  int32 quotes_count = 18;
 }
 
 message ListPostsRequest {
@@ -62,6 +77,12 @@ message ListPostsResponse {
   bool has_more = 3;
 }
 
+message ListPostQuotesRequest {
+  string post_id = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+
 message SavePostRequest {
   reserved 1;
   reserved "id";
@@ -71,6 +92,7 @@ message SavePostRequest {
   repeated string hashtags = 5;
   string published_at = 6;
   string expires_at = 7;
+  string quoted_post_id = 8;
 }
 
 message SavePostResponse {

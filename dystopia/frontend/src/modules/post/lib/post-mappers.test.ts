@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildSavePostRequest, mapPostToView } from "./post-mappers";
+import { buildSavePostRequest, mapPostToView, toQuotedView } from "./post-mappers";
 import { create } from "@bufbuild/protobuf";
-import type { Post } from "@/stub/post/v1/post_service_pb";
+import { QuotedPostSchema, type Post } from "@/stub/post/v1/post_service_pb";
 import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
 import { ScheduleSchema } from "@/stub/schedule/v1/schedule_service_pb";
 
@@ -129,5 +129,101 @@ describe("buildSavePostRequest display window", () => {
 
     expect(req.publishedAt).toBe("");
     expect(req.expiresAt).toBe("");
+  });
+});
+
+describe("mapPostToView quote", () => {
+  const base = {
+    id: "p1", authorProfileId: "a1", content: "", media: [], createdAt: "",
+    likesCount: 0, commentsCount: 0, visibility: "public", hashtags: [], liked: false, mentions: [],
+  };
+
+  it("maps a quoted post and the count of quotes", () => {
+    const author = create(ProfileSummarySchema, { profileId: "a2", username: "mio" });
+    const schedule = create(ScheduleSchema, { profileId: "a2", workDate: "2026-10-24", startTime: "20:00", endTime: "02:00" });
+    const quotedPost = create(QuotedPostSchema, {
+      available: true,
+      id: "q1",
+      author,
+      content: "hi @alice #tag",
+      media: [{ id: "m1", mediaType: "video", url: "https://cdn/v.mp4", thumbnailUrl: "https://cdn/v.jpg", mediaId: "media-1" }],
+      publishedAt: "2026-10-02T00:00:00Z",
+      schedule,
+      mentions: [{ profileId: "acc-1", username: "alice", position: 3, length: 6 }],
+      hashtags: ["tag"],
+    });
+
+    const view = mapPostToView({ ...base, quotedPost, quotesCount: 3 } as unknown as Post);
+
+    expect(view.quotesCount).toBe(3);
+    expect(view.quotedPost).toEqual({
+      available: true,
+      id: "q1",
+      author: expect.objectContaining({ profileId: "a2", username: "mio" }),
+      content: "hi @alice #tag",
+      media: [{ id: "m1", mediaType: "video", url: "https://cdn/v.mp4", thumbnailUrl: "https://cdn/v.jpg", mediaId: "media-1" }],
+      publishedAt: "2026-10-02T00:00:00Z",
+      schedule: { workDate: "2026-10-24", startTime: "20:00", endTime: "02:00" },
+      mentions: [{ profileId: "acc-1", username: "alice", position: 3, length: 6 }],
+      hashtags: ["tag"],
+    });
+  });
+
+  it("maps an unavailable quoted post to its empty fields", () => {
+    const quotedPost = create(QuotedPostSchema, { available: false });
+
+    const view = mapPostToView({ ...base, quotedPost } as unknown as Post);
+
+    expect(view.quotedPost).toEqual({
+      available: false,
+      id: "",
+      author: null,
+      content: "",
+      media: [],
+      publishedAt: "",
+      schedule: null,
+      mentions: [],
+      hashtags: [],
+    });
+  });
+
+  it("is null and counts zero when the post quotes nothing", () => {
+    const view = mapPostToView(base as unknown as Post);
+
+    expect(view.quotedPost).toBeNull();
+    expect(view.quotesCount).toBe(0);
+  });
+});
+
+describe("buildSavePostRequest quote", () => {
+  it("sends quotedPostId in the save request", () => {
+    expect(buildSavePostRequest({ content: "hi", quotedPostId: "q1" }).quotedPostId).toBe("q1");
+  });
+
+  it("sends an empty quotedPostId when nothing is quoted", () => {
+    expect(buildSavePostRequest({ content: "hi" }).quotedPostId).toBe("");
+  });
+});
+
+describe("toQuotedView", () => {
+  it("turns a post into an available quoted post without its own quote", () => {
+    const post = mapPostToView({
+      id: "p1", authorProfileId: "a1", content: "hi @alice #tag", media: [], createdAt: "2026-10-01T00:00:00Z", publishedAt: "2026-10-02T00:00:00Z",
+      likesCount: 0, commentsCount: 0, visibility: "public", hashtags: ["tag"], liked: false,
+      mentions: [{ profileId: "acc-1", username: "alice", position: 3, length: 6 }],
+      quotedPost: create(QuotedPostSchema, { available: true, id: "q1", content: "inner" }),
+    } as unknown as Post);
+
+    expect(toQuotedView(post)).toEqual({
+      available: true,
+      id: "p1",
+      author: null,
+      content: "hi @alice #tag",
+      media: [],
+      publishedAt: "2026-10-02T00:00:00Z",
+      schedule: null,
+      mentions: [{ profileId: "acc-1", username: "alice", position: 3, length: 6 }],
+      hashtags: ["tag"],
+    });
   });
 });

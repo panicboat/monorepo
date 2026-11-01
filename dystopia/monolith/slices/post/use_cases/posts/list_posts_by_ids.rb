@@ -7,7 +7,8 @@ module Post
         include Post::Deps[
           post_repo: "repositories.post_repository",
           like_repo: "repositories.like_repository",
-          comment_repo: "repositories.comment_repository"
+          comment_repo: "repositories.comment_repository",
+          build_quote_context: "use_cases.posts.build_quote_context"
         ]
         include Post::Concerns::ProfileAuthorResolvable
 
@@ -33,6 +34,7 @@ module Post
           media_files = load_media_files(posts)
           mentioned_usernames = mentioned_usernames_for(posts.flat_map { |p| p.post_mentions.map(&:profile_id) })
           schedules = schedule_adapter.find_by_post_ids(ids.map(&:to_s))
+          quote_context = build_quote_context.call(posts: posts, viewer_profile_id: viewer_profile_id)
 
           posts.each_with_object({}) do |post, hash|
             proto = Post::Presenters::PostPresenter.to_post_proto(
@@ -43,7 +45,9 @@ module Post
               liked: liked[post.id] || false,
               media_files: media_files,
               mentioned_usernames: mentioned_usernames,
-              schedules: schedules
+              schedules: schedules,
+              quotes_count: quote_context[:quotes_counts][post.id] || 0,
+              quoted_posts: quote_context[:quoted_posts]
             )
             hash[post.id.to_s] = proto if proto
           end

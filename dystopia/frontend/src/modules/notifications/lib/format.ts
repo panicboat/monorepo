@@ -16,6 +16,8 @@ export function describeNotificationAction(n: NotificationView): string {
       return "あなたをフォローしました";
     case NotificationType.MENTION:
       return `${others}あなたをメンションしました`;
+    case NotificationType.QUOTE:
+      return `${others}あなたの投稿を引用しました`;
     default:
       return "お知らせがあります";
   }
@@ -30,6 +32,8 @@ export function notificationHref(n: NotificationView, ownUsername: string | null
     case NotificationType.MENTION:
       // Use targetPostId because comment notifications store the comment ID as targetResourceId.
       return n.targetPostId ? `/posts/${encodeURIComponent(n.targetPostId)}` : null;
+    case NotificationType.QUOTE:
+      return n.targetPostId ? `/posts/${encodeURIComponent(n.targetPostId)}?tab=quotes` : null;
     case NotificationType.FOLLOW_REQUEST:
       return ownUsername ? `/u/${encodeURIComponent(ownUsername)}/requests` : null;
     case NotificationType.FOLLOW:

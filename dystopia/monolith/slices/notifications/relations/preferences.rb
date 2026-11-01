@@ -10,6 +10,7 @@ module Notifications
         attribute :reply, Types::Bool
         attribute :follow, Types::Bool
         attribute :mention, Types::Bool
+        attribute :quote, Types::Bool
         attribute :message, Types::Bool
         attribute :footprint_unread_badge, Types::Bool
         attribute :footprints_record_my_visits, Types::Bool

@@ -21,6 +21,7 @@ module Post
         rpc :DeletePost, ::Post::V1::DeletePostRequest, ::Post::V1::DeletePostResponse
         rpc :PinPost, ::Post::V1::PinPostRequest, ::Post::V1::PinPostResponse
         rpc :UnpinPost, ::Post::V1::UnpinPostRequest, ::Post::V1::UnpinPostResponse
+        rpc :ListPostQuotes, ::Post::V1::ListPostQuotesRequest, ::Post::V1::ListPostsResponse
       end
 
       Stub = Service.rpc_stub_class

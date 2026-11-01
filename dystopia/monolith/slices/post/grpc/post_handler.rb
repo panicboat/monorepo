@@ -21,14 +21,17 @@ module Post
       rpc :DeletePost, ::Post::V1::DeletePostRequest, ::Post::V1::DeletePostResponse
       rpc :PinPost, ::Post::V1::PinPostRequest, ::Post::V1::PinPostResponse
       rpc :UnpinPost, ::Post::V1::UnpinPostRequest, ::Post::V1::UnpinPostResponse
+      rpc :ListPostQuotes, ::Post::V1::ListPostQuotesRequest, ::Post::V1::ListPostsResponse
 
       include Post::Concerns::ProfileAuthorResolvable
       include Post::Deps[
         create_post: "use_cases.create_post",
-        discard_detached_media: "use_cases.discard_detached_media"
+        discard_detached_media: "use_cases.discard_detached_media",
+        build_quote_context: "use_cases.posts.build_quote_context"
       ]
 
       AuthorRef = Struct.new(:author_profile_id)
+      MAX_LIMIT = 50
 
       def list_posts
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
@@ -79,7 +82,8 @@ module Post
           media: m.media.map { |x| { media_id: x.media_id, media_type: x.media_type } },
           hashtags: m.hashtags.to_a,
           published_at: m.published_at,
-          expires_at: m.expires_at
+          expires_at: m.expires_at,
+          quoted_post_id: m.quoted_post_id
         )
         mentioned_usernames = mentioned_usernames_for(result[:mentions].map { |mention| mention[:profile_id] })
 
@@ -120,6 +124,33 @@ module Post
         ::Post::V1::UnpinPostResponse.new
       end
 
+      def list_post_quotes
+        post = find_readable_post(request.message.post_id)
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless post
+
+        limit = normalize_limit(request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit)
+        cursor = request.message.cursor.empty? ? nil : decode_cursor(request.message.cursor, keys: [:published_at, :id])
+        page = ::Concerns::VisiblePage.fill(
+          limit: limit,
+          cursor: cursor,
+          fetch: ->(after) { post_repo.list_quotes(post_id: post.id, limit: limit, cursor: after) },
+          keep: ->(rows) { filter_visible_posts.call(viewer_profile_id: current_profile_id, posts: rows) },
+          cursor_of: ->(row) { { published_at: row.published_at, id: row.id } }
+        )
+        rows = page[:items]
+        next_cursor = if page[:has_more] && rows.any?
+          encode_cursor(published_at: rows.last.published_at.iso8601(6), id: rows.last.id)
+        else
+          ""
+        end
+
+        ::Post::V1::ListPostsResponse.new(
+          posts: present_posts(rows),
+          next_cursor: next_cursor,
+          has_more: page[:has_more]
+        )
+      end
+
       private
 
       def visible_pinned_post(author_profile_id:, include_private:, live_only:)
@@ -151,6 +182,7 @@ module Post
         media_files = load_media_files_for_posts(rows)
         mentioned_usernames = mentioned_usernames_for(rows.flat_map { |p| p.post_mentions.map(&:profile_id) })
         schedules = schedule_adapter.find_by_post_ids(post_ids.map(&:to_s))
+        quote_context = build_quote_context.call(posts: rows, viewer_profile_id: current_profile_id)
 
         rows.map do |post|
           PostPresenter.to_post_proto(
@@ -161,7 +193,9 @@ module Post
             liked: liked[post.id] || false,
             media_files: media_files,
             mentioned_usernames: mentioned_usernames,
-            schedules: schedules
+            schedules: schedules,
+            quotes_count: quote_context[:quotes_counts][post.id] || 0,
+            quoted_posts: quote_context[:quoted_posts]
           )
         end
       end
@@ -175,6 +209,7 @@ module Post
         media_files = load_media_files_for_posts([post])
         mentioned_usernames ||= mentioned_usernames_for(post.post_mentions.map(&:profile_id))
         schedules = schedule_adapter.find_by_post_ids([post.id.to_s])
+        quote_context = build_quote_context.call(posts: [post], viewer_profile_id: current_profile_id)
 
         PostPresenter.to_post_proto(
           post,
@@ -184,7 +219,9 @@ module Post
           liked: liked,
           media_files: media_files,
           mentioned_usernames: mentioned_usernames,
-          schedules: schedules
+          schedules: schedules,
+          quotes_count: quote_context[:quotes_counts][post.id] || 0,
+          quoted_posts: quote_context[:quoted_posts]
         )
       end
 

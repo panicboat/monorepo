@@ -9,6 +9,7 @@ module Notifications
         reply: true,
         follow: true,
         mention: true,
+        quote: true,
         message: true,
         footprint_unread_badge: true,
         footprints_record_my_visits: true

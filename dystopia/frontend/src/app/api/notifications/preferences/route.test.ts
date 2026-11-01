@@ -18,6 +18,7 @@ const ALL_ON = {
   reply: true,
   follow: true,
   mention: true,
+  quote: true,
   message: true,
   footprintUnreadBadge: true,
   footprintsRecordMyVisits: true,
@@ -52,6 +53,14 @@ describe("/api/notifications/preferences", () => {
     const res = await GET(request("GET"));
 
     expect(await res.json()).toEqual(ALL_ON);
+  });
+
+  it("returns the quote preference", async () => {
+    notifications.getNotificationPreferences.mockResolvedValue({ preferences: { ...ALL_ON, quote: false } });
+
+    const res = await GET(request("GET"));
+
+    expect(await res.json()).toEqual({ ...ALL_ON, quote: false });
   });
 
   it("fills the omitted fields with their defaults when saving", async () => {

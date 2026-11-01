@@ -82,6 +82,21 @@ RSpec.describe Notifications::UseCases::Emit, type: :database do
       end
     end
 
+    it "counts a repeated quote actor once but reopens the row, refreshes its time and pushes again" do
+      emit_from(actor_profile_id, type: "quote", target_post_id: target_resource_id)
+      Notifications::Slice["use_cases.mark_all_read"].call(recipient_profile_id: recipient_profile_id)
+      first_event_at = rows.first.latest_event_at
+
+      expect(emit_from(actor_profile_id, type: "quote", target_post_id: target_resource_id)).not_to be_nil
+
+      row = rows.first
+      expect([row.actor_count, row.actor_profile_ids, row.latest_actor_profile_id, row.target_post_id])
+        .to eq([1, [actor_profile_id], actor_profile_id, target_resource_id])
+      expect(row.read_at).to be_nil
+      expect(row.latest_event_at).to be > first_event_at
+      expect(send_push).to have_received(:call).twice
+    end
+
     it "counts a commenter who returns after another commenter once and makes them the latest actor" do
       emit_from(actor_profile_id, type: "comment")
       emit_from(other_actor_profile_id, type: "comment")

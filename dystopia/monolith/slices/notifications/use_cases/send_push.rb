@@ -18,6 +18,7 @@ module Notifications
         "comment" => :comment,
         "reply" => :reply,
         "mention" => :mention,
+        "quote" => :quote,
         "follow_request" => :follow,
         "follow" => :follow,
         "message" => :message

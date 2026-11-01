@@ -21,6 +21,18 @@ export interface PostScheduleView {
   endTime: string;
 }
 
+export interface QuotedPostView {
+  available: boolean;
+  id: string;
+  author: ProfileSummaryView | null;
+  content: string;
+  media: PostMediaView[];
+  publishedAt: string;
+  schedule: PostScheduleView | null;
+  mentions: MentionView[];
+  hashtags: string[];
+}
+
 export interface PostView {
   id: string;
   authorProfileId: string;
@@ -38,6 +50,8 @@ export interface PostView {
   liked: boolean;
   schedule: PostScheduleView | null;
   pinned: boolean;
+  quotedPost: QuotedPostView | null;
+  quotesCount: number;
 }
 
 export interface SavePostMediaInput {
@@ -52,6 +66,7 @@ export interface SavePostPayload {
   hashtags?: string[];
   publishedAt?: string;
   expiresAt?: string;
+  quotedPostId?: string;
 }
 
 export interface PostsListView {

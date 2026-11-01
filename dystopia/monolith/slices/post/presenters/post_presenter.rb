@@ -3,7 +3,7 @@
 module Post
   module Presenters
     class PostPresenter
-      def self.to_post_proto(post, author: nil, likes_count: 0, comments_count: 0, liked: false, media_files: {}, mentioned_usernames: {}, schedules: {})
+      def self.to_post_proto(post, author: nil, likes_count: 0, comments_count: 0, liked: false, media_files: {}, mentioned_usernames: {}, schedules: {}, quotes_count: 0, quoted_posts: {})
         return nil unless post
 
         media = (post.respond_to?(:post_media) ? post.post_media : []) || []
@@ -26,8 +26,30 @@ module Post
           published_at: post.published_at.iso8601,
           expires_at: post.expires_at&.iso8601 || "",
           schedule: schedule_to_proto(post, schedules[post.id.to_s]),
-          pinned: !post.pinned_at.nil?
+          pinned: !post.pinned_at.nil?,
+          quoted_post: quoted_post_for(post, quoted_posts),
+          quotes_count: quotes_count
         )
+      end
+
+      def self.to_quoted_post_proto(post, author: nil, media_files: {}, mentioned_usernames: {}, schedules: {})
+        ::Post::V1::QuotedPost.new(
+          available: true,
+          id: post.id.to_s,
+          author: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(author),
+          content: post.content,
+          media: post.post_media.sort_by(&:position).map { |m| post_media_to_proto(m, media_files: media_files) },
+          published_at: post.published_at.iso8601,
+          schedule: schedule_to_proto(post, schedules[post.id.to_s]),
+          mentions: post.post_mentions.select { |m| mentioned_usernames.key?(m.profile_id.to_s) }.map { |m| mention_to_proto(m, mentioned_usernames: mentioned_usernames) },
+          hashtags: post.hashtags.sort_by(&:position).map(&:tag)
+        )
+      end
+
+      def self.quoted_post_for(post, quoted_posts)
+        return nil unless post.quoted_post_id
+
+        quoted_posts[post.quoted_post_id.to_s] || ::Post::V1::QuotedPost.new(available: false)
       end
 
       def self.schedule_to_proto(post, schedule)

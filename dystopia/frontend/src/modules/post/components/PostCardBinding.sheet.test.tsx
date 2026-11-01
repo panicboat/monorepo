@@ -27,6 +27,8 @@ const post: PostView = {
   liked: false,
   schedule: null,
   pinned: false,
+  quotedPost: null,
+  quotesCount: 0,
 };
 
 const stopNavigation = (event: Event) => event.preventDefault();

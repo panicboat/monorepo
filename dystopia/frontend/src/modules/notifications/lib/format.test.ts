@@ -31,6 +31,7 @@ describe("describeNotificationAction", () => {
     [NotificationType.COMMENT, "あなたの投稿にコメントしました"],
     [NotificationType.REPLY, "あなたのコメントに返信しました"],
     [NotificationType.MENTION, "あなたをメンションしました"],
+    [NotificationType.QUOTE, "あなたの投稿を引用しました"],
     [NotificationType.FOLLOW_REQUEST, "フォロー申請が届きました"],
     [NotificationType.FOLLOW, "あなたをフォローしました"],
   ])("describes type %s without the actor's name", (type, expected) => {
@@ -40,6 +41,11 @@ describe("describeNotificationAction", () => {
   it("leads with the other-actors count for aggregated notifications", () => {
     const n = buildNotification({ type: NotificationType.LIKE, actorCount: 3 });
     expect(describeNotificationAction(n)).toBe("ほか 2 人もあなたの投稿にいいねしました");
+  });
+
+  it("describes a quote notification with the others count", () => {
+    const n = buildNotification({ type: NotificationType.QUOTE, actorCount: 3 });
+    expect(describeNotificationAction(n)).toBe("ほか 2 人もあなたの投稿を引用しました");
   });
 
   it("describes the action the same way when the actor is gone", () => {
@@ -71,5 +77,15 @@ describe("notificationHref", () => {
       targetPostId: "post-mention-1",
     });
     expect(notificationHref(n, "yuna")).toBe("/posts/post-mention-1");
+  });
+
+  it("routes a quote notification to the post's quotes tab", () => {
+    const n = buildNotification({
+      type: NotificationType.QUOTE,
+      targetResourceId: "quote-post-1",
+      targetPostId: "post-quoted-1",
+    });
+    expect(notificationHref(n, "yuna")).toBe("/posts/post-quoted-1?tab=quotes");
+    expect(notificationHref({ ...n, targetPostId: null }, "yuna")).toBeNull();
   });
 });

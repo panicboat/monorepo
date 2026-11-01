@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
     reply: true,
     follow: true,
     mention: true,
+    quote: true,
     message: true,
     footprintUnreadBadge: true,
     footprintsRecordMyVisits: true,
@@ -50,16 +51,23 @@ afterEach(async () => {
 });
 
 describe("NotificationSettings", () => {
-  it("lists the device switch and the six kinds", async () => {
+  it("lists the device switch and the seven kinds", async () => {
     await mount();
 
-    for (const label of ["この端末で受け取る", "いいね", "コメント", "リプライ", "メンション", "フォロー", "メッセージ"]) {
+    for (const label of ["この端末で受け取る", "いいね", "コメント", "リプライ", "メンション", "引用", "フォロー", "メッセージ"]) {
       expect(toggle(label)).not.toBeNull();
     }
-    for (const removed of ["端末に通知を送る", "リポスト", "引用", "推し！", "ポスト"]) {
+    for (const removed of ["端末に通知を送る", "リポスト", "推し！", "ポスト"]) {
       expect(toggle(removed)).toBeNull();
     }
     expect(container.textContent).toContain("アプリ内の通知一覧には、設定に関係なくすべて表示されます。メッセージは通知一覧には載らず、「メッセージ」の未読件数でお知らせします");
+  });
+
+  it("updates the quote preference when the quote toggle is switched", async () => {
+    await mount();
+    await act(async () => toggle("引用").click());
+
+    expect(mocks.update).toHaveBeenCalledWith({ quote: false });
   });
 
   it("explains why the device cannot receive notifications and locks its switch", async () => {
