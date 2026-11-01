@@ -11,6 +11,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: panicboat/.github/.github/workflows/reusable--cleanup-container-image.yaml@c7e840647bcbae967cde37c6d32d39e70029f722 # v0.3.0
+    uses: panicboat/.github/.github/workflows/reusable--cleanup-container-image.yaml@b4045cb25420c5b596ad99c7e51106062feec5ab # v0.3.1
     with:
       services: '["monolith","frontend","pennyworth"]'
