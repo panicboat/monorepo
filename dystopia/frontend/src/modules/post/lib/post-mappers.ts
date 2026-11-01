@@ -2,12 +2,15 @@ import type {
   Post,
   PostMedia,
   PostMention,
+  QuotedPost,
 } from "@/stub/post/v1/post_service_pb";
 import type {
   MentionView,
   PostMediaView,
+  PostScheduleView,
   PostView,
   PostsListView,
+  QuotedPostView,
   SavePostPayload,
 } from "@/modules/post/lib/post-view";
 import { summaryToView } from "@/modules/profile/lib/mappers";
@@ -31,6 +34,24 @@ export function mapPostMediaToView(m: PostMedia): PostMediaView {
   };
 }
 
+function mapScheduleToView(s: { workDate: string; startTime: string; endTime: string } | undefined): PostScheduleView | null {
+  return s ? { workDate: s.workDate, startTime: s.startTime, endTime: s.endTime } : null;
+}
+
+function mapQuotedPostToView(q: QuotedPost): QuotedPostView {
+  return {
+    available: q.available || false,
+    id: q.id || "",
+    author: q.author ? summaryToView(q.author) : null,
+    content: q.content || "",
+    media: (q.media || []).map(mapPostMediaToView),
+    publishedAt: q.publishedAt || "",
+    schedule: mapScheduleToView(q.schedule),
+    mentions: (q.mentions || []).map(mapMentionToView),
+    hashtags: q.hashtags || [],
+  };
+}
+
 export function mapPostToView(p: Post): PostView {
   return {
     id: p.id || "",
@@ -47,10 +68,10 @@ export function mapPostToView(p: Post): PostView {
     hashtags: p.hashtags || [],
     mentions: (p.mentions || []).map(mapMentionToView),
     liked: p.liked || false,
-    schedule: p.schedule
-      ? { workDate: p.schedule.workDate, startTime: p.schedule.startTime, endTime: p.schedule.endTime }
-      : null,
+    schedule: mapScheduleToView(p.schedule),
     pinned: p.pinned || false,
+    quotedPost: p.quotedPost ? mapQuotedPostToView(p.quotedPost) : null,
+    quotesCount: p.quotesCount || 0,
   };
 }
 
@@ -80,5 +101,6 @@ export function buildSavePostRequest(payload: SavePostPayload) {
     hashtags: payload.hashtags || [],
     publishedAt: payload.publishedAt || "",
     expiresAt: payload.expiresAt || "",
+    quotedPostId: payload.quotedPostId || "",
   };
 }

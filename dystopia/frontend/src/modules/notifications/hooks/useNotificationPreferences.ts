@@ -13,6 +13,7 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
   reply: true,
   follow: true,
   mention: true,
+  quote: true,
   message: true,
   footprintUnreadBadge: true,
   footprintsRecordMyVisits: true,

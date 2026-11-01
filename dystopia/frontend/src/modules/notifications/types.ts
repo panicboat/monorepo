@@ -27,6 +27,7 @@ export interface NotificationPreferences {
   reply: boolean;
   follow: boolean;
   mention: boolean;
+  quote: boolean;
   message: boolean;
   footprintUnreadBadge: boolean;
   footprintsRecordMyVisits: boolean;

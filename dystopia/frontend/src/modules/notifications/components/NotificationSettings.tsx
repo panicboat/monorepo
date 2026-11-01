@@ -17,6 +17,7 @@ const PUSH_TYPE_ROWS: Row[] = [
   { field: "comment", label: "コメント" },
   { field: "reply", label: "リプライ" },
   { field: "mention", label: "メンション" },
+  { field: "quote", label: "引用" },
   { field: "follow", label: "フォロー" },
   { field: "message", label: "メッセージ" },
 ];
