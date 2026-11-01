@@ -152,6 +152,16 @@ RSpec.describe "Post::UseCases::CreatePost", type: :database do
         expect(rows.first.actor_count).to eq(2)
       end
 
+      it "reopens the row without counting the quoter again when the same profile quotes the post a second time" do
+        quote(original.id)
+        Notifications::Slice["use_cases.mark_all_read"].call(recipient_profile_id: other)
+
+        quote(original.id)
+
+        row = notifications_of(other).first
+        expect([notifications_of(other).size, row.actor_count, row.read_at]).to eq([1, 1, nil])
+      end
+
       it "does not notify when quoting one's own post" do
         own = post_repo.create_post(author_profile_id: author, content: "mine", visibility: "public")
 

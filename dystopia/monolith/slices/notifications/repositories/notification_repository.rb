@@ -8,7 +8,7 @@ module Notifications
       include Concerns::CursorPagination
 
       # Likes and follows can be undone and redone, so a repeat by the same actor carries nothing new.
-      TYPES_RENOTIFYING_SAME_ACTOR = %w[comment reply mention].freeze
+      TYPES_RENOTIFYING_SAME_ACTOR = %w[comment reply mention quote].freeze
 
       def emit(recipient_profile_id:, type:, target_resource_id:, actor_profile_id:, target_post_id: nil)
         new_id = SecureRandom.uuid_v7
