@@ -9,6 +9,10 @@ module Post
         posts.combine(:post_media, :hashtags, :post_mentions).by_pk(id).one
       end
 
+      def find_quotable(id)
+        posts.where(id: id, visibility: "public").where(live_condition).one
+      end
+
       def published_at_for_id(id)
         posts.dataset.where(id: id).get(:published_at)
       end

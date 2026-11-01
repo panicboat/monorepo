@@ -16,7 +16,7 @@ module Post
       MAX_CONTENT_LENGTH = 1000
       VISIBILITIES = %w[public private].freeze
 
-      def call(author_profile_id:, content:, visibility: "", media: [], hashtags: [], published_at: "", expires_at: "")
+      def call(author_profile_id:, content:, visibility: "", media: [], hashtags: [], published_at: "", expires_at: "", quoted_post_id: "")
         content = content.to_s
         raise InvalidPostError, "本文を入力してください" if Text.blank?(content)
         raise InvalidPostError, "本文は#{MAX_CONTENT_LENGTH}文字以内で入力してください" if content.length > MAX_CONTENT_LENGTH
@@ -27,12 +27,15 @@ module Post
           raise InvalidPostError, "添付できないメディアが含まれています"
         end
 
+        quoted_post_id = nil if quoted_post_id.to_s.empty?
+        ensure_quotable(quoted_post_id, author_profile_id) if quoted_post_id
+
         now = Time.now
         published_at, expires_at = display_window(published_at, expires_at, now: now)
         mentions = extract_mentions.call(content: content)
 
         post = post_repo.transaction do
-          created = post_repo.create_post(author_profile_id: author_profile_id, content: content, visibility: visibility, published_at: published_at, expires_at: expires_at)
+          created = post_repo.create_post(author_profile_id: author_profile_id, content: content, visibility: visibility, published_at: published_at, expires_at: expires_at, quoted_post_id: quoted_post_id)
           post_repo.save_media(post_id: created.id, media_data: media) if media.any?
           post_repo.save_hashtags(post_id: created.id, hashtags: hashtags) if hashtags.any?
           post_repo.save_mentions(post_id: created.id, mentions: mentions)
@@ -45,6 +48,13 @@ module Post
       end
 
       private
+
+      def ensure_quotable(quoted_post_id, author_profile_id)
+        quoted = ::Concerns::CursorPagination::UUID_FORMAT.match?(quoted_post_id) ? post_repo.find_quotable(quoted_post_id) : nil
+        return if quoted && viewer_can_see_post.call(viewer_profile_id: author_profile_id, post: quoted)
+
+        raise InvalidPostError, "この投稿は引用できません"
+      end
 
       def display_window(published_at, expires_at, now:)
         published_at = parse_display_time(published_at)

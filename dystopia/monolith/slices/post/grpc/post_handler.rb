@@ -79,7 +79,8 @@ module Post
           media: m.media.map { |x| { media_id: x.media_id, media_type: x.media_type } },
           hashtags: m.hashtags.to_a,
           published_at: m.published_at,
-          expires_at: m.expires_at
+          expires_at: m.expires_at,
+          quoted_post_id: m.quoted_post_id
         )
         mentioned_usernames = mentioned_usernames_for(result[:mentions].map { |mention| mention[:profile_id] })
 
