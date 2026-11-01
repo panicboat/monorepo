@@ -43,7 +43,7 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-async function mount(props: { inDetail?: boolean; post?: PostView } = {}) {
+async function mount(props: { inDetail?: boolean; post?: PostView; onCommentClick?: () => void } = {}) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   await act(async () => {
@@ -59,12 +59,15 @@ async function click(element: Element, init: MouseEventInit = {}) {
 }
 
 describe("PostCardBinding opening the detail", () => {
-  it("opens the sheet from the comment icon", async () => {
+  it("opens the sheet to comment from the comment icon and its count", async () => {
     const container = await mount();
+    const comment = container.querySelector('a[aria-label="コメント"]')!;
 
-    await click(container.querySelector('a[aria-label="コメント"]')!);
+    await click(comment.querySelector("svg")!);
+    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: true, focusComment: true, session: 1 });
 
-    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: true });
+    await click(comment.querySelector("span")!);
+    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: true, focusComment: true, session: 2 });
   });
 
   it("opens the sheet from the body", async () => {
@@ -72,7 +75,7 @@ describe("PostCardBinding opening the detail", () => {
 
     await click(container.querySelector('a[href="/posts/post-1"]:not([aria-label])')!);
 
-    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: true });
+    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: true, focusComment: false });
   });
 
   it("leaves a modified click to the link", async () => {
@@ -88,8 +91,17 @@ describe("PostCardBinding opening the detail", () => {
     const container = await mount({ inDetail: true });
 
     expect(container.querySelector('a[href="/posts/post-1"]')).toBeNull();
-    expect(container.textContent).toContain("3");
-    expect(container.querySelector('[aria-label="コメント 3 件"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="コメント"]')?.textContent).toBe("3");
+  });
+
+  it("calls back from the comment button inside the detail", async () => {
+    const onCommentClick = vi.fn();
+    const container = await mount({ inDetail: true, onCommentClick });
+
+    await click(container.querySelector('button[aria-label="コメント"] span')!);
+
+    expect(onCommentClick).toHaveBeenCalledTimes(1);
+    expect(usePostSheetStore.getState().open).toBe(false);
   });
 });
 

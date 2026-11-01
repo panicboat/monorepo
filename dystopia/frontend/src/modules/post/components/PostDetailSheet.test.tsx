@@ -32,9 +32,10 @@ vi.mock("next/navigation", () => ({
   },
 }));
 vi.mock("./PostDetailContent", () => ({
-  PostDetailContent: ({ postId }: { postId: string }) => (
+  PostDetailContent: ({ postId, focusComposer }: { postId: string; focusComposer?: boolean }) => (
     <div>
       detail:{postId}
+      focus:{String(!!focusComposer)}
       <a href="/u/yuna">author</a>
       <a href="/">here</a>
       <a href="/?q=tag">query</a>
@@ -88,6 +89,16 @@ describe("PostDetailSheet", () => {
     });
 
     expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: false });
+  });
+
+  it("focuses the comment composer only when opened to comment", async () => {
+    await mount();
+
+    await act(async () => usePostSheetStore.getState().openPost("post-1"));
+    expect(document.body.textContent).toContain("focus:false");
+
+    await act(async () => usePostSheetStore.getState().openToComment("post-1"));
+    expect(document.body.textContent).toContain("focus:true");
   });
 
   describe("links inside the sheet", () => {

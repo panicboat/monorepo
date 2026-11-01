@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAddComment } from "@/modules/post/hooks/useAddComment";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
@@ -8,17 +8,23 @@ import { MentionTextarea } from "./MentionTextarea";
 
 interface CommentComposerProps {
   postId: string;
+  focusRequest?: number;
 }
 
 const MAX_LENGTH = 1000;
 
-export function CommentComposer({ postId }: CommentComposerProps) {
+export function CommentComposer({ postId, focusRequest = 0 }: CommentComposerProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [content, setContent] = useState("");
   const { addComment, submitting, error } = useAddComment(postId);
 
   const trimmed = content.trim();
   const overLimit = content.length > MAX_LENGTH;
   const canSubmit = !submitting && trimmed.length > 0 && !overLimit;
+
+  useEffect(() => {
+    if (focusRequest > 0) formRef.current?.querySelector("textarea")?.focus();
+  }, [focusRequest]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -35,7 +41,7 @@ export function CommentComposer({ postId }: CommentComposerProps) {
   );
 
   return (
-    <form onSubmit={handleSubmit} className="border-b border-divider px-4 py-3">
+    <form ref={formRef} onSubmit={handleSubmit} className="border-b border-divider px-4 py-3">
       <ActingProfileLabel className="mb-2" />
       <MentionTextarea
         value={content}

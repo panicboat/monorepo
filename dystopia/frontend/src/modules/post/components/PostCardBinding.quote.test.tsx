@@ -104,7 +104,7 @@ describe("PostCardBinding quote button", () => {
   it("keeps the same order inside the detail", async () => {
     const container = await mount({ inDetail: true });
 
-    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "コメント 3 件", "ブックマーク"]);
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "コメント", "ブックマーク"]);
     expect(quoteButton(container).textContent).toBe("2");
   });
 
