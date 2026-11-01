@@ -169,7 +169,7 @@ describe("mapPostToView quote", () => {
     });
   });
 
-  it("maps an unavailable quoted post without its content", () => {
+  it("maps an unavailable quoted post to its empty fields", () => {
     const quotedPost = create(QuotedPostSchema, { available: false });
 
     const view = mapPostToView({ ...base, quotedPost } as unknown as Post);

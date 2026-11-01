@@ -63,7 +63,7 @@ describe("NotificationSettings", () => {
     expect(container.textContent).toContain("アプリ内の通知一覧には、設定に関係なくすべて表示されます。メッセージは通知一覧には載らず、「メッセージ」の未読件数でお知らせします");
   });
 
-  it("lists the quote toggle in notification settings", async () => {
+  it("updates the quote preference when the quote toggle is switched", async () => {
     await mount();
     await act(async () => toggle("引用").click());
 
