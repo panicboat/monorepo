@@ -127,5 +127,75 @@ RSpec.describe "Post::UseCases::CreatePost", type: :database do
     it "requires a body on a quote post" do
       expect { expect { quote(original.id, content: " ") }.to raise_error(invalid, "本文を入力してください") }.not_to change { db[:post__posts].where(author_profile_id: author).count }
     end
+
+    describe "notifying the quoted author" do
+      let(:notification_repo) { Notifications::Slice["repositories.notification_repository"] }
+
+      def notifications_of(profile_id)
+        notification_repo.list(recipient_profile_id: profile_id)
+      end
+
+      it "notifies the original author once with the type quote, targeting the original post" do
+        quote(original.id)
+
+        expect(notifications_of(other).map { |n| [n.type, n.target_resource_id.to_s, n.target_post_id.to_s, n.latest_actor_profile_id.to_s, n.actor_count] })
+          .to eq([["quote", original.id, original.id, author, 1]])
+      end
+
+      it "aggregates quotes of the same post into one row" do
+        second = create_account_with_profile(username: "quote_second")
+        quote(original.id)
+        use_case.call(author_profile_id: second, content: "me too", quoted_post_id: original.id)
+
+        rows = notifications_of(other)
+        expect(rows.map(&:type)).to eq(["quote"])
+        expect(rows.first.actor_count).to eq(2)
+      end
+
+      it "does not notify when quoting one's own post" do
+        own = post_repo.create_post(author_profile_id: author, content: "mine", visibility: "public")
+
+        quote(own.id)
+
+        expect(notifications_of(author)).to be_empty
+      end
+
+      it "does not notify for a scheduled quote, at creation or after it goes live" do
+        quote_post = use_case.call(author_profile_id: author, content: "later", quoted_post_id: original.id, published_at: (Time.now + 3600).iso8601)[:post]
+        expect(notifications_of(other)).to be_empty
+
+        db[:post__posts].where(id: quote_post.id).update(published_at: Time.now - 60)
+
+        expect(notifications_of(other)).to be_empty
+      end
+
+      it "does not notify when the original author cannot read a followers-only quote" do
+        use_case.call(author_profile_id: author, content: "followers only", visibility: "private", quoted_post_id: original.id)
+
+        expect(notifications_of(other)).to be_empty
+      end
+
+      it "notifies when the original author can read a followers-only quote" do
+        Social::Slice["repositories.follow_repository"].follow(follower_profile_id: other, followee_profile_id: author, status: "approved")
+
+        use_case.call(author_profile_id: author, content: "followers only", visibility: "private", quoted_post_id: original.id)
+
+        expect(notifications_of(other).map(&:type)).to eq(["quote"])
+      end
+
+      it "does not notify when the original author blocks the quoter" do
+        block_repo.block(blocker_profile_id: other, blocked_profile_id: author)
+
+        expect_not_quotable(original.id)
+
+        expect(notifications_of(other)).to be_empty
+      end
+
+      it "sends both a mention and a quote notification when the quote mentions the original author" do
+        use_case.call(author_profile_id: author, content: "thoughts @quote_other", quoted_post_id: original.id)
+
+        expect(notifications_of(other).map(&:type)).to contain_exactly("mention", "quote")
+      end
+    end
   end
 end

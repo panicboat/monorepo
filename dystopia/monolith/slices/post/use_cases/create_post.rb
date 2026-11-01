@@ -28,7 +28,7 @@ module Post
         end
 
         quoted_post_id = nil if quoted_post_id.to_s.empty?
-        ensure_quotable(quoted_post_id, author_profile_id) if quoted_post_id
+        quoted = ensure_quotable(quoted_post_id, author_profile_id) if quoted_post_id
 
         now = Time.now
         published_at, expires_at = display_window(published_at, expires_at, now: now)
@@ -42,7 +42,10 @@ module Post
           post_repo.find_by_id(created.id)
         end
 
-        notify_mentions(post, mentions, author_profile_id) if published_at <= now
+        if published_at <= now
+          notify_mentions(post, mentions, author_profile_id)
+          notify_quoted_author(post, quoted, author_profile_id) if quoted
+        end
 
         { post: post, mentions: mentions }
       end
@@ -51,7 +54,7 @@ module Post
 
       def ensure_quotable(quoted_post_id, author_profile_id)
         quoted = ::Concerns::CursorPagination::UUID_FORMAT.match?(quoted_post_id) ? post_repo.find_quotable(quoted_post_id) : nil
-        return if quoted && viewer_can_see_post.call(viewer_profile_id: author_profile_id, post: quoted)
+        return quoted if quoted && viewer_can_see_post.call(viewer_profile_id: author_profile_id, post: quoted)
 
         raise InvalidPostError, "この投稿は引用できません"
       end
@@ -80,7 +83,7 @@ module Post
 
       def notify_mentions(post, mentions, author_profile_id)
         mentions.uniq { |mention| mention[:profile_id] }
-          .select { |mention| mention_visible?(mention[:profile_id], post) }
+          .select { |mention| readable_by?(mention[:profile_id], post) }
           .each do |mention|
           notifications_emit.call(
             recipient_profile_id: mention[:profile_id],
@@ -93,11 +96,24 @@ module Post
         end
       end
 
-      def mention_visible?(profile_id, post)
+      def notify_quoted_author(post, quoted, author_profile_id)
+        return unless readable_by?(quoted.author_profile_id, post)
+
+        notifications_emit.call(
+          recipient_profile_id: quoted.author_profile_id,
+          type: "quote",
+          target_resource_id: quoted.id,
+          actor_profile_id: author_profile_id,
+          target_post_id: quoted.id,
+          excerpt: post.content
+        )
+      end
+
+      def readable_by?(profile_id, post)
         viewer_can_see_post.call(viewer_profile_id: profile_id, post: post)
       rescue StandardError => e
-        Hanami.logger.warn("Mention visibility check failed: #{e.class}: #{e.message}")
-        # SILENT: A failed visibility check skips that mention and must not fail the saved post.
+        Hanami.logger.warn("Post readability check failed: #{e.class}: #{e.message}")
+        # SILENT: A failed visibility check skips that notification and must not fail the saved post.
         false
       end
 

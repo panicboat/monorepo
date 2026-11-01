@@ -23,6 +23,7 @@ RSpec.describe Notifications::UseCases::BuildPushMessage do
       "comment" => "あなたの投稿にコメントしました",
       "reply" => "あなたのコメントに返信しました",
       "mention" => "あなたをメンションしました",
+      "quote" => "あなたの投稿を引用しました",
       "follow_request" => "フォロー申請が届きました",
       "follow" => "あなたをフォローしました"
     }.each do |kind, body|
@@ -30,10 +31,11 @@ RSpec.describe Notifications::UseCases::BuildPushMessage do
     end
   end
 
-  it "adds the text after the action for comments, replies and mentions" do
+  it "adds the text after the action for comments, replies, mentions and quotes" do
     expect(message("comment", post_id: "post-1", excerpt: "かわいい")[:body]).to eq("あなたの投稿にコメントしました：かわいい")
     expect(message("reply", post_id: "post-1", excerpt: "ありがとう")[:body]).to eq("あなたのコメントに返信しました：ありがとう")
     expect(message("mention", post_id: "post-1", excerpt: "@yuna またね")[:body]).to eq("あなたをメンションしました：@yuna またね")
+    expect(message("quote", post_id: "post-1", excerpt: "同感です")[:body]).to eq("あなたの投稿を引用しました：同感です")
   end
 
   it "shows only the text of a direct message" do
@@ -57,6 +59,7 @@ RSpec.describe Notifications::UseCases::BuildPushMessage do
   it "opens the target through the handoff page as the receiving profile" do
     expect(destination(message("like", post_id: "post-1"))).to eq(["/notifications/open", { "profile" => "recipient-1", "to" => "/posts/post-1" }])
     expect(destination(message("mention", post_id: "post-2"))[1]["to"]).to eq("/posts/post-2")
+    expect(destination(message("quote", post_id: "post-3"))[1]["to"]).to eq("/posts/post-3?tab=quotes")
     expect(destination(message("follow_request"))[1]["to"]).to eq("/u/yuna/requests")
     expect(destination(message("follow"))[1]["to"]).to eq("/u/rin")
     expect(destination(message("message", thread_id: "thread-1", excerpt: "hi"))[1]["to"]).to eq("/messages/thread-1")
@@ -67,5 +70,6 @@ RSpec.describe Notifications::UseCases::BuildPushMessage do
 
     expect(destination(message("follow_request", recipient: nameless))[1]["to"]).to eq("/notifications")
     expect(destination(message("like"))[1]["to"]).to eq("/notifications")
+    expect(destination(message("quote"))[1]["to"]).to eq("/notifications")
   end
 end

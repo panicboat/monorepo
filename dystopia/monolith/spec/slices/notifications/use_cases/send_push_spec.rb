@@ -141,6 +141,16 @@ RSpec.describe Notifications::UseCases::SendPush, type: :database do
     expect(sender.sent.map { |d| d[:payload]["body"] }).to eq(["あなたの投稿にコメントしました：かわいい"])
   end
 
+  it "sends a quote according to the quote setting" do
+    subscribe(recipient, "phone")
+
+    push(kind: "quote", excerpt: "同感です")
+    update_preferences.call(profile_id: recipient, preferences: defaults.merge(quote: false))
+    push(kind: "quote", excerpt: "同感です")
+
+    expect(sender.sent.map { |d| d[:payload]["body"] }).to eq(["あなたの投稿を引用しました：同感です"])
+  end
+
   it "sends nothing when push is not configured" do
     subscribe(recipient, "phone")
     sender.enabled = false

@@ -105,6 +105,7 @@ module Notifications
           reply: input.reply,
           follow: input.follow,
           mention: input.mention,
+          quote: input.quote,
           message: input.message,
           footprint_unread_badge: input.footprint_unread_badge,
           footprints_record_my_visits: input.footprints_record_my_visits
@@ -160,6 +161,7 @@ module Notifications
           reply: prefs[:reply],
           follow: prefs[:follow],
           mention: prefs[:mention],
+          quote: prefs[:quote],
           message: prefs[:message],
           footprint_unread_badge: prefs[:footprint_unread_badge],
           footprints_record_my_visits: prefs[:footprints_record_my_visits]
@@ -174,6 +176,7 @@ module Notifications
         when "follow_request" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_FOLLOW_REQUEST
         when "follow" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_FOLLOW
         when "mention" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_MENTION
+        when "quote" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_QUOTE
         else ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_UNSPECIFIED
         end
       end
