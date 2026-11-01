@@ -1,20 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, Heart, MessageCircle, Pin, Trash2 } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Pin, Repeat2, Trash2 } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
 import { profileDisplayName, profileInitial } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { formatMonthDayTimeInJapan } from "@/lib/utils/japan-date";
 import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
+import { useQuoteComposeStore } from "@/stores/quoteComposeStore";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
 import { usePostDeletionStore } from "@/stores/postDeletionStore";
 import { useToastStore } from "@/stores/toastStore";
 import { selectActiveProfileId, useAuthStore } from "@/stores/authStore";
 import { PostText } from "@/modules/post/lib/post-text";
 import { PostScheduleCard } from "./PostScheduleCard";
+import { QuoteFrame } from "./QuoteFrame";
 import { displayStateOf } from "@/modules/post/lib/display-window";
+import { isQuotable } from "@/modules/post/lib/quotable";
 import type { PostView } from "@/modules/post/lib/post-view";
 import { useDeletePost } from "@/modules/post/hooks/useDeletePost";
 import { usePinPost } from "@/modules/post/hooks/usePinPost";
@@ -26,16 +29,18 @@ export interface PostCardBindingProps {
   detailHref?: string;
   inDetail?: boolean;
   showPinMark?: boolean;
+  hideQuoteFrame?: boolean;
   className?: string;
 }
 
-export function PostCardBinding({ post, detailHref, inDetail, showPinMark, className }: PostCardBindingProps) {
+export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQuoteFrame, className }: PostCardBindingProps) {
   const { isLiked, getLikesCount, toggleLike, loading } = usePostLike();
   const { isBookmarked, toggle: toggleBookmark, loading: bookmarkLoading } = useBookmark(post.id);
   const { deletePost, submitting: deleting } = useDeletePost();
   const { pinned, togglePin, submitting: pinning } = usePinPost(post);
   const deleted = usePostDeletionStore((s) => !!s.deleted[post.id]);
   const closeSheet = usePostSheetStore((s) => s.close);
+  const openQuote = useQuoteComposeStore((s) => s.openQuote);
   const showToast = useToastStore((s) => s.show);
 
   const liked = isLiked(post.id, post.liked);
@@ -81,6 +86,14 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, class
     e.preventDefault();
     e.stopPropagation();
     toggleLike(post.id, liked).catch(() => showToast("いいねできませんでした"));
+  };
+
+  const handleQuoteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Close the detail first so two SideSheets are never open at once.
+    closeSheet();
+    openQuote(post);
   };
 
   const handleBookmarkClick = (e: React.MouseEvent) => {
@@ -143,6 +156,31 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, class
       )}
       <button
         type="button"
+        onClick={handleQuoteClick}
+        disabled={!isQuotable(post)}
+        className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
+        aria-label="引用する"
+      >
+        <Repeat2 className="size-5" />
+      </button>
+      {inDetail ? (
+        <span
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
+          aria-label={`引用 ${post.quotesCount} 件`}
+        >
+          {post.quotesCount}
+        </span>
+      ) : (
+        <Link
+          href={`/posts/${encodeURIComponent(post.id)}?tab=quotes`}
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
+          aria-label={`引用 ${post.quotesCount} 件`}
+        >
+          {post.quotesCount}
+        </Link>
+      )}
+      <button
+        type="button"
         onClick={handleBookmarkClick}
         disabled={bookmarkLoading}
         className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
@@ -191,6 +229,7 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, class
       attachment={post.schedule && <PostScheduleCard schedule={post.schedule} author={post.author} />}
       images={images.length > 0 ? images : undefined}
       videos={videos.length > 0 ? videos : undefined}
+      quoteFrame={post.quotedPost && !hideQuoteFrame ? <QuoteFrame quoted={post.quotedPost} interactive /> : undefined}
       reactions={reactions}
       className={className}
     />

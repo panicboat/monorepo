@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSavePostRequest, mapPostToView } from "./post-mappers";
+import { buildSavePostRequest, mapPostToView, toQuotedView } from "./post-mappers";
 import { create } from "@bufbuild/protobuf";
 import { QuotedPostSchema, type Post } from "@/stub/post/v1/post_service_pb";
 import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
@@ -202,5 +202,28 @@ describe("buildSavePostRequest quote", () => {
 
   it("sends an empty quotedPostId when nothing is quoted", () => {
     expect(buildSavePostRequest({ content: "hi" }).quotedPostId).toBe("");
+  });
+});
+
+describe("toQuotedView", () => {
+  it("turns a post into an available quoted post without its own quote", () => {
+    const post = mapPostToView({
+      id: "p1", authorProfileId: "a1", content: "hi @alice #tag", media: [], createdAt: "2026-10-01T00:00:00Z", publishedAt: "2026-10-02T00:00:00Z",
+      likesCount: 0, commentsCount: 0, visibility: "public", hashtags: ["tag"], liked: false,
+      mentions: [{ profileId: "acc-1", username: "alice", position: 3, length: 6 }],
+      quotedPost: create(QuotedPostSchema, { available: true, id: "q1", content: "inner" }),
+    } as unknown as Post);
+
+    expect(toQuotedView(post)).toEqual({
+      available: true,
+      id: "p1",
+      author: null,
+      content: "hi @alice #tag",
+      media: [],
+      publishedAt: "2026-10-02T00:00:00Z",
+      schedule: null,
+      mentions: [{ profileId: "acc-1", username: "alice", position: 3, length: 6 }],
+      hashtags: ["tag"],
+    });
   });
 });

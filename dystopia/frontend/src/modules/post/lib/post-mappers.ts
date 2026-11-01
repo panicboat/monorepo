@@ -75,6 +75,20 @@ export function mapPostToView(p: Post): PostView {
   };
 }
 
+export function toQuotedView(post: PostView): QuotedPostView {
+  return {
+    available: true,
+    id: post.id,
+    author: post.author,
+    content: post.content,
+    media: post.media,
+    publishedAt: post.publishedAt,
+    schedule: post.schedule,
+    mentions: post.mentions,
+    hashtags: post.hashtags,
+  };
+}
+
 export function mapPostsListResponse(res: {
   posts: Post[];
   nextCursor: string;

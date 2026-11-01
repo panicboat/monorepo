@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ export interface PostComposerProps {
   initialContent?: string;
   initialVisibility?: "public" | "private";
   className?: string;
+  children?: ReactNode;
 }
 
 const MAX_LENGTH = 1000;
@@ -31,6 +32,7 @@ export function PostComposer({
   initialContent = "",
   initialVisibility,
   className,
+  children,
 }: PostComposerProps) {
   const { profile } = useProfile();
   const accountPrivate = !!profile?.isPrivate;
@@ -123,6 +125,7 @@ export function PostComposer({
         rows={4}
         aria-label="投稿内容"
       />
+      {children && <div className="mt-2">{children}</div>}
       <PostComposerAttachments
         items={attachments}
         onRemove={handleRemoveAttachment}

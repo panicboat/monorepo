@@ -23,6 +23,7 @@ import { Drawer } from "./Drawer";
 import { SideNav } from "./SideNav";
 import { SuggestedUsersPane } from "./SuggestedUsersPane";
 import { PostDetailSheet } from "@/modules/post/components/PostDetailSheet";
+import { QuoteComposerSheet } from "@/modules/post/components/QuoteComposerSheet";
 import { FeatureTourModal } from "@/modules/onboarding/components/FeatureTourModal";
 import { LandingPage } from "@/modules/landing/components/LandingPage";
 import { resolveShellRedirect } from "./resolveShellRedirect";
@@ -178,6 +179,7 @@ export function AppShell({ children }: AppShellProps) {
           {!fitsViewport && <ComposerFAB />}
           <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
           <PostDetailSheet />
+          <QuoteComposerSheet />
           <FeatureTourModal />
         </div>
       </AccountProfilesProvider>
