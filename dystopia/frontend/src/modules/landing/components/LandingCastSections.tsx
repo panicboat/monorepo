@@ -113,7 +113,7 @@ export function CastHeroArt() {
             <div className="float-data">フォロワーと投稿を、自分に。</div>
           </div>
         </div>
-        <span className="smallchip">プロフィールを切り替えられる</span>
+        <span className="smallchip">お店が変わっても、そのまま</span>
       </div>
     </div>
   );
@@ -145,7 +145,7 @@ export function CastValues() {
           <article className="value" data-num="01">
             <div aria-hidden="true" className="value-icon">✦</div>
             <h3>主役は、お店ではなくあなた。</h3>
-            <p>お店が変わっても、働き方が変わっても、自分の名前で発信できる。プロフィールを使い分けながら、あなた自身のつながりを育てられる場所に。</p>
+            <p>お店が変わっても、働き方が変わっても、自分の名前で発信できる。あなた自身のつながりを育てられる場所に。</p>
           </article>
           <article className="value" data-num="02">
             <div aria-hidden="true" className="value-icon">☾</div>
