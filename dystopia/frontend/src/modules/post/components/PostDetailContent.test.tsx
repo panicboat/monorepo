@@ -10,22 +10,23 @@ import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
 
 const mocks = vi.hoisted(() => ({
   usePost: vi.fn(),
-  cardProps: null as null | { inDetail?: boolean },
+  cardProps: null as null | { inDetail?: boolean; onCommentClick?: () => void },
 }));
 
 vi.mock("../hooks/usePost", () => ({ usePost: mocks.usePost }));
 vi.mock("./PostCardBinding", () => ({
-  PostCardBinding: (props: { inDetail?: boolean }) => {
+  PostCardBinding: (props: { inDetail?: boolean; onCommentClick?: () => void }) => {
     mocks.cardProps = props;
     return <div>post-card</div>;
   },
 }));
 vi.mock("./CommentComposer", () => ({
-  CommentComposer: ({ postId }: { postId: string }) => {
+  CommentComposer: ({ postId, focusRequest }: { postId: string; focusRequest?: number }) => {
     const [draft, setDraft] = useState("");
     return (
       <div>
         composer:{postId}
+        focusRequest:{focusRequest}
         <textarea value={draft} onChange={(e) => setDraft(e.target.value)} />
       </div>
     );
@@ -48,7 +49,7 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-async function mount(props: { initialTab?: "comments" | "quotes" } = {}) {
+async function mount(props: { initialTab?: "comments" | "quotes"; focusComposer?: boolean } = {}) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   await act(async () => {
@@ -142,6 +143,27 @@ describe("PostDetailContent", () => {
     await act(async () => tabButton(container, "コメント 2").click());
 
     expect(textarea().value).toBe("書きかけのコメント");
+  });
+
+  it("requests no focus on the composer unless opened to comment", async () => {
+    mocks.usePost.mockReturnValue({ post, loading: false, error: undefined });
+
+    expect((await mount()).textContent).toContain("focusRequest:0");
+    document.body.innerHTML = "";
+    expect((await mount({ focusComposer: true })).textContent).toContain("focusRequest:1");
+  });
+
+  it("switches to the comments tab and requests focus when the card's comment button is pressed", async () => {
+    mocks.usePost.mockReturnValue({ post, loading: false, error: undefined });
+    const container = await mount({ initialTab: "quotes" });
+
+    await act(async () => mocks.cardProps?.onCommentClick?.());
+
+    expect(tabButton(container, "コメント 2").getAttribute("aria-selected")).toBe("true");
+    expect(container.textContent).toContain("focusRequest:1");
+
+    await act(async () => mocks.cardProps?.onCommentClick?.());
+    expect(container.textContent).toContain("focusRequest:2");
   });
 
   it("says it is loading and that a missing post was not found", () => {

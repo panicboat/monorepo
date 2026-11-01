@@ -23,7 +23,7 @@ function CloseOnSearchChange({ open, close }: { open: boolean; close: () => void
 export function PostDetailSheet() {
   const router = useRouter();
   const postId = usePostSheetStore((s) => s.postId);
-  const tab = usePostSheetStore((s) => s.tab);
+  const focusComment = usePostSheetStore((s) => s.focusComment);
   const session = usePostSheetStore((s) => s.session);
   const open = usePostSheetStore((s) => s.open);
   const close = usePostSheetStore((s) => s.close);
@@ -69,7 +69,7 @@ export function PostDetailSheet() {
             navigate(href);
           }}
         >
-          <PostDetailContent postId={postId} initialTab={tab} />
+          <PostDetailContent postId={postId} focusComposer={focusComment} />
         </div>
       </SheetNavigationContext.Provider>
     </SideSheet>

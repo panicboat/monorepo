@@ -1,22 +1,22 @@
 import { create } from "zustand";
 
-export type PostDetailTab = "comments" | "quotes";
-
 interface PostSheetState {
   postId: string | null;
-  tab: PostDetailTab;
+  focusComment: boolean;
   session: number;
   open: boolean;
-  openPost: (postId: string, tab?: PostDetailTab) => void;
+  openPost: (postId: string) => void;
+  openToComment: (postId: string) => void;
   close: () => void;
 }
 
 export const usePostSheetStore = create<PostSheetState>()((set) => ({
   postId: null,
-  tab: "comments",
+  focusComment: false,
   session: 0,
   open: false,
-  openPost: (postId, tab = "comments") => set((state) => ({ postId, tab, session: state.session + 1, open: true })),
+  openPost: (postId) => set((state) => ({ postId, focusComment: false, session: state.session + 1, open: true })),
+  openToComment: (postId) => set((state) => ({ postId, focusComment: true, session: state.session + 1, open: true })),
   // Keep the post while closing: dropping it would empty the sheet before it slides out.
   close: () => set({ open: false }),
 }));

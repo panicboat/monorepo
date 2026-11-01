@@ -32,10 +32,11 @@ export interface PostCardBindingProps {
   inDetail?: boolean;
   showPinMark?: boolean;
   hideQuoteFrame?: boolean;
+  onCommentClick?: () => void;
   className?: string;
 }
 
-export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQuoteFrame, className }: PostCardBindingProps) {
+export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQuoteFrame, onCommentClick, className }: PostCardBindingProps) {
   const { isLiked, getLikesCount, toggleLike, loading } = usePostLike();
   const { isBookmarked, toggle: toggleBookmark, loading: bookmarkLoading } = useBookmark(post.id);
   const { deletePost, submitting: deleting } = useDeletePost();
@@ -79,16 +80,17 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
 
   const href = detailHref || `/posts/${encodeURIComponent(post.id)}`;
   const openPost = usePostSheetStore((s) => s.openPost);
+  const openToComment = usePostSheetStore((s) => s.openToComment);
   const openDetail = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!isPlainClick(e)) return;
     e.preventDefault();
     openPost(post.id);
   };
 
-  const openQuotes = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const openComment = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!isPlainClick(e)) return;
     e.preventDefault();
-    openPost(post.id, "quotes");
+    openToComment(post.id);
   };
 
   const handleLikeClick = (e: React.MouseEvent) => {
@@ -144,47 +146,30 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
         <Heart className={liked ? "size-5 fill-current text-accent" : "size-5"} />
         <span>{likesCount}</span>
       </button>
-      <div className="flex items-center">
-        {/* The target reaches into the like column: at full width inside its own column, the number could not sit next to the icon. */}
+      <button
+        type="button"
+        onClick={handleQuoteClick}
+        disabled={!isQuotable(post)}
+        className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm hover:text-text-primary disabled:opacity-50"
+        aria-label="引用する"
+      >
+        <Repeat2 className="size-5" />
+        <span>{quotesCount}</span>
+      </button>
+      {inDetail ? (
         <button
           type="button"
-          onClick={handleQuoteClick}
-          disabled={!isQuotable(post)}
-          className="-ml-5 flex min-h-11 w-11 shrink-0 items-center justify-end pr-1 text-sm hover:text-text-primary disabled:opacity-50"
-          aria-label="引用する"
+          onClick={onCommentClick}
+          className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm hover:text-text-primary"
+          aria-label="コメント"
         >
-          <Repeat2 className="size-5" />
-        </button>
-        {inDetail ? (
-          <span
-            className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm"
-            aria-label={`引用 ${quotesCount} 件`}
-          >
-            {quotesCount}
-          </span>
-        ) : (
-          <Link
-            href={`/posts/${encodeURIComponent(post.id)}?tab=quotes`}
-            onClick={openQuotes}
-            className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm hover:text-text-primary"
-            aria-label={`引用 ${quotesCount} 件`}
-          >
-            {quotesCount}
-          </Link>
-        )}
-      </div>
-      {inDetail ? (
-        <span
-          className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm"
-          aria-label={`コメント ${commentsCount} 件`}
-        >
-          <MessageCircle className="size-5" aria-hidden="true" />
+          <MessageCircle className="size-5" />
           <span>{commentsCount}</span>
-        </span>
+        </button>
       ) : (
         <Link
           href={href}
-          onClick={openDetail}
+          onClick={openComment}
           className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm hover:text-text-primary"
           aria-label="コメント"
         >
