@@ -3,6 +3,7 @@ import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PostView, QuotedPostView } from "@/modules/post/lib/post-view";
+import { useAuthStore } from "@/stores/authStore";
 import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
 import { usePostSheetStore } from "@/stores/postSheetStore";
 import { useQuoteComposeStore } from "@/stores/quoteComposeStore";
@@ -58,6 +59,7 @@ beforeEach(() => {
   usePostSheetStore.setState({ postId: null, session: 0, open: false, tab: "comments" });
   useQuoteComposeStore.setState({ post: null, session: 0, open: false });
   usePostQuoteCountStore.setState({ counts: {} });
+  useAuthStore.setState({ activeProfileId: null });
   document.addEventListener("click", stopNavigation);
 });
 
@@ -81,24 +83,39 @@ async function click(element: Element, init: MouseEventInit = {}) {
   });
 }
 
+const reactionLabels = (container: Element) =>
+  Array.from(container.querySelector('button[aria-label="いいね"]')!.parentElement!.querySelectorAll("[aria-label]")).map((el) => el.getAttribute("aria-label"));
+
 const quoteButton = (container: Element) => container.querySelector<HTMLButtonElement>('button[aria-label="引用する"]')!;
 
 describe("PostCardBinding quote icon", () => {
-  it("shows the Repeat2 icon and the quote count after the comment count, with no text label", async () => {
+  it("shows the Repeat2 icon and the quote count between the like and the comment, with no text label", async () => {
     const container = await mount();
-    const comment = container.querySelector('a[aria-label="コメント"]')!;
     const button = quoteButton(container);
     const count = container.querySelector('a[aria-label="引用 2 件"]')!;
 
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント", "ブックマーク"]);
     expect(button.querySelector("svg.lucide-repeat-2")).not.toBeNull();
     expect(button.textContent).toBe("");
     expect(count.textContent).toBe("2");
-    expect(comment.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(button.compareDocumentPosition(count) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(button.className).toContain("min-h-11");
     expect(button.className).toContain("min-w-11");
     expect(count.className).toContain("min-h-11");
     expect(count.className).toContain("min-w-11");
+  });
+
+  it("keeps the same order inside the detail", async () => {
+    const container = await mount({ inDetail: true });
+
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント 3 件", "ブックマーク"]);
+  });
+
+  it("keeps the pin and the delete after the bookmark on an own post", async () => {
+    useAuthStore.setState({ activeProfileId: "author-1" });
+
+    const container = await mount();
+
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント", "ブックマーク", "ピン留めする", "投稿を削除"]);
   });
 
   it("puts the icon and its count in one group with no gap, the count against the icon", async () => {

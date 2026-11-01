@@ -147,25 +147,6 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
         <Heart className={liked ? "size-5 fill-current text-accent" : "size-5"} />
         <span>{likesCount}</span>
       </button>
-      {inDetail ? (
-        <span
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
-          aria-label={`コメント ${commentsCount} 件`}
-        >
-          <MessageCircle className="size-5" aria-hidden="true" />
-          <span>{commentsCount}</span>
-        </span>
-      ) : (
-        <Link
-          href={href}
-          onClick={openDetail}
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
-          aria-label="コメント"
-        >
-          <MessageCircle className="size-5" />
-          <span>{commentsCount}</span>
-        </Link>
-      )}
       <div className="flex items-center">
         <button
           type="button"
@@ -194,6 +175,25 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
           </Link>
         )}
       </div>
+      {inDetail ? (
+        <span
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
+          aria-label={`コメント ${commentsCount} 件`}
+        >
+          <MessageCircle className="size-5" aria-hidden="true" />
+          <span>{commentsCount}</span>
+        </span>
+      ) : (
+        <Link
+          href={href}
+          onClick={openDetail}
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
+          aria-label="コメント"
+        >
+          <MessageCircle className="size-5" />
+          <span>{commentsCount}</span>
+        </Link>
+      )}
       <button
         type="button"
         onClick={handleBookmarkClick}
