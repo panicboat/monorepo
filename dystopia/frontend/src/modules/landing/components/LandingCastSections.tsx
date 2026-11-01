@@ -145,7 +145,7 @@ export function CastValues() {
           <article className="value" data-num="01">
             <div aria-hidden="true" className="value-icon">✦</div>
             <h3>主役は、お店ではなくあなた。</h3>
-            <p>お店が変わっても、働き方が変わっても、自分の名前で発信できる。あなた自身のつながりを育てられる場所に。</p>
+            <p>お店が変わっても、働き方が変わっても、あなた自身のつながりを育てていける場所に。</p>
           </article>
           <article className="value" data-num="02">
             <div aria-hidden="true" className="value-icon">☾</div>
@@ -176,7 +176,7 @@ export function CastStories() {
               あなたのペースで。
             </h2>
           </div>
-          <p>SNSとして出会いを育てながら、夜の仕事に必要なことも、ひとつの場所で。</p>
+          <p>夜の仕事に必要なことも、ひとつの場所で。</p>
         </div>
         <article className="story-row">
           <div className="story-visual">
