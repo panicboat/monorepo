@@ -18,6 +18,7 @@ erDiagram
     identity_accounts ||..o{ media_files : "owner_account_id"
     identity_accounts ||..o{ karte_kartes : "author_account_id"
     identity_accounts ||..o{ review_reviews : "author_account_id"
+    identity_accounts ||..o{ report_reports : "reporter / reported"
     profile_profiles ||..o{ post_posts : "author_profile_id"
     profile_profiles ||..o{ schedule_schedules : "profile_id"
     profile_profiles ||..o{ social_follows : "follower / followee"
