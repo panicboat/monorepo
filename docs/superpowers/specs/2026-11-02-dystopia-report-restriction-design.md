@@ -1,0 +1,202 @@
+# Dystopia Report Restriction Design
+
+Issue: [#1926](https://github.com/panicboat/monorepo/issues/1926)
+前提: [#1924](https://github.com/panicboat/monorepo/pull/1924)（通報を貯める機能）
+
+## Intent
+
+悪意のあるユーザーの粘着や、短時間に通報を繰り返す行動を、運営者の巡回を待たずに止める。
+夜職の人にとって安心して使える場所であることを守るための、一時的な制限である。
+
+## Goals
+
+- 24 時間以内に別々の x アカウントから通報されたアカウントが、24 時間、見るだけになる。
+- 24 時間以内に y アカウントを通報したアカウントが、24 時間、見るだけになる。
+- 粘着の被害者が同じ相手を何度通報しても、本人は制限されず、証拠は残る。
+- 運営者が、誤った制限を SQL で解除できる。
+
+## Non-goals
+
+- 通報の内容の自動判定。
+- 投稿の自動非表示。
+- 電話番号ごとの永久 BAN。
+- 異議申し立ての画面と、運営者の管理画面。
+- 被害者が 1 人だけの粘着を自動で止めること。
+  - 被害者 1 人の通報では x に届かないので、運営者が通報を読んで対応する。
+
+## Anti-goals
+
+- 粘着する人が、1 人で相手を黙らせられる仕組みにしない。
+- 粘着された人が、通報したせいで制限される仕組みにしない。
+- 制限された人が、ブロックと退会までできなくなる状態を作らない。
+
+## Constraints
+
+- 通報の内容は誰も確認しないので、知り合い x 人で組めば 1 人を 24 時間止められる。
+  - 防ぐ手段は x の値だけである。
+- 制限中は通報もできない（`CreateReport` を拒否する）。
+  - 制限中に被害を受けても、解けるまでは運営者の連絡先に申し出るしかない。
+- 利用規約の「違反への措置」は、運営者が違反と判断した場合の措置だけを定めている。
+  - 回数で発動する制限には、規約の改定が要る。
+- 規約の本文に、数値と「通報」の語は書けない。
+  - `terms.test.ts` が確認している。
+- デプロイは migrate → アプリ更新の順である。
+
+## Decisions
+
+### Flow
+
+```mermaid
+sequenceDiagram
+    actor Reporter as 通報する人
+    participant Report as CreateReport
+    participant DB as report schema
+    actor Reported as 通報された人
+    participant Interceptor as 制限の判定（全 RPC の入口）
+
+    Reporter->>Report: 通報する
+    Report->>DB: reports に保存する
+    Report->>DB: 通報された側と通報した側を数える
+    opt x または y に届いた
+        Report->>DB: restrictions に 24 時間分の行を作る
+    end
+    Report-->>Reporter: 受け付けました
+
+    Reported->>Interceptor: 投稿する
+    Interceptor->>DB: 有効な制限があるか調べる
+    Interceptor-->>Reported: 拒否する（403）
+    Reported->>Interceptor: タイムラインを見る
+    Note over Interceptor: 残す RPC は DB を見ずに通す
+```
+
+### Counting
+
+通報の行は #1924 の `report.reports` をそのまま数える。
+
+- 通報された側: `reported_account_id` が同じ行の、直近 24 時間の `reporter_account_id` の異なり数が x 以上。
+- 通報した側: `reporter_account_id` が同じ行の、直近 24 時間の `reported_account_id` の異なり数が y 以上。
+
+異なり数で数えるので、同じ相手への 2 回目以降の通報は自動で数に入らない。
+#1924 は対象が別の投稿や DM なら行を増やすので、証拠の保存に変更は要らない。
+`reported_account_id` が NULL の行（送信者が削除済みの DM）は、通報した側の数に入らない。
+
+### Restriction storage
+
+判定の方法は、次の 2 案を比べて、制限の行を保存する案にする。
+
+| 案 | 良い点 | 問題 |
+| --- | --- | --- |
+| **制限の行を保存する（採用）** | 必ず 24 時間続く<br>履歴が残る<br>SQL で解除できる | テーブルが 1 つ増える |
+| 書き込みのたびに通報を数える | テーブルが増えない | 古い通報が窓から外れると 24 時間より早く解ける<br>解除の手段がない<br>書き込みのたびに集計が走る |
+
+`report.restrictions` を追加する。
+
+```mermaid
+erDiagram
+    report_restrictions {
+        uuid id PK
+        uuid account_id "参照（FK なし）"
+        text reason "reported / reporter"
+        timestamptz starts_at
+        timestamptz ends_at "解除は現在時刻を入れる"
+    }
+```
+
+- 判定は `account_id` と `ends_at` で引くので、この組に索引を張る。
+- `report.reports` には、集計用に `(reported_account_id, created_at)` と `(reporter_account_id, created_at)` の索引を張る。
+- 制限の行は、プロフィールやアカウントを消しても残す。
+  - 通報と同じく、アカウント ID で辿るためである。
+
+### Enforcement
+
+判定は `lib/interceptors/` の新しい interceptor に置き、`AuthenticationInterceptor` の内側で動かす。
+
+- 制限中でも通してよい RPC の一覧を持ち、一覧にない RPC は拒否する。
+  - RPC を足したときの漏れが、制限のかけ忘れにならないようにするためである。
+- 一覧にある RPC は DB を見ずに通すので、読み取りの負荷は増えない。
+- 拒否は `PERMISSION_DENIED` で、`error-reason` に `account_restricted` を入れる。
+  - BFF の `handleApiError` が 403 と `code` に変換する既存の経路に乗る。
+- spec で、proto の全 RPC が「通す」または「拒否する」に分類されていることを確かめる。
+- `x-user-id` のないリクエストは判定しない。
+
+### RPC classification
+
+制限中に通す RPC は、次のとおりである。
+一覧にない RPC はすべて拒否する。
+`GetUploadUrl` と `GetOrCreateThread` は名前が `Get` で始まるが書き込みなので拒否する。
+そのため一覧は名前の規則で作らず、RPC を 1 つずつ並べる。
+
+| 種類 | RPC | 理由 |
+| --- | --- | --- |
+| 読み取り | 名前が `Get`、`List`、`Search`、`Rank`、`Suggest`、`Check` で始まる RPC と `HealthCheck`（`GetUploadUrl` と `GetOrCreateThread` を除く） | 閲覧 |
+| ブロック | `Social.Block` | 身を守る手段を残す |
+| 退会と復帰 | `DeactivateAccount`、`ReactivateAccount` | やめる権利を止めない<br>猶予中はログインで復帰する |
+| 既読 | 通知、足跡、メッセージの `MarkRead`、`MarkAllRead` | 閲覧に付随する |
+| 足跡 | `RecordVisit` | 閲覧に付随する |
+| 通知の設定 | `UpdateNotificationPreferences`、`RegisterPushSubscription`、`UnregisterPushSubscription`、`ClaimPushEndpoint` | 自分の受け取り方だけに関わる |
+| 登録 | `CreateAccount`、`ReleaseIncompleteSignUp` | 制限の前の段階である |
+| 課金 | `CreateCustomerPortalSession` | 解約を止めない |
+
+退会の前に制限された場合、退会と復帰をしても制限は解けない。
+制限はアカウント ID に紐づくからである。
+
+### Legal text
+
+利用規約の「違反への措置」の条の、最初の段落の次に 1 段落を足す。
+
+修正前:
+
+> 運営者は、利用者が本規約に違反したと判断した場合、事前に知らせることなく、次の措置をとることができます。
+> （投稿等の削除、本サービスの機能の一部の利用の制限、本サービスの利用の停止、アカウントの削除）
+>
+> 運営者が措置としてアカウントを削除した場合も、退会した場合と同じ情報が残ります。
+
+修正後:
+
+> 運営者は、利用者が本規約に違反したと判断した場合、事前に知らせることなく、次の措置をとることができます。
+> （投稿等の削除、本サービスの機能の一部の利用の制限、本サービスの利用の停止、アカウントの削除）
+>
+> **運営者は、利用者に関する申出または利用者による申出が短期間に集中した場合、違反の有無を確認することなく、その利用者による本サービスの機能の一部の利用を一時的に制限する措置をとることができます。**
+>
+> 運営者が措置としてアカウントを削除した場合も、退会した場合と同じ情報が残ります。
+
+- 同じ条の「措置の理由を、原則として開示しません」が、この制限にもかかる。
+- プライバシーポリシーは「不正な利用と利用規約の違反に対応すること」の目的に含まれるとみて、変更しない。
+  - 弁護士の確認で変わる可能性がある。
+- 公開の前に、変更の内容と効力が生じる日を、その日より前にサービス上で知らせる。
+  - 利用規約の変更の定めによる。
+
+### Docs
+
+- `dystopia/docs/features/reports.md` の「自動の処置は持たない」を、今回の制限に書き換える。
+- `dystopia/docs/data-model.md` に `report.restrictions` を足す。
+- `dystopia/docs/README.md` の「凍結しない」は変えない。
+  - 永久の停止を持たないという記述で、24 時間の制限とは矛盾しないためである。
+
+## Claude's calls
+
+次はユーザーと話していない、私の判断である。
+
+- 制限中に通す RPC を、`RPC classification` の表のとおりにした。
+  - 通知の設定、足跡、既読、解約を残している。
+  - 自分の投稿の削除、ブロックの解除、プロフィールの作成と削除は止める。
+- y は、相手のプロフィールではなくアカウントで数える。
+  - 相手が複数のプロフィールを持っていると、粘着された人が各プロフィールを通報するだけで y に近づくためである。
+- 制限中に条件に当たっても、制限を延ばさない。
+  - 制限中の通報も数に入るので、解けた後の次の通報で、もう一度制限されることがある。
+- 運営者のアカウントも、例外にしない。
+- 同時に通報が届いて x に届くのが一瞬遅れる場合は、次の通報で制限されるので対策しない。
+
+## Left to the builder
+
+- 制限の判定に使う一覧の持ち方。
+- x と y の定数を置く場所。
+- 制限中の画面を、どの API で受け取るか。
+- 一覧にない RPC を拒否したときの、各画面のトーストの出し方。
+
+## Open questions
+
+- x と y の値。
+- 制限された本人に、何を見せるか。
+- 他の利用者から、制限中であることが分かるか。
+- すでに公開している投稿と予定を、制限中も見せ続けるか。
