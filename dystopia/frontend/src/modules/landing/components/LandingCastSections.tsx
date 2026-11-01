@@ -113,7 +113,7 @@ export function CastHeroArt() {
             <div className="float-data">フォロワーと投稿を、自分に。</div>
           </div>
         </div>
-        <span className="smallchip">お店が変わっても、そのまま</span>
+        <span className="smallchip">自分自身を発信できる</span>
       </div>
     </div>
   );
