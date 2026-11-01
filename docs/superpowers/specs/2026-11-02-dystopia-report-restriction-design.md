@@ -195,7 +195,7 @@ erDiagram
 
 ## Claude's calls
 
-次はユーザーと話していない、私の判断である。
+次はユーザーと話していない、Claude の判断である。
 
 - 制限中に通す RPC を、`RPC classification` の表のとおりにした。
   - 通知の設定、足跡、既読、解約を残している。
