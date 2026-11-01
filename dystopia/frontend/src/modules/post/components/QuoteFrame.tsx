@@ -34,6 +34,7 @@ export function QuoteFrame({ quoted, interactive }: QuoteFrameProps) {
     .filter((tile) => tile.isVideo || tile.src.length > 0)
     .slice(0, MAX_TILES);
 
+  // Plain text when not interactive: PostText's inline links push a route and would close the composer sheet.
   const content = (
     <>
       <div className="flex items-center gap-2 text-sm">
@@ -47,7 +48,7 @@ export function QuoteFrame({ quoted, interactive }: QuoteFrameProps) {
       </div>
       {quoted.content.trim() !== "" && (
         <p className="mt-1 line-clamp-4 whitespace-pre-wrap text-text-primary">
-          <PostText content={quoted.content} mentions={quoted.mentions} hashtags={quoted.hashtags} />
+          {interactive ? <PostText content={quoted.content} mentions={quoted.mentions} hashtags={quoted.hashtags} /> : quoted.content}
         </p>
       )}
       {quoted.schedule && (

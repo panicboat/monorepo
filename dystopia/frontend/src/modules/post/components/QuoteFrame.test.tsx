@@ -8,7 +8,9 @@ import { QuoteFrame } from "./QuoteFrame";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }) }));
+const routerPush = vi.hoisted(() => vi.fn());
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: routerPush }) }));
 
 const quotedOf = (overrides: Partial<QuotedPostView> = {}): QuotedPostView => ({
   available: true,
@@ -26,6 +28,7 @@ const quotedOf = (overrides: Partial<QuotedPostView> = {}): QuotedPostView => ({
 const stopNavigation = (event: Event) => event.preventDefault();
 
 beforeEach(() => {
+  routerPush.mockReset();
   usePostSheetStore.setState({ postId: null, session: 0, open: false });
   document.addEventListener("click", stopNavigation);
 });
@@ -142,6 +145,27 @@ describe("QuoteFrame", () => {
     await click(container.querySelector('a[href="/posts/quoted-1"]')!, { metaKey: true });
 
     expect(usePostSheetStore.getState().open).toBe(false);
+  });
+
+  it("shows the mentions and hashtags of the body as plain text unless it is interactive", async () => {
+    const content = "@hanako #タグ こんにちは";
+    const mentions = [{ profileId: "author-2", username: "hanako", position: 0, length: 7 }];
+
+    const container = await mount(quotedOf({ content, mentions, hashtags: ["タグ"] }));
+    await click(container.querySelector(".line-clamp-4")!);
+
+    expect(container.querySelector(".line-clamp-4")?.textContent).toBe(content);
+    expect(container.querySelector('[role="link"]')).toBeNull();
+    expect(container.querySelector("a")).toBeNull();
+    expect(routerPush).not.toHaveBeenCalled();
+  });
+
+  it("makes the mentions and hashtags of the body inline links when it is interactive", async () => {
+    const mentions = [{ profileId: "author-2", username: "hanako", position: 0, length: 7 }];
+
+    const container = await mount(quotedOf({ content: "@hanako #タグ こんにちは", mentions, hashtags: ["タグ"] }), true);
+
+    expect(container.querySelectorAll('.line-clamp-4 [role="link"]')).toHaveLength(2);
   });
 
   it("shows no link unless it is interactive", async () => {
