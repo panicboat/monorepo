@@ -62,8 +62,29 @@ async function mount(...cards: { post: PostView; showPinMark?: boolean }[]) {
   return container;
 }
 
-const pinButtons = (container: Element) =>
-  Array.from(container.querySelectorAll<HTMLButtonElement>('button[aria-label="ピン留めする"], button[aria-label="ピン留めを外す"]'));
+const menuTriggers = (container: Element) => Array.from(container.querySelectorAll<HTMLButtonElement>('button[aria-label="その他の操作"]'));
+
+const pinItem = () => Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"]')).find((item) => item.textContent?.startsWith("ピン留め"))!;
+
+async function openMenu(container: Element, index = 0) {
+  await act(async () => {
+    menuTriggers(container)[index].dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+  });
+}
+
+async function pressPin(container: Element, index = 0) {
+  await openMenu(container, index);
+  await act(async () => pinItem().click());
+}
+
+async function pinLabel(container: Element, index = 0) {
+  await openMenu(container, index);
+  const label = pinItem().textContent;
+  await act(async () => {
+    document.querySelector('[role="menu"]')!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+  });
+  return label;
+}
 
 beforeEach(() => {
   mocks.authFetch.mockReset().mockResolvedValue({});
@@ -78,40 +99,40 @@ afterEach(() => {
 
 describe("PostCardBinding pinning a post", () => {
   it("offers pinning only on the viewer's own post", async () => {
-    expect(pinButtons(await mount({ post: postOf("post-1", false) }))).toHaveLength(1);
+    expect(menuTriggers(await mount({ post: postOf("post-1", false) }))).toHaveLength(1);
 
     mocks.activeProfileId = "viewer-1";
-    expect(pinButtons(await mount({ post: postOf("post-1", false) }))).toHaveLength(0);
+    expect(menuTriggers(await mount({ post: postOf("post-1", false) }))).toHaveLength(0);
 
     mocks.activeProfileId = null;
-    expect(pinButtons(await mount({ post: postOf("post-1", false) }))).toHaveLength(0);
+    expect(menuTriggers(await mount({ post: postOf("post-1", false) }))).toHaveLength(0);
   });
 
   it("pins an unpinned post", async () => {
     const container = await mount({ post: postOf("post-1", false) });
 
-    await act(async () => pinButtons(container)[0].click());
+    await pressPin(container);
 
     expect(mocks.authFetch).toHaveBeenCalledWith("/api/posts/post-1/pin", { method: "POST" });
-    expect(pinButtons(container)[0].getAttribute("aria-label")).toBe("ピン留めを外す");
-    expect(pinButtons(container)[0].getAttribute("aria-pressed")).toBe("true");
+    expect(await pinLabel(container)).toBe("ピン留めを外す");
   });
 
   it("unpins a pinned post", async () => {
     const container = await mount({ post: postOf("post-1", true) });
 
-    await act(async () => pinButtons(container)[0].click());
+    await pressPin(container);
 
     expect(mocks.authFetch).toHaveBeenCalledWith("/api/posts/post-1/pin", { method: "DELETE" });
-    expect(pinButtons(container)[0].getAttribute("aria-label")).toBe("ピン留めする");
+    expect(await pinLabel(container)).toBe("ピン留めする");
   });
 
   it("moves the pin on every card of the author when another post is pinned", async () => {
     const container = await mount({ post: postOf("post-1", true) }, { post: postOf("post-2", false) });
 
-    await act(async () => pinButtons(container)[1].click());
+    await pressPin(container, 1);
 
-    expect(pinButtons(container).map((b) => b.getAttribute("aria-pressed"))).toEqual(["false", "true"]);
+    expect(await pinLabel(container, 0)).toBe("ピン留めする");
+    expect(await pinLabel(container, 1)).toBe("ピン留めを外す");
   });
 
   it("refreshes the author lists so the post moves to the top", async () => {
@@ -125,7 +146,7 @@ describe("PostCardBinding pinning a post", () => {
       createRoot(document.createElement("div")).render(createElement(Registered));
     });
 
-    await act(async () => pinButtons(container)[0].click());
+    await pressPin(container);
 
     expect(refresh).toHaveBeenCalledTimes(1);
   });
@@ -134,9 +155,9 @@ describe("PostCardBinding pinning a post", () => {
     mocks.authFetch.mockRejectedValue(new Error("boom"));
     const container = await mount({ post: postOf("post-1", false) });
 
-    await act(async () => pinButtons(container)[0].click());
+    await pressPin(container);
 
-    expect(pinButtons(container)[0].getAttribute("aria-pressed")).toBe("false");
+    expect(await pinLabel(container)).toBe("ピン留めする");
     expect(useToastStore.getState().message).toBe("ピン留めを変更できませんでした");
   });
 });
@@ -157,7 +178,7 @@ describe("PostCardBinding pin mark", () => {
     const container = await mount({ post: postOf("post-1", true), showPinMark: true });
     expect(container.textContent).toContain("ピン留めされた投稿");
 
-    await act(async () => pinButtons(container)[0].click());
+    await pressPin(container);
 
     expect(container.textContent).not.toContain("ピン留めされた投稿");
   });

@@ -71,7 +71,7 @@ describe("typography scale", () => {
     expect(topBar).toContain(
       'className="flex h-11 w-11 items-center justify-center rounded-full',
     );
-    expect(postCard).toContain("min-h-11 min-w-11 items-center justify-center");
+    expect(postCard).toContain("min-h-11 min-w-11 items-center");
     expect(notifications).toContain(
       'className="text-sm text-text-secondary underline-offset-2',
     );

@@ -56,7 +56,15 @@ async function mount(props: { inDetail?: boolean } = {}) {
   return container;
 }
 
-const deleteButton = (container: Element) => container.querySelector<HTMLButtonElement>('button[aria-label="投稿を削除"]');
+const menuTrigger = (container: Element) => container.querySelector<HTMLButtonElement>('button[aria-label="その他の操作"]');
+
+async function pressDelete(container: Element) {
+  await act(async () => {
+    menuTrigger(container)!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+  });
+  const item = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"]')).find((el) => el.textContent === "削除")!;
+  await act(async () => item.click());
+}
 
 beforeEach(() => {
   mocks.authFetch.mockReset().mockResolvedValue({});
@@ -87,20 +95,20 @@ describe("PostCardBinding reactions", () => {
 
 describe("PostCardBinding deleting a post", () => {
   it("offers deleting only on the viewer's own post", async () => {
-    expect(deleteButton(await mount())).not.toBeNull();
+    expect(menuTrigger(await mount())).not.toBeNull();
 
     mocks.activeProfileId = "viewer-1";
-    expect(deleteButton(await mount())).toBeNull();
+    expect(menuTrigger(await mount())).toBeNull();
 
     mocks.activeProfileId = null;
-    expect(deleteButton(await mount())).toBeNull();
+    expect(menuTrigger(await mount())).toBeNull();
   });
 
   it("does nothing when the confirmation is declined", async () => {
     vi.stubGlobal("confirm", () => false);
     const container = await mount();
 
-    await act(async () => deleteButton(container)!.click());
+    await pressDelete(container);
 
     expect(mocks.authFetch).not.toHaveBeenCalled();
     expect(container.textContent).toContain("こんにちは");
@@ -109,7 +117,7 @@ describe("PostCardBinding deleting a post", () => {
   it("deletes the post and hides the card", async () => {
     const container = await mount();
 
-    await act(async () => deleteButton(container)!.click());
+    await pressDelete(container);
 
     expect(mocks.authFetch).toHaveBeenCalledWith("/api/posts/post-1", { method: "DELETE" });
     expect(container.textContent).not.toContain("こんにちは");
@@ -119,7 +127,7 @@ describe("PostCardBinding deleting a post", () => {
   it("closes the detail sheet after deleting from the detail", async () => {
     const container = await mount({ inDetail: true });
 
-    await act(async () => deleteButton(container)!.click());
+    await pressDelete(container);
 
     expect(usePostSheetStore.getState().open).toBe(false);
   });
@@ -130,7 +138,7 @@ describe("PostCardBinding deleting a post", () => {
     useToastStore.setState({ show });
     const container = await mount();
 
-    await act(async () => deleteButton(container)!.click());
+    await pressDelete(container);
 
     expect(container.textContent).toContain("こんにちは");
     expect(show).toHaveBeenCalledWith("投稿を削除できませんでした");

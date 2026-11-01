@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, Heart, MessageCircle, Pin, Repeat2, Trash2 } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Repeat2 } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
 import { profileDisplayName, profileInitial } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
@@ -15,6 +15,7 @@ import { usePostDeletionStore } from "@/stores/postDeletionStore";
 import { useToastStore } from "@/stores/toastStore";
 import { selectActiveProfileId, useAuthStore } from "@/stores/authStore";
 import { PostText } from "@/modules/post/lib/post-text";
+import { PostMoreMenu } from "./PostMoreMenu";
 import { PostScheduleCard } from "./PostScheduleCard";
 import { QuoteFrame } from "./QuoteFrame";
 import { displayStateOf } from "@/modules/post/lib/display-window";
@@ -114,15 +115,11 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
     toggleBookmark().catch(() => showToast("ブックマークできませんでした"));
   };
 
-  const handlePinClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleTogglePin = () => {
     togglePin().catch(() => showToast("ピン留めを変更できませんでした"));
   };
 
-  const handleDeleteClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDelete = async () => {
     if (!confirm("この投稿を削除しますか?")) return;
     try {
       await deletePost(post.id);
@@ -140,7 +137,7 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
         type="button"
         onClick={handleLikeClick}
         disabled={loading}
-        className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
+        className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm hover:text-text-primary disabled:opacity-50"
         aria-pressed={liked}
         aria-label={liked ? "いいねを解除" : "いいね"}
       >
@@ -148,11 +145,12 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
         <span>{likesCount}</span>
       </button>
       <div className="flex items-center">
+        {/* The target reaches into the like column: at full width inside its own column, the number could not sit next to the icon. */}
         <button
           type="button"
           onClick={handleQuoteClick}
           disabled={!isQuotable(post)}
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
+          className="-ml-5 flex min-h-11 w-11 shrink-0 items-center justify-end pr-1 text-sm hover:text-text-primary disabled:opacity-50"
           aria-label="引用する"
         >
           <Repeat2 className="size-5" />
@@ -177,7 +175,7 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
       </div>
       {inDetail ? (
         <span
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
+          className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm"
           aria-label={`コメント ${commentsCount} 件`}
         >
           <MessageCircle className="size-5" aria-hidden="true" />
@@ -187,46 +185,24 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
         <Link
           href={href}
           onClick={openDetail}
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
+          className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm hover:text-text-primary"
           aria-label="コメント"
         >
           <MessageCircle className="size-5" />
           <span>{commentsCount}</span>
         </Link>
       )}
+      {/* The target reaches into the comment column: at full width in the last column, it would widen the gap before the icon. */}
       <button
         type="button"
         onClick={handleBookmarkClick}
         disabled={bookmarkLoading}
-        className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
+        className="-ml-6 flex min-h-11 w-11 items-center justify-end gap-1 text-sm hover:text-text-primary disabled:opacity-50"
         aria-pressed={isBookmarked}
         aria-label={isBookmarked ? "ブックマークを解除" : "ブックマーク"}
       >
         <Bookmark className={isBookmarked ? "size-5 fill-current text-accent" : "size-5"} />
       </button>
-      {isOwnPost && (
-        <button
-          type="button"
-          onClick={handlePinClick}
-          disabled={pinning}
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
-          aria-pressed={pinned}
-          aria-label={pinned ? "ピン留めを外す" : "ピン留めする"}
-        >
-          <Pin className={pinned ? "size-5 fill-current text-accent" : "size-5"} />
-        </button>
-      )}
-      {isOwnPost && (
-        <button
-          type="button"
-          onClick={handleDeleteClick}
-          disabled={deleting}
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-error disabled:opacity-50"
-          aria-label="投稿を削除"
-        >
-          <Trash2 className="size-5" />
-        </button>
-      )}
     </>
   );
 
@@ -239,6 +215,11 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
       time={postedAt && displayState !== "scheduled" ? formatTimeAgo(postedAt) : ""}
       statusMark={statusMark}
       pinMark={!!showPinMark && pinned}
+      headerAction={
+        isOwnPost ? (
+          <PostMoreMenu pinned={pinned} pinning={pinning} deleting={deleting} onTogglePin={handleTogglePin} onDelete={handleDelete} />
+        ) : undefined
+      }
       isPrivate={post.visibility === "private"}
       body={announcementOnly ? undefined : <PostText content={post.content} mentions={post.mentions} hashtags={post.hashtags} />}
       attachment={post.schedule && <PostScheduleCard schedule={post.schedule} author={post.author} />}

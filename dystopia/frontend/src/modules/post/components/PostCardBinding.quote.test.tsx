@@ -99,7 +99,7 @@ describe("PostCardBinding quote icon", () => {
     expect(button.textContent).toBe("");
     expect(count.textContent).toBe("2");
     expect(button.className).toContain("min-h-11");
-    expect(button.className).toContain("min-w-11");
+    expect(button.className).toContain("w-11");
     expect(count.className).toContain("min-h-11");
     expect(count.className).toContain("min-w-11");
   });
@@ -110,12 +110,13 @@ describe("PostCardBinding quote icon", () => {
     expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント 3 件", "ブックマーク"]);
   });
 
-  it("keeps the pin and the delete after the bookmark on an own post", async () => {
+  it("puts the menu in the header on an own post, leaving the row the same as on any other post", async () => {
     useAuthStore.setState({ activeProfileId: "author-1" });
 
     const container = await mount();
 
-    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント", "ブックマーク", "ピン留めする", "投稿を削除"]);
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント", "ブックマーク"]);
+    expect(container.querySelector('button[aria-label="その他の操作"]')).not.toBeNull();
   });
 
   it("puts the icon and its count in one group with no gap, the count against the icon", async () => {
@@ -139,6 +140,16 @@ describe("PostCardBinding quote icon", () => {
     expect(count.className).toContain("justify-start");
     expect(count.className).toContain("min-h-11");
     expect(count.className).toContain("min-w-11");
+  });
+
+  it("counts only the bookmark icon's width in the row, keeping its target at 44px", async () => {
+    const container = await mount();
+    const bookmark = container.querySelector('button[aria-label="ブックマーク"]')!;
+
+    expect(bookmark.className).toContain("-ml-6");
+    expect(bookmark.className).toContain("w-11");
+    expect(bookmark.className).toContain("min-h-11");
+    expect(bookmark.className).toContain("justify-end");
   });
 
   it("shows the quote count store's value instead of the post's count", async () => {

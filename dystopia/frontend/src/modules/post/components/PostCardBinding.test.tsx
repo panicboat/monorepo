@@ -52,7 +52,7 @@ describe("PostCardBinding", () => {
   it("links the author name to their profile when a username is present", () => {
     const html = renderToStaticMarkup(<PostCardBinding post={basePost} />);
 
-    expect(html).toContain(`<a href="/u/test_taro"`);
+    expect(html).toContain(`<a class="min-w-0" href="/u/test_taro"`);
   });
 
   it("does not link the author name when there is no author", () => {
