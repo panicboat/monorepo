@@ -101,6 +101,29 @@ describe("PostCardBinding quote icon", () => {
     expect(count.className).toContain("min-w-11");
   });
 
+  it("puts the icon and its count in one group with no gap, the count against the icon", async () => {
+    const container = await mount();
+    const button = quoteButton(container);
+    const count = container.querySelector('a[aria-label="引用 2 件"]')!;
+    const group = button.parentElement!;
+
+    expect(count.parentElement).toBe(group);
+    expect(group.children).toHaveLength(2);
+    expect(group.className).toContain("flex");
+    expect(group.className).not.toMatch(/\bgap-/);
+    expect(count.className).toContain("justify-start");
+  });
+
+  it("keeps the count against the icon inside the detail too", async () => {
+    const container = await mount({ inDetail: true });
+    const count = container.querySelector('span[aria-label="引用 2 件"]')!;
+
+    expect(count.parentElement).toBe(quoteButton(container).parentElement);
+    expect(count.className).toContain("justify-start");
+    expect(count.className).toContain("min-h-11");
+    expect(count.className).toContain("min-w-11");
+  });
+
   it("shows the quote count store's value instead of the post's count", async () => {
     usePostQuoteCountStore.setState({ counts: { "post-1": 7 } });
 

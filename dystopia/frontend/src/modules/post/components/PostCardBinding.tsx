@@ -166,32 +166,34 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
           <span>{commentsCount}</span>
         </Link>
       )}
-      <button
-        type="button"
-        onClick={handleQuoteClick}
-        disabled={!isQuotable(post)}
-        className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
-        aria-label="引用する"
-      >
-        <Repeat2 className="size-5" />
-      </button>
-      {inDetail ? (
-        <span
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
-          aria-label={`引用 ${quotesCount} 件`}
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={handleQuoteClick}
+          disabled={!isQuotable(post)}
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
+          aria-label="引用する"
         >
-          {quotesCount}
-        </span>
-      ) : (
-        <Link
-          href={`/posts/${encodeURIComponent(post.id)}?tab=quotes`}
-          onClick={openQuotes}
-          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
-          aria-label={`引用 ${quotesCount} 件`}
-        >
-          {quotesCount}
-        </Link>
-      )}
+          <Repeat2 className="size-5" />
+        </button>
+        {inDetail ? (
+          <span
+            className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm"
+            aria-label={`引用 ${quotesCount} 件`}
+          >
+            {quotesCount}
+          </span>
+        ) : (
+          <Link
+            href={`/posts/${encodeURIComponent(post.id)}?tab=quotes`}
+            onClick={openQuotes}
+            className="flex min-h-11 min-w-11 items-center justify-start gap-1 text-sm hover:text-text-primary"
+            aria-label={`引用 ${quotesCount} 件`}
+          >
+            {quotesCount}
+          </Link>
+        )}
+      </div>
       <button
         type="button"
         onClick={handleBookmarkClick}
