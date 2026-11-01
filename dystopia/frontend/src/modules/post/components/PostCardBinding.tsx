@@ -82,6 +82,12 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
     openPost(post.id);
   };
 
+  const openQuotes = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isPlainClick(e)) return;
+    e.preventDefault();
+    openPost(post.id, "quotes");
+  };
+
   const handleLikeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -177,6 +183,7 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
       ) : (
         <Link
           href={`/posts/${encodeURIComponent(post.id)}?tab=quotes`}
+          onClick={openQuotes}
           className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
           aria-label={`引用 ${post.quotesCount} 件`}
         >

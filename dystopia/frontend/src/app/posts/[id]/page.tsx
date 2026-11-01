@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { PostDetailContent } from "@/modules/post/components/PostDetailContent";
 
 export default function PostDetailPage() {
@@ -9,7 +10,16 @@ export default function PostDetailPage() {
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
-      <PostDetailContent postId={id} />
+      <Suspense>
+        <PostDetail id={id} />
+      </Suspense>
     </main>
   );
+}
+
+function PostDetail({ id }: { id: string }) {
+  const initialTab = useSearchParams()?.get("tab") === "quotes" ? "quotes" : "comments";
+
+  // PostDetailContent reads initialTab only on mount, so key it to follow the URL.
+  return <PostDetailContent key={`${id}:${initialTab}`} postId={id} initialTab={initialTab} />;
 }

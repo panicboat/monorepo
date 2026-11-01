@@ -54,7 +54,7 @@ const quoted: QuotedPostView = {
 const stopNavigation = (event: Event) => event.preventDefault();
 
 beforeEach(() => {
-  usePostSheetStore.setState({ postId: null, session: 0, open: false });
+  usePostSheetStore.setState({ postId: null, session: 0, open: false, tab: "comments" });
   useQuoteComposeStore.setState({ post: null, session: 0, open: false });
   document.addEventListener("click", stopNavigation);
 });
@@ -73,9 +73,9 @@ async function mount(props: { inDetail?: boolean; post?: PostView; hideQuoteFram
   return container;
 }
 
-async function click(element: Element) {
+async function click(element: Element, init: MouseEventInit = {}) {
   await act(async () => {
-    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ...init }));
   });
 }
 
@@ -131,6 +131,30 @@ describe("PostCardBinding quote icon", () => {
     const container = await mount();
 
     expect(container.querySelector('a[aria-label="引用 2 件"]')?.getAttribute("href")).toBe("/posts/post-1?tab=quotes");
+  });
+
+  it("opens the sheet on the quotes tab when the count is clicked", async () => {
+    const container = await mount();
+
+    await click(container.querySelector('a[aria-label="引用 2 件"]')!);
+
+    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", tab: "quotes", open: true });
+  });
+
+  it("leaves a modified click on the count to the link", async () => {
+    const container = await mount();
+
+    await click(container.querySelector('a[aria-label="引用 2 件"]')!, { metaKey: true });
+
+    expect(usePostSheetStore.getState().open).toBe(false);
+  });
+
+  it("opens the sheet on the comments tab from the comment icon", async () => {
+    const container = await mount();
+
+    await click(container.querySelector('a[aria-label="コメント"]')!);
+
+    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", tab: "comments", open: true });
   });
 
   it("shows the count as text inside the detail", async () => {
