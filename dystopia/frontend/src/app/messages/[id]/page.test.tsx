@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   sendRestriction: "none" as SendRestrictionView,
   threadLoading: false,
   messages: [] as MessageView[],
+  hasMore: false,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -16,7 +17,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/modules/messaging", () => ({
   useMessages: () => ({
     messages: mocks.messages,
-    hasMore: false,
+    hasMore: mocks.hasMore,
     loading: false,
     send: async () => {},
     markRead: async () => {},
@@ -41,6 +42,7 @@ beforeEach(() => {
   mocks.sendRestriction = "none";
   mocks.threadLoading = false;
   mocks.messages = [incoming];
+  mocks.hasMore = false;
 });
 
 describe("ChatPage", () => {
@@ -63,6 +65,20 @@ describe("ChatPage", () => {
 
     expect(html).not.toContain(">?<");
     expect(html.match(/>ゆ</g)?.length).toBe(2);
+  });
+
+  it("anchors the scrolling list to the latest message", () => {
+    const html = renderToStaticMarkup(<ChatPage />);
+
+    expect(html).toMatch(/<div class="[^"]*\bflex-col-reverse\b[^"]*\boverflow-y-auto\b[^"]*">/);
+  });
+
+  it("keeps the load-more button from pulling the view to the top when older messages arrive", () => {
+    mocks.hasMore = true;
+
+    const html = renderToStaticMarkup(<ChatPage />);
+
+    expect(html).toMatch(/<div class="[^"]*\[overflow-anchor:none\][^"]*"><button[^>]*>/);
   });
 
   it("offers the composer when nothing restricts the viewer from sending", () => {
