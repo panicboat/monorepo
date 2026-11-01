@@ -27,6 +27,7 @@ export interface PostCardProps {
   isPrivate?: boolean;
   statusMark?: string;
   pinMark?: boolean;
+  headerAction?: React.ReactNode;
   body?: React.ReactNode;
   attachment?: React.ReactNode;
   images?: PostCardImage[];
@@ -45,6 +46,7 @@ export function PostCard({
   isPrivate,
   statusMark,
   pinMark,
+  headerAction,
   body,
   attachment,
   images,
@@ -58,10 +60,10 @@ export function PostCard({
 
   const avatar = <Avatar src={author.avatarSrc} fallback={author.initial ?? author.name.slice(0, 1)} size="md" href={authorHref} />;
   const nameAndHandle = (
-    <span className="flex items-center gap-1">
-      <span className="font-bold text-text-primary">{author.name}</span>
-      {author.isPrivate && <LockMark label="鍵付き" className="text-xs" />}
-      {author.handle && <span className="text-text-secondary">@{author.handle}</span>}
+    <span className="flex min-w-0 items-center gap-1">
+      <span className="truncate font-bold text-text-primary">{author.name}</span>
+      {author.isPrivate && <LockMark label="鍵付き" className="shrink-0 text-xs" />}
+      {author.handle && <span className="min-w-0 shrink-[100] truncate text-text-secondary">@{author.handle}</span>}
     </span>
   );
 
@@ -91,14 +93,15 @@ export function PostCard({
         {avatar}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1 text-sm">
-            {authorHref ? <Link href={authorHref}>{nameAndHandle}</Link> : nameAndHandle}
-            {time && <span className="text-text-muted">· {time}</span>}
+            {authorHref ? <Link href={authorHref} className="min-w-0">{nameAndHandle}</Link> : nameAndHandle}
+            {time && <span className="shrink-0 text-text-muted">· {time}</span>}
             {statusMark && <span className="shrink-0 text-xs text-text-muted">{statusMark}</span>}
             {isPrivate && (
               <span role="img" aria-label="フォロワーのみ" title="フォロワーのみ" className="inline-flex shrink-0 items-center text-xs">
                 <Users className="size-[1em]" />
               </span>
             )}
+            {headerAction && <div className="ml-auto shrink-0">{headerAction}</div>}
           </div>
           {body !== undefined &&
             (detailHref ? (
@@ -148,7 +151,7 @@ export function PostCard({
           )}
           {quoteFrame && <div className="mt-2">{quoteFrame}</div>}
           {reactions && (
-            <div className="mt-3 flex flex-wrap items-center gap-0 text-text-secondary sm:gap-6">
+            <div className="mt-3 grid grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center text-text-secondary">
               {reactions}
             </div>
           )}

@@ -99,9 +99,9 @@ describe("PostCardBinding quote icon", () => {
     expect(button.textContent).toBe("");
     expect(count.textContent).toBe("2");
     expect(button.className).toContain("min-h-11");
-    expect(button.className).toContain("min-w-7");
+    expect(button.className).toContain("w-11");
     expect(count.className).toContain("min-h-11");
-    expect(count.className).toContain("min-w-6");
+    expect(count.className).toContain("min-w-11");
   });
 
   it("keeps the same order inside the detail", async () => {
@@ -110,12 +110,13 @@ describe("PostCardBinding quote icon", () => {
     expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント 3 件", "ブックマーク"]);
   });
 
-  it("keeps the pin and the delete after the bookmark on an own post", async () => {
+  it("puts the menu in the header on an own post, leaving the row the same as on any other post", async () => {
     useAuthStore.setState({ activeProfileId: "author-1" });
 
     const container = await mount();
 
-    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント", "ブックマーク", "ピン留めする", "投稿を削除"]);
+    expect(reactionLabels(container)).toEqual(["いいね", "引用する", "引用 2 件", "コメント", "ブックマーク"]);
+    expect(container.querySelector('button[aria-label="その他の操作"]')).not.toBeNull();
   });
 
   it("puts the icon and its count in one group with no gap, the count against the icon", async () => {
@@ -138,7 +139,7 @@ describe("PostCardBinding quote icon", () => {
     expect(count.parentElement).toBe(quoteButton(container).parentElement);
     expect(count.className).toContain("justify-start");
     expect(count.className).toContain("min-h-11");
-    expect(count.className).toContain("min-w-6");
+    expect(count.className).toContain("min-w-11");
   });
 
   it("shows the quote count store's value instead of the post's count", async () => {

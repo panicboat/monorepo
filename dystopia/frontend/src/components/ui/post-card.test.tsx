@@ -102,16 +102,22 @@ describe("PostCard", () => {
     expect(detailLink).not.toContain("<video");
   });
 
-  it("wraps the reactions onto another row instead of overflowing a narrow screen", () => {
+  it("lays the reactions out in fixed columns so they line up across cards", () => {
     const html = renderToStaticMarkup(<PostCard {...baseProps} reactions={<button type="button">いいね</button>} />);
 
-    expect(html).toMatch(/<div class="[^"]*\bflex-wrap\b[^"]*"><button[^>]*>いいね<\/button><\/div>/);
+    expect(html).toMatch(/<div class="[^"]*\bgrid\b[^"]*\bgrid-cols-\[repeat\(3,minmax\(0,1fr\)\)_auto\][^"]*"><button[^>]*>いいね<\/button><\/div>/);
   });
 
-  it("leaves no gap between the reactions on a narrow screen, so an own post fits on one row", () => {
-    const html = renderToStaticMarkup(<PostCard {...baseProps} reactions={<button type="button">いいね</button>} />);
+  it("puts the header action at the end of the header line", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} headerAction={<button type="button">操作</button>} />);
 
-    expect(html).toMatch(/<div class="[^"]*\bgap-0\b[^"]*\bsm:gap-6\b[^"]*"><button[^>]*>いいね<\/button><\/div>/);
+    expect(html).toMatch(/<div class="[^"]*\bml-auto\b[^"]*"><button[^>]*>操作<\/button><\/div>/);
+  });
+
+  it("truncates the handle before the name or the time when the header line is long", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} />);
+
+    expect(html).toMatch(new RegExp(`<span class="[^"]*\\btruncate\\b[^"]*">@${baseProps.author.handle}</span>`));
   });
 
   it("renders no video element for a post without videos", () => {
@@ -125,7 +131,7 @@ describe("PostCard", () => {
       <PostCard {...baseProps} authorHref="/u/test_taro" />
     );
 
-    expect(html).toContain(`<a href="/u/test_taro"`);
+    expect(html).toContain(`<a class="min-w-0" href="/u/test_taro"`);
     expect(html).toContain("テスト太郎");
   });
 
