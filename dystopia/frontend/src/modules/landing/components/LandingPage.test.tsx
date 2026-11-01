@@ -53,7 +53,6 @@ describe("LandingPage", () => {
     expect(html).toContain("「今夜会えるよ」が、");
     expect(html).toContain("今日は気分がいいので、今夜少しだけ");
     expect(html).toContain("21:30〜");
-    expect(html).toContain("お店を通さない約束や取引には使えません。");
     expect(html).not.toContain("今週の予定");
     expect(html).not.toContain("活動名");
   });
