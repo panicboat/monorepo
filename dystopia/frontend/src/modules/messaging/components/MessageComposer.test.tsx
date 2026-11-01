@@ -35,6 +35,61 @@ describe("MessageComposer", () => {
     container.remove();
   });
 
+  it("starts as one line that grows with the draft, beside the send button", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(<MessageComposer onSend={vi.fn()} />);
+    });
+
+    const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
+    const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(textarea.getAttribute("rows")).toBe("1");
+    expect(textarea.className).toContain("min-h-0");
+    expect(textarea.className).not.toContain("min-h-24");
+    expect(textarea.className).toContain("field-sizing-content");
+    expect(button.parentElement).toBe(textarea.parentElement);
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("shows the character count only once the draft is over the limit", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(<MessageComposer onSend={vi.fn()} />);
+    });
+
+    const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
+    const nativeValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      "value"
+    )!.set!;
+    const type = (value: string) =>
+      act(async () => {
+        nativeValueSetter.call(textarea, value);
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+
+    await type("a".repeat(5000));
+    expect(container.textContent).not.toContain("/5000");
+
+    await type("a".repeat(5001));
+    expect(container.textContent).toContain("5001/5000");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
   it("shows the failure reason when onSend rejects, and keeps the draft", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);

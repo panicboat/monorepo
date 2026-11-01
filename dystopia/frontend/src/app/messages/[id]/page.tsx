@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
@@ -23,6 +23,7 @@ export default function ChatPage() {
 
   const { messages, hasMore, loading, send, markRead, loadMore } = useMessages(threadId || null);
   const { thread, sendRestriction, loading: threadLoading } = useThread(threadId || null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const counterpart = thread?.counterpart ?? null;
   const counterpartAvatar = (
     <Avatar src={counterpart?.avatarUrl || undefined} fallback={(counterpart?.displayName || "?").slice(0, 1)} size="sm" />
@@ -34,6 +35,15 @@ export default function ChatPage() {
       markRead(incoming.id);
     }
   }, [messages, viewerId, markRead]);
+
+  const sendAndShowLatest = useCallback(
+    async (content: string) => {
+      await send(content);
+      // A column-reverse scroller measures scrollTop from the bottom, so 0 is the latest message.
+      if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+    },
+    [send]
+  );
 
   if (!threadId) {
     return <main className="mx-auto max-w-xl p-6 text-text-secondary">無効なスレッドです。</main>;
@@ -66,52 +76,55 @@ export default function ChatPage() {
         </p>
       </header>
 
-      <div className="flex-1 overflow-y-auto pt-2">
-        {hasMore && (
-          <div className="flex justify-center px-4 py-2">
-            <button
-              type="button"
-              onClick={() => loadMore()}
-              disabled={loading}
-              className="text-sm text-text-secondary hover:text-text-primary disabled:opacity-50"
-            >
-              {loading ? "読み込み中…" : "もっと見る"}
-            </button>
-          </div>
-        )}
-        {loading && messages.length === 0 && (
-          <p className="px-4 py-6 text-center text-text-secondary">読み込み中…</p>
-        )}
-        {!loading && messages.length === 0 && (
-          <p className="px-4 py-6 text-center text-text-secondary">メッセージはまだありません</p>
-        )}
-        <div className="flex flex-col-reverse gap-2 px-4 pb-4">
-          {messages.map((m) => {
-            const isMine = m.senderProfileId === viewerId;
-            return (
-              <div
-                key={m.id}
-                className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : "flex-row"}`}
+      <div ref={scrollerRef} className="flex flex-1 flex-col-reverse overflow-y-auto pt-2">
+        <div>
+          {hasMore && (
+            // Chrome's scroll anchoring would follow this button to the new top and skip the page it just loaded.
+            <div className="flex justify-center px-4 py-2 [overflow-anchor:none]">
+              <button
+                type="button"
+                onClick={() => loadMore()}
+                disabled={loading}
+                className="text-sm text-text-secondary hover:text-text-primary disabled:opacity-50"
               >
-                {!isMine && counterpartAvatar}
+                {loading ? "読み込み中…" : "もっと見る"}
+              </button>
+            </div>
+          )}
+          {loading && messages.length === 0 && (
+            <p className="px-4 py-6 text-center text-text-secondary">読み込み中…</p>
+          )}
+          {!loading && messages.length === 0 && (
+            <p className="px-4 py-6 text-center text-text-secondary">メッセージはまだありません</p>
+          )}
+          <div className="flex flex-col-reverse gap-2 px-4 pb-4">
+            {messages.map((m) => {
+              const isMine = m.senderProfileId === viewerId;
+              return (
                 <div
-                  className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
-                    isMine ? "bg-accent text-white" : "bg-surface text-text-primary"
-                  }`}
+                  key={m.id}
+                  className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : "flex-row"}`}
                 >
-                  <p className="whitespace-pre-wrap">{m.content}</p>
-                  <p className={`mt-1 text-xs opacity-70 ${isMine ? "text-white" : "text-text-muted"}`}>
-                    {timeAgo(m.createdAt)}
-                  </p>
+                  {!isMine && counterpartAvatar}
+                  <div
+                    className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
+                      isMine ? "bg-accent text-white" : "bg-surface text-text-primary"
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{m.content}</p>
+                    <p className={`mt-1 text-xs opacity-70 ${isMine ? "text-white" : "text-text-muted"}`}>
+                      {timeAgo(m.createdAt)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {sendRestriction === "none" ? (
-        <MessageComposer onSend={send} />
+        <MessageComposer onSend={sendAndShowLatest} />
       ) : (
         <SendRestrictionNotice restriction={sendRestriction} counterpartUsername={counterpart?.username} />
       )}

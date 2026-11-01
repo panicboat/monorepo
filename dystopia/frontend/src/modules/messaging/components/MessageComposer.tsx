@@ -43,25 +43,25 @@ export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
   return (
     <form onSubmit={handleSubmit} className="border-t border-border bg-bg px-4 py-3">
       <ActingProfileLabel className="mb-2" />
-      <Textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="メッセージを入力"
-        rows={2}
-        disabled={disabled}
-        aria-label="メッセージ本文"
-      />
-      <div className="mt-2 flex items-center justify-between gap-3">
-        <span
-          className={`text-xs ${overLimit ? "text-error" : "text-text-muted"}`}
-          aria-live="polite"
-        >
-          {content.length}/{MAX_LENGTH}
-        </span>
-        <Button type="submit" variant="primary" size="sm" disabled={!canSubmit}>
+      <div className="flex items-end gap-2">
+        <Textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="メッセージを入力"
+          rows={1}
+          disabled={disabled}
+          aria-label="メッセージ本文"
+          className="max-h-32 min-h-0 min-w-0 flex-1 resize-none rounded-2xl py-1.5 field-sizing-content"
+        />
+        <Button type="submit" variant="primary" size="sm" disabled={!canSubmit} className="h-[38px] shrink-0">
           {submitting ? "送信中…" : "送信"}
         </Button>
       </div>
+      {overLimit && (
+        <p className="mt-2 text-xs text-error" role="alert">
+          {content.length}/{MAX_LENGTH}
+        </p>
+      )}
       {error && (
         <p className="mt-2 text-sm text-error" role="alert">
           {error}
