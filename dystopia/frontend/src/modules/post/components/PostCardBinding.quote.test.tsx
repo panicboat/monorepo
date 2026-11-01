@@ -99,9 +99,9 @@ describe("PostCardBinding quote icon", () => {
     expect(button.textContent).toBe("");
     expect(count.textContent).toBe("2");
     expect(button.className).toContain("min-h-11");
-    expect(button.className).toContain("min-w-11");
+    expect(button.className).toContain("min-w-7");
     expect(count.className).toContain("min-h-11");
-    expect(count.className).toContain("min-w-11");
+    expect(count.className).toContain("min-w-6");
   });
 
   it("keeps the same order inside the detail", async () => {
@@ -138,7 +138,7 @@ describe("PostCardBinding quote icon", () => {
     expect(count.parentElement).toBe(quoteButton(container).parentElement);
     expect(count.className).toContain("justify-start");
     expect(count.className).toContain("min-h-11");
-    expect(count.className).toContain("min-w-11");
+    expect(count.className).toContain("min-w-6");
   });
 
   it("shows the quote count store's value instead of the post's count", async () => {

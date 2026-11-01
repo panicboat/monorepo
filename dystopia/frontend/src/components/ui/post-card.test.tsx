@@ -108,6 +108,12 @@ describe("PostCard", () => {
     expect(html).toMatch(/<div class="[^"]*\bflex-wrap\b[^"]*"><button[^>]*>いいね<\/button><\/div>/);
   });
 
+  it("leaves no gap between the reactions on a narrow screen, so an own post fits on one row", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} reactions={<button type="button">いいね</button>} />);
+
+    expect(html).toMatch(/<div class="[^"]*\bgap-0\b[^"]*\bsm:gap-6\b[^"]*"><button[^>]*>いいね<\/button><\/div>/);
+  });
+
   it("renders no video element for a post without videos", () => {
     const html = renderToStaticMarkup(<PostCard {...baseProps} images={oneImage} />);
 

@@ -148,7 +148,7 @@ export function PostCard({
           )}
           {quoteFrame && <div className="mt-2">{quoteFrame}</div>}
           {reactions && (
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-text-secondary sm:gap-6">
+            <div className="mt-3 flex flex-wrap items-center gap-0 text-text-secondary sm:gap-6">
               {reactions}
             </div>
           )}
