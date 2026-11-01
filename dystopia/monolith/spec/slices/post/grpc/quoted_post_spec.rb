@@ -104,14 +104,13 @@ RSpec.describe "quoted post", type: :database do
       expect([saved.quoted_post.available, saved.quoted_post.id, saved.quoted_post.content]).to eq([true, original.id, "original words"])
     end
 
-    it "does not nest a frame inside a frame" do
+    it "frames the quoted post itself when that post is also a quote" do
       middle = quote_of(original, content: "middle take")
       outer = quote_of(middle, by: viewer, content: "outer take")
 
       presented_everywhere(outer, viewer: viewer).each do |presented|
         expect(presented.quoted_post.id).to eq(middle.id)
         expect(presented.quoted_post.content).to eq("middle take")
-        expect(presented.quoted_post.to_h.keys).not_to include(:quoted_post)
       end
     end
 

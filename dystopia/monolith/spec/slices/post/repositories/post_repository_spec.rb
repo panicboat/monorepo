@@ -171,6 +171,18 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
       expect(rows.map(&:id)).to eq([older.id])
     end
+
+    it "neither skips nor repeats quotes that share a published_at across the page boundary" do
+      older = quote(now - 300)
+      tied = Array.new(3) { quote(now - 200) }.sort_by(&:id).reverse
+
+      first_page = repo.list_quotes(post_id: original.id, limit: 2, cursor: nil)
+      boundary = first_page[1]
+      second_page = repo.list_quotes(post_id: original.id, limit: 2, cursor: { published_at: boundary.published_at, id: boundary.id })
+
+      expect(first_page.map(&:id)).to eq([*tied.map(&:id), older.id].first(3))
+      expect(second_page.map(&:id)).to eq([tied.last.id, older.id])
+    end
   end
 
   describe "#save_media" do
