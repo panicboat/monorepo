@@ -68,7 +68,7 @@ describe("ProfileMoreMenu", () => {
   it("offers block for a profile that is not blocked and toggles it when chosen", async () => {
     const close = await openMenu();
 
-    expect(menuItems().map((item) => item.textContent)).toEqual(["ブロック"]);
+    expect(menuItems().map((item) => item.textContent)).toEqual(["ブロック", "通報"]);
     await act(async () => {
       (menuItems()[0] as HTMLElement).click();
     });
@@ -94,7 +94,7 @@ describe("ProfileMoreMenu", () => {
     mocks.isBlocked = true;
     const close = await openMenu();
 
-    expect(menuItems().map((item) => item.textContent)).toEqual(["ブロック解除"]);
+    expect(menuItems().map((item) => item.textContent)).toEqual(["ブロック解除", "通報"]);
 
     await close();
   });
@@ -103,7 +103,7 @@ describe("ProfileMoreMenu", () => {
     const onUnfollow = vi.fn();
     const close = await openMenu(onUnfollow);
 
-    expect(menuItems().map((item) => item.textContent)).toEqual(["フォローを外す", "ブロック"]);
+    expect(menuItems().map((item) => item.textContent)).toEqual(["フォローを外す", "ブロック", "通報"]);
     await act(async () => {
       (menuItems()[0] as HTMLElement).click();
     });
@@ -111,5 +111,19 @@ describe("ProfileMoreMenu", () => {
     expect(mocks.toggle).not.toHaveBeenCalled();
 
     await close();
+  });
+});
+
+describe("ProfileMoreMenu report", () => {
+  it("opens the report dialog from the menu", async () => {
+    const cleanup = await openMenu();
+
+    const item = menuItems().find((candidate) => candidate.textContent === "通報") as HTMLElement;
+    await act(async () => {
+      item.click();
+    });
+
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("通報する");
+    await cleanup();
   });
 });

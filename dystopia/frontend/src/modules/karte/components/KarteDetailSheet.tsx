@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { ReportButton } from "@/modules/report";
 import { MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
@@ -203,6 +204,12 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
             >
               このカルテを削除
             </button>
+          </div>
+        )}
+
+        {!karte.isMine && (
+          <div className="flex flex-col gap-2 border-t border-divider pt-4">
+            <ReportButton targetType="karte" targetId={karte.id} label="このカルテを通報" className="min-h-11 text-sm text-text-secondary hover:underline" />
           </div>
         )}
       </div>

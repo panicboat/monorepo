@@ -8,6 +8,7 @@ import { ProfileName } from "@/components/ui/profile-name";
 import { useMessages, useThread } from "@/modules/messaging";
 import { MessageComposer } from "@/modules/messaging/components/MessageComposer";
 import { SendRestrictionNotice } from "@/modules/messaging/components/SendRestrictionNotice";
+import { ReportButton } from "@/modules/report";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 function timeAgo(iso: string): string {
@@ -116,6 +117,9 @@ export default function ChatPage() {
                       {timeAgo(m.createdAt)}
                     </p>
                   </div>
+                  {!isMine && (
+                    <ReportButton targetType="message" targetId={m.id} label="通報" className="shrink-0 text-xs text-text-muted hover:text-text-primary" />
+                  )}
                 </div>
               );
             })}

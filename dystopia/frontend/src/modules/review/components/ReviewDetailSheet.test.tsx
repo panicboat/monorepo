@@ -257,3 +257,19 @@ describe("ReviewDetailSheet", () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+describe("ReviewDetailSheet report", () => {
+  it("offers the report on someone else's review", async () => {
+    await mount(review({ isMine: false }));
+
+    await click("このクチコミを通報");
+
+    expect(button("通報する")).toBeDefined();
+  });
+
+  it("does not offer the report on the viewer's own review", async () => {
+    await mount(review({ isMine: true }));
+
+    expect(button("このクチコミを通報")).toBeUndefined();
+  });
+});

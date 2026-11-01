@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package report.v1;
+
+service ReportService {
+  rpc CreateReport(CreateReportRequest) returns (CreateReportResponse);
+}
+
+message CreateReportRequest {
+  string target_type = 1;
+  string target_id = 2;
+  string reason = 3;
+  string note = 4;
+}
+
+message CreateReportResponse {}

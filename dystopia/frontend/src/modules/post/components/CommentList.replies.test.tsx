@@ -39,6 +39,6 @@ describe("CommentList replies", () => {
     await act(async () => showReplies!.click());
 
     expect(container.textContent).toContain("reply-list");
-    expect(buttonLabels(container)).toEqual(["返信する"]);
+    expect(buttonLabels(container)).toEqual(["返信する", "通報"]);
   });
 });

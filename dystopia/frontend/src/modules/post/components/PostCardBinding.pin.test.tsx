@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({ authFetch: vi.fn(), activeProfileId: "author-1
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }) }));
 vi.mock("@/lib/auth", () => ({ authFetch: mocks.authFetch }));
+vi.mock("@/modules/report", () => ({ ReportMenu: () => null }));
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (s: { activeProfileId: string | null }) => unknown) => selector({ activeProfileId: mocks.activeProfileId }),
   selectActiveProfileId: (state: { activeProfileId: string | null }) => state.activeProfileId,

@@ -8,6 +8,7 @@ import { formatTimeAgo } from "@/lib/utils/date";
 import { useComments } from "@/modules/post/hooks/useComments";
 import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
 import { PostText } from "@/modules/post/lib/post-text";
+import { ReportButton } from "@/modules/report";
 import { ReplyList } from "./ReplyList";
 import { ReplyComposer } from "./ReplyComposer";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
@@ -91,6 +92,9 @@ export function CommentList({ postId }: CommentListProps) {
                     >
                       削除
                     </button>
+                  )}
+                  {viewerId && !isOwn && (
+                    <ReportButton targetType="comment" targetId={c.id} label="通報" className="text-text-muted hover:text-text-primary" />
                   )}
                 </div>
               </div>

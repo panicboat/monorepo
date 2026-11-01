@@ -52,6 +52,10 @@ module Messaging
         message_records.where(thread_id: thread_id, id: message_id).exist?
       end
 
+      def find_message(id:)
+        message_records.by_pk(id).one
+      end
+
       def insert_message(thread_id:, sender_profile_id:, content:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
