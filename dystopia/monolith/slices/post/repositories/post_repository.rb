@@ -118,6 +118,40 @@ module Post
         scope.order { [published_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
+      def list_quotes(post_id:, limit:, cursor:)
+        scope = posts.combine(:post_media, :hashtags, :post_mentions).where(quoted_post_id: post_id)
+
+        if cursor
+          scope = scope.where {
+            (published_at < cursor[:published_at]) |
+              ((published_at =~ cursor[:published_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order { [published_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
+      # Mirrors FilterVisiblePosts in SQL so a heavily quoted post does not load every quote row.
+      def quotes_count_batch(post_ids:, viewer_profile_id:)
+        return {} if post_ids.nil? || post_ids.empty?
+
+        db = posts.dataset.db
+        visible_authors = db[:profile__profiles].where(disabled_at: nil, account_id: db[:identity__accounts].where(deactivated_at: nil).select(:id)).select(:id)
+        others = live_condition & Sequel[author_profile_id: visible_authors]
+        condition = if viewer_profile_id
+          readable = Sequel[visibility: "public"]
+          readable |= Sequel[author_profile_id: db[:social__follows].where(follower_profile_id: viewer_profile_id, status: "approved").select(:followee_profile_id)]
+          others &= ~Sequel[author_profile_id: db[:social__blocks].where(blocker_profile_id: viewer_profile_id).select(:blocked_profile_id)]
+          others &= ~Sequel[author_profile_id: db[:social__blocks].where(blocked_profile_id: viewer_profile_id).select(:blocker_profile_id)]
+          (others & readable) | Sequel[author_profile_id: viewer_profile_id]
+        else
+          others & Sequel[visibility: "public"]
+        end
+
+        scope = posts.dataset.where(quoted_post_id: post_ids).where(condition)
+        scope.unordered.group_and_count(:quoted_post_id).to_hash(:quoted_post_id, :count)
+      end
+
       def list_post_ids(limit: 20, cursor: nil, author_profile_ids: nil, excluded_author_profile_ids: [], include_private: false, viewer_profile_id: nil, private_author_profile_ids: [])
         return [] if !author_profile_ids.nil? && author_profile_ids.empty?
 

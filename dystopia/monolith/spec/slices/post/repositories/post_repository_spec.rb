@@ -91,6 +91,88 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
   end
 
+  describe "#quotes_count_batch" do
+    let(:db) { Hanami.app["db.gateway"].connection }
+    let(:author) { create_account_with_profile(username: "count_author") }
+    let(:viewer) { create_account_with_profile(username: "count_viewer") }
+    let(:first_original) { repo.create_post(author_profile_id: author, content: "first", visibility: "public") }
+    let(:second_original) { repo.create_post(author_profile_id: author, content: "second", visibility: "public") }
+
+    def quote(original, **attributes)
+      repo.create_post(author_profile_id: author, content: "take", visibility: "public", quoted_post_id: original.id, **attributes)
+    end
+
+    it "groups the counts by original and leaves out originals without visible quotes" do
+      2.times { quote(first_original) }
+      quote(second_original)
+      unquoted = repo.create_post(author_profile_id: author, content: "unquoted", visibility: "public")
+
+      counts = repo.quotes_count_batch(post_ids: [first_original.id, second_original.id, unquoted.id], viewer_profile_id: viewer)
+
+      expect(counts).to eq(first_original.id => 2, second_original.id => 1)
+    end
+
+    it "returns an empty hash without post ids" do
+      expect(repo.quotes_count_batch(post_ids: [], viewer_profile_id: viewer)).to eq({})
+    end
+
+    it "counts neither authorless nor followers only quotes for no viewer" do
+      quote(first_original)
+      quote(first_original, visibility: "private")
+      quote(first_original, author_profile_id: nil)
+
+      expect(repo.quotes_count_batch(post_ids: [first_original.id], viewer_profile_id: nil)).to eq(first_original.id => 1)
+    end
+
+    it "does not load the quote rows" do
+      quote(first_original)
+      viewer
+      log = StringIO.new
+      logger = Logger.new(log)
+      db.loggers << logger
+
+      begin
+        repo.quotes_count_batch(post_ids: [first_original.id], viewer_profile_id: viewer)
+      ensure
+        db.loggers.delete(logger)
+      end
+
+      expect(log.string.lines.length).to eq(1)
+      expect(log.string).to include("GROUP BY").and include("count(*)")
+    end
+  end
+
+  describe "#list_quotes" do
+    let(:author) { create_account_with_profile(username: "list_quotes_author") }
+    let(:original) { repo.create_post(author_profile_id: author, content: "original", visibility: "public") }
+    let(:now) { Time.now }
+
+    def quote(published_at)
+      repo.create_post(author_profile_id: author, content: "take", visibility: "public", published_at: published_at, quoted_post_id: original.id)
+    end
+
+    it "returns limit + 1 quotes of that post, newest first, with equal times by id descending" do
+      oldest = quote(now - 300)
+      tied = [quote(now - 200), quote(now - 200)]
+      repo.save_hashtags(post_id: oldest.id, hashtags: ["kept"])
+      repo.create_post(author_profile_id: author, content: "plain", visibility: "public", published_at: now - 100)
+
+      rows = repo.list_quotes(post_id: original.id, limit: 2, cursor: nil)
+
+      expect(rows.map(&:id)).to eq([*tied.map(&:id).sort.reverse, oldest.id])
+      expect(rows.last.hashtags.map(&:tag)).to eq(["kept"])
+    end
+
+    it "continues after the cursor" do
+      older = quote(now - 300)
+      newer = quote(now - 200)
+
+      rows = repo.list_quotes(post_id: original.id, limit: 2, cursor: { published_at: newer.published_at, id: newer.id })
+
+      expect(rows.map(&:id)).to eq([older.id])
+    end
+  end
+
   describe "#save_media" do
     let(:media_repo) { Hanami.app.slices[:media]["repositories.media_repository"] }
 
