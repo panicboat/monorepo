@@ -118,3 +118,13 @@ describe("ChatPage", () => {
     expect(html).not.toContain('href="/u/');
   });
 });
+
+describe("ChatPage report", () => {
+  it("offers the report only on messages from the counterpart", () => {
+    mocks.messages = [incoming];
+    expect(renderToStaticMarkup(<ChatPage />)).toContain("通報");
+
+    mocks.messages = [{ ...incoming, senderProfileId: "viewer-1" }];
+    expect(renderToStaticMarkup(<ChatPage />)).not.toContain("通報");
+  });
+});

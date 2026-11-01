@@ -16,6 +16,7 @@ import { useToastStore } from "@/stores/toastStore";
 import { selectActiveProfileId, useAuthStore } from "@/stores/authStore";
 import { PostText } from "@/modules/post/lib/post-text";
 import { PostMoreMenu } from "./PostMoreMenu";
+import { ReportMenu } from "@/modules/report";
 import { PostScheduleCard } from "./PostScheduleCard";
 import { QuoteFrame } from "./QuoteFrame";
 import { displayStateOf } from "@/modules/post/lib/display-window";
@@ -203,6 +204,8 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
       headerAction={
         isOwnPost ? (
           <PostMoreMenu pinned={pinned} pinning={pinning} deleting={deleting} onTogglePin={handleTogglePin} onDelete={handleDelete} />
+        ) : viewerId ? (
+          <ReportMenu targetType="post" targetId={post.id} />
         ) : undefined
       }
       isPrivate={post.visibility === "private"}

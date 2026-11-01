@@ -42,7 +42,7 @@ describe("PRIVACY", () => {
     expect(section("DM とログ")).toContain("運営者が DM の内容を確認するのは、利用規約の「DM」の条に定める場合に限ります。");
   });
 
-  it("keeps the karte, delivered DMs and reviews after deactivation and deletions", () => {
+  it("keeps the karte, delivered DMs, reviews and requests after deactivation and deletions", () => {
     const remaining = PRIVACY.sections.find((entry) => entry.heading === "保存期間と削除")!.paragraphs.find((paragraph) => paragraph.text.includes("次の情報は残ります"));
 
     expect(remaining?.text).toBe("利用者が退会し、プロフィールを削除し、または運営者が利用者のアカウントを削除した場合（「18歳未満の方」の節の場合と、利用規約の「違反への措置」の条の場合）も、その利用者またはそのプロフィールに関係する次の情報は残ります。この場合、その利用者またはそのプロフィールの表示名、ユーザー名、アバターなどの情報は、表示されなくなります。");
@@ -50,6 +50,7 @@ describe("PRIVACY", () => {
       "カルテ",
       "相手に届いた DM",
       "クチコミ（クチコミの評価は、対象のキャストの評価の集計に含まれたままです）",
+      "申出の内容（申出の対象の写しを含みます）",
     ]);
   });
 

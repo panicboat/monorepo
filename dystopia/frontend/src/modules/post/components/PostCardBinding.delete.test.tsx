@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { act, createElement } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import { SWRConfig } from "swr";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PostView } from "@/modules/post/lib/post-view";
@@ -45,11 +45,22 @@ const post = {
   schedule: null,
 } as unknown as PostView;
 
+const roots: Root[] = [];
+
+async function unmountAll() {
+  await act(async () => {
+    roots.splice(0).forEach((root) => root.unmount());
+  });
+  document.body.innerHTML = "";
+}
+
 async function mount(props: { inDetail?: boolean } = {}) {
   const container = document.createElement("div");
   document.body.appendChild(container);
+  const root = createRoot(container);
+  roots.push(root);
   await act(async () => {
-    createRoot(container).render(
+    root.render(
       createElement(SWRConfig, { value: { provider: () => new Map() } }, createElement(PostCardBinding, { post, ...props }))
     );
   });
@@ -57,6 +68,13 @@ async function mount(props: { inDetail?: boolean } = {}) {
 }
 
 const menuTrigger = (container: Element) => container.querySelector<HTMLButtonElement>('button[aria-label="その他の操作"]');
+
+async function menuItemLabels(container: Element) {
+  await act(async () => {
+    menuTrigger(container)!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+  });
+  return Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"]')).map((el) => el.textContent);
+}
 
 async function pressDelete(container: Element) {
   await act(async () => {
@@ -74,9 +92,9 @@ beforeEach(() => {
   vi.stubGlobal("confirm", () => true);
 });
 
-afterEach(() => {
+afterEach(async () => {
+  await unmountAll();
   vi.unstubAllGlobals();
-  document.body.innerHTML = "";
 });
 
 describe("PostCardBinding reactions", () => {
@@ -95,10 +113,12 @@ describe("PostCardBinding reactions", () => {
 
 describe("PostCardBinding deleting a post", () => {
   it("offers deleting only on the viewer's own post", async () => {
-    expect(menuTrigger(await mount())).not.toBeNull();
+    expect(await menuItemLabels(await mount())).toContain("削除");
+    await unmountAll();
 
     mocks.activeProfileId = "viewer-1";
-    expect(menuTrigger(await mount())).toBeNull();
+    expect(await menuItemLabels(await mount())).toEqual(["通報"]);
+    await unmountAll();
 
     mocks.activeProfileId = null;
     expect(menuTrigger(await mount())).toBeNull();

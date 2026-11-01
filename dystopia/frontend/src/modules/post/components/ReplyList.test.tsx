@@ -183,3 +183,17 @@ describe("ReplyList", () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe("ReplyList report", () => {
+  const render = (viewer: string | null) => {
+    authMocks.activeProfileId = viewer;
+    repliesMocks.useReplies.mockReturnValue({ replies: [reply], hasMore: false, loading: false, error: undefined, loadMore: vi.fn() });
+    return renderToStaticMarkup(<ReplyList postId="post-1" commentId="comment-1" />);
+  };
+
+  it("offers the report only to a signed-in viewer on someone else's reply", () => {
+    expect(render("viewer-1")).toContain("通報");
+    expect(render("author-1")).not.toContain("通報");
+    expect(render(null)).not.toContain("通報");
+  });
+});

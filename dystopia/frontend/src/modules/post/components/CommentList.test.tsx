@@ -157,3 +157,17 @@ describe("CommentList", () => {
     expect(html).not.toContain(">削除</button>");
   });
 });
+
+describe("CommentList report", () => {
+  const render = (viewer: string | null) => {
+    authMocks.activeProfileId = viewer;
+    commentsMocks.useComments.mockReturnValue({ comments: [comment], hasMore: false, loading: false, error: undefined, loadMore: vi.fn() });
+    return renderToStaticMarkup(<CommentList postId="post-1" />);
+  };
+
+  it("offers the report only to a signed-in viewer on someone else's comment", () => {
+    expect(render("viewer-1")).toContain("通報");
+    expect(render("author-1")).not.toContain("通報");
+    expect(render(null)).not.toContain("通報");
+  });
+});

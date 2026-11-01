@@ -7,6 +7,7 @@ import { formatTimeAgo } from "@/lib/utils/date";
 import { useReplies } from "@/modules/post/hooks/useReplies";
 import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
 import { PostText } from "@/modules/post/lib/post-text";
+import { ReportButton } from "@/modules/report";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { toastOnFailure } from "@/stores/toastStore";
 
@@ -68,6 +69,9 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
                 >
                   削除
                 </button>
+              )}
+              {viewerId && !isOwn && (
+                <ReportButton targetType="comment" targetId={r.id} label="通報" className="mt-2 text-sm text-text-muted hover:text-text-primary" />
               )}
             </div>
           </article>

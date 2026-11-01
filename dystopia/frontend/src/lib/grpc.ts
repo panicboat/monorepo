@@ -12,6 +12,7 @@ import { FeedService } from "@/stub/feed/v1/feed_service_pb";
 import { ProfileService } from "@/stub/profile/v1/service_pb";
 import { NotificationService } from "@/stub/notifications/v1/notification_service_pb";
 import { BookmarkService } from "@/stub/bookmarks/v1/bookmark_service_pb";
+import { ReportService } from "@/stub/report/v1/report_service_pb";
 import { KarteService } from "@/stub/karte/v1/service_pb";
 import { ReviewService } from "@/stub/review/v1/service_pb";
 import { DiscoveryService } from "@/stub/discovery/v1/discovery_service_pb";
@@ -43,6 +44,8 @@ export const profileClient = createClient(ProfileService, transport);
 export const notificationClient = createClient(NotificationService, transport);
 
 export const bookmarkClient = createClient(BookmarkService, transport);
+
+export const reportClient = createClient(ReportService, transport);
 
 export const discoveryClient = createClient(DiscoveryService, transport);
 

@@ -18,12 +18,14 @@ erDiagram
     identity_accounts ||..o{ media_files : "owner_account_id"
     identity_accounts ||..o{ karte_kartes : "author_account_id"
     identity_accounts ||..o{ review_reviews : "author_account_id"
+    identity_accounts ||..o{ report_reports : "reporter / reported"
     profile_profiles ||..o{ post_posts : "author_profile_id"
     profile_profiles ||..o{ schedule_schedules : "profile_id"
     profile_profiles ||..o{ social_follows : "follower / followee"
     profile_profiles ||..o{ social_blocks : "blocker / blocked"
     profile_profiles ||..o{ bookmarks_bookmarks : "profile_id"
     post_posts ||..o{ bookmarks_bookmarks : "post_id"
+    profile_profiles ||..o{ report_reports : "reporter / reported"
     profile_profiles ||..o{ footprints_visits : "visitor / visited"
     profile_profiles ||..o{ messaging_threads : "profile_a / profile_b"
     profile_profiles ||..o{ notifications_notifications : "recipient_profile_id"
@@ -248,6 +250,35 @@ erDiagram
 - `bookmarks.bookmarks`: プロフィールがブックマークした投稿。
 
 [ブックマーク](features/bookmarks.md)
+
+## Report
+
+通報。
+投稿、コメント、DM、クチコミ、カルテ、プロフィールを対象にする。
+
+```mermaid
+erDiagram
+    report_reports {
+        uuid id PK
+        uuid reporter_account_id "参照（FK なし）"
+        uuid reporter_profile_id UK "参照（FK なし）、target_type・target_id と組で一意"
+        uuid reported_account_id "参照（FK なし）、NULL は送信者が削除済みの DM"
+        uuid reported_profile_id "参照（FK なし）、NULL は送信者が削除済みの DM"
+        text target_type UK "post / comment / message / review / karte / profile"
+        uuid target_id UK "参照（FK なし）"
+        text reason "defamation / threat / stalking / harassment / other"
+        text note "補足"
+        text target_content "通報した時点の対象の内容"
+        timestamptz handled_at "対応した日時、NULL は未対応"
+    }
+```
+
+- `report.reports`: 通報 1 件。
+  - プロフィールやアカウントを消しても行は消えない。
+    - そのためプロフィールとアカウントの両方の ID を持つ。
+  - `target_content` は対象が消えても、書き換えられても残る。
+
+[通報](features/reports.md)
 
 ## Footprints
 

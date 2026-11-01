@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { ReportButton } from "@/modules/report";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { HIDDEN_GUEST, MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatMonthDay } from "@/lib/utils/japan-date";
@@ -203,6 +204,12 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
             >
               このクチコミを削除
             </button>
+          </div>
+        )}
+
+        {!review.isMine && (
+          <div className="flex flex-col gap-2 border-t border-divider pt-4">
+            <ReportButton targetType="review" targetId={review.id} label="このクチコミを通報" className="min-h-11 text-sm text-text-secondary hover:underline" />
           </div>
         )}
       </div>

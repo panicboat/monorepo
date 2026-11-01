@@ -71,5 +71,6 @@ flowchart LR
 | messaging | メッセージ | [メッセージ](features/messages.md) |
 | notifications | 通知、通知設定、Web Push | [通知](features/notifications.md) |
 | bookmarks | ブックマーク | [ブックマーク](features/bookmarks.md) |
+| report | 通報 | [通報](features/reports.md) |
 | footprints | 足跡 | [足跡](features/footprints.md) |
 | billing | 課金（未稼働） | [課金](features/billing.md) |

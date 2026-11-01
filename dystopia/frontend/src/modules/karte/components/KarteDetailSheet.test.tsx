@@ -240,3 +240,19 @@ describe("KarteDetailSheet", () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+describe("KarteDetailSheet report", () => {
+  it("offers the report on someone else's karte", async () => {
+    await mount(karte({ isMine: false }));
+
+    await click("このカルテを通報");
+
+    expect(button("通報する")).toBeDefined();
+  });
+
+  it("does not offer the report on the viewer's own karte", async () => {
+    await mount(karte({ isMine: true }));
+
+    expect(button("このカルテを通報")).toBeUndefined();
+  });
+});
