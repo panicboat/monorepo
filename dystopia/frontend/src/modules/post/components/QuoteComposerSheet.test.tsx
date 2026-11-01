@@ -3,6 +3,8 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PostView } from "@/modules/post/lib/post-view";
+import { usePostFeedStore } from "@/stores/postFeedStore";
+import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
 import { useQuoteComposeStore } from "@/stores/quoteComposeStore";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -10,7 +12,6 @@ import { useQuoteComposeStore } from "@/stores/quoteComposeStore";
 const mocks = vi.hoisted(() => ({
   authFetch: vi.fn(),
   mutate: vi.fn(),
-  notifyPostCreated: vi.fn(),
   revalidatePostLists: vi.fn(),
   showToast: vi.fn(),
 }));
@@ -18,10 +19,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({ usePathname: () => "/", useRouter: () => ({ push: () => {} }) }));
 vi.mock("swr", async (importOriginal) => ({ ...(await importOriginal<typeof import("swr")>()), useSWRConfig: () => ({ mutate: mocks.mutate }) }));
 vi.mock("@/lib/auth", () => ({ authFetch: mocks.authFetch }));
-vi.mock("@/stores/postFeedStore", () => ({
-  usePostFeedStore: (selector: (state: { notifyPostCreated: () => void }) => unknown) =>
-    selector({ notifyPostCreated: mocks.notifyPostCreated }),
-}));
 vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) =>
     selector({ show: mocks.showToast }),
@@ -50,7 +47,7 @@ const original: PostView = {
   schedule: null,
   pinned: false,
   quotedPost: null,
-  quotesCount: 0,
+  quotesCount: 2,
 };
 
 let root: Root;
@@ -75,10 +72,11 @@ async function submit() {
 beforeEach(async () => {
   mocks.authFetch.mockReset().mockResolvedValue({});
   mocks.mutate.mockReset();
-  mocks.notifyPostCreated.mockReset();
   mocks.revalidatePostLists.mockReset();
   mocks.showToast.mockReset();
   useQuoteComposeStore.setState({ post: null, session: 0, open: false });
+  usePostQuoteCountStore.setState({ counts: {} });
+  usePostFeedStore.setState({ version: 0 });
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -113,10 +111,30 @@ describe("QuoteComposerSheet", () => {
       method: "POST",
       body: { content: "これは同意 #引用", quotedPostId: "original-1", hashtags: ["引用"] },
     });
-    expect(mocks.notifyPostCreated).toHaveBeenCalledTimes(1);
     expect(mocks.revalidatePostLists).toHaveBeenCalledTimes(1);
+    expect(mocks.mutate).toHaveBeenCalledTimes(1);
     expect(mocks.showToast.mock.calls).toEqual([["投稿しました"]]);
     expect(useQuoteComposeStore.getState().open).toBe(false);
+  });
+
+  it("leaves the home feed where it is and adds one to the original's quote count at once", async () => {
+    await act(async () => useQuoteComposeStore.getState().openQuote(original));
+
+    await write("これは同意");
+    await submit();
+
+    expect(usePostFeedStore.getState().version).toBe(0);
+    expect(usePostQuoteCountStore.getState().counts).toEqual({ "original-1": 3 });
+  });
+
+  it("adds to the count the cards already show, not to the stale count of the quoted post", async () => {
+    usePostQuoteCountStore.setState({ counts: { "original-1": 5 } });
+    await act(async () => useQuoteComposeStore.getState().openQuote(original));
+
+    await write("これは同意");
+    await submit();
+
+    expect(usePostQuoteCountStore.getState().counts).toEqual({ "original-1": 6 });
   });
 
   it("keeps the written body and shows the error when the original can no longer be quoted", async () => {
@@ -129,7 +147,7 @@ describe("QuoteComposerSheet", () => {
     expect(dialog()?.querySelector('[role="alert"]')?.textContent).toBe("この投稿は引用できません");
     expect((document.querySelector("textarea") as HTMLTextAreaElement).value).toBe("これは同意");
     expect(useQuoteComposeStore.getState().open).toBe(true);
-    expect(mocks.notifyPostCreated).not.toHaveBeenCalled();
+    expect(usePostQuoteCountStore.getState().counts).toEqual({});
   });
 
   it("starts empty each time it is opened", async () => {

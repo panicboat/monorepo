@@ -10,6 +10,7 @@ import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
 import { useQuoteComposeStore } from "@/stores/quoteComposeStore";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
+import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
 import { usePostDeletionStore } from "@/stores/postDeletionStore";
 import { useToastStore } from "@/stores/toastStore";
 import { selectActiveProfileId, useAuthStore } from "@/stores/authStore";
@@ -46,6 +47,7 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
   const liked = isLiked(post.id, post.liked);
   const likesCount = getLikesCount(post.id, post.likesCount);
   const commentsCount = usePostCommentCountStore((s) => s.counts[post.id]) ?? post.commentsCount;
+  const quotesCount = usePostQuoteCountStore((s) => s.counts[post.id]) ?? post.quotesCount;
 
   const viewerId = useAuthStore(selectActiveProfileId);
   const isOwnPost = !!viewerId && viewerId === post.authorProfileId;
@@ -176,18 +178,18 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
       {inDetail ? (
         <span
           className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
-          aria-label={`引用 ${post.quotesCount} 件`}
+          aria-label={`引用 ${quotesCount} 件`}
         >
-          {post.quotesCount}
+          {quotesCount}
         </span>
       ) : (
         <Link
           href={`/posts/${encodeURIComponent(post.id)}?tab=quotes`}
           onClick={openQuotes}
           className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
-          aria-label={`引用 ${post.quotesCount} 件`}
+          aria-label={`引用 ${quotesCount} 件`}
         >
-          {post.quotesCount}
+          {quotesCount}
         </Link>
       )}
       <button

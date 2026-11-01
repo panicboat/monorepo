@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
+import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -30,6 +31,7 @@ const post = { id: "post-1", commentsCount: 2, quotesCount: 3 };
 beforeEach(() => {
   mocks.cardProps = null;
   usePostCommentCountStore.setState({ counts: {} });
+  usePostQuoteCountStore.setState({ counts: {} });
 });
 
 afterEach(() => {
@@ -76,6 +78,15 @@ describe("PostDetailContent", () => {
     const container = await mount();
 
     expect(tabButton(container, "コメント 5")).toBeDefined();
+  });
+
+  it("prefers the quote count store over the post's count in the tab label", async () => {
+    mocks.usePost.mockReturnValue({ post, loading: false, error: undefined });
+    usePostQuoteCountStore.setState({ counts: { "post-1": 6 } });
+
+    const container = await mount();
+
+    expect(tabButton(container, "引用 6")).toBeDefined();
   });
 
   it("opens the quotes tab with initialTab", async () => {

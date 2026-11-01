@@ -3,6 +3,7 @@ import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PostView, QuotedPostView } from "@/modules/post/lib/post-view";
+import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
 import { usePostSheetStore } from "@/stores/postSheetStore";
 import { useQuoteComposeStore } from "@/stores/quoteComposeStore";
 
@@ -56,6 +57,7 @@ const stopNavigation = (event: Event) => event.preventDefault();
 beforeEach(() => {
   usePostSheetStore.setState({ postId: null, session: 0, open: false, tab: "comments" });
   useQuoteComposeStore.setState({ post: null, session: 0, open: false });
+  usePostQuoteCountStore.setState({ counts: {} });
   document.addEventListener("click", stopNavigation);
 });
 
@@ -97,6 +99,23 @@ describe("PostCardBinding quote icon", () => {
     expect(button.className).toContain("min-w-11");
     expect(count.className).toContain("min-h-11");
     expect(count.className).toContain("min-w-11");
+  });
+
+  it("shows the quote count store's value instead of the post's count", async () => {
+    usePostQuoteCountStore.setState({ counts: { "post-1": 7 } });
+
+    const container = await mount();
+
+    expect(container.querySelector('a[aria-label="引用 7 件"]')?.textContent).toBe("7");
+    expect(container.querySelector('a[aria-label="引用 2 件"]')).toBeNull();
+  });
+
+  it("shows the quote count store's value inside the detail", async () => {
+    usePostQuoteCountStore.setState({ counts: { "post-1": 7 } });
+
+    const container = await mount({ inDetail: true });
+
+    expect(container.querySelector('span[aria-label="引用 7 件"]')?.textContent).toBe("7");
   });
 
   it("opens the quote composer from the icon", async () => {

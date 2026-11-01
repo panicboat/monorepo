@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Tabs } from "@/components/ui/tab";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
 import { usePostDeletionStore } from "@/stores/postDeletionStore";
+import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
 import type { PostDetailTab } from "@/stores/postSheetStore";
 import { usePost } from "../hooks/usePost";
 import { CommentComposer } from "./CommentComposer";
@@ -15,6 +16,7 @@ export function PostDetailContent({ postId, initialTab = "comments" }: { postId:
   const { post, loading, error } = usePost(postId || null);
   const deleted = usePostDeletionStore((s) => !!s.deleted[postId]);
   const storedCommentsCount = usePostCommentCountStore((s) => s.counts[postId]);
+  const storedQuotesCount = usePostQuoteCountStore((s) => s.counts[postId]);
   const [tab, setTab] = useState<PostDetailTab>(initialTab);
 
   if (loading) {
@@ -25,6 +27,7 @@ export function PostDetailContent({ postId, initialTab = "comments" }: { postId:
   }
 
   const commentsCount = storedCommentsCount ?? post.commentsCount;
+  const quotesCount = storedQuotesCount ?? post.quotesCount;
 
   return (
     <>
@@ -33,7 +36,7 @@ export function PostDetailContent({ postId, initialTab = "comments" }: { postId:
         <Tabs
           items={[
             { id: "comments", label: `コメント ${commentsCount}` },
-            { id: "quotes", label: `引用 ${post.quotesCount}` },
+            { id: "quotes", label: `引用 ${quotesCount}` },
           ]}
           value={tab}
           onValueChange={(id) => setTab(id === "quotes" ? "quotes" : "comments")}

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
 import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
+import { usePostQuoteCountStore } from "@/stores/postQuoteCountStore";
 import type { PostView } from "@/modules/post/lib/post-view";
 
 interface PostResponse {
@@ -19,11 +20,14 @@ export function usePost(id: string | null) {
     { revalidateOnFocus: false }
   );
   const setCommentCount = usePostCommentCountStore((s) => s.setCount);
+  const setQuoteCount = usePostQuoteCountStore((s) => s.setCount);
   const fetched = data?.post;
 
   useEffect(() => {
-    if (fetched) setCommentCount(fetched.id, fetched.commentsCount);
-  }, [fetched, setCommentCount]);
+    if (!fetched) return;
+    setCommentCount(fetched.id, fetched.commentsCount);
+    setQuoteCount(fetched.id, fetched.quotesCount);
+  }, [fetched, setCommentCount, setQuoteCount]);
 
   return {
     post: data?.post ?? null,
