@@ -192,11 +192,12 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
           <span>{commentsCount}</span>
         </Link>
       )}
+      {/* The target reaches into the comment column: at full width in the last column, it would widen the gap before the icon. */}
       <button
         type="button"
         onClick={handleBookmarkClick}
         disabled={bookmarkLoading}
-        className="flex min-h-11 min-w-11 items-center justify-end gap-1 text-sm hover:text-text-primary disabled:opacity-50"
+        className="-ml-6 flex min-h-11 w-11 items-center justify-end gap-1 text-sm hover:text-text-primary disabled:opacity-50"
         aria-pressed={isBookmarked}
         aria-label={isBookmarked ? "ブックマークを解除" : "ブックマーク"}
       >

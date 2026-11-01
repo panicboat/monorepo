@@ -142,6 +142,16 @@ describe("PostCardBinding quote icon", () => {
     expect(count.className).toContain("min-w-11");
   });
 
+  it("counts only the bookmark icon's width in the row, keeping its target at 44px", async () => {
+    const container = await mount();
+    const bookmark = container.querySelector('button[aria-label="ブックマーク"]')!;
+
+    expect(bookmark.className).toContain("-ml-6");
+    expect(bookmark.className).toContain("w-11");
+    expect(bookmark.className).toContain("min-h-11");
+    expect(bookmark.className).toContain("justify-end");
+  });
+
   it("shows the quote count store's value instead of the post's count", async () => {
     usePostQuoteCountStore.setState({ counts: { "post-1": 7 } });
 
