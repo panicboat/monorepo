@@ -114,6 +114,7 @@ monorepo
 - `module "vpc"` に IPv6 を追加する: `enable_ipv6 = true`、`private_subnet_ipv6_prefixes = [0, 1, 2]`、`private_subnet_assign_ipv6_address_on_creation = true`、`create_egress_only_igw = true`
 - `enable_nat_gateway` を変数化し、production では `false` にする。`single_nat_gateway` は `true` のまま
 - 共通 SG を `internal` に改名し（Terraform のリソース名も `aws_security_group.internal`）、`::/0` の egress rule を追加する。`lookup` の出力キー `security_groups.private_trust` も `security_groups.internal` にし、`aws/eks/modules/main.tf`・`aws/eks-karpenter/modules/main.tf` の参照とテスト（`tests/*.tftest.hcl`、`aws/eks/tests/security-group-contract.sh`）を合わせる
+- Karpenter の EC2NodeClass（`kubernetes/components/karpenter/production/kustomization/ec2nodeclass.yaml`）の SG セレクタ `Name: private-trust-production` を `Name: internal` にし、`kubernetes/components/karpenter/tests/security-group-selectors.sh` を合わせる。hydrate 済みの `kubernetes/manifests` は CI の hydrator が更新する
 - 環境名を名前から外す（「Naming」の対応表）。`lookup` から `environment` 変数を削除し、`aws/eks/modules/lookups.tf` と `aws/eks-karpenter/modules/lookups.tf` の受け渡しも削除する
 - 既存の module tests（`modules/tests`、`lookup/tests`）を変更に合わせて更新し、IPv6 と NAT 無効の振る舞いをテストに加える
 
@@ -131,7 +132,6 @@ NAT を無効にすると `nat_public_ips` 出力は空になる。platform 内�
 - Cognito user pool、client、SMS 用ロール。名前以外の設定値は現行の `cognito.tf` と同じ
 - media 用 S3 バケット、public access block、CORS
 - 出力: DB の接続情報（host 別名・port・db 名・ユーザー・パスワード。パスワードは sensitive）、user pool ID / ARN、client ID、バケット名 / ARN
-- `modules/terraform.tf` の `required_version = "1.13.2"` を削除する。CI と手元は OpenTofu 1.12.6（`aqua.yaml`）で動かすため
 - provider に `random` を追加する
 - `production/env.hcl` に `domain_name` を持たせ、CORS の許可元に使う
 
@@ -198,15 +198,16 @@ NAT を無効にすると `nat_public_ips` 出力は空になる。platform 内�
 
 ## Cutover
 
-実行環境は全て手元から行う。各段の完了条件を満たしてから次へ進む。
+実行環境の操作は全て手元から行う。各段の完了条件を満たしてから次へ進む。monorepo の PR を merge すると deploy workflow が実行層を apply するため、旧 stack の destroy とデータ層の apply は merge 前に終える。
 
-1. 現行 stack の削除準備: `dystopia/lambda/aws/modules` で RDS の `deletion_protection` を `false`、Cognito の `deletion_protection` を `INACTIVE` にして apply する。media バケットと ECR リポジトリを空にする。完了条件: apply 成功、バケットとリポジトリが空
-2. 現行 stack の destroy: `dystopia/lambda/aws/production` で `terragrunt destroy`。完了条件: destroy 成功、旧関数（`dystopia-production`・`dystopia-production-task`）の ENI が残っていない（Lambda の ENI 回収が遅れると VPC 削除が失敗するため、失敗時は待って再実行する）
-3. platform VPC の apply: platform の変更を merge 後、`platform/aws/vpc/production` で手元から apply。完了条件: private subnet に IPv6 CIDR があり、private route table に `::/0` → egress-only IGW があり、NAT Gateway がない
-4. データ層の apply: monorepo の変更を merge 後、`dystopia/monolith/aws/production` で手元から apply。完了条件: RDS `monolith` が available、出力に DB 別名 `monolith-db.dystopia.local` がある
-5. 実行層のデプロイ: `deploy-dystopia-lambda.yaml` を `workflow_dispatch` で実行する。完了条件: migration 成功、workflow の Verify ステップ成功、`https://dystopia.city` でサインアップから投稿まで通る
+1. platform VPC の apply: platform の PR を merge 後、`platform/aws/vpc/production` で手元から apply。完了条件: private subnet に IPv6 CIDR があり、private route table に `::/0` → egress-only IGW があり、NAT Gateway がない。新しい VPC は旧 VPC（10.10.0.0/16）と名前も CIDR も重ならないため、旧 stack の稼働中に作ってよい
+2. 現行 stack の削除準備: AWS CLI で RDS `monolith-production` の削除保護と、user pool `dystopia-production` の削除保護を外す。media バケットと ECR リポジトリを空にする。完了条件: 両方の削除保護が無効、バケットとリポジトリが空
+3. 現行 stack の destroy: main の `dystopia/lambda/aws/production`（旧コード）で `terragrunt destroy`。完了条件: destroy 成功、旧関数（`dystopia-production`・`dystopia-production-task`）の ENI が残っていない（Lambda の ENI 回収が遅れると VPC 削除が失敗するため、失敗時は README の Teardown の手順で ENI を消して再実行する）
+4. データ層の apply: monorepo の PR のブランチで `dystopia/monolith/aws/production` を手元から apply。完了条件: RDS `monolith` が available、出力 `database_host` が `monolith-db.dystopia.local`
+5. monorepo の PR を merge する。deploy workflow が実行層を apply し、migration とアプリ更新を行う。完了条件: workflow の Verify ステップ成功、`https://dystopia.city` でサインアップから投稿まで通る
+6. pennyworth の state 移動: production の state を新しいキーへコピーし、`system-components/pennyworth/aws/production` の plan が差分なしになることを確認してから旧キーを消す
 
-手順 1〜2 から 5 までの間、dystopia は停止する。データを捨てる前提のため許容する。
+手順 3 から 5 までの間、dystopia は停止する。データを捨てる前提のため許容する。
 
 手順 3 以降で失敗したときは、旧 stack に戻さず新しい構成のまま直す。データは捨てる前提で、戻しても守るものがないため。
 
