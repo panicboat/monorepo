@@ -37,8 +37,17 @@ module Seeds
       puts "    +819000000106 - 三郎 - Mioにフォロー申請中(pending) → PublicキャストのPublic投稿のみ"
       puts "    +819000000107 - 四郎 - Rinのみフォロー済み → Rinの全投稿 + 他PublicキャストのPublic投稿"
       puts ""
+      puts "  OTHER REGISTRATION STATES:"
+      puts "    +819000000108 - 五郎 (guest) - 退会済み(猶予期間中) → ログインで復帰"
+      puts "    +819000000109 - (cast)  - プロフィール未作成 → オンボーディング"
+      puts "    +819000000110 - (guest) - プロフィール未作成 → オンボーディング"
+      puts ""
       puts "  Follow: 太郎→Yuna(approved), 太郎→Mio(approved), 三郎→Mio(pending), 四郎→Rin(approved)"
       puts "  Block:  Rin→太郎(blocked)"
+      puts "  DM:     太郎↔Yuna, 太郎↔Mio, 四郎↔Rin, Yuna→次郎"
+      puts "  Karte:  Yuna→太郎, Mio→太郎, Rin→四郎, Yuna→次郎"
+      puts "  Review: 太郎→Yuna, 太郎→Mio, 四郎→Rin, 次郎→Yuna"
+      puts "  Post:   Yuna の固定投稿, Mio の時間限定投稿, Rin の引用+メンション投稿, Rin の予定のお知らせ"
       puts ""
     end
   end
