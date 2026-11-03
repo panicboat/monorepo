@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'dystopia/lambda/aws/**'
+      - 'dystopia/monolith/aws/**'
       - '.github/workflows/deploy-dystopia-lambda.yaml'
   push:
     branches:

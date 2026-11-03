@@ -134,6 +134,7 @@ bash dystopia/lambda/image/tests/image_test.sh
 ## Teardown
 
 - RDS・Cognito user pool・media バケットはデータ層（`dystopia/monolith/aws`）にあり、この stack の destroy では消えない
+- この stack はデータ層より先に destroy する。`dependency` の mock 出力は destroy で使えないため、データ層が先に消えるとこの stack を destroy できない
 - データ層を消すときは、destroy の前に user pool の `deletion_protection` を `INACTIVE`、RDS の `deletion_protection` を `false` にして apply し、media バケットを空にする
 - ECR リポジトリはイメージが残っていると削除できない。destroy の前に空にする
 - Lambda は VPC 内のネットワークインターフェースを実行ロールの権限で片付ける。destroy では関数の直後にロールも消えるため、この stack の destroy 後にインターフェースが `available` のまま残ることがあり、platform の VPC を destroy するときに `internal` security group と subnet の削除が止まる。その場合は次のコマンドで削除する
