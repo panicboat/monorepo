@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: monolith
 data:
-  MEDIA_BUCKET_NAME: dystopia-media-production
+  MEDIA_BUCKET_NAME: dystopia-media-337169763788
   MEDIA_BUCKET_REGION: ap-northeast-1
