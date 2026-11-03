@@ -1,32 +1,7 @@
 mock_provider "aws" {
-  mock_resource "aws_vpc" {
-    defaults = {
-      id              = "vpc-test"
-      ipv6_cidr_block = "2406:da14:1234:5600::/56"
-    }
-  }
-
-  mock_resource "aws_security_group" {
-    defaults = {
-      id = "sg-test"
-    }
-  }
-
   mock_resource "aws_iam_role" {
     defaults = {
       arn = "arn:aws:iam::337169763788:role/test"
-    }
-  }
-
-  mock_resource "aws_cognito_user_pool" {
-    defaults = {
-      arn = "arn:aws:cognito-idp:ap-northeast-1:337169763788:userpool/ap-northeast-1_test"
-    }
-  }
-
-  mock_resource "aws_s3_bucket" {
-    defaults = {
-      arn = "arn:aws:s3:::dystopia-media-production"
     }
   }
 
@@ -38,7 +13,7 @@ mock_provider "aws" {
 
   mock_resource "aws_lambda_function" {
     defaults = {
-      arn = "arn:aws:lambda:ap-northeast-1:337169763788:function:dystopia-production-task"
+      arn = "arn:aws:lambda:ap-northeast-1:337169763788:function:dystopia-task"
     }
   }
 
@@ -69,12 +44,24 @@ mock_provider "aws" {
   alias = "route53"
 }
 
-mock_provider "random" {}
-
-override_resource {
-  target = random_password.monolith_db_master
+override_data {
+  target = data.aws_vpc.this
   values = {
-    result = "TestPassword0123456789"
+    id = "vpc-test"
+  }
+}
+
+override_data {
+  target = data.aws_subnets.private
+  values = {
+    ids = ["subnet-a", "subnet-c", "subnet-d"]
+  }
+}
+
+override_data {
+  target = data.aws_security_group.internal
+  values = {
+    id = "sg-internal"
   }
 }
 
@@ -88,60 +75,34 @@ override_resource {
 }
 
 variables {
-  environment           = "production"
   aws_region            = "ap-northeast-1"
   domain_name           = "dystopia.city"
   route53_zone_role_arn = "arn:aws:iam::559744160976:role/route53-zone-access"
   common_tags = {
     Environment = "production"
   }
+  database_host       = "monolith-db.dystopia.local"
+  database_port       = 5432
+  database_name       = "monolith"
+  database_username   = "postgres"
+  database_password   = "TestPassword0123456789"
+  user_pool_id        = "ap-northeast-1_test"
+  user_pool_arn       = "arn:aws:cognito-idp:ap-northeast-1:337169763788:userpool/ap-northeast-1_test"
+  user_pool_client_id = "test-client"
+  media_bucket_name   = "dystopia-media-337169763788"
+  media_bucket_arn    = "arn:aws:s3:::dystopia-media-337169763788"
 }
 
-run "database_is_private" {
+run "functions_join_the_shared_vpc" {
   command = plan
 
   assert {
-    condition     = aws_db_instance.monolith.publicly_accessible == false
-    error_message = "RDS must not be publicly accessible."
-  }
-
-  assert {
-    condition = (
-      aws_vpc_security_group_ingress_rule.rds_from_lambda.from_port == 5432 &&
-      aws_vpc_security_group_ingress_rule.rds_from_lambda.to_port == 5432 &&
-      aws_vpc_security_group_ingress_rule.rds_from_lambda.cidr_ipv4 == null &&
-      aws_vpc_security_group_ingress_rule.rds_from_lambda.cidr_ipv6 == null
-    )
-    error_message = "RDS must accept PostgreSQL traffic from a security group only, never from a CIDR range."
-  }
-
-  assert {
-    condition     = aws_db_instance.monolith.deletion_protection == true
-    error_message = "RDS must be protected from deletion because every push to main applies this stack unattended."
-  }
-
-  assert {
-    condition     = random_password.monolith_db_master.special == false
-    error_message = "The database password must stay alphanumeric because DATABASE_URL embeds it without escaping."
-  }
-
-  assert {
-    condition     = length(aws_subnet.private) == 3
-    error_message = "The VPC must have one private subnet in each of the three availability zones."
-  }
-}
-
-run "egress_is_ipv6_only" {
-  command = plan
-
-  assert {
-    condition     = aws_route.ipv6_egress.destination_ipv6_cidr_block == "::/0"
-    error_message = "The only default route must be the IPv6 route through the egress-only internet gateway."
-  }
-
-  assert {
-    condition     = aws_vpc_endpoint.s3.vpc_endpoint_type == "Gateway"
-    error_message = "S3 must be reached through a gateway endpoint."
+    condition = alltrue([
+      for fn in [aws_lambda_function.app, aws_lambda_function.task] :
+      fn.vpc_config[0].subnet_ids == toset(["subnet-a", "subnet-c", "subnet-d"]) &&
+      fn.vpc_config[0].security_group_ids == toset(["sg-internal"])
+    ])
+    error_message = "Both functions must run in the private subnets of the shared VPC with the internal security group."
   }
 
   assert {
@@ -185,12 +146,12 @@ run "application_function_settings" {
 
   assert {
     condition = (
-      aws_lambda_function.app.function_name == "dystopia-production" &&
+      aws_lambda_function.app.function_name == "dystopia" &&
       aws_lambda_function.app.memory_size == 1024 &&
       aws_lambda_function.app.timeout == 30 &&
       aws_lambda_function.app.architectures == tolist(["arm64"])
     )
-    error_message = "The application function must be dystopia-production on arm64 with 1024 MB and a 30 second timeout."
+    error_message = "The application function must be dystopia on arm64 with 1024 MB and a 30 second timeout."
   }
 
   assert {
@@ -204,12 +165,21 @@ run "application_function_settings" {
   }
 
   assert {
+    condition = (
+      aws_lambda_function.app.environment[0].variables["COGNITO_USER_POOL_ID"] == "ap-northeast-1_test" &&
+      aws_lambda_function.app.environment[0].variables["COGNITO_CLIENT_ID"] == "test-client" &&
+      aws_lambda_function.app.environment[0].variables["MEDIA_BUCKET_NAME"] == "dystopia-media-337169763788"
+    )
+    error_message = "The user pool, its client and the media bucket must come from the data layer."
+  }
+
+  assert {
     condition     = aws_lambda_function_url.app.authorization_type == "NONE"
     error_message = "The function URL must be public so CloudFront can forward browser POST requests."
   }
 
   assert {
-    condition     = aws_lambda_function_url.app.function_name == "dystopia-production"
+    condition     = aws_lambda_function_url.app.function_name == "dystopia"
     error_message = "The only function URL must belong to the application function, never to the task function."
   }
 }
@@ -219,10 +189,10 @@ run "task_function_settings" {
 
   assert {
     condition = (
-      aws_lambda_function.task.function_name == "dystopia-production-task" &&
+      aws_lambda_function.task.function_name == "dystopia-task" &&
       aws_lambda_function.task.timeout == 900
     )
-    error_message = "The task function must be dystopia-production-task with a 900 second timeout."
+    error_message = "The task function must be dystopia-task with a 900 second timeout."
   }
 
   assert {
@@ -337,8 +307,40 @@ run "purge_lists_only_media_keys" {
   assert {
     condition = anytrue([
       for statement in jsondecode(aws_iam_role_policy.lambda_app.policy).Statement :
-      try(statement.Action == ["s3:ListBucket"] && statement.Resource == aws_s3_bucket.media.arn && statement.Condition.StringLike["s3:prefix"] == ["media/*"], false)
+      try(statement.Action == ["s3:ListBucket"] && statement.Resource == var.media_bucket_arn && statement.Condition.StringLike["s3:prefix"] == ["media/*"], false)
     ])
     error_message = "The purge must list the objects under a profile's key prefix, and the listing must stay under media/."
+  }
+}
+
+run "names_have_no_environment" {
+  command = plan
+
+  assert {
+    condition = (
+      aws_iam_role.lambda.name == "dystopia-lambda" &&
+      aws_iam_role.scheduler.name == "dystopia-scheduler" &&
+      aws_iam_role_policy.lambda_app.name == "dystopia-lambda-app" &&
+      aws_iam_role_policy.scheduler_invoke_task.name == "dystopia-scheduler-invoke-task"
+    )
+    error_message = "The IAM roles and policies must not carry an environment name."
+  }
+
+  assert {
+    condition     = aws_scheduler_schedule.purge_deactivated.name == "dystopia-purge-deactivated"
+    error_message = "The schedule must not carry an environment name."
+  }
+
+  assert {
+    condition = (
+      aws_cloudwatch_log_group.app.name == "/aws/lambda/dystopia" &&
+      aws_cloudwatch_log_group.task.name == "/aws/lambda/dystopia-task"
+    )
+    error_message = "The log groups must match the function names."
+  }
+
+  assert {
+    condition     = aws_cloudfront_distribution.this.comment == "dystopia"
+    error_message = "The CloudFront comment must not carry an environment name."
   }
 }

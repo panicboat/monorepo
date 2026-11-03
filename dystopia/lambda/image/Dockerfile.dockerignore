@@ -4,7 +4,8 @@
 **/.env.local
 **/*.log
 
-infrastructure/
+frontend/aws/
+monolith/aws/
 lambda/aws/
 lambda/image/tests/
 

@@ -1,5 +1,41 @@
+locals {
+  user_pool_name = "dystopia"
+}
+
+resource "aws_iam_role" "cognito_sms" {
+  name = "${local.user_pool_name}-cognito-sms"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "cognito-idp.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+      Condition = {
+        StringEquals = {
+          "sts:ExternalId" = "${local.user_pool_name}-cognito-sms"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "cognito_sms" {
+  name = "${local.user_pool_name}-cognito-sms"
+  role = aws_iam_role.cognito_sms.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["sns:Publish"]
+      Resource = "*"
+    }]
+  })
+}
+
 resource "aws_cognito_user_pool" "this" {
-  name = var.user_pool_name
+  name = local.user_pool_name
 
   alias_attributes = ["phone_number"]
 
@@ -30,18 +66,16 @@ resource "aws_cognito_user_pool" "this" {
   }
 
   sms_configuration {
-    external_id    = "${var.user_pool_name}-cognito-sms"
+    external_id    = "${local.user_pool_name}-cognito-sms"
     sns_caller_arn = aws_iam_role.cognito_sms.arn
     sns_region     = var.aws_region
   }
 
   deletion_protection = "ACTIVE"
-
-  tags = var.common_tags
 }
 
-resource "aws_cognito_user_pool_client" "bff" {
-  name         = "${var.user_pool_name}-bff"
+resource "aws_cognito_user_pool_client" "this" {
+  name         = "dystopia"
   user_pool_id = aws_cognito_user_pool.this.id
 
   generate_secret               = false

@@ -4,13 +4,8 @@ resource "random_password" "monolith_db_master" {
   special = false
 }
 
-resource "aws_db_subnet_group" "monolith" {
-  name       = "monolith-${var.environment}"
-  subnet_ids = [for subnet in aws_subnet.private : subnet.id]
-}
-
 resource "aws_db_instance" "monolith" {
-  identifier     = "monolith-${var.environment}"
+  identifier     = "monolith"
   engine         = "postgres"
   engine_version = "18.6"
   instance_class = "db.t4g.micro"
@@ -24,8 +19,8 @@ resource "aws_db_instance" "monolith" {
   username = "postgres"
   password = random_password.monolith_db_master.result
 
-  db_subnet_group_name   = aws_db_subnet_group.monolith.name
-  vpc_security_group_ids = [aws_security_group.rds.id]
+  db_subnet_group_name   = data.aws_db_subnet_group.vpc.name
+  vpc_security_group_ids = [data.aws_security_group.internal.id]
   publicly_accessible    = false
   multi_az               = false
 
@@ -41,7 +36,7 @@ resource "aws_route53_zone" "dystopia_local" {
   name = "dystopia.local"
 
   vpc {
-    vpc_id = aws_vpc.this.id
+    vpc_id = data.aws_vpc.this.id
   }
 }
 

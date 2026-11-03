@@ -14,7 +14,6 @@ Dockerfile
 
 kubernetes/
 aws/
-infrastructure/
 CHANGELOG.md
 README.md
 README-ja.md

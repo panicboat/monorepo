@@ -62,7 +62,7 @@ locals {
 resource "aws_cloudfront_distribution" "this" {
   enabled         = true
   is_ipv6_enabled = true
-  comment         = "dystopia ${var.environment}"
+  comment         = "dystopia"
   aliases         = [var.domain_name]
   price_class     = "PriceClass_200"
   http_version    = "http2and3"

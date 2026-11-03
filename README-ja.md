@@ -14,7 +14,7 @@
 ├── proto/{product}/          # product 内のサービス間で共有する gRPC コントラクト
 └── {product}/
     └── {service}/
-        ├── infrastructure/   # Terragrunt stack
+        ├── aws/              # Terragrunt stack
         ├── kubernetes/       # Kustomize base / overlays
         └── README.md         # サービス固有のドキュメント
 ```

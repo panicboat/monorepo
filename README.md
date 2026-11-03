@@ -14,7 +14,7 @@
 ├── proto/{product}/          # gRPC contracts shared between the product's services
 └── {product}/
     └── {service}/
-        ├── infrastructure/   # Terragrunt stacks
+        ├── aws/              # Terragrunt stacks
         ├── kubernetes/       # Kustomize base & overlays
         └── README.md         # Service-specific notes
 ```

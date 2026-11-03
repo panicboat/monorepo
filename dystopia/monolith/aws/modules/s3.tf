@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "media" {
-  bucket = "dystopia-media-${var.environment}"
+  bucket = "dystopia-media-${data.aws_caller_identity.current.account_id}"
 }
 
 resource "aws_s3_bucket_public_access_block" "media" {
