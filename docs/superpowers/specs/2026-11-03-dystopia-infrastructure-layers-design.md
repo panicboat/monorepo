@@ -65,6 +65,7 @@ platform の VPC は新規作成になり、rename や NAT 無効化で影響を
 | `dystopia/infrastructure` | 削除する。EKS に戻るときは git 履歴を参考に実行層として作り直す |
 | platform VPC の apply | 手元から手動で行う |
 | monorepo の develop | `workflow-config.yaml` で exclude する |
+| terragrunt stack のパス規約 | `{service}/infrastructure/aws/{environment}` を `{service}/aws/{environment}` に変える。既存の frontend と pennyworth も移す |
 | 命名 | 環境名を外す。S3 バケットのみ全 AWS で一意な名前が要るためアカウント ID を付ける。対応表は「Naming」 |
 | Cognito client 名 | `dystopia`。client は 1 つで、接尾辞で区別する相手がない |
 | 共通 SG 名 | `internal`。`default` は VPC 既定の SG と名前が衝突し、`private` は private subnet と紛らわしい |
@@ -93,7 +94,7 @@ platform (aws/vpc/production)
   └─ SG internal（自己参照 ingress、IPv4 / IPv6 egress）
 
 monorepo
-  dystopia/monolith/infrastructure/aws/production   … データ層
+  dystopia/monolith/aws/production                  … データ層
     RDS, private zone dystopia.local, Cognito, media S3
   dystopia/lambda/aws/production                    … 実行層
     ECR, Lambda x2, Function URL, CloudFront, ACM, apex DNS, Scheduler
@@ -120,9 +121,9 @@ NAT を無効にすると `nat_public_ips` 出力は空になる。platform 内�
 
 ## Monorepo changes
 
-### Data layer: `dystopia/monolith/infrastructure/aws`
+### Data layer: `dystopia/monolith/aws`
 
-既存の空 stack に書く。`dystopia/lambda/aws/modules` の `rds.tf`・`cognito.tf`・`s3.tf` を移し、ネットワークを platform 参照に置き換える。
+既存の空 stack（`dystopia/monolith/infrastructure/aws`）を `dystopia/monolith/aws` に移して書く。`dystopia/lambda/aws/modules` の `rds.tf`・`cognito.tf`・`s3.tf` を移し、ネットワークを platform 参照に置き換える。
 
 - RDS（PostgreSQL 18.6、db.t4g.micro、単一 AZ、非公開、`deletion_protection = true`）。subnet group は platform の `vpc`、SG は `internal`
 - DB マスターパスワードは `random_password`（英数字のみ。`DATABASE_URL` にエスケープなしで埋め込むため）
@@ -146,8 +147,12 @@ NAT を無効にすると `nat_public_ips` 出力は空になる。platform 内�
 
 - `dystopia/infrastructure` を丸ごと削除する
 - `workflow-config.yaml` の `aws` stack の `exclude` に `environment: develop` を追加する
+- `workflow-config.yaml` の `aws` stack の `path` を `aws/{environment}` に変える
+- `dystopia/frontend/infrastructure/aws` を `dystopia/frontend/aws` に移す。state は存在しない
+- `system-components/pennyworth/infrastructure/aws` を `system-components/pennyworth/aws` に移す。state のキーはパスから決まるため（`root.hcl` の `get_path_from_repo_root()`）、production の state（Secrets Manager 2 件）を新しいキーへ移し、移動後の plan が差分なしになることを確認する
+- `dystopia/lambda/aws/production` は新しい規約（`dystopia/{service}/aws/{environment}`）にも一致する。production を CI の対象に戻すと、規約ベースの経路と専用 workflow の両方が apply しうる。今は exclude 中のため本 spec では扱わず、production を戻すときに解消する
 - `.github/workflows/deploy-dystopia-lambda.yaml` の `APP_FUNCTION`・`TASK_FUNCTION` を新しい関数名にする。PR の plan が dependency の state を読めることを確認する
-- `dystopia/lambda/README.md` と、構成に触れている README を新しい構成に合わせる
+- `dystopia/lambda/README.md`、`dystopia/monolith/README.md`・`README-ja.md` など、構成やパスに触れている README を新しい構成に合わせる。CHANGELOG は履歴なので変えない
 
 ## Naming
 
@@ -165,7 +170,7 @@ NAT を無効にすると `nat_public_ips` 出力は空になる。platform 内�
 | 共通 SG | `private-trust-production` | `internal` |
 | `vpc/lookup` の入力 | `environment`（必須） | 削除 |
 
-### Data layer `dystopia/monolith/infrastructure/aws`
+### Data layer `dystopia/monolith/aws`
 
 | リソース | 変更前 | 変更後 |
 |---|---|---|
@@ -198,7 +203,7 @@ NAT を無効にすると `nat_public_ips` 出力は空になる。platform 内�
 1. 現行 stack の削除準備: `dystopia/lambda/aws/modules` で RDS の `deletion_protection` を `false`、Cognito の `deletion_protection` を `INACTIVE` にして apply する。media バケットと ECR リポジトリを空にする。完了条件: apply 成功、バケットとリポジトリが空
 2. 現行 stack の destroy: `dystopia/lambda/aws/production` で `terragrunt destroy`。完了条件: destroy 成功、旧関数（`dystopia-production`・`dystopia-production-task`）の ENI が残っていない（Lambda の ENI 回収が遅れると VPC 削除が失敗するため、失敗時は待って再実行する）
 3. platform VPC の apply: platform の変更を merge 後、`platform/aws/vpc/production` で手元から apply。完了条件: private subnet に IPv6 CIDR があり、private route table に `::/0` → egress-only IGW があり、NAT Gateway がない
-4. データ層の apply: monorepo の変更を merge 後、`dystopia/monolith/infrastructure/aws/production` で手元から apply。完了条件: RDS `monolith` が available、出力に DB 別名 `monolith-db.dystopia.local` がある
+4. データ層の apply: monorepo の変更を merge 後、`dystopia/monolith/aws/production` で手元から apply。完了条件: RDS `monolith` が available、出力に DB 別名 `monolith-db.dystopia.local` がある
 5. 実行層のデプロイ: `deploy-dystopia-lambda.yaml` を `workflow_dispatch` で実行する。完了条件: migration 成功、workflow の Verify ステップ成功、`https://dystopia.city` でサインアップから投稿まで通る
 
 手順 1〜2 から 5 までの間、dystopia は停止する。データを捨てる前提のため許容する。
