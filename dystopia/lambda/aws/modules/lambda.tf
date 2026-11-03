@@ -5,21 +5,21 @@ resource "tls_private_key" "vapid" {
 }
 
 locals {
-  app_function_name  = "dystopia-${var.environment}"
-  task_function_name = "dystopia-${var.environment}-task"
+  app_function_name  = "dystopia"
+  task_function_name = "dystopia-task"
 
   # Avoid 9001 because the Lambda Runtime API listens on 127.0.0.1:9001.
   grpc_port = 50051
 
-  database_url = "postgres://${aws_db_instance.monolith.username}:${random_password.monolith_db_master.result}@${aws_route53_record.monolith_db.name}:5432/${aws_db_instance.monolith.db_name}"
+  database_url = "postgres://${var.database_username}:${var.database_password}@${var.database_host}:${var.database_port}/${var.database_name}"
 
   # Stripe is unreachable without IPv4 egress, but the monolith refuses to boot unless these settings are present.
   shared_environment = {
     DATABASE_URL              = local.database_url
     COGNITO_REGION            = var.aws_region
-    COGNITO_USER_POOL_ID      = aws_cognito_user_pool.this.id
-    COGNITO_CLIENT_ID         = aws_cognito_user_pool_client.bff.id
-    MEDIA_BUCKET_NAME         = aws_s3_bucket.media.bucket
+    COGNITO_USER_POOL_ID      = var.user_pool_id
+    COGNITO_CLIENT_ID         = var.user_pool_client_id
+    MEDIA_BUCKET_NAME         = var.media_bucket_name
     MEDIA_BUCKET_REGION       = var.aws_region
     STRIPE_API_KEY            = "disabled"
     STRIPE_WEBHOOK_SECRET     = "disabled"
@@ -58,7 +58,7 @@ resource "aws_ecr_lifecycle_policy" "app" {
 }
 
 resource "aws_iam_role" "lambda" {
-  name = "dystopia-${var.environment}-lambda"
+  name = "dystopia-lambda"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -76,7 +76,7 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
 }
 
 resource "aws_iam_role_policy" "lambda_app" {
-  name = "dystopia-${var.environment}-lambda-app"
+  name = "dystopia-lambda-app"
   role = aws_iam_role.lambda.id
 
   policy = jsonencode({
@@ -85,17 +85,17 @@ resource "aws_iam_role_policy" "lambda_app" {
       {
         Effect   = "Allow"
         Action   = ["cognito-idp:AdminDeleteUser", "cognito-idp:ListUsers"]
-        Resource = aws_cognito_user_pool.this.arn
+        Resource = var.user_pool_arn
       },
       {
         Effect   = "Allow"
         Action   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:PutObjectTagging", "s3:GetObjectTagging"]
-        Resource = "${aws_s3_bucket.media.arn}/*"
+        Resource = "${var.media_bucket_arn}/*"
       },
       {
         Effect    = "Allow"
         Action    = ["s3:ListBucket"]
-        Resource  = aws_s3_bucket.media.arn
+        Resource  = var.media_bucket_arn
         Condition = { StringLike = { "s3:prefix" = ["media/*"] } }
       }
     ]
@@ -122,8 +122,8 @@ resource "aws_lambda_function" "app" {
   timeout       = 30
 
   vpc_config {
-    subnet_ids                  = [for subnet in aws_subnet.private : subnet.id]
-    security_group_ids          = [aws_security_group.lambda.id]
+    subnet_ids                  = data.aws_subnets.private.ids
+    security_group_ids          = [data.aws_security_group.internal.id]
     ipv6_allowed_for_dual_stack = true
   }
 
@@ -165,8 +165,8 @@ resource "aws_lambda_function" "task" {
   }
 
   vpc_config {
-    subnet_ids                  = [for subnet in aws_subnet.private : subnet.id]
-    security_group_ids          = [aws_security_group.lambda.id]
+    subnet_ids                  = data.aws_subnets.private.ids
+    security_group_ids          = [data.aws_security_group.internal.id]
     ipv6_allowed_for_dual_stack = true
   }
 
@@ -220,7 +220,7 @@ resource "aws_lambda_permission" "app_function_url_invoke" {
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_role" "scheduler" {
-  name = "dystopia-${var.environment}-scheduler"
+  name = "dystopia-scheduler"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -234,7 +234,7 @@ resource "aws_iam_role" "scheduler" {
 }
 
 resource "aws_iam_role_policy" "scheduler_invoke_task" {
-  name = "dystopia-${var.environment}-scheduler-invoke-task"
+  name = "dystopia-scheduler-invoke-task"
   role = aws_iam_role.scheduler.id
 
   policy = jsonencode({
@@ -248,7 +248,7 @@ resource "aws_iam_role_policy" "scheduler_invoke_task" {
 }
 
 resource "aws_scheduler_schedule" "purge_deactivated" {
-  name                         = "dystopia-${var.environment}-purge-deactivated"
+  name                         = "dystopia-purge-deactivated"
   schedule_expression          = "cron(0 4 * * ? *)"
   schedule_expression_timezone = "Asia/Tokyo"
 

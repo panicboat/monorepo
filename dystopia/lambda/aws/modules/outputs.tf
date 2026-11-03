@@ -22,23 +22,3 @@ output "cloudfront_domain_name" {
   value       = aws_cloudfront_distribution.this.domain_name
   description = "CloudFront distribution domain name"
 }
-
-output "user_pool_id" {
-  value       = aws_cognito_user_pool.this.id
-  description = "Cognito user pool ID"
-}
-
-output "client_id" {
-  value       = aws_cognito_user_pool_client.bff.id
-  description = "Cognito app client ID used by the frontend"
-}
-
-output "media_bucket_name" {
-  value       = aws_s3_bucket.media.bucket
-  description = "S3 bucket for media storage"
-}
-
-output "rds_alias" {
-  value       = aws_route53_record.monolith_db.fqdn
-  description = "Stable DNS alias for the RDS instance inside the VPC"
-}
