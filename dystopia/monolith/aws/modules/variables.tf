@@ -8,3 +8,8 @@ variable "common_tags" {
   description = "Common resource tags"
   default     = {}
 }
+
+variable "domain_name" {
+  type        = string
+  description = "Public domain name allowed to upload media from the browser"
+}
