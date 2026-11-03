@@ -200,12 +200,13 @@ bundle exec rspec
 
 ## Infrastructure
 
-monolith has an empty Terragrunt stack at
+monolith owns the data layer as a Terragrunt stack at
 `dystopia/monolith/aws/{develop,production}`. Both environments are excluded from
 CI apply via `exclude` in `workflow-config.yaml`, and production is applied manually.
-Its AWS resources (RDS, Cognito Pod Identity, IAM policies) live in
-[dystopia/infrastructure/aws/production/](../infrastructure/aws/production/),
-shared with [dystopia/frontend](../frontend) (Cognito).
+The data layer in [dystopia/monolith/aws/production/](aws/production/) holds the RDS instance,
+the Cognito user pool and the media S3 bucket, and attaches to the platform VPC.
+[dystopia/lambda/aws/production/](../lambda/aws/production/) reads its outputs,
+and [dystopia/frontend](../frontend) uses the Cognito user pool.
 
 ## Useful links
 
