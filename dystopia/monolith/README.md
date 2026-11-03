@@ -201,8 +201,8 @@ bundle exec rspec
 ## Infrastructure
 
 monolith has an empty Terragrunt stack at
-`dystopia/monolith/aws/{develop,production}`. develop is applied
-on merge and production on the monolith release ([Deployment](../../README.md)).
+`dystopia/monolith/aws/{develop,production}`. Both environments are excluded from
+CI apply via `exclude` in `workflow-config.yaml`, and production is applied manually.
 Its AWS resources (RDS, Cognito Pod Identity, IAM policies) live in
 [dystopia/infrastructure/aws/production/](../infrastructure/aws/production/),
 shared with [dystopia/frontend](../frontend) (Cognito).
