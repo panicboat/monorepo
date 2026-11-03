@@ -16,9 +16,20 @@ guest_accounts = [
   { id: "77777777-7777-4777-8777-777777777777", role: 1 },
 ]
 
+# Registration states that the cast and guest accounts above do not reach.
+DEACTIVATED_GUEST_ACCOUNT_ID = "88888888-8888-4888-8888-888888888888"
+ONBOARDING_CAST_ACCOUNT_ID = "99999999-9999-4999-8999-999999999999"
+ONBOARDING_GUEST_ACCOUNT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+
+state_accounts = [
+  { id: DEACTIVATED_GUEST_ACCOUNT_ID, role: 1, deactivated_at: Time.now - (7 * 86_400) },
+  { id: ONBOARDING_CAST_ACCOUNT_ID, role: 2 },
+  { id: ONBOARDING_GUEST_ACCOUNT_ID, role: 1 },
+]
+
 db = Seeds::Helper.db
 
-[cast_accounts, guest_accounts].flatten.each do |account|
+[cast_accounts, guest_accounts, state_accounts].flatten.each do |account|
   db[:identity__accounts].insert_conflict(target: :id).insert(
     account.merge(created_at: Time.now, updated_at: Time.now)
   )
@@ -27,4 +38,4 @@ end
 CAST_ACCOUNT_IDS = cast_accounts.map { |account| account[:id] }
 GUEST_ACCOUNT_IDS = guest_accounts.map { |account| account[:id] }
 
-puts "  Created #{CAST_ACCOUNT_IDS.size} cast accounts, #{GUEST_ACCOUNT_IDS.size} guest accounts"
+puts "  Created #{CAST_ACCOUNT_IDS.size} cast accounts, #{GUEST_ACCOUNT_IDS.size} guest accounts, #{state_accounts.size} accounts in other registration states"

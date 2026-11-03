@@ -7,12 +7,12 @@ db = Seeds::Helper.db
 
 base_posts = {
   0 => [
-    { content: "[Yuna/Public/Public] 今日も元気にお仕事中！✨ 皆さんのお越しをお待ちしています。", visibility: "public", hashtags: ["渋谷"] },
+    { content: "[Yuna/Public/Public] 今日も元気にお仕事中！✨ 皆さんのお越しをお待ちしています。", visibility: "public", hashtags: ["渋谷"], pinned: true },
     { content: "[Yuna/Public/Public] 新しいドレスを買いました👗 次回お会いできるのを楽しみにしています！", visibility: "public", hashtags: ["新衣装", "ファッション"] },
     { content: "[Yuna/Public/Private] フォロワー限定！来週のイベント情報お伝えします🎉", visibility: "private", hashtags: ["フォロワー限定", "イベント"] },
   ],
   1 => [
-    { content: "[Mio/Private/Public] 今夜23時まで空いています！ラスト1枠、お待ちしています💕", visibility: "public", hashtags: ["Tonight", "空き枠あり"] },
+    { content: "[Mio/Private/Public] 今夜23時まで空いています！ラスト1枠、お待ちしています💕", visibility: "public", hashtags: ["Tonight", "空き枠あり"], expires_in: 6 * 3600 },
     { content: "[Mio/Private/Private] メンバー限定の特別なお知らせです✨", visibility: "private", hashtags: ["メンバー限定"] },
     { content: "[Mio/Private/Private] 承認されたフォロワーさんだけに見える投稿です💖", visibility: "private", hashtags: ["限定公開"] },
   ],
@@ -90,13 +90,17 @@ post_count = 0
   all_posts = (base_posts[cast_idx] || []) + (extra_posts[cast_idx] || [])
   all_posts.each_with_index do |data, idx|
     post_id = SecureRandom.uuid_v7
+    created_at = Time.now - (idx * 3600)
     db[:"post__posts"].insert(
       id: post_id,
       author_profile_id: author_profile_id,
       content: data[:content],
       visibility: data[:visibility],
-      created_at: Time.now - (idx * 3600),
-      updated_at: Time.now - (idx * 3600),
+      published_at: created_at,
+      expires_at: data[:expires_in] && created_at + data[:expires_in],
+      pinned_at: data[:pinned] ? created_at : nil,
+      created_at: created_at,
+      updated_at: created_at,
     )
 
     data[:hashtags].each_with_index do |hashtag, position|
@@ -111,6 +115,31 @@ post_count = 0
 
     post_count += 1
   end
+end
+
+quoted = db[:"post__posts"].where(author_profile_id: CAST_PROFILE_IDS[0], visibility: "public").where(Sequel.like(:content, "%新しいドレス%")).first
+quote_content = "@yuna ちゃんの新衣装かわいい！私も今度見に行こうかな👗"
+if quoted && db[:"post__posts"].where(content: quote_content).empty?
+  quote_id = SecureRandom.uuid_v7
+  db[:"post__posts"].insert(
+    id: quote_id,
+    author_profile_id: CAST_PROFILE_IDS[2],
+    content: quote_content,
+    visibility: "public",
+    quoted_post_id: quoted[:id],
+    published_at: Time.now - 1800,
+    created_at: Time.now - 1800,
+    updated_at: Time.now - 1800,
+  )
+  db[:"post__post_mentions"].insert(
+    id: SecureRandom.uuid_v7,
+    post_id: quote_id,
+    profile_id: CAST_PROFILE_IDS[0],
+    position: 0,
+    length: "@yuna".length,
+    created_at: Time.now,
+  )
+  post_count += 1
 end
 
 puts "  Created #{post_count} posts"
