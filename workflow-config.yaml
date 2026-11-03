@@ -20,7 +20,7 @@ services:
           type: container
 
       - id: aws
-        path: "infrastructure/aws/{environment}"
+        path: "aws/{environment}"
         attributes:
           type: terragrunt
         environments:
@@ -29,6 +29,7 @@ services:
           production:
             use: [aws-production]
         exclude:
+          - environment: develop
           # Keep production excluded until the release workflow is enabled
           - environment: production
 
