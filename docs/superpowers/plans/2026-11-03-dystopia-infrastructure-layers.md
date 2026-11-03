@@ -468,9 +468,16 @@ PR #1930 のタイトルを `feat(dystopia): split infrastructure into platform,
 - [ ] **Step 1: platform の PR を merge し、VPC を apply する**
 
 Run: `cd platform/aws/vpc/production && aqua exec -- terragrunt apply`
-Expected: private subnet 3 つに IPv6 CIDR、private route table に `::/0` → `eigw-*`、`aws ec2 describe-nat-gateways --filter Name=state,Values=available` が空、SG `internal` が存在
+Expected: private subnet 3 つに IPv6 CIDR、private route table に `::/0` → `eigw-*`、`aws ec2 describe-nat-gateways --filter Name=state,Values=available` が空、SG `internal` が存在、`aws ec2 describe-subnets --filters Name=tag:Tier,Values=private` の `EnableDns64` が全て false
 
-- [ ] **Step 2: 旧 stack の削除保護を外し、バケットと ECR を空にする**
+- [ ] **Step 2: deploy workflow を止める**
+
+Step 3 から Step 6 の merge までの間に dystopia/frontend・monolith・lambda への変更が main に入ると、deploy workflow が旧コードで実行層を apply するため止めておく。
+
+Run: `gh workflow disable deploy-dystopia-lambda.yaml -R panicboat/monorepo`
+Expected: `gh workflow list --all -R panicboat/monorepo` で `Deploy - dystopia Lambda` が `disabled_manually`
+
+- [ ] **Step 3: 旧 stack の削除保護を外し、バケットと ECR を空にする**
 
 ```bash
 aws rds modify-db-instance --db-instance-identifier monolith-production --no-deletion-protection --apply-immediately
@@ -482,25 +489,30 @@ Expected: `describe-db-instances` の `DeletionProtection` が false、`describe
 
 `update-user-pool` は指定しない属性を既定値に戻すが、直後に destroy するため影響はない。
 
-- [ ] **Step 3: 旧 stack を destroy する**
+- [ ] **Step 4: 旧 stack を destroy する**
 
 main（Task 4〜8 を含まない）の `dystopia/lambda/aws/production` で実行する。
 
 Run: `aqua exec -- terragrunt destroy`
 Expected: destroy 成功。ENI 残存で VPC 削除が止まったら README の Teardown のコマンド（description `ENI-dystopia-production*`）で消して再実行
 
-- [ ] **Step 4: データ層を apply する**
+- [ ] **Step 5: データ層を apply する**
 
 monorepo の PR ブランチの `dystopia/monolith/aws/production` で実行する。
 
 Run: `aqua exec -- terragrunt apply`
 Expected: `terragrunt output database_host` が `"monolith-db.dystopia.local"`、RDS `monolith` が available
 
-- [ ] **Step 5: monorepo の PR を merge する**
+- [ ] **Step 6: deploy workflow を再開し、monorepo の PR を merge する**
+
+Run: `gh workflow enable deploy-dystopia-lambda.yaml -R panicboat/monorepo`
+Expected: `gh workflow list -R panicboat/monorepo` で `Deploy - dystopia Lambda` が `active`
+
+workflow が `active` になってから PR を merge する。
 
 Expected: `Deploy - dystopia Lambda` workflow が成功（migration と Verify を含む）。`https://dystopia.city` でサインアップ → 投稿まで通る。CloudTrail の `InitiateAuth` の送信元が新 VPC の IPv6 アドレス
 
-- [ ] **Step 6: pennyworth の state を移す**
+- [ ] **Step 7: pennyworth の state を移す**
 
 ```bash
 aws s3 cp s3://terragrunt-state-337169763788/monorepo/system-components/pennyworth/infrastructure/aws/production/terraform.tfstate \

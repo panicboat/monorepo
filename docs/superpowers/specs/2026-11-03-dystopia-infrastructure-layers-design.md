@@ -113,6 +113,7 @@ monorepo
 
 - `module "vpc"` に IPv6 を追加する: `enable_ipv6 = true`、`private_subnet_ipv6_prefixes = [0, 1, 2]`、`private_subnet_assign_ipv6_address_on_creation = true`、`create_egress_only_igw = true`
 - `enable_nat_gateway` を変数化し、production では `false` にする。`single_nat_gateway` は `true` のまま
+- private subnet の DNS64 は `enable_nat_gateway` に合わせる（現在は無効）。NAT64 がないまま DNS64 を有効にすると、IPv4 のみの宛先に合成 AAAA が返り、その通信は egress-only IGW で捨てられるため
 - 共通 SG を `internal` に改名し（Terraform のリソース名も `aws_security_group.internal`）、`::/0` の egress rule を追加する。`lookup` の出力キー `security_groups.private_trust` も `security_groups.internal` にし、`aws/eks/modules/main.tf`・`aws/eks-karpenter/modules/main.tf` の参照とテスト（`tests/*.tftest.hcl`、`aws/eks/tests/security-group-contract.sh`）を合わせる
 - Karpenter の EC2NodeClass（`kubernetes/components/karpenter/production/kustomization/ec2nodeclass.yaml`）の SG セレクタ `Name: private-trust-production` を `Name: internal` にし、`kubernetes/components/karpenter/tests/security-group-selectors.sh` を合わせる。hydrate 済みの `kubernetes/manifests` は CI の hydrator が更新する
 - 環境名を名前から外す（「Naming」の対応表）。`lookup` から `environment` 変数を削除し、`aws/eks/modules/lookups.tf` と `aws/eks-karpenter/modules/lookups.tf` の受け渡しも削除する
@@ -206,6 +207,8 @@ NAT を無効にすると `nat_public_ips` 出力は空になる。platform 内�
 4. データ層の apply: monorepo の PR のブランチで `dystopia/monolith/aws/production` を手元から apply。完了条件: RDS `monolith` が available、出力 `database_host` が `monolith-db.dystopia.local`
 5. monorepo の PR を merge する。deploy workflow が実行層を apply し、migration とアプリ更新を行う。完了条件: workflow の Verify ステップ成功、`https://dystopia.city` でサインアップから投稿まで通る
 6. pennyworth の state 移動: production の state を新しいキーへコピーし、`system-components/pennyworth/aws/production` の plan が差分なしになることを確認してから旧キーを消す
+
+手順 2 の開始から手順 5 の merge 直前まで deploy workflow を無効にする（その間に dystopia/frontend・monolith・lambda への変更が main に入ると、workflow が旧コードで実行層を apply するため）。
 
 手順 3 から 5 までの間、dystopia は停止する。データを捨てる前提のため許容する。
 
