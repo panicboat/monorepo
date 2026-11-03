@@ -21,10 +21,10 @@ Browser → CloudFront → Lambda Function URL → Lambda Web Adapter → Next.j
 | S3 への経路 | gateway endpoint | 無料。SDK の dualstack 設定はコード変更が要り、環境変数で一括指定すると Cognito が DNS に存在しない dualstack ホスト名を引く |
 | 入口 | CloudFront + Lambda Function URL | 静的ファイルをエッジでキャッシュし、ページ表示時の並列リクエストが Lambda に届かないようにする |
 | Function URL の認証 | `NONE` | CloudFront の OAC はブラウザからの POST に body の SHA256 ヘッダを要求し、アプリの API 呼び出しが通らない。直接叩かれてもキャッシュを迂回されるだけで、認証はアプリが行う |
-| Terraform の置き場 | `dystopia/infrastructure` とは別に持つ | `dystopia/infrastructure` は EKS の VPC とクラスタを data source で引いており apply できない。書き換えず残せば EKS に戻すときにそのまま使える |
+| Terraform の置き場 | データ層は `dystopia/monolith/aws`、VPC は platform の `aws/vpc` にあり、この stack は実行環境だけを持つ | 実行環境を EKS に入れ替えても、VPC とデータ層の state に触らずに済む |
 | イメージの更新 | CI が関数のコードを更新し、Terraform は `image_uri` を無視 | migration をアプリ更新より先に実行する順序を Terraform の 1 回の apply では表現できない |
 | migration・手動 SQL | 同じイメージの task 用関数を呼ぶ | init の 10 秒制限を避ける。踏み台もクラスタもなく、GitHub Actions からも private な RDS に届かない |
-| CI の組み込み方 | 専用 workflow。`workflow-config.yaml` は変更しない | 環境を再有効化すると `dystopia/infrastructure` や pennyworth の stack まで CI の対象に戻る |
+| CI の組み込み方 | 専用 workflow。`workflow-config.yaml` で production の除外を外さない | 外すと pennyworth の stack が CI の対象に戻り、この stack も規約ベースの経路と専用 workflow の両方から apply されうる |
 
 採らなかった構成:
 
@@ -41,16 +41,19 @@ Browser → CloudFront → Lambda Function URL → Lambda Web Adapter → Next.j
 | `image/Dockerfile` | 統合イメージ。ビルドコンテキストは `dystopia/` |
 | `image/start` | アプリ用関数の起動スクリプト。gRPC と Next.js を起動し、片方が終了したら全体を終了する |
 | `image/task.mjs` | task 用関数の HTTP サーバー。migration、SQL、退会したアカウントの削除処理の実行を受ける |
-| `aws/modules` | Terraform。VPC、RDS、Cognito、S3、ECR、Lambda、CloudFront、EventBridge Scheduler |
+| `aws/modules` | Terraform。ECR、Lambda、CloudFront、EventBridge Scheduler |
 | `aws/production` | Terragrunt の production 設定 |
 
-`dystopia/infrastructure` は EKS 向けの構成で、この構成とは同じ名前のリソースを定義している。2 つを同時に apply することはできない。
+データ層（`dystopia/monolith/aws`）の出力は、`aws/production/terragrunt.hcl` の `dependency` で受け取る。
+
+VPC・private subnet・security group `internal` は、platform の `aws/vpc` が作ったものを data source で引く。
 
 ## Constraints
 
 - gRPC のポートは 50051。Lambda の Runtime API が `127.0.0.1:9001` を使うため、monolith の既定値 9001 は使えない
 - migration は起動時に実行しない。Lambda の初期化は 10 秒で打ち切られる
-- 外向き通信は IPv6 と S3 gateway endpoint だけ。IPv4 でしか到達できない Stripe には届かないため、課金は動かない
+- 外向き通信は IPv6 と S3 gateway endpoint だけ。どちらも platform の `aws/vpc` が持つ
+- IPv4 でしか到達できない Stripe には届かないため、課金は動かない
 - アカウントの Lambda 同時実行数の上限が、同時に処理できるリクエスト数の上限になる
 - 静かな時間帯の最初のリクエストは cold start で約 5 秒かかる
 
@@ -71,12 +74,12 @@ migration が失敗すると 5 は実行されない。成否は invoke のエ�
 
 ## Operations
 
-task 用関数 `dystopia-production-task` を呼べるのは、IAM で `lambda:InvokeFunction` を持つ利用者と、削除処理を呼ぶ EventBridge Scheduler だけ。
+task 用関数 `dystopia-task` を呼べるのは、IAM で `lambda:InvokeFunction` を持つ利用者と、削除処理を呼ぶ EventBridge Scheduler だけ。
 
 migration を手動で実行する。
 
 ```bash
-aws lambda invoke --function-name dystopia-production-task \
+aws lambda invoke --function-name dystopia-task \
   --cli-binary-format raw-in-base64-out --cli-read-timeout 900 \
   --payload '{"task":"migrate"}' /dev/stdout
 ```
@@ -84,7 +87,7 @@ aws lambda invoke --function-name dystopia-production-task \
 SQL を実行する。
 
 ```bash
-aws lambda invoke --function-name dystopia-production-task \
+aws lambda invoke --function-name dystopia-task \
   --cli-binary-format raw-in-base64-out \
   --payload "$(jq -nc --arg sql 'select count(*) from identity.accounts' '{task:"psql",sql:$sql}')" /dev/stdout
 ```
@@ -92,7 +95,7 @@ aws lambda invoke --function-name dystopia-production-task \
 退会したアカウントの削除処理は、EventBridge Scheduler が毎日 04:00（日本時間）に task 用関数を `{"task":"purge_deactivated"}` で呼ぶ。削除処理は冪等で翌日の実行がやり直すため、失敗しても再試行しない（既定の再試行は 24 時間続く）。同じ実行で、作成から 24 時間を過ぎても完了していない登録も削除する（[アカウント](../docs/features/account.md)）。手動で実行する。
 
 ```bash
-aws lambda invoke --function-name dystopia-production-task \
+aws lambda invoke --function-name dystopia-task \
   --cli-binary-format raw-in-base64-out --cli-read-timeout 900 \
   --payload '{"task":"purge_deactivated"}' /dev/stdout
 ```
@@ -100,20 +103,20 @@ aws lambda invoke --function-name dystopia-production-task \
 特定のアカウントを、猶予を待たずに削除する（18 歳未満または高校生と分かった利用者。規約の「利用資格」の条）。ユーザー名からアカウントの ID を引き、退会日時を 90 日より前にしてから削除処理を実行する。消える範囲は退会したアカウントと同じ（[アカウント](../docs/features/account.md)）。同じ実行で、猶予を過ぎた他のアカウントと、24 時間を過ぎても完了していない登録も消える。
 
 ```bash
-aws lambda invoke --function-name dystopia-production-task \
+aws lambda invoke --function-name dystopia-task \
   --cli-binary-format raw-in-base64-out \
   --payload "$(jq -nc --arg sql "select account_id from profile.profiles where lower(username) = lower('<ユーザー名>')" '{task:"psql",sql:$sql}')" /dev/stdout
-aws lambda invoke --function-name dystopia-production-task \
+aws lambda invoke --function-name dystopia-task \
   --cli-binary-format raw-in-base64-out \
   --payload "$(jq -nc --arg sql "update identity.accounts set deactivated_at = now() - interval '91 days' where id = '<アカウントの ID>'" '{task:"psql",sql:$sql}')" /dev/stdout
-aws lambda invoke --function-name dystopia-production-task \
+aws lambda invoke --function-name dystopia-task \
   --cli-binary-format raw-in-base64-out --cli-read-timeout 900 \
   --payload '{"task":"purge_deactivated"}' /dev/stdout
 ```
 
 応答の `exitCode` が 0 以外のとき、invoke の結果に `FunctionError` が付く。`output` は末尾 256 KiB までを返す。
 
-ログは CloudWatch Logs の `/aws/lambda/dystopia-production` と `/aws/lambda/dystopia-production-task` にある。
+ログは CloudWatch Logs の `/aws/lambda/dystopia` と `/aws/lambda/dystopia-task` にある。
 
 ## Tests
 
@@ -124,17 +127,20 @@ node --test dystopia/lambda/image/tests/task.test.mjs
 bash dystopia/lambda/image/tests/image_test.sh
 ```
 
+`contract_test.sh` は、この stack が VPC・RDS・Cognito・S3 を持たないことと、`production/terragrunt.hcl` の `mock_outputs` が apply で使われないことを検査する。
+
 `image_test.sh` は Docker を使う。イメージのビルドを含むため、初回は 10 分ほどかかる。
 
 ## Teardown
 
-- Cognito user pool と RDS は削除保護が有効なので、destroy の前に user pool の `deletion_protection` を `INACTIVE`、RDS の `deletion_protection` を `false` にして apply する
-- ECR リポジトリはイメージが残っていると削除できず、media バケットはオブジェクトが残っていると削除できない。destroy の前に空にする
-- Lambda は VPC 内のネットワークインターフェースを実行ロールの権限で片付ける。destroy では関数の直後にロールも消えるため、インターフェースが `available` のまま残って security group と subnet の削除が止まることがある。その場合は次のコマンドで削除する
+- RDS・Cognito user pool・media バケットはデータ層（`dystopia/monolith/aws`）にあり、この stack の destroy では消えない
+- データ層を消すときは、destroy の前に user pool の `deletion_protection` を `INACTIVE`、RDS の `deletion_protection` を `false` にして apply し、media バケットを空にする
+- ECR リポジトリはイメージが残っていると削除できない。destroy の前に空にする
+- Lambda は VPC 内のネットワークインターフェースを実行ロールの権限で片付ける。destroy では関数の直後にロールも消えるため、インターフェースが `available` のまま残って platform の security group `internal` と subnet の削除が止まることがある。その場合は次のコマンドで削除する
 
 ```bash
 aws ec2 describe-network-interfaces \
-  --filters 'Name=description,Values=AWS Lambda VPC ENI-dystopia-production*' Name=status,Values=available \
+  --filters 'Name=description,Values=AWS Lambda VPC ENI-dystopia*' Name=status,Values=available \
   --query 'NetworkInterfaces[].NetworkInterfaceId' --output text \
   | xargs -n 1 aws ec2 delete-network-interface --network-interface-id
 ```

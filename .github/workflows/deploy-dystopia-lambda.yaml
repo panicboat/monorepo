@@ -55,8 +55,8 @@ jobs:
       TF_INPUT: 'false'
       TERRAGRUNT_DIRECTORY: dystopia/lambda/aws/production
       ECR_REPOSITORY: dystopia
-      APP_FUNCTION: dystopia-production
-      TASK_FUNCTION: dystopia-production-task
+      APP_FUNCTION: dystopia
+      TASK_FUNCTION: dystopia-task
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

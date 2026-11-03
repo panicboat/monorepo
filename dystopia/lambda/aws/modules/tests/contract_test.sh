@@ -27,9 +27,20 @@ tofu validate -no-color
 
 assert_count aws_nat_gateway 0
 assert_count aws_internet_gateway 0
-assert_count aws_egress_only_internet_gateway 1
-assert_count aws_vpc_security_group_ingress_rule 1
+assert_count aws_egress_only_internet_gateway 0
+assert_count aws_vpc 0
+assert_count aws_subnet 0
+assert_count aws_security_group 0
+assert_count aws_db_instance 0
+assert_count aws_cognito_user_pool 0
+assert_count aws_s3_bucket 0
+assert_count aws_vpc_security_group_ingress_rule 0
 assert_count aws_lambda_function_url 1
+
+if ! grep -Eq '^[[:space:]]*mock_outputs_allowed_terraform_commands[[:space:]]*=[[:space:]]*\["init", "validate", "plan"\]$' ../production/terragrunt.hcl; then
+  echo 'Mock outputs must never reach apply.' >&2
+  exit 1
+fi
 
 if [ "$(grep -Fc 'ignore_changes = [image_uri]' lambda.tf)" != 2 ]; then
   echo 'Both Lambda functions must ignore image_uri so the deploy workflow owns the running image.' >&2
