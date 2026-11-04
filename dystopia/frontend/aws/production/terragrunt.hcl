@@ -14,8 +14,4 @@ terraform {
 
 inputs = {
   aws_region = include.env.locals.aws_region
-  common_tags = merge(
-    include.root.locals.common_tags,
-    include.env.locals.additional_tags
-  )
 }

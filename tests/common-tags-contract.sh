@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repository_root="$(git rev-parse --show-toplevel)"
+cd "$repository_root"
+
+expected_common_tags="$(
+  cat <<'TAGS'
+    Product     = local.product_name
+    Project     = local.project_name
+    Environment = local.environment
+    ManagedBy   = "terragrunt"
+    Owner       = "panicboat"
+    Repository  = "panicboat/monorepo"
+TAGS
+)"
+
+service_roots="dystopia system-components"
+
+failures=0
+
+fail() {
+  printf '%s: %s\n' "$1" "$2" >&2
+  failures=$((failures + 1))
+}
+
+list_files() {
+  # shellcheck disable=SC2086 # service_roots is a word list on purpose
+  git ls-files --cached --others --exclude-standard -- $service_roots
+}
+
+extract_common_tags() {
+  awk '
+    /^locals \{/ { in_locals = 1; next }
+    in_locals && /^}/ { in_locals = 0 }
+    in_locals && /^  common_tags = \{/ { found = 1; in_block = 1; next }
+    in_block && /^  }/ { in_block = 0 }
+    in_block { print }
+    END { exit found ? 0 : 3 }
+  ' "$1"
+}
+
+extract_local_string() {
+  sed -n "/^locals {/,/^}/s/^  $2[[:space:]]*=[[:space:]]*\"\(.*\)\"[[:space:]]*\$/\1/p" "$1"
+}
+
+checked_root_files=0
+
+while IFS= read -r root_file; do
+  checked_root_files=$((checked_root_files + 1))
+
+  if [[ ! "$root_file" =~ ^([^/]+)/([^/]+)/aws/root\.hcl$ ]]; then
+    fail "$root_file" "root.hcl must live at <product>/<project>/aws/root.hcl"
+    continue
+  fi
+  expected_product_name="${BASH_REMATCH[1]}"
+  expected_project_name="${BASH_REMATCH[2]}"
+
+  extract_status=0
+  common_tags_block="$(extract_common_tags "$root_file")" || extract_status=$?
+  if test "$extract_status" -eq 3; then
+    fail "$root_file" "locals must define common_tags"
+    continue
+  fi
+  if test "$extract_status" -ne 0; then
+    fail "$root_file" "failed to read the locals block"
+    continue
+  fi
+
+  actual_product_name="$(extract_local_string "$root_file" product_name)"
+  if test "$actual_product_name" != "$expected_product_name"; then
+    fail "$root_file" "locals product_name must equal the top-level directory name '$expected_product_name', found '$actual_product_name'"
+  fi
+
+  actual_project_name="$(extract_local_string "$root_file" project_name)"
+  if test "$actual_project_name" != "$expected_project_name"; then
+    fail "$root_file" "locals project_name must equal the service directory name '$expected_project_name', found '$actual_project_name'"
+  fi
+
+  if test "$common_tags_block" != "$expected_common_tags"; then
+    fail "$root_file" "locals common_tags must be exactly the six monorepo keys; diff (expected vs actual):"
+    diff <(printf '%s\n' "$expected_common_tags") <(printf '%s\n' "$common_tags_block") >&2 || true
+  fi
+done < <(list_files | grep -E '(^|/)root\.hcl$' || true)
+
+if test "$checked_root_files" -eq 0; then
+  fail "root.hcl" "no root.hcl found under: $service_roots"
+fi
+
+checked_stack_files=0
+
+while IFS= read -r stack_file; do
+  checked_stack_files=$((checked_stack_files + 1))
+  if matches="$(grep -nE 'common_tags|environment_tags|additional_tags' "$stack_file")"; then
+    fail "$stack_file" "must not define tags; tags are built only in root.hcl: $matches"
+  fi
+done < <(
+  list_files |
+    grep -E '(^|/)(terragrunt|env)\.hcl$' |
+    grep -Ev '(^|/)(modules|tests|\.terragrunt-cache)/' || true
+)
+
+if test "$checked_stack_files" -eq 0; then
+  fail "terragrunt.hcl" "no stack terragrunt.hcl or env.hcl found under: $service_roots"
+fi
+
+if test "$failures" -gt 0; then
+  exit 1
+fi
+
+echo "Common tags contract passed."

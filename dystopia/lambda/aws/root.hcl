@@ -1,16 +1,17 @@
 locals {
-  project_name = "dystopia"
+  product_name = "dystopia"
+  project_name = "lambda"
 
   path_parts  = split("/", path_relative_to_include())
   environment = element(local.path_parts, length(local.path_parts) - 1)
 
   common_tags = {
+    Product     = local.product_name
     Project     = local.project_name
     Environment = local.environment
     ManagedBy   = "terragrunt"
-    Repository  = "monorepo"
-    Component   = "lambda"
-    Team        = "panicboat"
+    Owner       = "panicboat"
+    Repository  = "panicboat/monorepo"
   }
 }
 
