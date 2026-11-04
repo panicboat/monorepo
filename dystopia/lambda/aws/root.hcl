@@ -33,7 +33,6 @@ remote_state {
 }
 
 inputs = {
-  environment = local.environment
   common_tags = local.common_tags
   aws_region  = "ap-northeast-1"
 }

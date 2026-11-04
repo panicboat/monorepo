@@ -33,7 +33,5 @@ remote_state {
 }
 
 inputs = {
-  project_name = local.project_name
-  environment  = local.environment
-  common_tags  = local.common_tags
+  common_tags = local.common_tags
 }
