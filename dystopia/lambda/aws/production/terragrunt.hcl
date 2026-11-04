@@ -35,10 +35,6 @@ inputs = {
   aws_region            = include.env.locals.aws_region
   domain_name           = include.env.locals.domain_name
   route53_zone_role_arn = include.env.locals.route53_zone_role_arn
-  common_tags = merge(
-    include.root.locals.common_tags,
-    include.env.locals.additional_tags
-  )
 
   database_host       = dependency.monolith.outputs.database_host
   database_port       = dependency.monolith.outputs.database_port
