@@ -40,6 +40,15 @@ extract_common_tags() {
   ' "$1"
 }
 
+forwards_common_tags() {
+  awk '
+    /^inputs = \{/ { in_inputs = 1; next }
+    in_inputs && /^}/ { in_inputs = 0 }
+    in_inputs && /^  common_tags[[:space:]]+=[[:space:]]+local\.common_tags[[:space:]]*$/ { found = 1 }
+    END { exit found ? 0 : 1 }
+  ' "$1"
+}
+
 extract_local_string() {
   sed -n "/^locals {/,/^}/s/^  $2[[:space:]]*=[[:space:]]*\"\(.*\)\"[[:space:]]*\$/\1/p" "$1"
 }
@@ -80,6 +89,10 @@ while IFS= read -r root_file; do
   if test "$common_tags_block" != "$expected_common_tags"; then
     fail "$root_file" "locals common_tags must be exactly the six monorepo keys; diff (expected vs actual):"
     diff <(printf '%s\n' "$expected_common_tags") <(printf '%s\n' "$common_tags_block") >&2 || true
+  fi
+
+  if ! forwards_common_tags "$root_file"; then
+    fail "$root_file" "inputs must forward tags with 'common_tags = local.common_tags'"
   fi
 done < <(list_files | grep -E '(^|/)root\.hcl$' || true)
 
