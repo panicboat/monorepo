@@ -79,8 +79,7 @@ export const INDUSTRIES = [
   { name: "ピンサロ", icon: "📍" },
   { name: "キャバクラ", icon: "🥂" },
   { name: "ガールズバー", icon: "🍸" },
-  { name: "P活1", icon: "🍵🍽️🛍️" },
-  { name: "P活2", icon: "⚒️" },
+  { name: "パパ活", icon: "P活" },
   { name: "個撮", icon: "📸" },
 ] as const;
 
