@@ -85,7 +85,7 @@ export function ScheduleSearchPanel({ query, choices, onChoicesChange }: Schedul
               title={i.name}
               onClick={() => onChoicesChange({ ...choices, industry: industry === i.name ? "" : i.name })}
               className={cn(
-                "flex size-11 items-center justify-center rounded-full border text-xl",
+                "flex h-11 min-w-11 items-center justify-center rounded-full border px-2.5 text-xl",
                 industry === i.name ? "border-accent bg-accent/15" : "border-border hover:bg-bg-secondary"
               )}
             >
