@@ -17,11 +17,11 @@ module Review
         raise Errors::Forbidden, "Guest only" unless authorize_guest.call(viewer_account_id: viewer_account_id)
 
         attrs = validate_event.call(**event)
-        check_media_ownership.call(profile_id: viewer_profile_id, media: attrs[:media])
 
         review = review_repo.transaction do
           record = find_event(event_id)
           locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: record.review_id, lock: true)
+          check_media_ownership.call(profile_id: viewer_profile_id, media: attrs[:media], attached_ids: event_repo.media_ids_for_event(record.id))
           updated = event_repo.update(find_event(event_id).id, **attrs.except(:media))
           event_repo.replace_media(updated.id, attrs[:media])
           review_repo.touch(locked.id)

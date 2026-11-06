@@ -87,6 +87,31 @@ RSpec.describe "Review service event media", type: :database do
     expect(db[:review__event_media].select_map(:media_id)).to eq([mine])
   end
 
+  it "lets a sibling persona edit an event and keep the attachment another persona uploaded" do
+    review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+
+    edited = uc(:update_review_event).call(
+      viewer_account_id: guest_account, viewer_profile_id: persona_b,
+      event_id: review[:events].first[:id], event: service_input.merge(note: "changed", media: [{ media_id: mine, media_type: "image" }])
+    )
+
+    expect(edited[:events].first[:note]).to eq("changed")
+    expect(db[:review__event_media].select_map(:media_id)).to eq([mine])
+  end
+
+  it "refuses a sibling persona adding media the event does not have yet" do
+    review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+
+    expect do
+      uc(:update_review_event).call(
+        viewer_account_id: guest_account, viewer_profile_id: persona_b,
+        event_id: review[:events].first[:id],
+        event: service_input.merge(media: [{ media_id: mine, media_type: "image" }, { media_id: mine2, media_type: "video" }])
+      )
+    end.to raise_error(Review::Errors::Invalid, "Only media the acting profile uploaded can be attached")
+    expect(db[:review__event_media].select_map(:media_id)).to eq([mine])
+  end
+
   describe Review::Adapters::MediaAdapter do
     subject(:adapter) { described_class.new }
 
