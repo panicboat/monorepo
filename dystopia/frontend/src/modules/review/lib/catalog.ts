@@ -68,6 +68,8 @@ const NOTE_REQUIRED_OUTCOMES: Record<ReviewStage, string[]> = {
 
 export const MAX_NOTE_LENGTH = 500;
 
+export const MAX_REVIEW_MEDIA = 4;
+
 export function isNoteRequired(stage: ReviewStage, outcome: string): boolean {
   return NOTE_REQUIRED_OUTCOMES[stage].includes(outcome);
 }

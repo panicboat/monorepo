@@ -127,7 +127,7 @@ describe("ReviewEventForm", () => {
   });
 
   it("shows the given event's values for editing", async () => {
-    const container = await mount({ stage: "aftercare", outcome: "trouble_occurred", tags: ["excessive_contact"], note: "何度も連絡", occurredOn: "2026-10-03" });
+    const container = await mount({ stage: "aftercare", outcome: "trouble_occurred", tags: ["excessive_contact"], note: "何度も連絡", occurredOn: "2026-10-03", media: [] });
 
     expect(buttonNamed(container, "利用後").getAttribute("aria-pressed")).toBe("true");
     expect((container.querySelector("select") as HTMLSelectElement).value).toBe("trouble_occurred");

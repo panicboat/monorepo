@@ -18,7 +18,7 @@ function Probe() {
   return null;
 }
 
-const event = { stage: "service" as const, outcome: "satisfied", tags: [], note: "", occurredOn: "2026-10-01" };
+const event = { stage: "service" as const, outcome: "satisfied", tags: [], note: "", occurredOn: "2026-10-01", media: [] };
 let root: Root;
 let container: HTMLElement;
 

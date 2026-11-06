@@ -15,7 +15,7 @@ import type { ReviewEventInput } from "../types";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
 export function emptyReviewEvent(today: string = todayInJapan()): ReviewEventInput {
-  return { stage: "reservation", outcome: REVIEW_OUTCOMES.reservation[0].code, tags: [], note: "", occurredOn: today };
+  return { stage: "reservation", outcome: REVIEW_OUTCOMES.reservation[0].code, tags: [], note: "", occurredOn: today, media: [] };
 }
 
 export function isReviewEventReady(event: ReviewEventInput): boolean {

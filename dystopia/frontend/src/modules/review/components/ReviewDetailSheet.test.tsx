@@ -42,7 +42,7 @@ vi.mock("@/stores/toastStore", () => ({
 const { ReviewDetailSheet } = await import("./ReviewDetailSheet");
 
 const event = (id: string, overrides: Partial<Review["events"][number]> = {}): Review["events"][number] => ({
-  id, stage: "reservation", outcome: "booked", tags: ["quick_reply"], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "", ...overrides,
+  id, stage: "reservation", outcome: "booked", tags: ["quick_reply"], note: "", occurredOn: "2026-10-01", media: [], createdAt: "", updatedAt: "", ...overrides,
 });
 
 const review = (overrides: Partial<Review> = {}): Review => ({

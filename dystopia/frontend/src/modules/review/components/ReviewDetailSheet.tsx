@@ -70,7 +70,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
   const startEdit = (eventId: string) => {
     const target = review.events.find((event) => event.id === eventId);
     if (!target) return;
-    setEditDraft({ stage: target.stage, outcome: target.outcome, tags: target.tags, note: target.note, occurredOn: target.occurredOn });
+    setEditDraft({ stage: target.stage, outcome: target.outcome, tags: target.tags, note: target.note, occurredOn: target.occurredOn, media: target.media });
     setStep({ kind: "edit", eventId });
   };
 

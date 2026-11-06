@@ -9,7 +9,29 @@ describe("parseReviewEventInput", () => {
       tags: ["late"],
       note: "",
       occurredOn: "2026-10-01",
+      media: [],
     });
+  });
+
+  it("keeps the id and type of each media and drops the rest of a media entry", () => {
+    const event = { stage: "service", outcome: "satisfied", tags: [], occurredOn: "2026-10-01" };
+
+    expect(parseReviewEventInput({ ...event, media: [{ mediaId: "m-1", mediaType: "image", url: "u", thumbnailUrl: "t" }] })?.media).toEqual([
+      { mediaId: "m-1", mediaType: "image", url: "", thumbnailUrl: "" },
+    ]);
+    expect(parseReviewEventInput({ ...event, media: [{ mediaId: "m-2", mediaType: "video" }] })?.media).toEqual([
+      { mediaId: "m-2", mediaType: "video", url: "", thumbnailUrl: "" },
+    ]);
+  });
+
+  it("rejects a media entry that is not an id and an image or video type", () => {
+    const event = { stage: "service", outcome: "satisfied", tags: [], occurredOn: "2026-10-01" };
+
+    expect(parseReviewEventInput({ ...event, media: "m-1" })).toBeNull();
+    expect(parseReviewEventInput({ ...event, media: [null] })).toBeNull();
+    expect(parseReviewEventInput({ ...event, media: [{ mediaId: 1, mediaType: "image" }] })).toBeNull();
+    expect(parseReviewEventInput({ ...event, media: [{ mediaId: "m-1", mediaType: "audio" }] })).toBeNull();
+    expect(parseReviewEventInput({ ...event, media: [{ mediaType: "image" }] })).toBeNull();
   });
 
   it("rejects an unknown stage, a non-string field and non-string tags", () => {
