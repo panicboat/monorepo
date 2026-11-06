@@ -10,6 +10,7 @@ module Review
         load_own_review: "use_cases.load_own_review",
         validate_event: "use_cases.validate_event",
         check_media_ownership: "use_cases.check_media_ownership",
+        media_adapter: "adapters.media_adapter",
         present_reviews: "use_cases.present_reviews"
       ]
 
@@ -18,16 +19,20 @@ module Review
 
         attrs = validate_event.call(**event)
 
+        detached_ids = []
         review = review_repo.transaction do
           record = find_event(event_id)
           locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: record.review_id, lock: true)
-          check_media_ownership.call(profile_id: viewer_profile_id, media: attrs[:media], attached_ids: event_repo.media_ids_for_event(record.id))
+          attached_ids = event_repo.media_ids_for_event(record.id)
+          check_media_ownership.call(profile_id: viewer_profile_id, media: attrs[:media], attached_ids: attached_ids)
           updated = event_repo.update(find_event(event_id).id, **attrs.except(:media))
           event_repo.replace_media(updated.id, attrs[:media])
           review_repo.touch(locked.id)
           review_repo.refresh_last_occurred_on(locked.id)
+          detached_ids = attached_ids - attrs[:media].map { |item| item[:media_id] }
           locked
         end
+        media_adapter.discard_detached(detached_ids)
         present_reviews.call(reviews: [review_repo.find(review.id)], viewer_account_id: viewer_account_id).first
       end
 

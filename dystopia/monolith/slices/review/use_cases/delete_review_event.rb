@@ -8,26 +8,31 @@ module Review
         event_repo: "repositories.event_repository",
         authorize_guest: "use_cases.authorize_guest",
         load_own_review: "use_cases.load_own_review",
+        media_adapter: "adapters.media_adapter",
         present_reviews: "use_cases.present_reviews"
       ]
 
       def call(viewer_account_id:, event_id:)
         raise Errors::Forbidden, "Guest only" unless authorize_guest.call(viewer_account_id: viewer_account_id)
 
+        detached_ids = []
         review = review_repo.transaction do
           record = find_event(event_id)
           locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: record.review_id, lock: true)
           find_event(event_id)
           if event_repo.count_for(locked.id) <= 1
+            detached_ids = event_repo.media_ids_for_review(locked.id)
             review_repo.delete(locked.id)
             next nil
           end
 
+          detached_ids = event_repo.media_ids_for_event(record.id)
           event_repo.delete(record.id)
           review_repo.touch(locked.id)
           review_repo.refresh_last_occurred_on(locked.id)
           locked
         end
+        media_adapter.discard_detached(detached_ids)
         return nil unless review
 
         present_reviews.call(reviews: [review_repo.find(review.id)], viewer_account_id: viewer_account_id).first

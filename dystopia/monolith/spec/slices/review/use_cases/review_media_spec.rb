@@ -24,6 +24,8 @@ RSpec.describe "Review service event media", type: :database do
     id
   end
 
+  def file_exists?(id) = db[:media__files].where(id: id).count == 1
+
   def create(event: reservation_input)
     uc(:create_review).call(viewer_account_id: guest_account, viewer_profile_id: persona_a, target_profile_id: cast, rating: nil, event: event)
   end
@@ -142,6 +144,71 @@ RSpec.describe "Review service event media", type: :database do
       db[:media__files].where(id: mine).delete
 
       expect(read_as(cast_account, cast, review)[:events].first[:media]).to eq([])
+    end
+  end
+
+  describe "discarding detached media" do
+    it "discards the media an edit detaches and keeps the one it keeps" do
+      review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }, { media_id: mine2, media_type: "video" }]))
+
+      uc(:update_review_event).call(
+        viewer_account_id: guest_account, viewer_profile_id: persona_a,
+        event_id: review[:events].first[:id], event: service_input.merge(media: [{ media_id: mine2, media_type: "video" }])
+      )
+
+      expect([file_exists?(mine), file_exists?(mine2)]).to eq([false, true])
+    end
+
+    it "drops the attachments when a service event is edited to another stage with no media" do
+      review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+
+      uc(:update_review_event).call(
+        viewer_account_id: guest_account, viewer_profile_id: persona_a,
+        event_id: review[:events].first[:id],
+        event: service_input.merge(stage: "aftercare", outcome: "closed_without_issues", media: [])
+      )
+
+      expect(db[:review__event_media].count).to eq(0)
+      expect(file_exists?(mine)).to be false
+    end
+
+    it "keeps the media another review event still carries" do
+      review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+      uc(:add_review_event).call(
+        viewer_account_id: guest_account, viewer_profile_id: persona_a, review_id: review[:id],
+        event: service_input.merge(media: [{ media_id: mine, media_type: "image" }])
+      )
+
+      uc(:update_review_event).call(
+        viewer_account_id: guest_account, viewer_profile_id: persona_a,
+        event_id: review[:events].first[:id], event: service_input.merge(media: [])
+      )
+
+      expect(file_exists?(mine)).to be true
+    end
+
+    it "discards the media of a deleted event while the review stays" do
+      review = create
+      uc(:add_review_event).call(
+        viewer_account_id: guest_account, viewer_profile_id: persona_a, review_id: review[:id],
+        event: service_input.merge(media: [{ media_id: mine, media_type: "image" }])
+      )
+      with_media = db[:review__event_media].get(:event_id)
+
+      remaining = uc(:delete_review_event).call(viewer_account_id: guest_account, event_id: with_media)
+
+      expect(remaining[:events].length).to eq(1)
+      expect(file_exists?(mine)).to be false
+    end
+
+    it "discards the media of a review deleted with its last event or as a whole" do
+      last = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+      whole = create(event: service_input.merge(media: [{ media_id: mine2, media_type: "video" }]))
+
+      uc(:delete_review_event).call(viewer_account_id: guest_account, event_id: last[:events].first[:id])
+      uc(:delete_review).call(viewer_account_id: guest_account, review_id: whole[:id])
+
+      expect([file_exists?(mine), file_exists?(mine2)]).to eq([false, false])
     end
   end
 

@@ -7,14 +7,16 @@ module Post
         post_repo: "repositories.post_repository",
         comment_repo: "repositories.comment_repository",
         media_adapter: "adapters.media_adapter",
-        profile_adapter: "adapters.profile_adapter"
+        profile_adapter: "adapters.profile_adapter",
+        review_adapter: "adapters.review_adapter"
       ]
 
       def call(ids:)
         ids = ids.map(&:to_s).uniq
         return if ids.empty?
 
-        in_use = post_repo.attached_media_ids(ids) + comment_repo.attached_media_ids(ids) + profile_adapter.media_ids_in_use(ids)
+        in_use = post_repo.attached_media_ids(ids) + comment_repo.attached_media_ids(ids) +
+          profile_adapter.media_ids_in_use(ids) + review_adapter.media_ids_in_use(ids)
         media_adapter.discard(ids - in_use.map(&:to_s))
       end
     end
