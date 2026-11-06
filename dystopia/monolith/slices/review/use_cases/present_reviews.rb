@@ -20,7 +20,7 @@ module Review
         events = event_repo.list_for(reviews.map(&:id))
         summaries = summarize_profiles.call(profile_ids: reviews.flat_map { |review| [review.author_profile_id, review.target_profile_id] })
         masked = masked_review_ids(reviews, summaries, viewer_account_id, viewer_profile_id)
-        media = media_by_event_id(reviews, events, summaries, viewer_account_id)
+        media = media_by_event_id(reviews, events, summaries, viewer_account_id, masked)
         reviews.map do |review|
           present(review, events.fetch(review.id, []), summaries, viewer_account_id, viewer_profile_id, masked.include?(review.id), media)
         end
@@ -44,14 +44,16 @@ module Review
         review.author_account_id == viewer_account_id || review.target_profile_id == viewer_profile_id
       end
 
-      def media_by_event_id(reviews, events, summaries, viewer_account_id)
-        shown = reviews.select { |review| media_shown?(review, summaries, viewer_account_id) }
+      def media_by_event_id(reviews, events, summaries, viewer_account_id, masked)
+        shown = reviews.select { |review| media_shown?(review, summaries, viewer_account_id, masked) }
         rows = event_repo.media_for(shown.flat_map { |review| events.fetch(review.id, []).map(&:id) })
         files = media_adapter.find_by_ids(rows.values.flatten.map(&:media_id))
         rows.transform_values { |items| items.filter_map { |row| present_media(row, files[row.media_id.to_s]) } }
       end
 
-      def media_shown?(review, summaries, viewer_account_id)
+      def media_shown?(review, summaries, viewer_account_id, masked)
+        return false if masked.include?(review.id)
+
         review.author_account_id == viewer_account_id || summaries.key?(review.target_profile_id.to_s)
       end
 

@@ -212,6 +212,51 @@ RSpec.describe "Review service event media", type: :database do
     end
   end
 
+  describe "presenting attachments of a review by a locked guest" do
+    let(:locked_guest_account) { create_account(role: 1) }
+    let(:locked_guest) { create_account_with_profile(account_id: locked_guest_account, username: "locked_guest", is_private: true) }
+    let(:locked_media) { create_media(locked_guest, "image") }
+    let(:review) do
+      uc(:create_review).call(
+        viewer_account_id: locked_guest_account, viewer_profile_id: locked_guest, target_profile_id: cast, rating: nil,
+        event: service_input.merge(media: [{ media_id: locked_media, media_type: "image" }])
+      )
+    end
+
+    it "hides the attachments from a viewer who cannot pass the guest's lock" do
+      read = read_as(other_guest_account, other_guest, review)
+
+      expect(read[:author_hidden]).to be(true)
+      expect(read[:events].first[:media]).to eq([])
+    end
+
+    it "does not resolve the media files of a masked review" do
+      adapter = instance_spy(Review::Adapters::MediaAdapter, find_by_ids: {})
+      presenter = Review::UseCases::PresentReviews.new(media_adapter: adapter)
+      masked = Review::Slice["repositories.review_repository"].find(review[:id])
+
+      presenter.call(reviews: [masked], viewer_account_id: other_guest_account, viewer_profile_id: other_guest)
+
+      expect(adapter).to have_received(:find_by_ids).with([])
+    end
+
+    it "shows the attachments to the target cast" do
+      read = read_as(cast_account, cast, review)
+
+      expect(read[:author_hidden]).to be(false)
+      expect(read[:events].first[:media].map { |m| m[:media_id] }).to eq([locked_media])
+    end
+
+    it "shows the attachments to a viewer who passes the guest's lock" do
+      Social::Slice["repositories.follow_repository"].follow(follower_profile_id: other_guest, followee_profile_id: locked_guest, status: "approved")
+
+      read = read_as(other_guest_account, other_guest, review)
+
+      expect(read[:author_hidden]).to be(false)
+      expect(read[:events].first[:media].map { |m| m[:media_id] }).to eq([locked_media])
+    end
+  end
+
   describe Review::Adapters::MediaAdapter do
     subject(:adapter) { described_class.new }
 
