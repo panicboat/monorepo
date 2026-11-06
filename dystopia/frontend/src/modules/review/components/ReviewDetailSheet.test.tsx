@@ -3,6 +3,7 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import type { UploadedMedia } from "@/modules/media/types";
+import { useAuthStore } from "@/stores/authStore";
 import type { Review } from "../types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -89,6 +90,7 @@ const click = async (label: string) => {
 };
 
 beforeEach(() => {
+  useAuthStore.setState({ activeProfileId: "persona-a" });
   mocks.gone = false;
   mocks.toast.mockReset();
   mocks.apply.mockReset();
@@ -242,6 +244,29 @@ describe("ReviewDetailSheet", () => {
 
     await click("出来事を更新");
     expect(mocks.mutations.updateEvent).toHaveBeenCalledWith("e-2", expect.objectContaining({ media: [attached] }));
+  });
+
+  it("offers adding media to the writing profile and only keeping or removing it to a sibling persona", async () => {
+    const attached = { mediaId: "m-1", mediaType: "image" as const, url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+    const subject = review({ events: [event("e-1", { stage: "service", outcome: "satisfied", tags: [], media: [attached] })] });
+    const openEdit = () =>
+      act(async () => {
+        Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "編集")[0].click();
+      });
+
+    await mount(subject);
+    await openEdit();
+    expect(button("画像/動画を追加")).toBeDefined();
+    expect(document.querySelector('input[type="file"]')).not.toBeNull();
+
+    await act(async () => root.unmount());
+    document.body.innerHTML = "";
+    useAuthStore.setState({ activeProfileId: "persona-b" });
+    await mount(subject);
+    await openEdit();
+    expect(button("画像を削除")).toBeDefined();
+    expect(button("画像/動画を追加")).toBeUndefined();
+    expect(document.querySelector('input[type="file"]')).toBeNull();
   });
 
   it("does not let an upload started on one event land in another event's form after going back", async () => {

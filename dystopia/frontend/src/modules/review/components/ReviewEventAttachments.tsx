@@ -13,6 +13,7 @@ interface ReviewEventAttachmentsProps {
   onChange: (next: ReviewMedia[]) => void;
   onUploadingChange: (uploading: boolean) => void;
   disabled: boolean;
+  canAdd: boolean;
 }
 
 const toReviewMedia = (uploaded: UploadedMedia): ReviewMedia => ({
@@ -22,7 +23,7 @@ const toReviewMedia = (uploaded: UploadedMedia): ReviewMedia => ({
   thumbnailUrl: uploaded.localUrl,
 });
 
-export function ReviewEventAttachments({ items, onChange, onUploadingChange, disabled }: ReviewEventAttachmentsProps) {
+export function ReviewEventAttachments({ items, onChange, onUploadingChange, disabled, canAdd }: ReviewEventAttachmentsProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filenames, setFilenames] = useState<Record<string, string>>({});
@@ -93,24 +94,28 @@ export function ReviewEventAttachments({ items, onChange, onUploadingChange, dis
           })}
         </ul>
       )}
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={disabled || uploading || items.length >= MAX_REVIEW_MEDIA}
-      >
-        {uploading ? "アップロード中…" : "画像/動画を追加"}
-      </Button>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*,video/*"
-        multiple
-        className="hidden"
-        aria-label="画像や動画を選択"
-        onChange={handleFilesSelected}
-      />
+      {canAdd && (
+        <>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled || uploading || items.length >= MAX_REVIEW_MEDIA}
+          >
+            {uploading ? "アップロード中…" : "画像/動画を追加"}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="hidden"
+            aria-label="画像や動画を選択"
+            onChange={handleFilesSelected}
+          />
+        </>
+      )}
       {error && (
         <p className="mt-2 text-sm text-error" role="alert">
           {error}

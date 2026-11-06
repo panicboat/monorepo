@@ -10,6 +10,7 @@ import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { HIDDEN_GUEST, MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { useReview } from "../hooks/useReview";
 import { useReviewMutations } from "../hooks/useReviewMutations";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
@@ -31,6 +32,8 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
   const [deleting, setDeleting] = useState(false);
   const { review: current, gone, apply } = useReview(open && !deleting ? initial.id : null, initial);
   const review = current ?? initial;
+  const activeProfileId = useAuthStore(selectActiveProfileId);
+  const canAddMedia = review.authorProfileId === activeProfileId;
   const { updateRating, addEvent, updateEvent, removeEvent, remove, loading, error } = useReviewMutations();
   const showToast = useToastStore((s) => s.show);
   const [step, setStep] = useState<Step>({ kind: "detail" });
@@ -83,6 +86,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
           cast={review.target}
           value={appendDraft}
           onChange={setAppendDraft}
+          canAddMedia={canAddMedia}
           submitLabel="この段階を追記"
           submitting={loading}
           error={error?.message ?? null}
@@ -100,6 +104,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
           cast={review.target}
           value={editDraft}
           onChange={setEditDraft}
+          canAddMedia={canAddMedia}
           submitLabel="出来事を更新"
           submitting={loading}
           error={error?.message ?? null}

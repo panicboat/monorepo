@@ -17,7 +17,7 @@ vi.mock("@/modules/media/hooks/useMediaUpload", () => ({ useMediaUpload: () => (
 const base: ProfileSummaryView = { profileId: "p-1", displayName: "はなこ", username: "hanako", avatarUrl: "", isPrivate: false, role: "cast", industry: "" };
 let cast: ProfileSummaryView | null = base;
 
-function Harness({ initial, withRating, onSubmit }: { initial: ReviewEventInput; withRating: boolean; onSubmit: (event: ReviewEventInput, rating: number | null) => void }) {
+function Harness({ initial, withRating, onSubmit, canAddMedia }: { initial: ReviewEventInput; withRating: boolean; onSubmit: (event: ReviewEventInput, rating: number | null) => void; canAddMedia?: boolean }) {
   const [value, setValue] = useState(initial);
   const [rating, setRating] = useState<number | null>(null);
   return createElement(ReviewEventForm, {
@@ -29,14 +29,15 @@ function Harness({ initial, withRating, onSubmit }: { initial: ReviewEventInput;
     submitting: false,
     error: null,
     onSubmit: () => onSubmit(value, rating),
+    canAddMedia,
   });
 }
 
-async function mount(initial: ReviewEventInput, withRating = false, onSubmit = vi.fn()) {
+async function mount(initial: ReviewEventInput, withRating = false, onSubmit = vi.fn(), canAddMedia?: boolean) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   await act(async () => {
-    createRoot(container).render(createElement(Harness, { initial, withRating, onSubmit }));
+    createRoot(container).render(createElement(Harness, { initial, withRating, onSubmit, canAddMedia }));
   });
   return container;
 }
@@ -195,6 +196,18 @@ describe("ReviewEventForm", () => {
 
     await act(async () => buttonNamed(container, "保存").click());
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ stage: "aftercare", media: [] }), null);
+  });
+
+  it("shows the attached media without an add button when adding is not allowed, and nothing at all when there is none", async () => {
+    const service = { ...emptyReviewEvent("2026-10-16"), stage: "service" as const, outcome: "satisfied" };
+
+    const withMedia = await mount({ ...service, media: [attached] }, false, vi.fn(), false);
+    expect(withMedia.querySelector('button[aria-label="画像を削除"]')).not.toBeNull();
+    expect(buttonNamed(withMedia, "画像/動画を追加")).toBeUndefined();
+
+    const withoutMedia = await mount(service, false, vi.fn(), false);
+    expect(withoutMedia.textContent).not.toContain("画像・動画");
+    expect(buttonNamed(withoutMedia, "画像/動画を追加")).toBeUndefined();
   });
 
   it("keeps submit blocked until every overlapping upload has finished", async () => {

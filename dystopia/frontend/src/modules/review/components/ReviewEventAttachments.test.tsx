@@ -21,7 +21,7 @@ const uploaded = (id: string, overrides: Partial<UploadedMedia> = {}): UploadedM
   mediaId: id, mediaKey: `key-${id}`, uploadUrl: "https://upload.example", localUrl: `blob:${id}`, filename: `${id}.jpg`, contentType: "image/jpeg", sizeBytes: 1, mediaType: "image", ...overrides,
 });
 
-function Harness({ initial, onChange, onUploadingChange, disabled = false }: { initial: ReviewMedia[]; onChange: (next: ReviewMedia[]) => void; onUploadingChange: (uploading: boolean) => void; disabled?: boolean }) {
+function Harness({ initial, onChange, onUploadingChange, disabled = false, canAdd = true }: { initial: ReviewMedia[]; onChange: (next: ReviewMedia[]) => void; onUploadingChange: (uploading: boolean) => void; disabled?: boolean; canAdd?: boolean }) {
   const [items, setItems] = useState(initial);
   return createElement(ReviewEventAttachments, {
     items,
@@ -31,17 +31,18 @@ function Harness({ initial, onChange, onUploadingChange, disabled = false }: { i
     },
     onUploadingChange,
     disabled,
+    canAdd,
   });
 }
 
-async function mount(initial: ReviewMedia[], disabled = false) {
+async function mount(initial: ReviewMedia[], disabled = false, canAdd = true) {
   const onChange = vi.fn();
   const onUploadingChange = vi.fn();
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
   await act(async () => {
-    root.render(createElement(Harness, { initial, onChange, onUploadingChange, disabled }));
+    root.render(createElement(Harness, { initial, onChange, onUploadingChange, disabled, canAdd }));
   });
   return { container, root, onChange, onUploadingChange };
 }
@@ -179,6 +180,18 @@ describe("ReviewEventAttachments", () => {
     await act(async () => finish(uploaded("m-9")));
 
     expect(onChange.mock.calls.map((call) => call[0].map((item: ReviewMedia) => item.mediaId))).toEqual([["m-2"], ["m-2", "m-9"]]);
+  });
+
+  it("offers no way to add when adding is not allowed but keeps the existing items removable", async () => {
+    const { container, onChange } = await mount([media("m-1"), media("m-2")], false, false);
+
+    expect(addButton(container)).toBeUndefined();
+    expect(container.querySelector('input[type="file"]')).toBeNull();
+    expect(container.querySelectorAll('button[aria-label="画像を削除"]')).toHaveLength(2);
+
+    await act(async () => (container.querySelector('button[aria-label="画像を削除"]') as HTMLButtonElement).click());
+
+    expect(onChange.mock.calls[0][0].map((item: ReviewMedia) => item.mediaId)).toEqual(["m-2"]);
   });
 
   it("blocks adding and removing while the form is submitting", async () => {

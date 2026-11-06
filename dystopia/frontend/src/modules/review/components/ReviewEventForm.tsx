@@ -34,9 +34,10 @@ interface ReviewEventFormProps {
   submitting: boolean;
   error: string | null;
   onSubmit: () => void;
+  canAddMedia?: boolean;
 }
 
-export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, submitting, error, onSubmit }: ReviewEventFormProps) {
+export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, submitting, error, onSubmit, canAddMedia = true }: ReviewEventFormProps) {
   const [pendingUploads, setPendingUploads] = useState(0);
   const latestValue = useRef(value);
 
@@ -109,10 +110,10 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
         </div>
       </fieldset>
 
-      {value.stage === "service" && (
+      {value.stage === "service" && (canAddMedia || value.media.length > 0) && (
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-text-primary">画像・動画（任意）</legend>
-          <ReviewEventAttachments items={value.media} onChange={changeMedia} onUploadingChange={trackUpload} disabled={submitting} />
+          <ReviewEventAttachments items={value.media} onChange={changeMedia} onUploadingChange={trackUpload} disabled={submitting} canAdd={canAddMedia} />
         </fieldset>
       )}
 

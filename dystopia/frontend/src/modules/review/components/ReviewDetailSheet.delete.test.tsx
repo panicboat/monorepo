@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
 vi.mock("@/lib/swr", () => ({ fetcher: mocks.fetcher }));
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (state: { activeProfileId: string }) => unknown) => selector({ activeProfileId: "p-1" }),
+  selectActiveProfileId: (state: { activeProfileId: string }) => state.activeProfileId,
 }));
 vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) => selector({ show: vi.fn() }),
