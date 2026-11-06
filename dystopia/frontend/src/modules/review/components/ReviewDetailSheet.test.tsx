@@ -268,6 +268,29 @@ describe("ReviewDetailSheet", () => {
     expect(button("a.mp4を削除")).toBeUndefined();
   });
 
+  it("shows an event's attachments under its note, images to enlarge and videos to play", async () => {
+    const image = { mediaId: "m-1", mediaType: "image" as const, url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+    const video = { mediaId: "m-2", mediaType: "video" as const, url: "https://cdn.example/m-2.mp4", thumbnailUrl: "" };
+    await mount(review({ events: [event("e-1"), event("e-2", { stage: "service", outcome: "satisfied", tags: [], note: "また会いたい", media: [image, video] })] }));
+
+    const items = document.querySelectorAll("ol > li");
+    expect(items[0].querySelector("video, button[aria-label='画像を拡大']")).toBeNull();
+    const second = items[1];
+    expect(second.querySelectorAll("button[aria-label='画像を拡大']")).toHaveLength(1);
+    expect(second.querySelector('video[src="https://cdn.example/m-2.mp4"]')).not.toBeNull();
+    const note = Array.from(second.querySelectorAll("p")).find((p) => p.textContent === "また会いたい")!;
+    const occurred = Array.from(second.querySelectorAll("p")).find((p) => p.textContent?.startsWith("発生日"))!;
+    expect(note.compareDocumentPosition(second.querySelector("video")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(occurred.compareDocumentPosition(second.querySelector("video")!) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+  });
+
+  it("shows no attachment controls for events without attachments", async () => {
+    await mount(review());
+
+    expect(document.querySelector("button[aria-label='画像を拡大']")).toBeNull();
+    expect(document.querySelector("video")).toBeNull();
+  });
+
   it("deletes an event after confirming", async () => {
     mocks.mutations.removeEvent.mockResolvedValue({ review: review() });
     await mount(review());

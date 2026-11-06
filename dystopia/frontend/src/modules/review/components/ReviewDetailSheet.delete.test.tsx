@@ -67,7 +67,7 @@ describe("ReviewDetailSheet deleting", () => {
     await act(async () => root.unmount());
   });
 
-  const secondEvent = { id: "e-2", stage: "service", outcome: "satisfied", tags: [], note: "", occurredOn: "2026-10-02", createdAt: "", updatedAt: "" };
+  const secondEvent = { id: "e-2", stage: "service", outcome: "satisfied", tags: [], note: "", occurredOn: "2026-10-02", media: [], createdAt: "", updatedAt: "" };
 
   async function renderSheet(review: Review, onClose = vi.fn()) {
     mocks.fetcher.mockReset().mockResolvedValue({ review });

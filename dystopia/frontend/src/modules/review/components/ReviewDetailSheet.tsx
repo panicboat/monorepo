@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { MediaGallery } from "@/components/ui/media-gallery";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { ReportButton } from "@/modules/report";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
@@ -12,6 +13,7 @@ import { useToastStore } from "@/stores/toastStore";
 import { useReview } from "../hooks/useReview";
 import { useReviewMutations } from "../hooks/useReviewMutations";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
+import { galleryOf } from "../lib/media";
 import type { Review, ReviewEventInput } from "../types";
 import { ReviewEventForm, emptyReviewEvent } from "./ReviewEventForm";
 
@@ -158,6 +160,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
                   </div>
                 )}
                 {event.note && <p className="mt-2 whitespace-pre-wrap text-text-primary">{event.note}</p>}
+                <MediaGallery {...galleryOf(event.media)} />
                 <p className="mt-2 text-xs text-text-secondary">発生日 {formatMonthDay(event.occurredOn)}</p>
                 {review.isMine && (
                   <div className="mt-2 flex gap-4 text-sm text-text-secondary">
