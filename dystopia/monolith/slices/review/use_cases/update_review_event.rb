@@ -24,7 +24,9 @@ module Review
           record = find_event(event_id)
           locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: record.review_id, lock: true)
           attached_ids = event_repo.media_ids_for_event(record.id)
-          check_media_ownership.call(profile_id: viewer_profile_id, media: attrs[:media], attached_ids: attached_ids)
+          check_media_ownership.call(
+            profile_id: viewer_profile_id, media: attrs[:media], attached_ids: attached_ids, author_profile_id: locked.author_profile_id
+          )
           updated = event_repo.update(find_event(event_id).id, **attrs.except(:media))
           event_repo.replace_media(updated.id, attrs[:media])
           review_repo.touch(locked.id)

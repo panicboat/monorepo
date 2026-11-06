@@ -14,10 +14,10 @@ module Review
 
       def call(viewer_account_id:, viewer_profile_id:, review_id:, event:)
         attrs = validate_event.call(**event)
-        check_media_ownership.call(profile_id: viewer_profile_id, media: attrs[:media])
 
         review = review_repo.transaction do
           locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: review_id, lock: true)
+          check_media_ownership.call(profile_id: viewer_profile_id, media: attrs[:media], author_profile_id: locked.author_profile_id)
           created = event_repo.create(review_id: locked.id, **attrs.except(:media))
           event_repo.replace_media(created.id, attrs[:media])
           review_repo.record_activity(locked.id)

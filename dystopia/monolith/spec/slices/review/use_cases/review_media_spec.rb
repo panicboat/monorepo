@@ -17,6 +17,7 @@ RSpec.describe "Review service event media", type: :database do
   let(:reservation_input) { { stage: "reservation", outcome: "booked", tags: [], note: "", occurred_on: "2026-10-01" } }
   let(:mine) { create_media(persona_a, "image") }
   let(:mine2) { create_media(persona_a, "video") }
+  let(:sibling_media) { create_media(persona_b, "image") }
 
   def create_media(profile_id, media_type)
     id = SecureRandom.uuid_v7
@@ -116,6 +117,41 @@ RSpec.describe "Review service event media", type: :database do
       )
     end.to raise_error(Review::Errors::Invalid, "Only media the acting profile uploaded can be attached")
     expect(db[:review__event_media].select_map(:media_id)).to eq([mine])
+  end
+
+  it "refuses a sibling persona adding an event with media it uploaded to the review of another persona" do
+    review = create
+
+    expect do
+      uc(:add_review_event).call(
+        viewer_account_id: guest_account, viewer_profile_id: persona_b, review_id: review[:id],
+        event: service_input.merge(media: [{ media_id: sibling_media, media_type: "image" }])
+      )
+    end.to raise_error(Review::Errors::Invalid, "Only the writing profile can attach new media")
+    expect(db[:review__events].where(review_id: review[:id]).count).to eq(1)
+  end
+
+  it "refuses a sibling persona adding media it uploaded when editing an event of another persona" do
+    review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+
+    expect do
+      uc(:update_review_event).call(
+        viewer_account_id: guest_account, viewer_profile_id: persona_b,
+        event_id: review[:events].first[:id],
+        event: service_input.merge(media: [{ media_id: mine, media_type: "image" }, { media_id: sibling_media, media_type: "image" }])
+      )
+    end.to raise_error(Review::Errors::Invalid, "Only the writing profile can attach new media")
+    expect(db[:review__event_media].select_map(:media_id)).to eq([mine])
+  end
+
+  it "lets a sibling persona add an event without media to the review of another persona" do
+    review = create
+
+    added = uc(:add_review_event).call(
+      viewer_account_id: guest_account, viewer_profile_id: persona_b, review_id: review[:id], event: service_input
+    )
+
+    expect(added[:events].length).to eq(2)
   end
 
   describe "presenting attachments" do
