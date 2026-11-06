@@ -132,10 +132,10 @@ RSpec.describe "Review lifecycle use cases", type: :database do
 
     it "lets an unrated review take an event and a rating, with no state to check" do
       review = create
-      added = uc(:add_review_event).call(viewer_account_id: guest_account, review_id: review[:id], event: event_input)
+      added = uc(:add_review_event).call(viewer_account_id: guest_account, viewer_profile_id: persona_a, review_id: review[:id], event: event_input)
 
       edited = uc(:update_review_event).call(
-        viewer_account_id: guest_account, event_id: added[:events].last[:id],
+        viewer_account_id: guest_account, viewer_profile_id: persona_a, event_id: added[:events].last[:id],
         event: event_input.merge(outcome: "inquiry_only", occurred_on: "2026-10-02")
       )
       rated = uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: 4)
@@ -156,12 +156,12 @@ RSpec.describe "Review lifecycle use cases", type: :database do
     it "adds, updates and deletes events" do
       review = create
       added = uc(:add_review_event).call(
-        viewer_account_id: guest_account, review_id: review[:id],
+        viewer_account_id: guest_account, viewer_profile_id: persona_a, review_id: review[:id],
         event: { stage: "service", outcome: "ended_early", tags: %w[late], note: "途中で帰された", occurred_on: "2026-10-02" }
       )
       second = added[:events].last
       updated = uc(:update_review_event).call(
-        viewer_account_id: guest_account, event_id: second[:id],
+        viewer_account_id: guest_account, viewer_profile_id: persona_a, event_id: second[:id],
         event: { stage: "service", outcome: "satisfied", tags: [], note: "", occurred_on: "2026-10-02" }
       )
       expect(updated[:events].last).to include(outcome: "satisfied", note: nil)
@@ -179,7 +179,7 @@ RSpec.describe "Review lifecycle use cases", type: :database do
 
     it "deletes an event of a rated review" do
       review = create(rating: 4)
-      uc(:add_review_event).call(viewer_account_id: guest_account, review_id: review[:id], event: event_input)
+      uc(:add_review_event).call(viewer_account_id: guest_account, viewer_profile_id: persona_a, review_id: review[:id], event: event_input)
 
       remaining = uc(:delete_review_event).call(viewer_account_id: guest_account, event_id: review[:events].first[:id])
 

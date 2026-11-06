@@ -90,7 +90,10 @@ module Review
         authenticate_user!
         message = request.message
         review = wrap_errors do
-          add_review_event_uc.call(viewer_account_id: current_account_id, review_id: message.review_id, event: event_from(message.event))
+          add_review_event_uc.call(
+            viewer_account_id: current_account_id, viewer_profile_id: current_profile_id,
+            review_id: message.review_id, event: event_from(message.event)
+          )
         end
         ::Review::V1::AddReviewEventResponse.new(review: review_to_proto(review))
       end
@@ -99,7 +102,10 @@ module Review
         authenticate_user!
         message = request.message
         review = wrap_errors do
-          update_review_event_uc.call(viewer_account_id: current_account_id, event_id: message.event_id, event: event_from(message.event))
+          update_review_event_uc.call(
+            viewer_account_id: current_account_id, viewer_profile_id: current_profile_id,
+            event_id: message.event_id, event: event_from(message.event)
+          )
         end
         ::Review::V1::UpdateReviewEventResponse.new(review: review_to_proto(review))
       end

@@ -10,6 +10,7 @@ module Review
         event_repo: "repositories.event_repository",
         authorize_guest: "use_cases.authorize_guest",
         validate_event: "use_cases.validate_event",
+        check_media_ownership: "use_cases.check_media_ownership",
         present_reviews: "use_cases.present_reviews"
       ]
 
@@ -28,6 +29,8 @@ module Review
         end
 
         attrs = validate_event.call(**event)
+        check_media_ownership.call(profile_id: viewer_profile_id, media: attrs[:media])
+
         review = nil
         review_repo.transaction do
           review = review_repo.create(
@@ -37,7 +40,8 @@ module Review
             rating: rating,
             occurred_on: attrs[:occurred_on]
           )
-          event_repo.create(review_id: review.id, **attrs)
+          created = event_repo.create(review_id: review.id, **attrs.except(:media))
+          event_repo.replace_media(created.id, attrs[:media])
         end
         present_reviews.call(reviews: [review], viewer_account_id: viewer_account_id).first
       end

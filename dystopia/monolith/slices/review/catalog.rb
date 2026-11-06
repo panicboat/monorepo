@@ -23,5 +23,9 @@ module Review
     }.freeze
 
     MAX_NOTE_LENGTH = 500
+
+    MAX_MEDIA_COUNT = 4
+
+    MEDIA_TYPES = %w[image video].freeze
   end
 end
