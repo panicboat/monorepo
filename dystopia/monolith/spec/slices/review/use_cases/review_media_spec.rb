@@ -9,6 +9,8 @@ RSpec.describe "Review service event media", type: :database do
   let(:guest_account) { create_account(role: 1) }
   let(:persona_a) { create_account_with_profile(account_id: guest_account, username: "persona_a") }
   let(:persona_b) { create_account_with_profile(account_id: guest_account, username: "persona_b") }
+  let(:other_guest_account) { create_account(role: 1) }
+  let(:other_guest) { create_account_with_profile(account_id: other_guest_account, username: "other_guest") }
   let(:cast_account) { create_account(role: 2) }
   let(:cast) { create_account_with_profile(account_id: cast_account, username: "cast_one") }
   let(:service_input) { { stage: "service", outcome: "satisfied", tags: [], note: "", occurred_on: "2026-10-01" } }
@@ -25,6 +27,8 @@ RSpec.describe "Review service event media", type: :database do
   def create(event: reservation_input)
     uc(:create_review).call(viewer_account_id: guest_account, viewer_profile_id: persona_a, target_profile_id: cast, rating: nil, event: event)
   end
+
+  def read_as(account, profile, review) = uc(:get_review).call(viewer_account_id: account, viewer_profile_id: profile, review_id: review[:id])
 
   it "saves the attachments of the first event" do
     create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
@@ -110,6 +114,35 @@ RSpec.describe "Review service event media", type: :database do
       )
     end.to raise_error(Review::Errors::Invalid, "Only media the acting profile uploaded can be attached")
     expect(db[:review__event_media].select_map(:media_id)).to eq([mine])
+  end
+
+  describe "presenting attachments" do
+    it "shows the attachments with delivery urls to any viewer who can read the review" do
+      review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+
+      read = read_as(cast_account, cast, review)
+
+      expect(read[:events].first[:media].map { |m| m.slice(:media_id, :media_type) }).to eq([{ media_id: mine, media_type: "image" }])
+      expect(read[:events].first[:media].first[:url]).not_to be_empty
+    end
+
+    it "shows the attachments of a review on a disabled cast only to the author account" do
+      review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+      db[:profile__profiles].where(id: cast).update(disabled_at: Time.now)
+
+      expect(read_as(guest_account, persona_b, review)[:events].first[:media].length).to eq(1)
+      others = uc(:list_reviews_by_author).call(
+        viewer_account_id: other_guest_account, viewer_profile_id: other_guest, author_profile_id: persona_a, limit: 20, cursor: nil
+      )[:reviews]
+      expect(others.map { |r| r[:events].first[:media] }).to eq([[]])
+    end
+
+    it "skips an attachment whose media file is gone" do
+      review = create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }]))
+      db[:media__files].where(id: mine).delete
+
+      expect(read_as(cast_account, cast, review)[:events].first[:media]).to eq([])
+    end
   end
 
   describe Review::Adapters::MediaAdapter do

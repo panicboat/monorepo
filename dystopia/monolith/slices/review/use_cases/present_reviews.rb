@@ -5,7 +5,10 @@ require "set"
 module Review
   module UseCases
     class PresentReviews
-      include Review::Deps[event_repo: "repositories.event_repository"]
+      include Review::Deps[
+        event_repo: "repositories.event_repository",
+        media_adapter: "adapters.media_adapter"
+      ]
 
       def initialize(summarize_profiles: nil, list_lock_passable_profile_ids: nil, **deps)
         super(**deps)
@@ -17,8 +20,9 @@ module Review
         events = event_repo.list_for(reviews.map(&:id))
         summaries = summarize_profiles.call(profile_ids: reviews.flat_map { |review| [review.author_profile_id, review.target_profile_id] })
         masked = masked_review_ids(reviews, summaries, viewer_account_id, viewer_profile_id)
+        media = media_by_event_id(reviews, events, summaries, viewer_account_id)
         reviews.map do |review|
-          present(review, events.fetch(review.id, []), summaries, viewer_account_id, viewer_profile_id, masked.include?(review.id))
+          present(review, events.fetch(review.id, []), summaries, viewer_account_id, viewer_profile_id, masked.include?(review.id), media)
         end
       end
 
@@ -40,7 +44,24 @@ module Review
         review.author_account_id == viewer_account_id || review.target_profile_id == viewer_profile_id
       end
 
-      def present(review, events, summaries, viewer_account_id, viewer_profile_id, author_hidden)
+      def media_by_event_id(reviews, events, summaries, viewer_account_id)
+        shown = reviews.select { |review| media_shown?(review, summaries, viewer_account_id) }
+        rows = event_repo.media_for(shown.flat_map { |review| events.fetch(review.id, []).map(&:id) })
+        files = media_adapter.find_by_ids(rows.values.flatten.map(&:media_id))
+        rows.transform_values { |items| items.filter_map { |row| present_media(row, files[row.media_id.to_s]) } }
+      end
+
+      def media_shown?(review, summaries, viewer_account_id)
+        review.author_account_id == viewer_account_id || summaries.key?(review.target_profile_id.to_s)
+      end
+
+      def present_media(row, file)
+        return if file.nil?
+
+        { media_id: row.media_id, media_type: row.media_type, url: file.url, thumbnail_url: file.thumbnail_url }
+      end
+
+      def present(review, events, summaries, viewer_account_id, viewer_profile_id, author_hidden, media)
         author = author_hidden ? nil : summaries[review.author_profile_id.to_s]
         show_author_id = !author.nil? || author_known_to?(review, viewer_account_id, viewer_profile_id)
         {
@@ -52,14 +73,14 @@ module Review
           target: summaries[review.target_profile_id.to_s],
           is_mine: review.author_account_id == viewer_account_id,
           rating: review.rating,
-          events: events.map { |event| present_event(event) },
+          events: events.map { |event| present_event(event, media.fetch(event.id, [])) },
           created_at: review.created_at,
           updated_at: review.updated_at,
           last_activity_at: review.last_activity_at
         }
       end
 
-      def present_event(event)
+      def present_event(event, media)
         {
           id: event.id,
           stage: event.stage,
@@ -67,6 +88,7 @@ module Review
           tags: event.tags.to_a,
           note: event.note,
           occurred_on: event.occurred_on,
+          media: media,
           created_at: event.created_at,
           updated_at: event.updated_at
         }
