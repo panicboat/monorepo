@@ -2,11 +2,13 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import type { UploadedMedia } from "@/modules/media/types";
 import type { Review } from "../types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mocks = vi.hoisted(() => ({
+  uploadMedia: vi.fn(),
   current: null as Review | null,
   gone: false,
   apply: vi.fn(),
@@ -35,6 +37,7 @@ vi.mock("../hooks/useReview", async () => {
   };
 });
 vi.mock("../hooks/useReviewMutations", () => ({ useReviewMutations: () => ({ ...mocks.mutations, loading: false, error: null }) }));
+vi.mock("@/modules/media/hooks/useMediaUpload", () => ({ useMediaUpload: () => ({ uploadMedia: mocks.uploadMedia }) }));
 vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) => selector({ show: mocks.toast }),
 }));
@@ -239,6 +242,30 @@ describe("ReviewDetailSheet", () => {
 
     await click("出来事を更新");
     expect(mocks.mutations.updateEvent).toHaveBeenCalledWith("e-2", expect.objectContaining({ media: [attached] }));
+  });
+
+  it("does not let an upload started on one event land in another event's form after going back", async () => {
+    let finish: (value: UploadedMedia) => void = () => {};
+    mocks.uploadMedia.mockReturnValue(new Promise<UploadedMedia>((resolve) => (finish = resolve)));
+    await mount(review({ events: [event("e-1", { stage: "service", outcome: "satisfied", tags: [], note: "最初の出来事" }), event("e-2", { stage: "service", outcome: "satisfied", tags: [], note: "別の出来事" })] }));
+    const edit = (index: number) =>
+      act(async () => {
+        Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "編集")[index].click();
+      });
+
+    await edit(0);
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    Object.defineProperty(input, "files", { value: [new File(["x"], "a.mp4", { type: "video/mp4" })], configurable: true });
+    await act(async () => {
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await click("前に戻る");
+    await edit(1);
+    await act(async () => finish({ mediaId: "m-9", mediaKey: "key", uploadUrl: "https://upload.example", localUrl: "blob:m-9", filename: "a.mp4", contentType: "video/mp4", sizeBytes: 1, mediaType: "video" }));
+
+    expect((document.querySelector("textarea") as HTMLTextAreaElement).value).toBe("別の出来事");
+    expect(button("動画を削除")).toBeUndefined();
+    expect(button("a.mp4を削除")).toBeUndefined();
   });
 
   it("deletes an event after confirming", async () => {

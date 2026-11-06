@@ -197,6 +197,24 @@ describe("ReviewEventForm", () => {
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ stage: "aftercare", media: [] }), null);
   });
 
+  it("keeps submit blocked until every overlapping upload has finished", async () => {
+    const finishers: Array<(value: UploadedMedia) => void> = [];
+    mocks.uploadMedia.mockImplementation(() => new Promise<UploadedMedia>((resolve) => finishers.push(resolve)));
+    const container = await mount({ ...emptyReviewEvent("2026-10-16"), stage: "service", outcome: "satisfied" });
+
+    await chooseFile(container);
+    await act(async () => buttonNamed(container, "利用後").click());
+    await act(async () => buttonNamed(container, "利用").click());
+    await chooseFile(container);
+    expect(finishers).toHaveLength(2);
+
+    await act(async () => finishers[1](uploaded("m-2")));
+    expect(buttonNamed(container, "保存").disabled).toBe(true);
+
+    await act(async () => finishers[0](uploaded("m-1")));
+    expect(buttonNamed(container, "保存").disabled).toBe(false);
+  });
+
   it("toggles a tag", async () => {
     const container = await mount(emptyReviewEvent("2026-10-16"));
 

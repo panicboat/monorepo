@@ -37,18 +37,18 @@ interface ReviewEventFormProps {
 }
 
 export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, submitting, error, onSubmit }: ReviewEventFormProps) {
-  const [uploading, setUploading] = useState(false);
+  const [pendingUploads, setPendingUploads] = useState(0);
   const latestValue = useRef(value);
 
   useEffect(() => {
     latestValue.current = value;
   });
 
-  // An upload that finishes after typing or a stage switch must not overwrite the newer value or put media on a stage that rejects it.
-  const changeMedia = (media: ReviewMedia[]) => {
-    if (latestValue.current.stage !== "service") return;
-    onChange({ ...latestValue.current, media });
-  };
+  // An upload that finishes after typing must merge into the latest value, not the one captured when it started.
+  const changeMedia = (media: ReviewMedia[]) => onChange({ ...latestValue.current, media });
+
+  // A count, not a flag: a fresh attachments instance after a stage round trip can overlap an older upload.
+  const trackUpload = (uploading: boolean) => setPendingUploads((count) => count + (uploading ? 1 : -1));
 
   const toggleTag = (code: string) =>
     onChange({ ...value, tags: value.tags.includes(code) ? value.tags.filter((tag) => tag !== code) : [...value.tags, code] });
@@ -112,7 +112,7 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
       {value.stage === "service" && (
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-text-primary">画像・動画（任意）</legend>
-          <ReviewEventAttachments items={value.media} onChange={changeMedia} onUploadingChange={setUploading} disabled={submitting} />
+          <ReviewEventAttachments items={value.media} onChange={changeMedia} onUploadingChange={trackUpload} disabled={submitting} />
         </fieldset>
       )}
 
@@ -144,7 +144,7 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
           {error}
         </p>
       )}
-      <Button type="submit" disabled={submitting || uploading || !isReviewEventReady(value)}>
+      <Button type="submit" disabled={submitting || pendingUploads > 0 || !isReviewEventReady(value)}>
         {submitLabel}
       </Button>
     </form>

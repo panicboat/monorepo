@@ -28,11 +28,19 @@ export function ReviewEventAttachments({ items, onChange, onUploadingChange, dis
   const [filenames, setFilenames] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const latestItems = useRef(items);
+  const mounted = useRef(true);
   const { uploadMedia } = useMediaUpload();
 
   useEffect(() => {
     latestItems.current = items;
   });
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []).slice(0, MAX_REVIEW_MEDIA - items.length);
@@ -44,6 +52,8 @@ export function ReviewEventAttachments({ items, onChange, onUploadingChange, dis
     onUploadingChange(true);
     try {
       const uploaded = await Promise.all(files.map((file) => uploadMedia(file, { registerAfterUpload: true })));
+      // A form that is gone may already show another event, so its draft must not receive the result.
+      if (!mounted.current) return;
       setFilenames((prev) => ({ ...prev, ...Object.fromEntries(uploaded.map((item) => [item.mediaId, item.filename])) }));
       onChange([...latestItems.current, ...uploaded.map(toReviewMedia)]);
     } catch (err: unknown) {

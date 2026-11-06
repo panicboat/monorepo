@@ -39,10 +39,11 @@ async function mount(initial: ReviewMedia[], disabled = false) {
   const onUploadingChange = vi.fn();
   const container = document.createElement("div");
   document.body.appendChild(container);
+  const root = createRoot(container);
   await act(async () => {
-    createRoot(container).render(createElement(Harness, { initial, onChange, onUploadingChange, disabled }));
+    root.render(createElement(Harness, { initial, onChange, onUploadingChange, disabled }));
   });
-  return { container, onChange, onUploadingChange };
+  return { container, root, onChange, onUploadingChange };
 }
 
 const addButton = (container: HTMLElement) =>
@@ -153,6 +154,31 @@ describe("ReviewEventAttachments", () => {
 
     await act(async () => finish(uploaded("m-1")));
     expect(addButton(container).textContent).toBe("画像/動画を追加");
+  });
+
+  it("does not hand the result to the form once it is gone but still reports the upload as finished", async () => {
+    let finish: (value: UploadedMedia) => void = () => {};
+    mocks.uploadMedia.mockReturnValue(new Promise<UploadedMedia>((resolve) => (finish = resolve)));
+    const { container, root, onChange, onUploadingChange } = await mount([]);
+
+    await chooseFiles(container, [file("a.jpg")]);
+    await act(async () => root.unmount());
+    await act(async () => finish(uploaded("m-1")));
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onUploadingChange.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("does not bring back an item that was deleted while the upload was running", async () => {
+    let finish: (value: UploadedMedia) => void = () => {};
+    mocks.uploadMedia.mockReturnValue(new Promise<UploadedMedia>((resolve) => (finish = resolve)));
+    const { container, onChange } = await mount([media("m-1"), media("m-2")]);
+
+    await chooseFiles(container, [file("a.jpg")]);
+    await act(async () => (container.querySelectorAll('button[aria-label="画像を削除"]')[0] as HTMLButtonElement).click());
+    await act(async () => finish(uploaded("m-9")));
+
+    expect(onChange.mock.calls.map((call) => call[0].map((item: ReviewMedia) => item.mediaId))).toEqual([["m-2"], ["m-2", "m-9"]]);
   });
 
   it("blocks adding and removing while the form is submitting", async () => {
