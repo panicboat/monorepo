@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { MISSING_CAST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import type { ProfileSummaryView } from "@/modules/profile/types";
@@ -11,8 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleChip } from "@/components/ui/toggle-chip";
 import { todayInJapan } from "@/lib/utils/japan-date";
 import { REVIEW_OUTCOMES, REVIEW_STAGES, REVIEW_TAGS, MAX_NOTE_LENGTH, isNoteRequired } from "../lib/catalog";
-import type { ReviewEventInput } from "../types";
+import type { ReviewEventInput, ReviewMedia } from "../types";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
+import { ReviewEventAttachments } from "./ReviewEventAttachments";
 
 export function emptyReviewEvent(today: string = todayInJapan()): ReviewEventInput {
   return { stage: "reservation", outcome: REVIEW_OUTCOMES.reservation[0].code, tags: [], note: "", occurredOn: today, media: [] };
@@ -35,6 +37,19 @@ interface ReviewEventFormProps {
 }
 
 export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, submitting, error, onSubmit }: ReviewEventFormProps) {
+  const [uploading, setUploading] = useState(false);
+  const latestValue = useRef(value);
+
+  useEffect(() => {
+    latestValue.current = value;
+  });
+
+  // An upload that finishes after typing or a stage switch must not overwrite the newer value or put media on a stage that rejects it.
+  const changeMedia = (media: ReviewMedia[]) => {
+    if (latestValue.current.stage !== "service") return;
+    onChange({ ...latestValue.current, media });
+  };
+
   const toggleTag = (code: string) =>
     onChange({ ...value, tags: value.tags.includes(code) ? value.tags.filter((tag) => tag !== code) : [...value.tags, code] });
 
@@ -62,7 +77,9 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
             <ToggleChip
               key={stage.code}
               pressed={value.stage === stage.code}
-              onClick={() => onChange({ ...value, stage: stage.code, outcome: REVIEW_OUTCOMES[stage.code][0].code, tags: [] })}
+              onClick={() =>
+                onChange({ ...value, stage: stage.code, outcome: REVIEW_OUTCOMES[stage.code][0].code, tags: [], media: stage.code === value.stage ? value.media : [] })
+              }
             >
               {stage.label}
             </ToggleChip>
@@ -92,6 +109,13 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
         </div>
       </fieldset>
 
+      {value.stage === "service" && (
+        <fieldset>
+          <legend className="mb-2 text-sm font-bold text-text-primary">画像・動画（任意）</legend>
+          <ReviewEventAttachments items={value.media} onChange={changeMedia} onUploadingChange={setUploading} disabled={submitting} />
+        </fieldset>
+      )}
+
       <label className="flex flex-col gap-2 text-sm font-bold text-text-primary">
         {isNoteRequired(value.stage, value.outcome) ? "補足（必須）" : "補足（任意）"}
         <Textarea
@@ -120,7 +144,7 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
           {error}
         </p>
       )}
-      <Button type="submit" disabled={submitting || !isReviewEventReady(value)}>
+      <Button type="submit" disabled={submitting || uploading || !isReviewEventReady(value)}>
         {submitLabel}
       </Button>
     </form>

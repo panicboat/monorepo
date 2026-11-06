@@ -227,6 +227,20 @@ describe("ReviewDetailSheet", () => {
     expect(mocks.toast).toHaveBeenCalledWith("出来事を更新しました");
   });
 
+  it("lines up an event's existing attachments in the edit form and sends them back on update", async () => {
+    const attached = { mediaId: "m-1", mediaType: "image" as const, url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+    await mount(review({ events: [event("e-1"), event("e-2", { stage: "service", outcome: "satisfied", tags: [], media: [attached] })] }));
+
+    await act(async () => {
+      Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "編集")[1].click();
+    });
+    expect(document.querySelector('img[src="https://cdn.example/m-1-thumb.jpg"]')).not.toBeNull();
+    expect(button("画像を削除")).toBeDefined();
+
+    await click("出来事を更新");
+    expect(mocks.mutations.updateEvent).toHaveBeenCalledWith("e-2", expect.objectContaining({ media: [attached] }));
+  });
+
   it("deletes an event after confirming", async () => {
     mocks.mutations.removeEvent.mockResolvedValue({ review: review() });
     await mount(review());

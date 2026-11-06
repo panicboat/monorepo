@@ -3,10 +3,14 @@ import type { ProfileSummaryView } from "@/modules/profile/types";
 import { act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import type { ReviewEventInput } from "../types";
+import type { UploadedMedia } from "@/modules/media/types";
+import type { ReviewEventInput, ReviewMedia } from "../types";
 import { ReviewEventForm, emptyReviewEvent, isReviewEventReady } from "./ReviewEventForm";
 
+const mocks = vi.hoisted(() => ({ uploadMedia: vi.fn() }));
+
 vi.mock("@/modules/profile/components/ActingProfileLabel", () => ({ ActingProfileLabel: () => createElement("span", null, "acting-profile") }));
+vi.mock("@/modules/media/hooks/useMediaUpload", () => ({ useMediaUpload: () => ({ uploadMedia: mocks.uploadMedia }) }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -35,6 +39,20 @@ async function mount(initial: ReviewEventInput, withRating = false, onSubmit = v
     createRoot(container).render(createElement(Harness, { initial, withRating, onSubmit }));
   });
   return container;
+}
+
+const attached: ReviewMedia = { mediaId: "m-1", mediaType: "image", url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+
+const uploaded = (id: string): UploadedMedia => ({
+  mediaId: id, mediaKey: `key-${id}`, uploadUrl: "https://upload.example", localUrl: `blob:${id}`, filename: `${id}.jpg`, contentType: "image/jpeg", sizeBytes: 1, mediaType: "image",
+});
+
+async function chooseFile(container: HTMLElement) {
+  const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+  Object.defineProperty(input, "files", { value: [new File(["x"], "a.jpg", { type: "image/jpeg" })], configurable: true });
+  await act(async () => {
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
 }
 
 const buttonNamed = (container: HTMLElement, name: string) =>
@@ -101,6 +119,82 @@ describe("ReviewEventForm", () => {
     expect(buttonNamed(container, "利用").getAttribute("aria-pressed")).toBe("true");
     expect((container.querySelector("select") as HTMLSelectElement).value).toBe("satisfied");
     expect(Array.from(container.querySelectorAll('button[aria-pressed="true"]')).map((b) => b.textContent)).toEqual(["利用"]);
+  });
+
+  it("offers attachments only for the service stage", async () => {
+    const container = await mount(emptyReviewEvent("2026-10-16"));
+    expect(buttonNamed(container, "画像/動画を追加")).toBeUndefined();
+
+    await act(async () => buttonNamed(container, "利用").click());
+    expect(buttonNamed(container, "画像/動画を追加")).toBeDefined();
+
+    await act(async () => buttonNamed(container, "利用後").click());
+    expect(buttonNamed(container, "画像/動画を追加")).toBeUndefined();
+  });
+
+  it("drops the attachments when the stage changes away from service", async () => {
+    const onSubmit = vi.fn();
+    const container = await mount({ ...emptyReviewEvent("2026-10-16"), stage: "service", outcome: "satisfied", media: [attached] }, false, onSubmit);
+    expect(container.querySelector('button[aria-label="画像を削除"]')).not.toBeNull();
+
+    await act(async () => buttonNamed(container, "利用後").click());
+    await act(async () => buttonNamed(container, "保存").click());
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ stage: "aftercare", media: [] }), null);
+  });
+
+  it("keeps the attachments when the already chosen service stage is chosen again", async () => {
+    const onSubmit = vi.fn();
+    const container = await mount({ ...emptyReviewEvent("2026-10-16"), stage: "service", outcome: "satisfied", media: [attached] }, false, onSubmit);
+
+    await act(async () => buttonNamed(container, "利用").click());
+    await act(async () => buttonNamed(container, "保存").click());
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ stage: "service", media: [attached] }), null);
+  });
+
+  it("submits the attachments with the rest of the event", async () => {
+    const onSubmit = vi.fn();
+    const container = await mount({ ...emptyReviewEvent("2026-10-16"), stage: "service", outcome: "satisfied", media: [attached] }, false, onSubmit);
+
+    await act(async () => buttonNamed(container, "保存").click());
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ media: [attached] }), null);
+  });
+
+  it("blocks submitting while a file is uploading and keeps what was typed meanwhile", async () => {
+    const onSubmit = vi.fn();
+    let finish: (value: UploadedMedia) => void = () => {};
+    mocks.uploadMedia.mockReturnValue(new Promise<UploadedMedia>((resolve) => (finish = resolve)));
+    const container = await mount({ ...emptyReviewEvent("2026-10-16"), stage: "service", outcome: "satisfied" }, false, onSubmit);
+
+    await chooseFile(container);
+    expect(buttonNamed(container, "保存").disabled).toBe(true);
+
+    await setValue(container.querySelector("textarea")!, "写真と同じ雰囲気");
+    await act(async () => finish(uploaded("m-9")));
+    expect(buttonNamed(container, "保存").disabled).toBe(false);
+
+    await act(async () => buttonNamed(container, "保存").click());
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ note: "写真と同じ雰囲気", media: [{ mediaId: "m-9", mediaType: "image", url: "blob:m-9", thumbnailUrl: "blob:m-9" }] }),
+      null
+    );
+  });
+
+  it("does not attach a file that finishes uploading after the stage moved away from service", async () => {
+    const onSubmit = vi.fn();
+    let finish: (value: UploadedMedia) => void = () => {};
+    mocks.uploadMedia.mockReturnValue(new Promise<UploadedMedia>((resolve) => (finish = resolve)));
+    const container = await mount({ ...emptyReviewEvent("2026-10-16"), stage: "service", outcome: "satisfied" }, false, onSubmit);
+
+    await chooseFile(container);
+    await act(async () => buttonNamed(container, "利用後").click());
+    await act(async () => finish(uploaded("m-9")));
+    expect(buttonNamed(container, "保存").disabled).toBe(false);
+
+    await act(async () => buttonNamed(container, "保存").click());
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ stage: "aftercare", media: [] }), null);
   });
 
   it("toggles a tag", async () => {
