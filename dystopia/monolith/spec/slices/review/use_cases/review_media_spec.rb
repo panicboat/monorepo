@@ -212,6 +212,31 @@ RSpec.describe "Review service event media", type: :database do
     end
   end
 
+  describe "presenting attachments of a review by a disabled guest" do
+    let(:review) { create(event: service_input.merge(media: [{ media_id: mine, media_type: "image" }])) }
+
+    before do
+      review
+      db[:profile__profiles].where(id: persona_a).update(disabled_at: Time.now)
+    end
+
+    it "shows the attachments to the target cast, who is given the author id" do
+      read = read_as(cast_account, cast, review)
+
+      expect(read[:author_profile_id]).to eq(persona_a)
+      expect(read[:events].first[:media].map { |m| m[:media_id] }).to eq([mine])
+    end
+
+    it "withholds the attachments from a viewer who is not given the author id" do
+      row = uc(:list_reviews_by_target).call(
+        viewer_account_id: other_guest_account, viewer_profile_id: other_guest, target_profile_id: cast, limit: 20, cursor: nil
+      )[:reviews].first
+
+      expect(row[:author_profile_id]).to eq("")
+      expect(row[:events].first[:media]).to eq([])
+    end
+  end
+
   describe "presenting attachments of a review by a locked guest" do
     let(:locked_guest_account) { create_account(role: 1) }
     let(:locked_guest) { create_account_with_profile(account_id: locked_guest_account, username: "locked_guest", is_private: true) }
