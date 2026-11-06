@@ -199,7 +199,8 @@ module Review
           outcome: input.outcome,
           tags: input.tags.to_a,
           note: input.note,
-          occurred_on: input.occurred_on
+          occurred_on: input.occurred_on,
+          media: input.media.map { |m| { media_id: m.media_id, media_type: m.media_type } }
         }
       end
 
@@ -237,7 +238,18 @@ module Review
           note: event[:note] || "",
           occurred_on: event[:occurred_on].iso8601,
           created_at: timestamp(event[:created_at]),
-          updated_at: timestamp(event[:updated_at])
+          updated_at: timestamp(event[:updated_at]),
+          media: event[:media].map { |m| media_to_proto(m) }
+        )
+      end
+
+      def media_to_proto(media)
+        ::Review::V1::ReviewEventMedia.new(
+          media_id: media[:media_id],
+          media_type: media[:media_type],
+          url: media[:url],
+          # FALLBACK: Use an empty thumbnail_url because media without a thumbnail has nil.
+          thumbnail_url: media[:thumbnail_url] || ""
         )
       end
 
