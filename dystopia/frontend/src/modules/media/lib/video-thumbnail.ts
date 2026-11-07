@@ -2,6 +2,7 @@ import { fitWithin, THUMBNAIL_MAX_EDGE, THUMBNAIL_QUALITY } from "./resize";
 
 export const THUMBNAIL_TIME_SECONDS = 10;
 export const CAPTURE_TIMEOUT_MS = 5000;
+export const REDRAW_INTERVAL_MS = 100;
 
 // Decoding several videos at once can exhaust iPhone memory, so captures run one at a time.
 let queue: Promise<unknown> = Promise.resolve();
@@ -26,12 +27,14 @@ function captureFrame(file: Blob): Promise<Blob | null> {
     const url = URL.createObjectURL(file);
     const listeners = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let redraw: ReturnType<typeof setTimeout> | undefined;
     let settled = false;
 
     const finish = (blob: Blob | null) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      clearTimeout(redraw);
       listeners.abort();
       video.removeAttribute("src");
       video.load();
@@ -40,6 +43,7 @@ function captureFrame(file: Blob): Promise<Blob | null> {
     };
 
     const drawFrame = () => {
+      if (settled) return;
       try {
         const { width, height } = fitWithin(video.videoWidth, video.videoHeight, THUMBNAIL_MAX_EDGE);
         const canvas = document.createElement("canvas");
@@ -52,6 +56,11 @@ function captureFrame(file: Blob): Promise<Blob | null> {
           return;
         }
         context.drawImage(video, 0, 0, width, height);
+        // Safari can draw nothing for a frame it has not decoded yet, so an empty canvas is drawn again instead of sent.
+        if (context.getImageData(Math.floor(width / 2), Math.floor(height / 2), 1, 1).data[3] === 0) {
+          redraw = setTimeout(drawFrame, REDRAW_INTERVAL_MS);
+          return;
+        }
         // FALLBACK: a null blob from toBlob is passed on as no thumbnail
         canvas.toBlob(finish, "image/jpeg", THUMBNAIL_QUALITY);
       } catch {
@@ -73,6 +82,8 @@ function captureFrame(file: Blob): Promise<Blob | null> {
     // FALLBACK: a video that never becomes drawable has no thumbnail
     timer = setTimeout(() => finish(null), CAPTURE_TIMEOUT_MS);
     video.src = url;
+    // iPhone stops at the metadata unless load() is called, and then the seek never completes.
+    video.load();
   });
 }
 

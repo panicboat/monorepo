@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock, type MockInstance } from "vitest";
 import { THUMBNAIL_QUALITY } from "./resize";
-import { CAPTURE_TIMEOUT_MS, captureVideoThumbnail, thumbnailTime, videoSrcWithFrame } from "./video-thumbnail";
+import { CAPTURE_TIMEOUT_MS, captureVideoThumbnail, REDRAW_INTERVAL_MS, thumbnailTime, videoSrcWithFrame } from "./video-thumbnail";
 
 describe("thumbnailTime", () => {
   it.each([
@@ -30,12 +30,15 @@ describe("captureVideoThumbnail", () => {
   let createElement: MockInstance<typeof document.createElement>;
   let load: MockInstance<HTMLMediaElement["load"]>;
   let drawImage: Mock<CanvasRenderingContext2D["drawImage"]>;
+  let getImageData: Mock<(x: number, y: number, width: number, height: number) => { data: Uint8ClampedArray }>;
   let toBlob: MockInstance<HTMLCanvasElement["toBlob"]>;
 
   const videoAt = (index: number) => {
     const videos = createElement.mock.results.filter((_, call) => createElement.mock.calls[call][0] === "video");
     return videos[index].value as HTMLVideoElement;
   };
+
+  const pixel = (alpha: number) => ({ data: new Uint8ClampedArray([0, 0, 0, alpha]) });
 
   const decodable = (video: HTMLVideoElement, size: { duration: number; width: number; height: number }) => {
     Object.defineProperties(video, {
@@ -53,8 +56,9 @@ describe("captureVideoThumbnail", () => {
     createElement = vi.spyOn(document, "createElement");
     load = vi.spyOn(HTMLMediaElement.prototype, "load");
     drawImage = vi.fn<CanvasRenderingContext2D["drawImage"]>();
+    getImageData = vi.fn(() => pixel(255));
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
-      (() => ({ drawImage })) as unknown as HTMLCanvasElement["getContext"],
+      (() => ({ drawImage, getImageData })) as unknown as HTMLCanvasElement["getContext"],
     );
     toBlob = vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation((callback) => callback(new Blob(["jpeg"], { type: "image/jpeg" })));
   });
@@ -96,7 +100,7 @@ describe("captureVideoThumbnail", () => {
     await vi.advanceTimersByTimeAsync(CAPTURE_TIMEOUT_MS);
     await result;
     expect(videoAt(0).hasAttribute("src")).toBe(false);
-    expect(load).toHaveBeenCalledTimes(1);
+    expect(load).toHaveBeenCalledTimes(2);
   });
 
   it("loads the file in a silent inline video that preloads", async () => {
@@ -107,6 +111,18 @@ describe("captureVideoThumbnail", () => {
     expect(video.muted).toBe(true);
     expect(video.playsInline).toBe(true);
     expect(video.preload).toBe("auto");
+    await vi.advanceTimersByTimeAsync(CAPTURE_TIMEOUT_MS);
+    await result;
+  });
+
+  it("starts loading the file right after setting it as the source", async () => {
+    const sources: (string | null)[] = [];
+    load.mockImplementation(function (this: HTMLMediaElement) {
+      sources.push(this.getAttribute("src"));
+    });
+    const result = captureVideoThumbnail(mp4("mp4"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sources).toEqual([createObjectURL.mock.results[0].value]);
     await vi.advanceTimersByTimeAsync(CAPTURE_TIMEOUT_MS);
     await result;
   });
@@ -138,6 +154,38 @@ describe("captureVideoThumbnail", () => {
     expect([canvas.width, canvas.height]).toEqual([640, 360]);
   });
 
+  it("draws the frame again when the canvas is still empty after drawing", async () => {
+    const encoded = new Blob(["jpeg"], { type: "image/jpeg" });
+    toBlob.mockImplementation((callback) => callback(encoded));
+    getImageData.mockReturnValueOnce(pixel(0));
+    const result = captureVideoThumbnail(mp4("mp4"));
+    await vi.advanceTimersByTimeAsync(0);
+    const video = videoAt(0);
+    decodable(video, { duration: 30, width: 1920, height: 1080 });
+    video.dispatchEvent(new Event("loadedmetadata"));
+    video.dispatchEvent(new Event("seeked"));
+    expect(toBlob).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(REDRAW_INTERVAL_MS);
+    await expect(result).resolves.toBe(encoded);
+    expect(drawImage).toHaveBeenCalledTimes(2);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("gives up with null instead of an empty image when the canvas stays empty", async () => {
+    getImageData.mockReturnValue(pixel(0));
+    const result = captureVideoThumbnail(mp4("mp4"));
+    await vi.advanceTimersByTimeAsync(0);
+    const video = videoAt(0);
+    decodable(video, { duration: 30, width: 1920, height: 1080 });
+    video.dispatchEvent(new Event("loadedmetadata"));
+    video.dispatchEvent(new Event("seeked"));
+    await vi.advanceTimersByTimeAsync(CAPTURE_TIMEOUT_MS);
+    await expect(result).resolves.toBeNull();
+    expect(toBlob).not.toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("releases the object URL and the decoder after a successful cut", async () => {
     const result = captureVideoThumbnail(mp4("mp4"));
     await vi.advanceTimersByTimeAsync(0);
@@ -148,7 +196,7 @@ describe("captureVideoThumbnail", () => {
     await result;
     expect(revokeObjectURL).toHaveBeenCalledWith(createObjectURL.mock.results[0].value);
     expect(video.hasAttribute("src")).toBe(false);
-    expect(load).toHaveBeenCalledTimes(1);
+    expect(load).toHaveBeenCalledTimes(2);
   });
 
   it("stops the timeout once the cut succeeds", async () => {
