@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { videoSrcWithFrame } from "@/modules/media/lib/video-thumbnail";
 import type { UploadedMedia } from "@/modules/media/types";
 
 export interface PostComposerAttachmentsProps {
@@ -18,12 +19,16 @@ export function PostComposerAttachments({
     <ul className="mt-3 flex flex-wrap gap-2" aria-label="添付したメディア">
       {items.map((item) => (
         <li key={item.mediaId} className="relative h-20 w-20 overflow-hidden rounded-md border border-border">
-          {item.mediaType === "video" ? (
+          {item.mediaType === "video" && !item.thumbnailLocalUrl ? (
             // eslint-disable-next-line jsx-a11y/media-has-caption
-            <video src={item.localUrl} className="h-full w-full object-cover" muted />
+            <video src={videoSrcWithFrame(item.localUrl)} className="h-full w-full object-cover" muted playsInline />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.localUrl} alt={item.filename} className="h-full w-full object-cover" />
+            <img
+              src={item.mediaType === "video" ? item.thumbnailLocalUrl : item.localUrl}
+              alt={item.filename}
+              className="h-full w-full object-cover"
+            />
           )}
           <button
             type="button"

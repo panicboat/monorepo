@@ -104,14 +104,33 @@ describe("ReviewEventAttachments", () => {
     expect(container.querySelector('button[aria-label="selfie.jpgを削除"]')).not.toBeNull();
   });
 
-  it("keeps the uploaded video as a video", async () => {
+  it("hands over the cut frame as the thumbnail of an uploaded video and shows it as an image", async () => {
+    mocks.uploadMedia.mockResolvedValue(uploaded("m-9", { filename: "clip.mp4", mediaType: "video", thumbnailLocalUrl: "blob:thumb-9" }));
+    const { container, onChange } = await mount([]);
+
+    await chooseFiles(container, [file("clip.mp4", "video/mp4")]);
+
+    expect(onChange).toHaveBeenCalledWith([{ mediaId: "m-9", mediaType: "video", url: "blob:m-9", thumbnailUrl: "blob:thumb-9" }]);
+    expect(container.querySelector("img")?.getAttribute("src")).toBe("blob:thumb-9");
+    expect(container.querySelector("video")).toBeNull();
+  });
+
+  it("keeps an uploaded video without a thumbnail as a video that asks for the frame at 0.1 seconds", async () => {
     mocks.uploadMedia.mockResolvedValue(uploaded("m-9", { filename: "clip.mp4", mediaType: "video" }));
     const { container, onChange } = await mount([]);
 
     await chooseFiles(container, [file("clip.mp4", "video/mp4")]);
 
-    expect(onChange).toHaveBeenCalledWith([{ mediaId: "m-9", mediaType: "video", url: "blob:m-9", thumbnailUrl: "blob:m-9" }]);
-    expect(container.querySelector("video")?.getAttribute("src")).toBe("blob:m-9");
+    expect(onChange).toHaveBeenCalledWith([{ mediaId: "m-9", mediaType: "video", url: "blob:m-9", thumbnailUrl: "" }]);
+    expect(container.querySelector("video")?.getAttribute("src")).toBe("blob:m-9#t=0.1");
+    expect(container.querySelector("img")).toBeNull();
+  });
+
+  it("shows the thumbnail of an attachment that came from the server as an image", async () => {
+    const { container } = await mount([media("m-2", { mediaType: "video", thumbnailUrl: "https://s3/thumb.jpg" })]);
+
+    expect(container.querySelector("img")?.getAttribute("src")).toBe("https://s3/thumb.jpg");
+    expect(container.querySelector("video")).toBeNull();
   });
 
   it("uses only as many of the chosen files as there are free slots", async () => {
