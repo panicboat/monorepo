@@ -1,5 +1,84 @@
 # Changelog
 
+## [0.12.0](https://github.com/panicboat/monorepo/compare/frontend-v0.11.0...frontend-v0.12.0) (2026-11-07)
+
+
+### Features
+
+* **dystopia/frontend:** add the schedule to the cast compose menu ([#1891](https://github.com/panicboat/monorepo/issues/1891)) ([f0192ae](https://github.com/panicboat/monorepo/commit/f0192aea7d89f0084e180034ce28707fda116cd5))
+* **dystopia/frontend:** align the post reactions and move pin and delete into a menu ([#1919](https://github.com/panicboat/monorepo/issues/1919)) ([595a592](https://github.com/panicboat/monorepo/commit/595a5929a6e840076d5248a23cf054e3b8b0a67a))
+* **dystopia/frontend:** change the papakatsu industry icon ([#1944](https://github.com/panicboat/monorepo/issues/1944)) ([090572b](https://github.com/panicboat/monorepo/commit/090572b6c6aff7ec7da95fc54c8aeffddb9f4784))
+* **dystopia/frontend:** keep opened replies open ([#1884](https://github.com/panicboat/monorepo/issues/1884)) ([0561c84](https://github.com/panicboat/monorepo/commit/0561c84b14516028cd1867e8227843bf5c9d235a))
+* **dystopia/frontend:** let a cast enter today's schedule directly ([#1889](https://github.com/panicboat/monorepo/issues/1889)) ([9831ae7](https://github.com/panicboat/monorepo/commit/9831ae7f31ed625e71a5ac09e4b5e1f256772098))
+* **dystopia/frontend:** make the quote and comment buttons open a place to write ([#1920](https://github.com/panicboat/monorepo/issues/1920)) ([8c7d63e](https://github.com/panicboat/monorepo/commit/8c7d63e3e73246b6e0a72e297b865e2695c153dc))
+* **dystopia/frontend:** merge the schedule entries into one editor ([#1913](https://github.com/panicboat/monorepo/issues/1913)) ([889a64d](https://github.com/panicboat/monorepo/commit/889a64d96f9068df1da16564bfe85ca3dbc00eae))
+* **dystopia/frontend:** open search on schedules and give casts a schedule tab ([#1895](https://github.com/panicboat/monorepo/issues/1895)) ([647a96c](https://github.com/panicboat/monorepo/commit/647a96c9532bafac02206966f72fd5f3e6863b02))
+* **dystopia/frontend:** pick schedule days from a calendar through next month ([#1890](https://github.com/panicboat/monorepo/issues/1890)) ([317e27d](https://github.com/panicboat/monorepo/commit/317e27d874a19b439758326872210e5643a374fd))
+* **dystopia/frontend:** pick the schedule search date from a calendar ([#1893](https://github.com/panicboat/monorepo/issues/1893)) ([e7ad543](https://github.com/panicboat/monorepo/commit/e7ad543153bc06e83c018723d42bd9cbe5a8b6b1))
+* **dystopia/frontend:** show papakatsu as a single industry with a text icon ([#1948](https://github.com/panicboat/monorepo/issues/1948)) ([f96e788](https://github.com/panicboat/monorepo/commit/f96e7883c485100fb0c75c229b1b8a12bcbb6e15))
+* **dystopia/frontend:** split the papakatsu industry into two ([#1947](https://github.com/panicboat/monorepo/issues/1947)) ([88ccaee](https://github.com/panicboat/monorepo/commit/88ccaee08d1973a7ffc77aecf0495450bade0446))
+* **dystopia/frontend:** stop assuming fixed shifts on the cast landing page ([#1888](https://github.com/panicboat/monorepo/issues/1888)) ([763f12c](https://github.com/panicboat/monorepo/commit/763f12c1799b69cdc39026b7bd23d033e7b739d6))
+* **dystopia:** attach media to review service events ([#1959](https://github.com/panicboat/monorepo/issues/1959)) ([a0018ef](https://github.com/panicboat/monorepo/commit/a0018ef9d1ba5cf01aa9f576727315d748f2f72b))
+* **dystopia:** hide schedules and reviews of a locked profile from viewers who do not follow ([#1870](https://github.com/panicboat/monorepo/issues/1870)) ([9b1dbd8](https://github.com/panicboat/monorepo/commit/9b1dbd8757eec82e5b4de0aee20e7b60a320aacb))
+* **dystopia:** keep feature behavior out of the terms and the privacy policy ([#1869](https://github.com/panicboat/monorepo/issues/1869)) ([3f94bc1](https://github.com/panicboat/monorepo/commit/3f94bc193ced5a2530f57751df8e57124fad2ef9))
+* **dystopia:** let users report content and profiles for the operator to review ([#1924](https://github.com/panicboat/monorepo/issues/1924)) ([bdffa43](https://github.com/panicboat/monorepo/commit/bdffa43702f94a384f99e52fe6bb17283fefc713))
+* **dystopia:** pin a post to the top of a profile ([#1894](https://github.com/panicboat/monorepo/issues/1894)) ([b7caa26](https://github.com/panicboat/monorepo/commit/b7caa263e4e88dbd9b35acf8a5d99a99e8916850))
+* **dystopia:** quote a post ([#1918](https://github.com/panicboat/monorepo/issues/1918)) ([bd2ec97](https://github.com/panicboat/monorepo/commit/bd2ec97f46a6a7fbb73106c5de85b5b968912f79))
+* **dystopia:** remove the replies tab and post editing, and add deleting a post ([#1873](https://github.com/panicboat/monorepo/issues/1873)) ([48090b4](https://github.com/panicboat/monorepo/commit/48090b4281f3636d41cb6369bca56dfbb953d70f))
+* **dystopia:** seed every feature table and each registration state ([#1929](https://github.com/panicboat/monorepo/issues/1929)) ([0f5a71b](https://github.com/panicboat/monorepo/commit/0f5a71b87b23cbf67dae0da406a0ade0c93d4060))
+* **dystopia:** show a frame of each video as its thumbnail ([#1962](https://github.com/panicboat/monorepo/issues/1962)) ([28b0e43](https://github.com/panicboat/monorepo/commit/28b0e43b8333c34a6c539efbc53436cde83ce5a1))
+* **dystopia:** split infrastructure into platform, data and runtime layers ([#1930](https://github.com/panicboat/monorepo/issues/1930)) ([e84bf07](https://github.com/panicboat/monorepo/commit/e84bf0746489c5908a28b091a008c583aa9e8017))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** drop the off-shop warning from the cast schedule note ([#1917](https://github.com/panicboat/monorepo/issues/1917)) ([f0e6f7a](https://github.com/panicboat/monorepo/commit/f0e6f7a9082852691cb471170e8b92206d3b700e))
+* **dystopia/frontend:** drop the suspension warning from the DM banner ([#1922](https://github.com/panicboat/monorepo/issues/1922)) ([e2ed147](https://github.com/panicboat/monorepo/commit/e2ed1470d0eefa3ce77cc3380ffe3834e0f4842e))
+* **dystopia/frontend:** load the video before cutting its thumbnail frame ([#1963](https://github.com/panicboat/monorepo/issues/1963)) ([6a6ef69](https://github.com/panicboat/monorepo/commit/6a6ef69407079bbc0ccab3ca851eb0cb2fe5a56e))
+* **dystopia/frontend:** narrow the identity wording on the landing page ([#1916](https://github.com/panicboat/monorepo/issues/1916)) ([a20ad67](https://github.com/panicboat/monorepo/commit/a20ad67b3990ae15fa8535cb867a6c03ae0ec6ee))
+* **dystopia/frontend:** open a conversation at the latest message with a one-line composer ([#1921](https://github.com/panicboat/monorepo/issues/1921)) ([f6a5d81](https://github.com/panicboat/monorepo/commit/f6a5d815ee15d9a7e374b8c1ea5a4bac7ff054de))
+* **dystopia/frontend:** tell the user when a follow, block or reaction fails ([#1877](https://github.com/panicboat/monorepo/issues/1877)) ([cf8ce38](https://github.com/panicboat/monorepo/commit/cf8ce388606da266e40eee9cc7393bd69750feac))
+* **dystopia/frontend:** update dependency @aws-sdk/client-cognito-identity-provider to ^3.1158.0 ([#1855](https://github.com/panicboat/monorepo/issues/1855)) ([835286f](https://github.com/panicboat/monorepo/commit/835286f307ca3255584e01be081dfc33e3c4901d))
+* **dystopia/frontend:** update dependency @aws-sdk/client-cognito-identity-provider to ^3.1160.0 ([#1908](https://github.com/panicboat/monorepo/issues/1908)) ([a986e14](https://github.com/panicboat/monorepo/commit/a986e14bdc0dd953679d5e6d2ecfafa17e68b911))
+* **dystopia/frontend:** update dependency @aws-sdk/client-cognito-identity-provider to ^3.1161.0 ([#1915](https://github.com/panicboat/monorepo/issues/1915)) ([876bccc](https://github.com/panicboat/monorepo/commit/876bccc4ade88a4432f4106cd4901e8cdf8270f9))
+* **dystopia/frontend:** update dependency @connectrpc/connect to ^2.3.0 ([#1856](https://github.com/panicboat/monorepo/issues/1856)) ([716e21c](https://github.com/panicboat/monorepo/commit/716e21c348563c2a2249f5fa6ffe0e3ec3cc8351))
+* **dystopia/frontend:** update dependency @connectrpc/connect-node to ^2.3.0 ([#1857](https://github.com/panicboat/monorepo/issues/1857)) ([2c179e0](https://github.com/panicboat/monorepo/commit/2c179e06872bbc682d3573aa63d522545508be43))
+* **dystopia/frontend:** update dependency jose to ^6.2.14 ([#1898](https://github.com/panicboat/monorepo/issues/1898)) ([3dc04e4](https://github.com/panicboat/monorepo/commit/3dc04e4a38de2c1bda0897ab465bcad14dcf6bfb))
+* **dystopia/frontend:** update dependency jose to ^6.2.15 ([#1932](https://github.com/panicboat/monorepo/issues/1932)) ([abd5456](https://github.com/panicboat/monorepo/commit/abd5456a30213eef980f01e0c4e48e9ddf5c51cb))
+* **dystopia/frontend:** update dependency lucide-react to ^1.65.0 ([#1909](https://github.com/panicboat/monorepo/issues/1909)) ([331fdef](https://github.com/panicboat/monorepo/commit/331fdef1ef2f82d086e4783044ae5f28f9b9e6ac))
+* **dystopia/frontend:** update dependency lucide-react to ^1.66.0 ([#1925](https://github.com/panicboat/monorepo/issues/1925)) ([1a885ea](https://github.com/panicboat/monorepo/commit/1a885eaecc7ebb2046d16df5291fb7719662fa1c))
+* **dystopia/frontend:** update dependency lucide-react to ^1.67.0 ([#1941](https://github.com/panicboat/monorepo/issues/1941)) ([0c10e7a](https://github.com/panicboat/monorepo/commit/0c10e7a0911e1e76d4878d1f0577397ecdc9cb64))
+* **dystopia/frontend:** update dependency lucide-react to ^1.68.0 ([#1946](https://github.com/panicboat/monorepo/issues/1946)) ([3ebd842](https://github.com/panicboat/monorepo/commit/3ebd8429ed4a0708d2b94da065d111e5db03e40e))
+* **dystopia/frontend:** update dependency next to v16.4.4 ([#1933](https://github.com/panicboat/monorepo/issues/1933)) ([d59c00b](https://github.com/panicboat/monorepo/commit/d59c00b21697a5f6eed79d1d0a5ad9f434a46923))
+* **dystopia/frontend:** update dependency next to v16.4.5 ([#1943](https://github.com/panicboat/monorepo/issues/1943)) ([f02952e](https://github.com/panicboat/monorepo/commit/f02952ec468ac4e45aa2a028cc7b31bb28ce6221))
+
+
+### Code Refactoring
+
+* **aws:** build common tags only in root.hcl and drop undeclared inputs ([#1940](https://github.com/panicboat/monorepo/issues/1940)) ([b8a07a8](https://github.com/panicboat/monorepo/commit/b8a07a816c22f750df9520c62cb1d5e730cbafd4))
+* **dystopia/frontend:** remove code nothing reaches ([#1874](https://github.com/panicboat/monorepo/issues/1874)) ([f903ce3](https://github.com/panicboat/monorepo/commit/f903ce3248b60924b10de537037efc82d5bdbc85))
+* **dystopia/frontend:** send every profile-scoped request through authFetch ([#1875](https://github.com/panicboat/monorepo/issues/1875)) ([c5a9526](https://github.com/panicboat/monorepo/commit/c5a952687db0da9f7af870a1f343547e31014bd2))
+* **dystopia/frontend:** share one hook across the cursor paginated lists ([#1876](https://github.com/panicboat/monorepo/issues/1876)) ([67d213e](https://github.com/panicboat/monorepo/commit/67d213e6e70379b4a8927180ba8ec6efa76667d7))
+* **dystopia/frontend:** untangle the profile module, nav badges and useAuth ([#1878](https://github.com/panicboat/monorepo/issues/1878)) ([81699e7](https://github.com/panicboat/monorepo/commit/81699e7e32b50df6e4d24aceae97a6341e702fef))
+
+
+### Miscellaneous Chores
+
+* **dystopia/frontend/aws/modules:** update terraform aws to v6.72.0 ([#1955](https://github.com/panicboat/monorepo/issues/1955)) ([bd852cd](https://github.com/panicboat/monorepo/commit/bd852cd3fef99c26d4bef670487932b002c0f497))
+* **dystopia/frontend/aws/modules:** update terraform hashicorp/terraform to v1.13.8 ([#1952](https://github.com/panicboat/monorepo/issues/1952)) ([a4323db](https://github.com/panicboat/monorepo/commit/a4323dbb4a02c311220d034b107a5a715f5d0278))
+* **dystopia/frontend/infrastructure/aws/modules:** update terraform aws to v6.71.0 ([#1901](https://github.com/panicboat/monorepo/issues/1901)) ([ec9d0df](https://github.com/panicboat/monorepo/commit/ec9d0df6d968b66b3a3aab79b17be1a337e04eaa))
+* **dystopia/frontend:** update dependency @tailwindcss/postcss to ^4.3.4 ([#1936](https://github.com/panicboat/monorepo/issues/1936)) ([1144e6c](https://github.com/panicboat/monorepo/commit/1144e6c933179f098180b0c2867759d6a86747f0))
+* **dystopia/frontend:** update dependency @types/node to v26 ([#1910](https://github.com/panicboat/monorepo/issues/1910)) ([d6d64e3](https://github.com/panicboat/monorepo/commit/d6d64e33e5d3fdfc276d54d0895fc80489ee8f00))
+* **dystopia/frontend:** update dependency @vitest/coverage-v8 to ^5.1.0 ([#1938](https://github.com/panicboat/monorepo/issues/1938)) ([7c7b7c1](https://github.com/panicboat/monorepo/commit/7c7b7c16fb38578bc47e7548c60198a182e47b11))
+* **dystopia/frontend:** update dependency eslint to ^10.14.0 ([#1900](https://github.com/panicboat/monorepo/issues/1900)) ([8045e56](https://github.com/panicboat/monorepo/commit/8045e5679d54ac9405bf8041b345b4f34e4f4886))
+* **dystopia/frontend:** update dependency eslint-config-next to v16.4.4 ([#1931](https://github.com/panicboat/monorepo/issues/1931)) ([3880b83](https://github.com/panicboat/monorepo/commit/3880b832dd8d16eabcab762df5f101ba261b2293))
+* **dystopia/frontend:** update dependency eslint-config-next to v16.4.5 ([#1942](https://github.com/panicboat/monorepo/issues/1942)) ([04d9476](https://github.com/panicboat/monorepo/commit/04d9476d2173f7760b346fcb9c3b3907777b5541))
+* **dystopia/frontend:** update dependency tailwindcss to ^4.3.4 ([#1937](https://github.com/panicboat/monorepo/issues/1937)) ([db2d65b](https://github.com/panicboat/monorepo/commit/db2d65b9142bd03854f6e63ea8b6098aeca1f251))
+* **dystopia/frontend:** update dependency vitest to ^5.1.0 ([#1939](https://github.com/panicboat/monorepo/issues/1939)) ([854039b](https://github.com/panicboat/monorepo/commit/854039b36ca6cef24057c353e2eb5615015527b3))
+* **dystopia/frontend:** update node.js to v24.22.2 ([#1896](https://github.com/panicboat/monorepo/issues/1896)) ([cd9c250](https://github.com/panicboat/monorepo/commit/cd9c250fc9b3bc65488a11b2c5028be0cac12051))
+* **dystopia/frontend:** update node.js to v26 ([#1911](https://github.com/panicboat/monorepo/issues/1911)) ([e5e3a2d](https://github.com/panicboat/monorepo/commit/e5e3a2ded019f27894dabfd51b5a2c74ed3af03b))
+* **dystopia:** add an empty terragrunt stack to frontend ([#1871](https://github.com/panicboat/monorepo/issues/1871)) ([8c115fd](https://github.com/panicboat/monorepo/commit/8c115fd57774f850ffda88dfde51b9a452233e7e))
+
 ## [0.11.0](https://github.com/panicboat/monorepo/compare/frontend-v0.10.0...frontend-v0.11.0) (2026-10-29)
 
 
