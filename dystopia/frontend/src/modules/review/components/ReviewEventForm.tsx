@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { MISSING_CAST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import type { ProfileSummaryView } from "@/modules/profile/types";
@@ -11,11 +12,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleChip } from "@/components/ui/toggle-chip";
 import { todayInJapan } from "@/lib/utils/japan-date";
 import { REVIEW_OUTCOMES, REVIEW_STAGES, REVIEW_TAGS, MAX_NOTE_LENGTH, isNoteRequired } from "../lib/catalog";
-import type { ReviewEventInput } from "../types";
+import type { ReviewEventInput, ReviewMedia } from "../types";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
+import { ReviewEventAttachments } from "./ReviewEventAttachments";
 
 export function emptyReviewEvent(today: string = todayInJapan()): ReviewEventInput {
-  return { stage: "reservation", outcome: REVIEW_OUTCOMES.reservation[0].code, tags: [], note: "", occurredOn: today };
+  return { stage: "reservation", outcome: REVIEW_OUTCOMES.reservation[0].code, tags: [], note: "", occurredOn: today, media: [] };
 }
 
 export function isReviewEventReady(event: ReviewEventInput): boolean {
@@ -32,9 +34,23 @@ interface ReviewEventFormProps {
   submitting: boolean;
   error: string | null;
   onSubmit: () => void;
+  canAddMedia?: boolean;
 }
 
-export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, submitting, error, onSubmit }: ReviewEventFormProps) {
+export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, submitting, error, onSubmit, canAddMedia = true }: ReviewEventFormProps) {
+  const [pendingUploads, setPendingUploads] = useState(0);
+  const latestValue = useRef(value);
+
+  useEffect(() => {
+    latestValue.current = value;
+  });
+
+  // An upload that finishes after typing must merge into the latest value, not the one captured when it started.
+  const changeMedia = (media: ReviewMedia[]) => onChange({ ...latestValue.current, media });
+
+  // A count, not a flag: a fresh attachments instance after a stage round trip can overlap an older upload.
+  const trackUpload = (uploading: boolean) => setPendingUploads((count) => count + (uploading ? 1 : -1));
+
   const toggleTag = (code: string) =>
     onChange({ ...value, tags: value.tags.includes(code) ? value.tags.filter((tag) => tag !== code) : [...value.tags, code] });
 
@@ -62,7 +78,9 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
             <ToggleChip
               key={stage.code}
               pressed={value.stage === stage.code}
-              onClick={() => onChange({ ...value, stage: stage.code, outcome: REVIEW_OUTCOMES[stage.code][0].code, tags: [] })}
+              onClick={() =>
+                onChange({ ...value, stage: stage.code, outcome: REVIEW_OUTCOMES[stage.code][0].code, tags: [], media: stage.code === value.stage ? value.media : [] })
+              }
             >
               {stage.label}
             </ToggleChip>
@@ -92,6 +110,13 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
         </div>
       </fieldset>
 
+      {value.stage === "service" && (canAddMedia || value.media.length > 0) && (
+        <fieldset>
+          <legend className="mb-2 text-sm font-bold text-text-primary">画像・動画（任意）</legend>
+          <ReviewEventAttachments items={value.media} onChange={changeMedia} onUploadingChange={trackUpload} disabled={submitting} canAdd={canAddMedia} />
+        </fieldset>
+      )}
+
       <label className="flex flex-col gap-2 text-sm font-bold text-text-primary">
         {isNoteRequired(value.stage, value.outcome) ? "補足（必須）" : "補足（任意）"}
         <Textarea
@@ -120,7 +145,7 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
           {error}
         </p>
       )}
-      <Button type="submit" disabled={submitting || !isReviewEventReady(value)}>
+      <Button type="submit" disabled={submitting || pendingUploads > 0 || !isReviewEventReady(value)}>
         {submitLabel}
       </Button>
     </form>

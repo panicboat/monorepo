@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { MediaGallery } from "@/components/ui/media-gallery";
 import { HIDDEN_GUEST, MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
+import { galleryOf, latestEventMedia } from "../lib/media";
 import type { Review, ReviewEvent } from "../types";
 
 export function reviewEventLine(event: ReviewEvent): string {
@@ -70,6 +72,7 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
               </span>
             )}
           </button>
+          <MediaGallery {...galleryOf(latestEventMedia(review))} />
           {variant !== "cast" && review.target?.username && (
             <Link href={`/u/${review.target?.username}`} className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline">
               キャストのプロフィールを見る →

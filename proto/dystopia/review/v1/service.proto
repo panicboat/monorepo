@@ -26,12 +26,20 @@ enum ReviewStage {
   REVIEW_STAGE_AFTERCARE = 3;
 }
 
+message ReviewEventMedia {
+  string media_id = 1;
+  string media_type = 2;
+  string url = 3;
+  string thumbnail_url = 4;
+}
+
 message ReviewEventInput {
   ReviewStage stage = 1;
   string outcome = 2;
   repeated string tags = 3;
   string note = 4;
   string occurred_on = 5;
+  repeated ReviewEventMedia media = 6;
 }
 
 message ReviewEvent {
@@ -43,6 +51,7 @@ message ReviewEvent {
   string occurred_on = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;
+  repeated ReviewEventMedia media = 9;
 }
 
 message Review {

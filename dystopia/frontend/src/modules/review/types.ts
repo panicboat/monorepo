@@ -2,6 +2,13 @@ import type { ProfileSummaryView } from "@/modules/profile/types";
 
 export type ReviewStage = "reservation" | "service" | "aftercare";
 
+export interface ReviewMedia {
+  mediaId: string;
+  mediaType: "image" | "video";
+  url: string;
+  thumbnailUrl: string;
+}
+
 export interface ReviewEvent {
   id: string;
   stage: ReviewStage;
@@ -9,6 +16,7 @@ export interface ReviewEvent {
   tags: string[];
   note: string;
   occurredOn: string;
+  media: ReviewMedia[];
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +42,7 @@ export interface ReviewEventInput {
   tags: string[];
   note: string;
   occurredOn: string;
+  media: ReviewMedia[];
 }
 
 export interface RatingSummary {

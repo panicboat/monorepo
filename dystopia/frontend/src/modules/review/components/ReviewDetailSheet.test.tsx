@@ -2,11 +2,14 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import type { UploadedMedia } from "@/modules/media/types";
+import { useAuthStore } from "@/stores/authStore";
 import type { Review } from "../types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mocks = vi.hoisted(() => ({
+  uploadMedia: vi.fn(),
   current: null as Review | null,
   gone: false,
   apply: vi.fn(),
@@ -35,6 +38,7 @@ vi.mock("../hooks/useReview", async () => {
   };
 });
 vi.mock("../hooks/useReviewMutations", () => ({ useReviewMutations: () => ({ ...mocks.mutations, loading: false, error: null }) }));
+vi.mock("@/modules/media/hooks/useMediaUpload", () => ({ useMediaUpload: () => ({ uploadMedia: mocks.uploadMedia }) }));
 vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) => selector({ show: mocks.toast }),
 }));
@@ -42,7 +46,7 @@ vi.mock("@/stores/toastStore", () => ({
 const { ReviewDetailSheet } = await import("./ReviewDetailSheet");
 
 const event = (id: string, overrides: Partial<Review["events"][number]> = {}): Review["events"][number] => ({
-  id, stage: "reservation", outcome: "booked", tags: ["quick_reply"], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "", ...overrides,
+  id, stage: "reservation", outcome: "booked", tags: ["quick_reply"], note: "", occurredOn: "2026-10-01", media: [], createdAt: "", updatedAt: "", ...overrides,
 });
 
 const review = (overrides: Partial<Review> = {}): Review => ({
@@ -86,6 +90,7 @@ const click = async (label: string) => {
 };
 
 beforeEach(() => {
+  useAuthStore.setState({ activeProfileId: "persona-a" });
   mocks.gone = false;
   mocks.toast.mockReset();
   mocks.apply.mockReset();
@@ -225,6 +230,90 @@ describe("ReviewDetailSheet", () => {
     await click("出来事を更新");
     expect(mocks.mutations.updateEvent).toHaveBeenCalledWith("e-2", expect.objectContaining({ stage: "service", outcome: "ended_early", note: "30分で帰った" }));
     expect(mocks.toast).toHaveBeenCalledWith("出来事を更新しました");
+  });
+
+  it("lines up an event's existing attachments in the edit form and sends them back on update", async () => {
+    const attached = { mediaId: "m-1", mediaType: "image" as const, url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+    await mount(review({ events: [event("e-1"), event("e-2", { stage: "service", outcome: "satisfied", tags: [], media: [attached] })] }));
+
+    await act(async () => {
+      Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "編集")[1].click();
+    });
+    expect(document.querySelector('img[src="https://cdn.example/m-1-thumb.jpg"]')).not.toBeNull();
+    expect(button("画像を削除")).toBeDefined();
+
+    await click("出来事を更新");
+    expect(mocks.mutations.updateEvent).toHaveBeenCalledWith("e-2", expect.objectContaining({ media: [attached] }));
+  });
+
+  it("offers adding media to the writing profile and only keeping or removing it to a sibling persona", async () => {
+    const attached = { mediaId: "m-1", mediaType: "image" as const, url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+    const subject = review({ events: [event("e-1", { stage: "service", outcome: "satisfied", tags: [], media: [attached] })] });
+    const openEdit = () =>
+      act(async () => {
+        Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "編集")[0].click();
+      });
+
+    await mount(subject);
+    await openEdit();
+    expect(button("画像/動画を追加")).toBeDefined();
+    expect(document.querySelector('input[type="file"]')).not.toBeNull();
+
+    await act(async () => root.unmount());
+    document.body.innerHTML = "";
+    useAuthStore.setState({ activeProfileId: "persona-b" });
+    await mount(subject);
+    await openEdit();
+    expect(button("画像を削除")).toBeDefined();
+    expect(button("画像/動画を追加")).toBeUndefined();
+    expect(document.querySelector('input[type="file"]')).toBeNull();
+  });
+
+  it("does not let an upload started on one event land in another event's form after going back", async () => {
+    let finish: (value: UploadedMedia) => void = () => {};
+    mocks.uploadMedia.mockReturnValue(new Promise<UploadedMedia>((resolve) => (finish = resolve)));
+    await mount(review({ events: [event("e-1", { stage: "service", outcome: "satisfied", tags: [], note: "最初の出来事" }), event("e-2", { stage: "service", outcome: "satisfied", tags: [], note: "別の出来事" })] }));
+    const edit = (index: number) =>
+      act(async () => {
+        Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "編集")[index].click();
+      });
+
+    await edit(0);
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    Object.defineProperty(input, "files", { value: [new File(["x"], "a.mp4", { type: "video/mp4" })], configurable: true });
+    await act(async () => {
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await click("前に戻る");
+    await edit(1);
+    await act(async () => finish({ mediaId: "m-9", mediaKey: "key", uploadUrl: "https://upload.example", localUrl: "blob:m-9", filename: "a.mp4", contentType: "video/mp4", sizeBytes: 1, mediaType: "video" }));
+
+    expect((document.querySelector("textarea") as HTMLTextAreaElement).value).toBe("別の出来事");
+    expect(button("動画を削除")).toBeUndefined();
+    expect(button("a.mp4を削除")).toBeUndefined();
+  });
+
+  it("shows an event's attachments under its note, images to enlarge and videos to play", async () => {
+    const image = { mediaId: "m-1", mediaType: "image" as const, url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+    const video = { mediaId: "m-2", mediaType: "video" as const, url: "https://cdn.example/m-2.mp4", thumbnailUrl: "" };
+    await mount(review({ events: [event("e-1"), event("e-2", { stage: "service", outcome: "satisfied", tags: [], note: "また会いたい", media: [image, video] })] }));
+
+    const items = document.querySelectorAll("ol > li");
+    expect(items[0].querySelector("video, button[aria-label='画像を拡大']")).toBeNull();
+    const second = items[1];
+    expect(second.querySelectorAll("button[aria-label='画像を拡大']")).toHaveLength(1);
+    expect(second.querySelector('video[src="https://cdn.example/m-2.mp4"]')).not.toBeNull();
+    const note = Array.from(second.querySelectorAll("p")).find((p) => p.textContent === "また会いたい")!;
+    const occurred = Array.from(second.querySelectorAll("p")).find((p) => p.textContent?.startsWith("発生日"))!;
+    expect(note.compareDocumentPosition(second.querySelector("video")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(occurred.compareDocumentPosition(second.querySelector("video")!) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+  });
+
+  it("shows no attachment controls for events without attachments", async () => {
+    await mount(review());
+
+    expect(document.querySelector("button[aria-label='画像を拡大']")).toBeNull();
+    expect(document.querySelector("video")).toBeNull();
   });
 
   it("deletes an event after confirming", async () => {

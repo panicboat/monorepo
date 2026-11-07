@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { MediaGallery } from "@/components/ui/media-gallery";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { ReportButton } from "@/modules/report";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { HIDDEN_GUEST, MISSING_CAST, MISSING_GUEST, ProfileName, profileInitial } from "@/components/ui/profile-name";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { useReview } from "../hooks/useReview";
 import { useReviewMutations } from "../hooks/useReviewMutations";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
+import { galleryOf } from "../lib/media";
 import type { Review, ReviewEventInput } from "../types";
 import { ReviewEventForm, emptyReviewEvent } from "./ReviewEventForm";
 
@@ -29,6 +32,8 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
   const [deleting, setDeleting] = useState(false);
   const { review: current, gone, apply } = useReview(open && !deleting ? initial.id : null, initial);
   const review = current ?? initial;
+  const activeProfileId = useAuthStore(selectActiveProfileId);
+  const canAddMedia = review.authorProfileId === activeProfileId;
   const { updateRating, addEvent, updateEvent, removeEvent, remove, loading, error } = useReviewMutations();
   const showToast = useToastStore((s) => s.show);
   const [step, setStep] = useState<Step>({ kind: "detail" });
@@ -70,7 +75,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
   const startEdit = (eventId: string) => {
     const target = review.events.find((event) => event.id === eventId);
     if (!target) return;
-    setEditDraft({ stage: target.stage, outcome: target.outcome, tags: target.tags, note: target.note, occurredOn: target.occurredOn });
+    setEditDraft({ stage: target.stage, outcome: target.outcome, tags: target.tags, note: target.note, occurredOn: target.occurredOn, media: target.media });
     setStep({ kind: "edit", eventId });
   };
 
@@ -81,6 +86,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
           cast={review.target}
           value={appendDraft}
           onChange={setAppendDraft}
+          canAddMedia={canAddMedia}
           submitLabel="この段階を追記"
           submitting={loading}
           error={error?.message ?? null}
@@ -98,6 +104,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
           cast={review.target}
           value={editDraft}
           onChange={setEditDraft}
+          canAddMedia={canAddMedia}
           submitLabel="出来事を更新"
           submitting={loading}
           error={error?.message ?? null}
@@ -158,6 +165,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
                   </div>
                 )}
                 {event.note && <p className="mt-2 whitespace-pre-wrap text-text-primary">{event.note}</p>}
+                <MediaGallery {...galleryOf(event.media)} />
                 <p className="mt-2 text-xs text-text-secondary">発生日 {formatMonthDay(event.occurredOn)}</p>
                 {review.isMine && (
                   <div className="mt-2 flex gap-4 text-sm text-text-secondary">

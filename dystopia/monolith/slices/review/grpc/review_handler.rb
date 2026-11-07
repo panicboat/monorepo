@@ -90,7 +90,10 @@ module Review
         authenticate_user!
         message = request.message
         review = wrap_errors do
-          add_review_event_uc.call(viewer_account_id: current_account_id, review_id: message.review_id, event: event_from(message.event))
+          add_review_event_uc.call(
+            viewer_account_id: current_account_id, viewer_profile_id: current_profile_id,
+            review_id: message.review_id, event: event_from(message.event)
+          )
         end
         ::Review::V1::AddReviewEventResponse.new(review: review_to_proto(review))
       end
@@ -99,7 +102,10 @@ module Review
         authenticate_user!
         message = request.message
         review = wrap_errors do
-          update_review_event_uc.call(viewer_account_id: current_account_id, event_id: message.event_id, event: event_from(message.event))
+          update_review_event_uc.call(
+            viewer_account_id: current_account_id, viewer_profile_id: current_profile_id,
+            event_id: message.event_id, event: event_from(message.event)
+          )
         end
         ::Review::V1::UpdateReviewEventResponse.new(review: review_to_proto(review))
       end
@@ -193,7 +199,8 @@ module Review
           outcome: input.outcome,
           tags: input.tags.to_a,
           note: input.note,
-          occurred_on: input.occurred_on
+          occurred_on: input.occurred_on,
+          media: input.media.map { |m| { media_id: m.media_id, media_type: m.media_type } }
         }
       end
 
@@ -231,7 +238,18 @@ module Review
           note: event[:note] || "",
           occurred_on: event[:occurred_on].iso8601,
           created_at: timestamp(event[:created_at]),
-          updated_at: timestamp(event[:updated_at])
+          updated_at: timestamp(event[:updated_at]),
+          media: event[:media].map { |m| media_to_proto(m) }
+        )
+      end
+
+      def media_to_proto(media)
+        ::Review::V1::ReviewEventMedia.new(
+          media_id: media[:media_id],
+          media_type: media[:media_type],
+          url: media[:url],
+          # FALLBACK: Use an empty thumbnail_url because media without a thumbnail has nil.
+          thumbnail_url: media[:thumbnail_url] || ""
         )
       end
 

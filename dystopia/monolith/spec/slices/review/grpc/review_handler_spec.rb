@@ -31,6 +31,12 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     handler_for(::Review::V1::CreateReviewRequest.new(target_profile_id: target, rating: rating, event: booked)).create_review.review
   end
 
+  def create_media(profile_id)
+    id = SecureRandom.uuid_v7
+    Hanami.app["db.gateway"].connection[:media__files].insert(id: id, media_type: "image", media_key: "media/#{profile_id}/#{id}.jpg", uploader_profile_id: profile_id)
+    id
+  end
+
   after { Current.clear }
 
   it "creates a review by the acting profile" do
@@ -146,5 +152,34 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
 
     emptied = handler_for(::Review::V1::DeleteReviewEventRequest.new(event_id: remaining.events.first.id)).delete_review_event
     expect(emptied.review).to be_nil
+  end
+
+  it "carries the media of a service event in and out of the proto" do
+    act_as(guest_account, guest)
+    media_id = create_media(guest)
+    service = ::Review::V1::ReviewEventInput.new(
+      stage: :REVIEW_STAGE_SERVICE, outcome: "satisfied", occurred_on: "2026-10-01",
+      media: [::Review::V1::ReviewEventMedia.new(media_id: media_id, media_type: "image")]
+    )
+
+    review = handler_for(::Review::V1::CreateReviewRequest.new(target_profile_id: cast, event: service)).create_review.review
+    fetched = handler_for(::Review::V1::GetReviewRequest.new(review_id: review.id)).get_review.review
+
+    expect(review.events.first.media.map(&:media_id)).to eq([media_id])
+    expect(review.events.first.media.first.url).not_to be_empty
+    expect(fetched.events.first.media.map(&:media_id)).to eq([media_id])
+  end
+
+  it "refuses media on a reservation event with INVALID_ARGUMENT" do
+    act_as(guest_account, guest)
+    media_id = create_media(guest)
+    reservation = ::Review::V1::ReviewEventInput.new(
+      stage: :REVIEW_STAGE_RESERVATION, outcome: "booked", occurred_on: "2026-10-01",
+      media: [::Review::V1::ReviewEventMedia.new(media_id: media_id, media_type: "image")]
+    )
+
+    expect {
+      handler_for(::Review::V1::CreateReviewRequest.new(target_profile_id: cast, event: reservation)).create_review
+    }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
   end
 end

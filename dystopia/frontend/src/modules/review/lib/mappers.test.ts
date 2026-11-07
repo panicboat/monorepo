@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
 import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
-import { ReviewCountsSchema, ReviewEventSchema, ReviewSchema, ReviewStage, RatingSummarySchema } from "@/stub/review/v1/service_pb";
-import { eventInputToMessage, mapCountsToView, mapReviewToView, mapSummaryToView } from "./mappers";
+import { RatingSummarySchema, ReviewCountsSchema, ReviewEventMediaSchema, ReviewEventSchema, ReviewSchema, ReviewStage } from "@/stub/review/v1/service_pb";
+import { eventInputToMessage, mapCountsToView, mapReviewEventToView, mapReviewToView, mapSummaryToView } from "./mappers";
 
 describe("mapReviewToView", () => {
   it("maps a review with its events", () => {
@@ -67,6 +67,30 @@ describe("mapReviewToView", () => {
   });
 });
 
+describe("mapReviewEventToView", () => {
+  it("maps media and drops a media type other than image or video", () => {
+    const view = mapReviewEventToView(
+      create(ReviewEventSchema, {
+        id: "e-1",
+        media: [
+          create(ReviewEventMediaSchema, { mediaId: "m-1", mediaType: "image", url: "https://cdn/m-1.jpg", thumbnailUrl: "https://cdn/m-1-t.jpg" }),
+          create(ReviewEventMediaSchema, { mediaId: "m-2", mediaType: "video", url: "https://cdn/m-2.mp4", thumbnailUrl: "" }),
+          create(ReviewEventMediaSchema, { mediaId: "m-3", mediaType: "audio", url: "https://cdn/m-3.mp3", thumbnailUrl: "" }),
+        ],
+      })
+    );
+
+    expect(view.media).toEqual([
+      { mediaId: "m-1", mediaType: "image", url: "https://cdn/m-1.jpg", thumbnailUrl: "https://cdn/m-1-t.jpg" },
+      { mediaId: "m-2", mediaType: "video", url: "https://cdn/m-2.mp4", thumbnailUrl: "" },
+    ]);
+  });
+
+  it("reads an event without media as an empty list", () => {
+    expect(mapReviewEventToView(create(ReviewEventSchema, { id: "e-1" })).media).toEqual([]);
+  });
+});
+
 describe("mapSummaryToView", () => {
   it("passes the average through when rated reviews exist", () => {
     expect(mapSummaryToView(create(RatingSummarySchema, { averageRating: 3.8, raterCount: 8, reviewCount: 12 }))).toEqual({
@@ -84,13 +108,27 @@ describe("mapSummaryToView", () => {
 
 describe("eventInputToMessage", () => {
   it("turns the stage into the proto enum", () => {
-    expect(eventInputToMessage({ stage: "service", outcome: "satisfied", tags: ["late"], note: "", occurredOn: "2026-10-01" })).toEqual({
+    expect(eventInputToMessage({ stage: "service", outcome: "satisfied", tags: ["late"], note: "", occurredOn: "2026-10-01", media: [] })).toEqual({
       stage: ReviewStage.SERVICE,
       outcome: "satisfied",
       tags: ["late"],
       note: "",
       occurredOn: "2026-10-01",
+      media: [],
     });
+  });
+
+  it("sends only the id and type of each media", () => {
+    const message = eventInputToMessage({
+      stage: "service",
+      outcome: "satisfied",
+      tags: [],
+      note: "",
+      occurredOn: "2026-10-01",
+      media: [{ mediaId: "m-1", mediaType: "image", url: "https://cdn/m-1.jpg", thumbnailUrl: "https://cdn/m-1-t.jpg" }],
+    });
+
+    expect(message.media).toEqual([{ mediaId: "m-1", mediaType: "image" }]);
   });
 });
 

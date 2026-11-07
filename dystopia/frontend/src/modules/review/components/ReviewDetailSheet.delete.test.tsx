@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
 vi.mock("@/lib/swr", () => ({ fetcher: mocks.fetcher }));
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (state: { activeProfileId: string }) => unknown) => selector({ activeProfileId: "p-1" }),
+  selectActiveProfileId: (state: { activeProfileId: string }) => state.activeProfileId,
 }));
 vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) => selector({ show: vi.fn() }),
@@ -31,7 +32,7 @@ const subject = {
   id: "k-1", authorProfileId: "a", author: { profileId: "a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest", industry: "" }, authorHidden: false,
   targetProfileId: "g", target: { profileId: "g", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast", industry: "" },
   isMine: true, rating: null,
-  events: [{ id: "e-1", stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "" }],
+  events: [{ id: "e-1", stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", media: [], createdAt: "", updatedAt: "" }],
   createdAt: "", updatedAt: "", lastActivityAt: "",
 } as Review;
 
@@ -67,7 +68,7 @@ describe("ReviewDetailSheet deleting", () => {
     await act(async () => root.unmount());
   });
 
-  const secondEvent = { id: "e-2", stage: "service", outcome: "satisfied", tags: [], note: "", occurredOn: "2026-10-02", createdAt: "", updatedAt: "" };
+  const secondEvent = { id: "e-2", stage: "service", outcome: "satisfied", tags: [], note: "", occurredOn: "2026-10-02", media: [], createdAt: "", updatedAt: "" };
 
   async function renderSheet(review: Review, onClose = vi.fn()) {
     mocks.fetcher.mockReset().mockResolvedValue({ review });

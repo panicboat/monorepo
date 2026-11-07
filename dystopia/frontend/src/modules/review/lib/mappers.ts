@@ -3,10 +3,11 @@ import {
   type Review as ReviewMessage,
   type ReviewCounts as ReviewCountsMessage,
   type ReviewEvent as ReviewEventMessage,
+  type ReviewEventMedia as ReviewEventMediaMessage,
   type RatingSummary as RatingSummaryMessage,
 } from "@/stub/review/v1/service_pb";
 import { summaryToView } from "@/modules/profile/lib/mappers";
-import type { Review, ReviewCounts, ReviewEvent, ReviewEventInput, ReviewStage, RatingSummary } from "@/modules/review/types";
+import type { Review, ReviewCounts, ReviewEvent, ReviewEventInput, ReviewMedia, ReviewStage, RatingSummary } from "@/modules/review/types";
 
 const STAGE_TO_MESSAGE: Record<ReviewStage, ReviewStageMessage> = {
   reservation: ReviewStageMessage.RESERVATION,
@@ -25,6 +26,11 @@ function stageFromMessage(stage: ReviewStageMessage): ReviewStage {
   return "reservation";
 }
 
+function mapReviewMediaToView(media: ReviewEventMediaMessage): ReviewMedia[] {
+  if (media.mediaType !== "image" && media.mediaType !== "video") return [];
+  return [{ mediaId: media.mediaId, mediaType: media.mediaType, url: media.url, thumbnailUrl: media.thumbnailUrl }];
+}
+
 export function mapReviewEventToView(event: ReviewEventMessage): ReviewEvent {
   return {
     id: event.id,
@@ -33,6 +39,7 @@ export function mapReviewEventToView(event: ReviewEventMessage): ReviewEvent {
     tags: [...event.tags],
     note: event.note || "",
     occurredOn: event.occurredOn,
+    media: event.media.flatMap(mapReviewMediaToView),
     createdAt: toIsoString(event.createdAt),
     updatedAt: toIsoString(event.updatedAt),
   };
@@ -71,6 +78,7 @@ export function eventInputToMessage(input: ReviewEventInput) {
     tags: input.tags,
     note: input.note,
     occurredOn: input.occurredOn,
+    media: input.media.map(({ mediaId, mediaType }) => ({ mediaId, mediaType })),
   };
 }
 

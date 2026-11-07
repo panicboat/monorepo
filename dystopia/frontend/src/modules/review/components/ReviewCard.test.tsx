@@ -14,7 +14,7 @@ vi.mock("@/stores/authStore", () => ({
 const { ReviewCard } = await import("./ReviewCard");
 
 const event = (id: string, overrides: Partial<Review["events"][number]> = {}): Review["events"][number] => ({
-  id, stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "", ...overrides,
+  id, stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", media: [], createdAt: "", updatedAt: "", ...overrides,
 });
 
 const review = (overrides: Partial<Review> = {}): Review => ({
@@ -95,6 +95,48 @@ describe("ReviewCard", () => {
     (container.querySelector("button") as HTMLButtonElement).click();
 
     expect(onOpen).toHaveBeenCalledWith(subject);
+  });
+
+  it("shows the attachments of the latest event that has any, even when the last event is a later stage", async () => {
+    const image = { mediaId: "m-1", mediaType: "image" as const, url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+    const video = { mediaId: "m-2", mediaType: "video" as const, url: "https://cdn.example/m-2.mp4", thumbnailUrl: "" };
+    const container = await mount({
+      review: review({
+        events: [
+          event("e-1", { stage: "service", outcome: "satisfied", media: [image, video] }),
+          event("e-2", { stage: "aftercare", outcome: "closed_without_issues", note: "後日の連絡" }),
+        ],
+      }),
+      variant: "feed",
+    });
+
+    expect(container.querySelectorAll("button[aria-label='画像を拡大']")).toHaveLength(1);
+    expect(container.querySelector('video[src="https://cdn.example/m-2.mp4"]')).not.toBeNull();
+    expect(container.textContent).toContain("後日の連絡");
+  });
+
+  it("places the attachments outside the button that opens the review, before the cast link", async () => {
+    const image = { mediaId: "m-1", mediaType: "image" as const, url: "https://cdn.example/m-1.jpg", thumbnailUrl: "https://cdn.example/m-1-thumb.jpg" };
+    const container = await mount({
+      review: review({ events: [event("e-1", { stage: "service", outcome: "satisfied", media: [image] })] }),
+      variant: "feed",
+    });
+
+    const opener = container.querySelector("button") as HTMLButtonElement;
+    const enlarge = container.querySelector("button[aria-label='画像を拡大']") as HTMLButtonElement;
+    expect(enlarge).not.toBeNull();
+    expect(opener.contains(enlarge)).toBe(false);
+    expect(opener.querySelector("button")).toBeNull();
+    const link = container.querySelector('a[href="/u/hanako"]')!;
+    expect(opener.compareDocumentPosition(enlarge) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(enlarge.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("shows nothing for a review without any attachment", async () => {
+    const container = await mount({ review: review(), variant: "feed" });
+
+    expect(container.querySelector("button[aria-label='画像を拡大']")).toBeNull();
+    expect(container.querySelector("video")).toBeNull();
   });
 
   it("links to the cast except on the cast's own profile", async () => {

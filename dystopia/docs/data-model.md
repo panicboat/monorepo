@@ -2,7 +2,7 @@
 
 テーブルは slice ごとに PostgreSQL の schema（`identity`、`profile`、`post` など）へ分かれている。
 slice をまたぐ参照（例: `post.posts.author_profile_id` → `profile.profiles.id`）は FK 制約を持たず、値の一致だけで結ぶ。
-FK 制約があるのは同一 slice 内の親子関係（`post` の投稿とその子テーブル、`karte.events`、`review.events`）のみ。
+FK 制約があるのは同一 slice 内の親子関係（`post` の投稿とその子テーブル、`karte.events`、`review.events`、`review.event_media`）のみ。
 
 ## Overview
 
@@ -449,7 +449,7 @@ erDiagram
 ## Review
 
 クチコミ。
-カルテと同じ構造で、評価は 1〜5 の整数。
+カルテと同じ構造に出来事の添付を加えたもので、評価は 1〜5 の整数。
 
 ```mermaid
 erDiagram
@@ -471,12 +471,21 @@ erDiagram
         text note
         text[] tags
     }
+    review_event_media {
+        uuid id PK
+        uuid event_id FK
+        uuid media_id "参照（FK なし）"
+        text media_type "image / video"
+        integer position "添付の並び順"
+    }
     review_reviews ||--o{ review_events : "review_id"
+    review_events ||--o{ review_event_media : "event_id"
 ```
 
 - `review.reviews`: クチコミ 1 件。
   - 作成者（アカウントとプロフィール）と対象プロフィールを持つ。
 - `review.events`: クチコミに記録した出来事（段階と結果）。
+- `review.event_media`: 出来事に添付したメディア。
 
 [クチコミ](features/reviews.md)
 

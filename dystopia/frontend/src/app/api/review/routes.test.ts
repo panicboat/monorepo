@@ -33,7 +33,7 @@ const recent = await import("./recent/route");
 
 const review = create(ReviewSchema, { id: "k-1", rating: 0 });
 const eventBody = { stage: "service", outcome: "satisfied", tags: ["late"], note: "遅刻", occurredOn: "2026-10-01" };
-const eventMessage = { stage: ReviewStage.SERVICE, outcome: "satisfied", tags: ["late"], note: "遅刻", occurredOn: "2026-10-01" };
+const eventMessage = { stage: ReviewStage.SERVICE, outcome: "satisfied", tags: ["late"], note: "遅刻", occurredOn: "2026-10-01", media: [] };
 
 function request(url: string, method: string, body?: unknown, signedIn = true) {
   const req = new NextRequest(`http://localhost${url}`, { method, body: body === undefined ? undefined : JSON.stringify(body) });
