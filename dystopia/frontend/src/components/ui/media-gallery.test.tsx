@@ -21,13 +21,37 @@ describe("MediaGallery", () => {
     expect(html.match(/aria-label="画像を拡大"/g)).toHaveLength(4);
   });
 
-  it("plays each given video inline with controls, loading only its metadata up front", () => {
+  it("shows the thumbnail as the poster and loads nothing until played", () => {
+    const html = renderToStaticMarkup(
+      <MediaGallery videos={[{ url: "https://example.com/a.mp4", thumbnailUrl: "https://example.com/a.jpg" }]} />
+    );
+
+    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/a.mp4"[^>]*poster="https:\/\/example.com\/a.jpg"[^>]*preload="none"/);
+    expect(html).not.toContain("#t=0.1");
+  });
+
+  it("asks for the frame at 0.1 seconds when the video has no thumbnail", () => {
+    const html = renderToStaticMarkup(<MediaGallery videos={[{ url: "https://example.com/b.mp4" }]} />);
+
+    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/b.mp4#t=0.1"[^>]*preload="metadata"/);
+    expect(html).not.toContain("poster=");
+  });
+
+  it("treats an empty thumbnail as none", () => {
+    const html = renderToStaticMarkup(<MediaGallery videos={[{ url: "https://example.com/c.mp4", thumbnailUrl: "" }]} />);
+
+    expect(html).toContain('src="https://example.com/c.mp4#t=0.1"');
+    expect(html).not.toContain("poster=");
+  });
+
+  it("plays each given video inline with controls", () => {
     const html = renderToStaticMarkup(
       <MediaGallery videos={[{ url: "https://example.com/a.mp4" }, { url: "https://example.com/b.mp4" }]} />
     );
 
     expect(html.match(/<video/g)).toHaveLength(2);
-    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/a.mp4"[^>]*controls=""[^>]*playsInline=""[^>]*preload="metadata"/);
+    expect(html.match(/controls=""/g)).toHaveLength(2);
+    expect(html.match(/playsInline=""/g)).toHaveLength(2);
   });
 
   it("renders nothing without images or videos", () => {
