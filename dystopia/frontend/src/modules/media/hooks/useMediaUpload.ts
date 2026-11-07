@@ -7,6 +7,7 @@ import type { UploadedMedia, MediaType, MediaUploadOptions } from "../types";
 import { getMediaTypeFromMime, toProtoMediaType } from "../lib/mappers";
 import { isResizableImage, MAIN_MAX_EDGE, MAIN_QUALITY, resizeImage, THUMBNAIL_MAX_EDGE, THUMBNAIL_QUALITY } from "../lib/resize";
 import { isStrippableVideo, stripVideoMetadata } from "../lib/video-metadata";
+import { captureVideoThumbnail } from "../lib/video-thumbnail";
 
 interface PreparedUpload {
   main: Blob;
@@ -27,12 +28,16 @@ async function prepareUpload(file: File): Promise<PreparedUpload> {
       throw new Error("画像を読み込めませんでした。別の画像を選んでください");
     }
   }
-  if (isStrippableVideo(file.type)) {
-    try {
-      return { main: await stripVideoMetadata(file), thumbnail: null, filename: file.name, contentType: file.type };
-    } catch {
-      throw new Error("動画を読み込めませんでした。別の動画を選んでください");
+  if (getMediaTypeFromMime(file.type) === "video") {
+    let main: Blob = file;
+    if (isStrippableVideo(file.type)) {
+      try {
+        main = await stripVideoMetadata(file);
+      } catch {
+        throw new Error("動画を読み込めませんでした。別の動画を選んでください");
+      }
     }
+    return { main, thumbnail: await captureVideoThumbnail(file), filename: file.name, contentType: file.type };
   }
   return { main: file, thumbnail: null, filename: file.name, contentType: file.type };
 }
@@ -58,6 +63,17 @@ async function putObject(body: Blob, filename: string, contentType: string, medi
   }
 
   return { uploadUrl, mediaKey, mediaId };
+}
+
+async function putThumbnail(thumbnail: Blob, filename: string, mediaType: MediaType) {
+  const put = () => putObject(thumbnail, `thumb-${filename.replace(/\.[^.]+$/, "")}.jpg`, "image/jpeg", "image");
+  if (mediaType !== "video") return put();
+  try {
+    return await put();
+  } catch {
+    // FALLBACK: a video that cannot send its thumbnail is posted without one
+    return null;
+  }
 }
 
 interface UseMediaUploadResult {
@@ -109,14 +125,14 @@ export function useMediaUpload(): UseMediaUploadResult {
         const mediaType: MediaType = getMediaTypeFromMime(file.type);
         const prepared = await prepareUpload(file);
         const { uploadUrl, mediaKey, mediaId } = await putObject(prepared.main, prepared.filename, prepared.contentType, mediaType);
-        const thumbnail = prepared.thumbnail
-          ? await putObject(prepared.thumbnail, `thumb-${prepared.filename}`, prepared.contentType, mediaType)
-          : null;
+        const thumbnail = prepared.thumbnail ? await putThumbnail(prepared.thumbnail, prepared.filename, mediaType) : null;
 
         const uploaded: UploadedMedia = {
           mediaId,
           mediaKey,
-          ...(thumbnail ? { thumbnailKey: thumbnail.mediaKey } : {}),
+          ...(thumbnail && prepared.thumbnail
+            ? { thumbnailKey: thumbnail.mediaKey, thumbnailLocalUrl: URL.createObjectURL(prepared.thumbnail) }
+            : {}),
           uploadUrl,
           localUrl: URL.createObjectURL(prepared.main),
           filename: prepared.filename,

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMediaUpload } from "@/modules/media/hooks/useMediaUpload";
+import { videoSrcWithFrame } from "@/modules/media/lib/video-thumbnail";
 import type { UploadedMedia } from "@/modules/media/types";
 import { MAX_REVIEW_MEDIA } from "../lib/catalog";
 import type { ReviewMedia } from "../types";
@@ -20,7 +21,7 @@ const toReviewMedia = (uploaded: UploadedMedia): ReviewMedia => ({
   mediaId: uploaded.mediaId,
   mediaType: uploaded.mediaType,
   url: uploaded.localUrl,
-  thumbnailUrl: uploaded.localUrl,
+  thumbnailUrl: uploaded.mediaType === "video" ? (uploaded.thumbnailLocalUrl ?? "") : uploaded.localUrl,
 });
 
 export function ReviewEventAttachments({ items, onChange, onUploadingChange, disabled, canAdd }: ReviewEventAttachmentsProps) {
@@ -73,9 +74,9 @@ export function ReviewEventAttachments({ items, onChange, onUploadingChange, dis
             const name = filenames[item.mediaId] ?? (item.mediaType === "video" ? "動画" : "画像");
             return (
               <li key={item.mediaId} className="relative h-20 w-20 overflow-hidden rounded-md border border-border">
-                {item.mediaType === "video" ? (
+                {item.mediaType === "video" && !item.thumbnailUrl ? (
                   // eslint-disable-next-line jsx-a11y/media-has-caption
-                  <video src={item.url} className="h-full w-full object-cover" muted />
+                  <video src={videoSrcWithFrame(item.url)} className="h-full w-full object-cover" muted playsInline />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={item.thumbnailUrl || item.url} alt={name} className="h-full w-full object-cover" />

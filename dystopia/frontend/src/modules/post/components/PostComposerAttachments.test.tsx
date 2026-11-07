@@ -41,13 +41,23 @@ describe("PostComposerAttachments", () => {
     expect(html).toContain('aria-label="photo.jpgを削除"');
   });
 
-  it("renders a video element for a video attachment", () => {
+  it("renders the cut frame as an image for a video attachment that has a thumbnail", () => {
+    const html = renderToStaticMarkup(
+      <PostComposerAttachments items={[{ ...video, thumbnailLocalUrl: "blob:thumb-1" }]} onRemove={() => {}} />
+    );
+
+    expect(html).toContain('<img src="blob:thumb-1"');
+    expect(html).not.toContain("<video");
+  });
+
+  it("asks a video attachment without a thumbnail for the frame at 0.1 seconds", () => {
     const html = renderToStaticMarkup(
       <PostComposerAttachments items={[video]} onRemove={() => {}} />
     );
 
     expect(html).toContain("<video");
-    expect(html).toContain('src="blob:video-1"');
+    expect(html).toContain('src="blob:video-1#t=0.1"');
+    expect(html).not.toContain("<img");
   });
 
   it("disables every remove button when disabled", () => {

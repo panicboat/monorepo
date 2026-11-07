@@ -46,8 +46,14 @@ describe("galleryOf", () => {
 
     expect(galleryOf([image("m-1"), video])).toEqual({
       images: [{ url: "https://cdn/m-1.jpg", thumbnailUrl: "https://cdn/m-1-t.jpg" }],
-      videos: [{ url: "https://cdn/m-2.mp4" }],
+      videos: [{ url: "https://cdn/m-2.mp4", thumbnailUrl: "" }],
     });
+  });
+
+  it("passes the thumbnail of a video through as it is", () => {
+    const video: ReviewMedia = { mediaId: "m-2", mediaType: "video", url: "https://cdn/m-2.mp4", thumbnailUrl: "https://cdn/m-2-t.jpg" };
+
+    expect(galleryOf([video]).videos).toEqual([{ url: "https://cdn/m-2.mp4", thumbnailUrl: "https://cdn/m-2-t.jpg" }]);
   });
 
   it("uses the url as the thumbnail of an image without one", () => {

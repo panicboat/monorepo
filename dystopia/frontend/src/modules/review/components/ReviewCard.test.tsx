@@ -111,7 +111,7 @@ describe("ReviewCard", () => {
     });
 
     expect(container.querySelectorAll("button[aria-label='画像を拡大']")).toHaveLength(1);
-    expect(container.querySelector('video[src="https://cdn.example/m-2.mp4"]')).not.toBeNull();
+    expect(container.querySelector('video[src="https://cdn.example/m-2.mp4#t=0.1"]')).not.toBeNull();
     expect(container.textContent).toContain("後日の連絡");
   });
 

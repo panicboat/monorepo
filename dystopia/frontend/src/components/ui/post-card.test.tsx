@@ -89,7 +89,7 @@ describe("PostCard", () => {
     );
 
     expect(html.match(/<video/g)).toHaveLength(2);
-    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/a.mp4"[^>]*controls=""[^>]*playsInline=""[^>]*preload="metadata"/);
+    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/a.mp4#t=0.1"[^>]*controls=""[^>]*playsInline=""[^>]*preload="metadata"/);
   });
 
   it("does not nest a video inside the post detail link", () => {

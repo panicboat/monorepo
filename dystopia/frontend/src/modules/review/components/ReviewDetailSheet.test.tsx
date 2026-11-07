@@ -302,7 +302,7 @@ describe("ReviewDetailSheet", () => {
     expect(items[0].querySelector("video, button[aria-label='画像を拡大']")).toBeNull();
     const second = items[1];
     expect(second.querySelectorAll("button[aria-label='画像を拡大']")).toHaveLength(1);
-    expect(second.querySelector('video[src="https://cdn.example/m-2.mp4"]')).not.toBeNull();
+    expect(second.querySelector('video[src="https://cdn.example/m-2.mp4#t=0.1"]')).not.toBeNull();
     const note = Array.from(second.querySelectorAll("p")).find((p) => p.textContent === "また会いたい")!;
     const occurred = Array.from(second.querySelectorAll("p")).find((p) => p.textContent?.startsWith("発生日"))!;
     expect(note.compareDocumentPosition(second.querySelector("video")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

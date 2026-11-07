@@ -77,7 +77,7 @@ export function PostCardBinding({ post, detailHref, inDetail, showPinMark, hideQ
     .map((m) => ({ thumbnailUrl: m.thumbnailUrl || m.url, url: m.url || m.thumbnailUrl }))
     .filter((image) => image.thumbnailUrl.length > 0);
 
-  const videos = post.media.filter((m) => m.mediaType === "video" && m.url.length > 0).map((m) => ({ url: m.url }));
+  const videos = post.media.filter((m) => m.mediaType === "video" && m.url.length > 0).map((m) => ({ url: m.url, thumbnailUrl: m.thumbnailUrl }));
 
   const href = detailHref || `/posts/${encodeURIComponent(post.id)}`;
   const openPost = usePostSheetStore((s) => s.openPost);

@@ -5,6 +5,7 @@ import Image from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { videoSrcWithFrame } from "@/modules/media/lib/video-thumbnail";
 
 export interface PostCardImage {
   thumbnailUrl: string;
@@ -13,6 +14,7 @@ export interface PostCardImage {
 
 export interface PostCardVideo {
   url: string;
+  thumbnailUrl?: string;
 }
 
 export interface MediaGalleryProps {
@@ -41,13 +43,14 @@ export function MediaGallery({ images, videos }: MediaGalleryProps) {
   return (
     <>
       {videos?.map((video) => (
-        // Load only the metadata: a feed of full video files would download every one before any is played.
+        // With a poster nothing loads until play, and without one only the metadata does: a feed of full video files would download every one.
         <video
           key={video.url}
-          src={video.url}
+          src={video.thumbnailUrl ? video.url : videoSrcWithFrame(video.url)}
+          poster={video.thumbnailUrl || undefined}
           controls
           playsInline
-          preload="metadata"
+          preload={video.thumbnailUrl ? "none" : "metadata"}
           className="mt-2 max-h-[70vh] w-full rounded-md bg-black"
         />
       ))}

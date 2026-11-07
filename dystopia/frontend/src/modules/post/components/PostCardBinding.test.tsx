@@ -140,7 +140,21 @@ describe("PostCardBinding", () => {
 
     const html = renderToStaticMarkup(<PostCardBinding post={post} />);
 
-    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/clip.mp4"/);
+    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/clip.mp4#t=0.1"/);
+    expect(html).not.toContain("poster=");
+  });
+
+  it("shows the thumbnail of a video as its poster", () => {
+    const post: PostView = {
+      ...basePost,
+      media: [
+        { id: "media-1", mediaType: "video", url: "https://example.com/clip.mp4", thumbnailUrl: "https://example.com/clip.jpg", mediaId: "media-1" },
+      ],
+    };
+
+    const html = renderToStaticMarkup(<PostCardBinding post={post} />);
+
+    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/clip.mp4"[^>]*poster="https:\/\/example.com\/clip.jpg"/);
   });
 
   it("shows a video and an image attached to the same post", () => {
