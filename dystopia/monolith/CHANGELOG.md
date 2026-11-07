@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.10.0](https://github.com/panicboat/monorepo/compare/monolith-v0.9.0...monolith-v0.10.0) (2026-11-07)
+
+
+### Features
+
+* **dystopia:** attach media to review service events ([#1959](https://github.com/panicboat/monorepo/issues/1959)) ([a0018ef](https://github.com/panicboat/monorepo/commit/a0018ef9d1ba5cf01aa9f576727315d748f2f72b))
+* **dystopia:** hide schedules and reviews of a locked profile from viewers who do not follow ([#1870](https://github.com/panicboat/monorepo/issues/1870)) ([9b1dbd8](https://github.com/panicboat/monorepo/commit/9b1dbd8757eec82e5b4de0aee20e7b60a320aacb))
+* **dystopia:** let users report content and profiles for the operator to review ([#1924](https://github.com/panicboat/monorepo/issues/1924)) ([bdffa43](https://github.com/panicboat/monorepo/commit/bdffa43702f94a384f99e52fe6bb17283fefc713))
+* **dystopia:** pin a post to the top of a profile ([#1894](https://github.com/panicboat/monorepo/issues/1894)) ([b7caa26](https://github.com/panicboat/monorepo/commit/b7caa263e4e88dbd9b35acf8a5d99a99e8916850))
+* **dystopia:** quote a post ([#1918](https://github.com/panicboat/monorepo/issues/1918)) ([bd2ec97](https://github.com/panicboat/monorepo/commit/bd2ec97f46a6a7fbb73106c5de85b5b968912f79))
+* **dystopia:** remove the replies tab and post editing, and add deleting a post ([#1873](https://github.com/panicboat/monorepo/issues/1873)) ([48090b4](https://github.com/panicboat/monorepo/commit/48090b4281f3636d41cb6369bca56dfbb953d70f))
+* **dystopia:** seed every feature table and each registration state ([#1929](https://github.com/panicboat/monorepo/issues/1929)) ([0f5a71b](https://github.com/panicboat/monorepo/commit/0f5a71b87b23cbf67dae0da406a0ade0c93d4060))
+* **dystopia:** split infrastructure into platform, data and runtime layers ([#1930](https://github.com/panicboat/monorepo/issues/1930)) ([e84bf07](https://github.com/panicboat/monorepo/commit/e84bf0746489c5908a28b091a008c583aa9e8017))
+
+
+### Code Refactoring
+
+* **aws:** build common tags only in root.hcl and drop undeclared inputs ([#1940](https://github.com/panicboat/monorepo/issues/1940)) ([b8a07a8](https://github.com/panicboat/monorepo/commit/b8a07a816c22f750df9520c62cb1d5e730cbafd4))
+* drop environment names from the remaining EKS and GCP names ([#1935](https://github.com/panicboat/monorepo/issues/1935)) ([f546069](https://github.com/panicboat/monorepo/commit/f546069c20d9d7a56c3ce0cd622f5537290def58))
+* **dystopia/monolith:** create posts and comments in one transaction ([#1880](https://github.com/panicboat/monorepo/issues/1880)) ([05894f1](https://github.com/panicboat/monorepo/commit/05894f178925786a69b45f0daf0437c9c13a7e0c))
+* **dystopia/monolith:** read list profiles in one query ([#1879](https://github.com/panicboat/monorepo/issues/1879)) ([d24cdbb](https://github.com/panicboat/monorepo/commit/d24cdbbc879cae862e783286598044bd8c1c07a9))
+
+
+### Miscellaneous Chores
+
+* **dystopia/monolith/aws/modules:** update terraform hashicorp/terraform to v1.13.8 ([#1953](https://github.com/panicboat/monorepo/issues/1953)) ([8c89c13](https://github.com/panicboat/monorepo/commit/8c89c138ae979e1d032c99f590e5bb7396906dfc))
+* **dystopia/monolith/infrastructure/aws/modules:** update terraform aws to v6.71.0 ([#1906](https://github.com/panicboat/monorepo/issues/1906)) ([7c06ec0](https://github.com/panicboat/monorepo/commit/7c06ec098f3b6411f135e44bac99edb999f5babf))
+* **dystopia/monolith:** update dependency aws-sdk-cognitoidentityprovider to "~&gt; 1.159" ([#1904](https://github.com/panicboat/monorepo/issues/1904)) ([62998f2](https://github.com/panicboat/monorepo/commit/62998f28c5240fe1af9144afd612916798b29881))
+* **dystopia/monolith:** update dependency aws-sdk-s3 to "~&gt; 1.237" ([#1905](https://github.com/panicboat/monorepo/issues/1905)) ([8246428](https://github.com/panicboat/monorepo/commit/8246428f999cd6aaf9de3139ba50de45df3360e9))
+* **dystopia/monolith:** update dependency grpc-tools to v1.85.0 ([#1854](https://github.com/panicboat/monorepo/issues/1854)) ([d5dba8b](https://github.com/panicboat/monorepo/commit/d5dba8bed4d60e1b9dd095c9889c7d1c9909d78b))
+* **dystopia/monolith:** update dependency opentelemetry-instrumentation-all to "~&gt; 0.100" ([#1945](https://github.com/panicboat/monorepo/issues/1945)) ([a0f713f](https://github.com/panicboat/monorepo/commit/a0f713f1ac527267c9de06791a4aec70052a4f0e))
+
 ## [0.9.0](https://github.com/panicboat/monorepo/compare/monolith-v0.8.0...monolith-v0.9.0) (2026-10-29)
 
 
