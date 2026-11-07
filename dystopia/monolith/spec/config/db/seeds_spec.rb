@@ -8,6 +8,7 @@ RSpec.describe "config/db/seeds.rb" do
 
   let(:yuna_account_id) { "11111111-1111-4111-8111-111111111111" }
   let(:mio_account_id) { "22222222-2222-4222-8222-222222222222" }
+  let(:onboarding_account_ids) { %w[99999999-9999-4999-8999-999999999999 aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa] }
 
   let(:seeded_tables) do
     %i[
@@ -48,12 +49,16 @@ RSpec.describe "config/db/seeds.rb" do
 
   before { run_seeds }
 
-  it "gives every seeded account at least one enabled profile" do
-    accounts_without_profile = db[:identity__accounts].select_map(:id).reject do |account_id|
+  it "gives every account past onboarding at least one enabled profile" do
+    accounts_without_profile = db[:identity__accounts].exclude(id: onboarding_account_ids).select_map(:id).reject do |account_id|
       profiles_of(account_id).any? { |profile| profile[:disabled_at].nil? }
     end
 
     expect(accounts_without_profile).to be_empty
+  end
+
+  it "leaves the onboarding accounts without a profile" do
+    expect(onboarding_account_ids.flat_map { |account_id| profiles_of(account_id) }).to be_empty
   end
 
   it "gives one cast account two enabled profiles" do
@@ -68,8 +73,8 @@ RSpec.describe "config/db/seeds.rb" do
     expect([enabled.size, disabled.size]).to eq([1, 1])
   end
 
-  it "keeps every guest account at one profile" do
-    guest_account_ids = db[:identity__accounts].where(role: 1).select_map(:id)
+  it "keeps every guest account past onboarding at one profile" do
+    guest_account_ids = db[:identity__accounts].where(role: 1).exclude(id: onboarding_account_ids).select_map(:id)
 
     expect(guest_account_ids.map { |account_id| profiles_of(account_id).size }).to all(eq(1))
   end
