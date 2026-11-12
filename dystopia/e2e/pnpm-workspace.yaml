@@ -1,0 +1,4 @@
+# Declines linking the agent skills that the e2e package ships, because this suite does not use them.
+permissions:
+  e2e:
+    skills: false

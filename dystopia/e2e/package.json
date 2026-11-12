@@ -1,0 +1,19 @@
+{
+  "name": "dystopia-e2e",
+  "private": true,
+  "packageManager": "pnpm@12.18.0",
+  "type": "module",
+  "scripts": {
+    "test": "e2e run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^5",
+    "@e2e-dev/web": "^0.15.5",
+    "ai": "^7",
+    "e2e": "^0.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
