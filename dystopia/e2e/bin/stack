@@ -21,6 +21,7 @@ STOP_TIMEOUT_SECONDS=30
 
 # Pinned rather than latest so that a new emulator release cannot fail a run whose code did not change.
 AWS_EMULATOR_VERSION="1.0.338"
+# The emulator always listens on 9297 because no port flag is passed to it.
 EMULATOR_PORT="9297"
 RELAY_PORT="9298"
 MEDIA_BUCKET="dystopia-media-e2e"
@@ -136,9 +137,16 @@ prepare_database() {
   hanami_db seed
 }
 
-# Real AWS credentials must not reach the processes that talk to the emulator, so they are dropped here.
+# The SDK takes endpoints and keys from many AWS_ and AMAZON_ variables, so all of them are dropped before the stack's own are set.
 run_with_s3_env() {
-  env -u AWS_PROFILE -u AWS_DEFAULT_PROFILE -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN \
+  local name unset_args=()
+  for name in $(compgen -e); do
+    if [[ "$name" == AWS_* || "$name" == AMAZON_* ]]; then
+      unset_args+=(-u "$name")
+    fi
+  done
+  # The empty-array form keeps bash 3.2 (macOS) from failing under set -u when nothing is set.
+  env ${unset_args[@]+"${unset_args[@]}"} \
     AWS_ENDPOINT_URL="http://127.0.0.1:${RELAY_PORT}" \
     AWS_SHARED_CREDENTIALS_FILE="$EMULATOR_CREDENTIALS" \
     AWS_CONFIG_FILE=/dev/null \
