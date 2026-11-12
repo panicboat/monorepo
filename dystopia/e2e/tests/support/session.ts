@@ -11,7 +11,7 @@ export interface SessionFixtures {
 export type AccountRole = 'cast' | 'guest';
 
 const SEED_PASSWORD = 'password';
-export const NEW_ACCOUNT_PASSWORD = 'E2e-Password-1';
+const NEW_ACCOUNT_PASSWORD = 'E2e-Password-1';
 const CONFIRMATION_CODE = '000000';
 const ROLE_LABELS: Record<AccountRole, string> = { cast: 'キャスト', guest: 'ゲスト' };
 const FEATURE_TOUR_WAIT_MS = 2_000;
@@ -35,6 +35,10 @@ export async function signIn(fx: SessionFixtures, phone: string, password = SEED
 export async function switchUser(fx: SessionFixtures, phone: string, password = SEED_PASSWORD): Promise<void> {
   await fx.app.clearState();
   await signIn(fx, phone, password);
+}
+
+export async function switchToCreated(fx: SessionFixtures, account: SeedAccount): Promise<void> {
+  await switchUser(fx, account.phone, NEW_ACCOUNT_PASSWORD);
 }
 
 export async function createAccount(fx: SessionFixtures, role: AccountRole): Promise<SeedAccount> {

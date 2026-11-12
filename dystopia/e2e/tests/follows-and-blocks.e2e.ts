@@ -4,7 +4,8 @@ import { expect, unique } from 'e2e';
 import type { ActOptions, Agent, Locator } from 'e2e';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
-import { NEW_ACCOUNT_PASSWORD, createAccount, switchUser } from './support/session.ts';
+import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
+import { createAccount, switchToCreated } from './support/session.ts';
 import type { SessionFixtures } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
@@ -14,7 +15,6 @@ interface Fixtures extends SessionFixtures {
 }
 
 // Anchoring on a display name would pass before a list loads, so each list waits for its settled empty message.
-const EMPTY_POSTS_MESSAGE = 'まだ投稿はありません';
 const EMPTY_FOLLOWING_MESSAGE = 'フォロー中のアカウントはまだいません。';
 const EMPTY_REQUESTS_MESSAGE = '申請はありません。';
 const EMPTY_BLOCKS_MESSAGE = 'ブロック中のアカウントはありません。';
@@ -24,10 +24,6 @@ const RECORDING_TIMEOUT_MS = 300_000;
 const SIGNED_IN_AS = 'Signed in as {actorName} (@{actorHandle}), ';
 const POST_FOR_EVERYONE = `${SIGNED_IN_AS}open the compose menu, choose 投稿, write {body} as the post text, keep the audience as 全員, and post it`;
 const POST_FOR_FOLLOWERS = `${SIGNED_IN_AS}open the compose menu, choose 投稿, write {body} as the post text, turn on the フォロワーのみ switch, and post it`;
-
-function text(fx: Fixtures, value: string): Locator {
-  return fx.screen.getByText(value, { exact: false, visible: true }).first();
-}
 
 // Display names and handles on the end screen miss the recording unless they are params too.
 function actorParams(account: SeedAccount) {
@@ -44,14 +40,6 @@ function bystanderParams(account: SeedAccount) {
 
 function handle(fx: Fixtures, account: SeedAccount): Locator {
   return text(fx, `@${account.username}`);
-}
-
-async function openProfile(fx: Fixtures, username: string): Promise<void> {
-  await fx.app.open(`/u/${username}`);
-}
-
-async function switchToCreated(fx: Fixtures, account: SeedAccount): Promise<void> {
-  await switchUser(fx, account.phone, NEW_ACCOUNT_PASSWORD);
 }
 
 // A recording that starts on a per-account profile path misses on every run, so every act starts at the home route.
@@ -140,7 +128,7 @@ describe('follows-and-blocks.md / フォロー', () => {
     await expectHiddenAfter(text(fx, SEED.posts.rinPublic), text(fx, SEED.posts.rinFollowers));
 
     await fx.agent.act('tap the フォロー button on this profile');
-    await expect(fx.screen.getByRole('button', 'フォロー')).toBeHidden();
+    await expect(fx.screen.getByRole('button', 'メッセージ')).toBeVisible();
 
     await openProfile(fx, SEED.accounts.rin.username);
     await expect(text(fx, SEED.posts.rinFollowers)).toBeVisible();
@@ -237,6 +225,8 @@ describe('follows-and-blocks.md / ブロック', () => {
     await changeBlock(fx, cast, guest, 'ブロック');
     await openBlockedList(fx, cast);
     await expect(handle(fx, guest)).toBeVisible();
+    // A row button reads ブロック until its status loads, so both labels are counted to count the rows.
+    await expect(fx.screen.getByRole('button', /^ブロック(解除)?$/)).toHaveCount(1);
 
     await switchToCreated(fx, guest);
     await openProfile(fx, cast.username);

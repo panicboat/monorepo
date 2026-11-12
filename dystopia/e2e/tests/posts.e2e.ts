@@ -1,23 +1,12 @@
 import { describe, test } from '@e2e-dev/web';
 import { expect, unique } from 'e2e';
-import type { Locator } from 'e2e';
 import { SEED } from './support/seed.ts';
+import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
 import { createAccount, signIn, switchUser } from './support/session.ts';
-import type { SessionFixtures } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 // A fixed far-future instant keeps the instruction params stable, so the recording is reused across days.
 const SCHEDULED_START = '2099-12-31T12:00';
-// Anchoring on the display name would pass before the post list loads, so wait for the settled empty list.
-const EMPTY_POSTS_MESSAGE = 'まだ投稿はありません';
-
-function text(fx: SessionFixtures, value: string): Locator {
-  return fx.screen.getByText(value, { exact: false, visible: true }).first();
-}
-
-async function openProfile(fx: SessionFixtures, username: string): Promise<void> {
-  await fx.app.open(`/u/${username}`);
-}
 
 describe('posts.md / 閲覧できる範囲', () => {
   test('a non-follower sees 全員 posts but not フォロワーのみ posts', async (fx) => {
