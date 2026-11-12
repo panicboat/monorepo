@@ -1,18 +1,13 @@
 import { describe, test } from '@e2e-dev/web';
-import type { Browser } from '@e2e-dev/web';
 import { expect, unique } from 'e2e';
 import type { Locator } from 'e2e';
-import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams, follow, targetParams } from './support/act.ts';
-import type { ActFixtures } from './support/act.ts';
+import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams, changeBlock, follow, targetParams } from './support/act.ts';
+import type { BrowserActFixtures } from './support/act.ts';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
 import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
 import { createAccount, switchToCreated } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
-
-interface Fixtures extends ActFixtures {
-  browser: Browser;
-}
 
 // Anchoring on a display name would pass before a list loads, so each list waits for its settled empty message.
 const EMPTY_FOLLOWING_MESSAGE = 'フォロー中のアカウントはまだいません。';
@@ -26,17 +21,17 @@ function bystanderParams(account: SeedAccount) {
   return { otherName: unique(account.displayName), otherHandle: unique(account.username) };
 }
 
-function handle(fx: Fixtures, account: SeedAccount): Locator {
+function handle(fx: BrowserActFixtures, account: SeedAccount): Locator {
   return text(fx, `@${account.username}`);
 }
 
-async function post(fx: Fixtures, author: SeedAccount, instruction: string, body: string): Promise<void> {
+async function post(fx: BrowserActFixtures, author: SeedAccount, instruction: string, body: string): Promise<void> {
   await actFromHome(fx, instruction, { params: { ...actorParams(author), body: unique(body) } });
   await openProfile(fx, author.username);
   await expect(text(fx, body)).toBeVisible();
 }
 
-async function createApprovalCast(fx: Fixtures, body: string): Promise<SeedAccount> {
+async function createApprovalCast(fx: BrowserActFixtures, body: string): Promise<SeedAccount> {
   const cast = await createAccount(fx, 'cast');
   await actFromHome(
     fx,
@@ -51,7 +46,7 @@ async function createApprovalCast(fx: Fixtures, body: string): Promise<SeedAccou
 }
 
 async function decideRequest(
-  fx: Fixtures,
+  fx: BrowserActFixtures,
   decision: '承認' | '拒否',
   owner: SeedAccount,
   requester: SeedAccount,
@@ -68,31 +63,17 @@ async function decideRequest(
   });
 }
 
-async function openRequests(fx: Fixtures, owner: SeedAccount): Promise<void> {
+async function openRequests(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
   await fx.app.open(`/u/${owner.username}/requests`);
 }
 
-async function openBlockedList(fx: Fixtures, owner: SeedAccount): Promise<void> {
+async function openBlockedList(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
   await fx.app.open(`/u/${owner.username}/following`);
   await fx.screen.getByRole('tab', 'ブロック中').click();
 }
 
-async function openFollowing(fx: Fixtures, owner: SeedAccount): Promise<void> {
+async function openFollowing(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
   await fx.app.open(`/u/${owner.username}/following`);
-}
-
-async function changeBlock(fx: Fixtures, actor: SeedAccount, target: SeedAccount, label: 'ブロック' | 'ブロック解除'): Promise<void> {
-  const listed = label === 'ブロック' ? 'is listed' : 'is gone';
-  const off = await fx.browser.onDialog('accept');
-  try {
-    await actFromHome(
-      fx,
-      `${SIGNED_IN_AS}open 検索, choose the ユーザー tab, search for {targetHandle}, open the profile of {targetName} (@{targetHandle}) from the result row, open the その他の操作 menu, tap ${label}, then open the menu, choose プロフィール, tap the フォロー中 count, open the ブロック中 tab, and check that the row for {targetName} ${listed}`,
-      { params: { ...actorParams(actor), ...targetParams(target) } },
-    );
-  } finally {
-    await off();
-  }
 }
 
 describe('follows-and-blocks.md / フォロー', () => {
