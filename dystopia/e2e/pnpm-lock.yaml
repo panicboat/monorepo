@@ -167,17 +167,17 @@ importers:
   .:
     dependencies:
       '@ai-sdk/amazon-bedrock':
-        specifier: ^5.0.138
-        version: 5.0.138(zod@4.6.7)
+        specifier: ^5.0.139
+        version: 5.0.139(zod@4.6.7)
       '@e2e-dev/web':
         specifier: ^0.15.5
-        version: 0.15.5(e2e@0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.114(zod@4.6.7))(ai@7.0.169(zod@4.6.7)))
+        version: 0.15.5(e2e@0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.115(zod@4.6.7))(ai@7.0.169(zod@4.6.7)))
       ai:
         specifier: ^7.0.169
         version: 7.0.169(zod@4.6.7)
       e2e:
         specifier: ^0.23.0
-        version: 0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.114(zod@4.6.7))(ai@7.0.169(zod@4.6.7))
+        version: 0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.115(zod@4.6.7))(ai@7.0.169(zod@4.6.7))
     devDependencies:
       typescript:
         specifier: ^7.0.2
@@ -185,8 +185,8 @@ importers:
 
 packages:
 
-  '@ai-sdk/amazon-bedrock@5.0.138':
-    resolution: {integrity: sha512-DXm1yknqzIzvOYypeEzhYfyenfgt7RH3pjgrtxgGI5XN0KzhTjDFYKZyXef6L7jEn94YZChScX4b0flzf0KCwg==}
+  '@ai-sdk/amazon-bedrock@5.0.139':
+    resolution: {integrity: sha512-33KveDxsdrnyKe3joryLY+Lx+yBNX8d655CZ61QiOPPcnA1MqYxQVNusnxQWYrO5HHaLwRdoASvRpPETrIc8Fg==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -203,8 +203,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/openai@4.0.114':
-    resolution: {integrity: sha512-HceWOUPej4zSYvjZhICQVoQWzwXP3SyJY8GN/P0a+dqJaUMdn3NQMEW6KyhbS+/ltAgR6MauW9KgDx8NDbFe3g==}
+  '@ai-sdk/openai@4.0.115':
+    resolution: {integrity: sha512-q0tHPKxPLPwaTVY318Z/FvGWV98bnYrr2mqKz9qTtw4xwshykzkMZcxiSSv5K8y2152GSrB1ts9Up9l5J2w0qA==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -805,10 +805,10 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/amazon-bedrock@5.0.138(zod@4.6.7)':
+  '@ai-sdk/amazon-bedrock@5.0.139(zod@4.6.7)':
     dependencies:
       '@ai-sdk/anthropic': 4.0.102(zod@4.6.7)
-      '@ai-sdk/openai': 4.0.114(zod@4.6.7)
+      '@ai-sdk/openai': 4.0.115(zod@4.6.7)
       '@ai-sdk/provider': 4.0.37
       '@ai-sdk/provider-utils': 5.0.79(zod@4.6.7)
       '@smithy/eventstream-codec': 4.5.2
@@ -829,7 +829,7 @@ snapshots:
       '@vercel/oidc': 3.2.0
       zod: 4.6.7
 
-  '@ai-sdk/openai@4.0.114(zod@4.6.7)':
+  '@ai-sdk/openai@4.0.115(zod@4.6.7)':
     dependencies:
       '@ai-sdk/provider': 4.0.37
       '@ai-sdk/provider-utils': 5.0.79(zod@4.6.7)
@@ -864,9 +864,9 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@e2e-dev/web@0.15.5(e2e@0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.114(zod@4.6.7))(ai@7.0.169(zod@4.6.7)))':
+  '@e2e-dev/web@0.15.5(e2e@0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.115(zod@4.6.7))(ai@7.0.169(zod@4.6.7)))':
     dependencies:
-      e2e: 0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.114(zod@4.6.7))(ai@7.0.169(zod@4.6.7))
+      e2e: 0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.115(zod@4.6.7))(ai@7.0.169(zod@4.6.7))
       playwright-core: 1.64.1
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -1145,7 +1145,7 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  e2e@0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.114(zod@4.6.7))(ai@7.0.169(zod@4.6.7)):
+  e2e@0.23.0(@ai-sdk/anthropic@4.0.102(zod@4.6.7))(@ai-sdk/openai@4.0.115(zod@4.6.7))(ai@7.0.169(zod@4.6.7)):
     dependencies:
       '@ai-sdk/provider': 4.0.36
       '@clack/prompts': 1.8.1
@@ -1163,7 +1163,7 @@ snapshots:
       zod: 4.6.7
     optionalDependencies:
       '@ai-sdk/anthropic': 4.0.102(zod@4.6.7)
-      '@ai-sdk/openai': 4.0.114(zod@4.6.7)
+      '@ai-sdk/openai': 4.0.115(zod@4.6.7)
       ai: 7.0.169(zod@4.6.7)
 
   eventsource-parser@3.1.1: {}
