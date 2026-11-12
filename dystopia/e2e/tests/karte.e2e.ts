@@ -5,7 +5,7 @@ import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams, targetPar
 import type { ActFixtures } from './support/act.ts';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
-import { openProfile, text } from './support/screen.ts';
+import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
 import { createAccount, signIn, switchUser } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
@@ -35,7 +35,7 @@ describe('karte.md / Rules', () => {
 
     const karte = karteCards(fx).filter({ hasText: SEED.accounts.rin.displayName });
     await expect(karte).toBeVisible();
-    await karte.getByRole('button').click();
+    await karte.getByRole('button', new RegExp(`@${SEED.accounts.shiro.username}`)).click();
     await expect(text(fx, SEED_KARTE_NOTE)).toBeVisible();
   });
 
@@ -44,7 +44,11 @@ describe('karte.md / Rules', () => {
     await openProfile(fx, SEED.accounts.shiro.username);
 
     await expectHiddenAfter(fx.screen.getByRole('tab', 'クチコミ'), fx.screen.getByRole('tab', 'カルテ'));
-    await expect(text(fx, SEED_KARTE_NOTE)).toHaveCount(0);
+
+    // A broken gate would select the karte tab from the query, so the settled posts pane shows the gate held.
+    await fx.app.open(`/u/${SEED.accounts.shiro.username}?tab=karte`);
+    await expectHiddenAfter(text(fx, EMPTY_POSTS_MESSAGE), karteCards(fx).filter({ hasText: SEED.accounts.rin.displayName }));
+    await expect(fx.screen.getByRole('button', 'このゲストのカルテを書く')).toHaveCount(0);
   });
 
   test('a karte a cast writes is visible to other casts', { timeout: RECORDING_TIMEOUT_MS }, async (fx) => {
