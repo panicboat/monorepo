@@ -55,8 +55,6 @@ export async function createAccount(fx: SessionFixtures, role: AccountRole): Pro
   await screen.getByLabel(/^表示名/).fill(account.displayName);
   await screen.getByLabel(/^ユーザー名/).fill(account.username);
   await screen.getByRole('button', '完了').click();
-
-  await expect(featureTour(screen).or(shellMenu(screen)).first()).toBeVisible();
   await enterHome(screen);
   return account;
 }
@@ -72,6 +70,7 @@ function shellMenu(screen: Screen): Locator {
 // The tour opens in the same render as the shell, so a short wait is enough to tell that it was already seen.
 async function enterHome(screen: Screen): Promise<void> {
   const tour = featureTour(screen);
+  await expect(tour.or(shellMenu(screen)).first()).toBeVisible();
   if (await appearsWithin(tour, FEATURE_TOUR_WAIT_MS)) {
     await tour.click();
     await expect(tour).toHaveCount(0);
