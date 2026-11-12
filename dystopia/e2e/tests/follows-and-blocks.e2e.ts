@@ -1,16 +1,16 @@
 import { describe, test } from '@e2e-dev/web';
 import type { Browser } from '@e2e-dev/web';
 import { expect, unique } from 'e2e';
-import type { ActOptions, Agent, Locator } from 'e2e';
+import type { Locator } from 'e2e';
+import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams, follow, targetParams } from './support/act.ts';
+import type { ActFixtures } from './support/act.ts';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
 import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
 import { createAccount, switchToCreated } from './support/session.ts';
-import type { SessionFixtures } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
-interface Fixtures extends SessionFixtures {
-  agent: Agent;
+interface Fixtures extends ActFixtures {
   browser: Browser;
 }
 
@@ -19,20 +19,8 @@ const EMPTY_FOLLOWING_MESSAGE = 'フォロー中のアカウントはまだい�
 const EMPTY_REQUESTS_MESSAGE = '申請はありません。';
 const EMPTY_BLOCKS_MESSAGE = 'ブロック中のアカウントはありません。';
 
-// A recording run waits on the model for every step, so the default test timeout is too short for a flow with several acts.
-const RECORDING_TIMEOUT_MS = 300_000;
-const SIGNED_IN_AS = 'Signed in as {actorName} (@{actorHandle}), ';
 const POST_FOR_EVERYONE = `${SIGNED_IN_AS}open the compose menu, choose 投稿, write {body} as the post text, keep the audience as 全員, and post it`;
 const POST_FOR_FOLLOWERS = `${SIGNED_IN_AS}open the compose menu, choose 投稿, write {body} as the post text, turn on the フォロワーのみ switch, and post it`;
-
-// Display names and handles on the end screen miss the recording unless they are params too.
-function actorParams(account: SeedAccount) {
-  return { actorName: unique(account.displayName), actorHandle: unique(account.username) };
-}
-
-function targetParams(account: SeedAccount) {
-  return { targetName: unique(account.displayName), targetHandle: unique(account.username) };
-}
 
 function bystanderParams(account: SeedAccount) {
   return { otherName: unique(account.displayName), otherHandle: unique(account.username) };
@@ -40,12 +28,6 @@ function bystanderParams(account: SeedAccount) {
 
 function handle(fx: Fixtures, account: SeedAccount): Locator {
   return text(fx, `@${account.username}`);
-}
-
-// A recording that starts on a per-account profile path misses on every run, so every act starts at the home route.
-async function actFromHome(fx: Fixtures, instruction: string, options?: ActOptions): Promise<void> {
-  await fx.app.open('/');
-  await fx.agent.act(instruction, options);
 }
 
 async function post(fx: Fixtures, author: SeedAccount, instruction: string, body: string): Promise<void> {
@@ -66,14 +48,6 @@ async function createApprovalCast(fx: Fixtures, body: string): Promise<SeedAccou
   await expect(fx.screen.getByRole('switch', 'フォローを承認制にする')).toBeChecked();
   await post(fx, cast, POST_FOR_FOLLOWERS, body);
   return cast;
-}
-
-async function follow(fx: Fixtures, target: SeedAccount): Promise<void> {
-  await actFromHome(
-    fx,
-    'open 検索, choose the ユーザー tab, search for {targetHandle}, and tap the フォロー or フォローを申請 button on the result row whose handle is @{targetHandle}',
-    { params: { targetHandle: unique(target.username) } },
-  );
 }
 
 async function decideRequest(
