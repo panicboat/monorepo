@@ -3,6 +3,10 @@ import { SIGNED_IN_AS, actFromHome, actorParams, targetParams } from './act.ts';
 import type { ActFixtures } from './act.ts';
 import type { SeedAccount } from './seed.ts';
 import { openProfile } from './screen.ts';
+import type { SessionFixtures } from './session.ts';
+
+// Anchoring on a handle would pass before the list loads, so the list waits for its settled empty message.
+export const EMPTY_REQUESTS_MESSAGE = '申請はありません。';
 
 function bystanderParams(account: SeedAccount) {
   return { otherName: unique(account.displayName), otherHandle: unique(account.username) };
@@ -35,4 +39,8 @@ export async function decideRequest(
   await actFromHome(fx, `${SIGNED_IN_AS}${decide}, and leave the row for {otherName} (@{otherHandle}) as it is`, {
     params: { ...params, ...bystanderParams(bystander) },
   });
+}
+
+export async function openRequests(fx: SessionFixtures, owner: SeedAccount): Promise<void> {
+  await fx.app.open(`/u/${owner.username}/requests`);
 }

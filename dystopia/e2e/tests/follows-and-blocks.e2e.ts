@@ -1,34 +1,24 @@
 import { describe, test } from '@e2e-dev/web';
 import { expect } from 'e2e';
-import type { Locator } from 'e2e';
 import { RECORDING_TIMEOUT_MS, changeBlock, follow } from './support/act.ts';
 import type { BrowserActFixtures } from './support/act.ts';
 import { POST_FOR_EVERYONE, POST_FOR_FOLLOWERS, post } from './support/posts.ts';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
-import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
+import { EMPTY_POSTS_MESSAGE, handle, openProfile, text } from './support/screen.ts';
 import { createAccount, switchToCreated } from './support/session.ts';
-import { decideRequest, requireApproval } from './support/social.ts';
+import { EMPTY_REQUESTS_MESSAGE, decideRequest, openRequests, requireApproval } from './support/social.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 // Anchoring on a display name would pass before a list loads, so each list waits for its settled empty message.
 const EMPTY_FOLLOWING_MESSAGE = 'フォロー中のアカウントはまだいません。';
-const EMPTY_REQUESTS_MESSAGE = '申請はありません。';
 const EMPTY_BLOCKS_MESSAGE = 'ブロック中のアカウントはありません。';
-
-function handle(fx: BrowserActFixtures, account: SeedAccount): Locator {
-  return text(fx, `@${account.username}`);
-}
 
 async function createApprovalCast(fx: BrowserActFixtures, body: string): Promise<SeedAccount> {
   const cast = await createAccount(fx, 'cast');
   await requireApproval(fx, cast);
   await post(fx, cast, POST_FOR_FOLLOWERS, body);
   return cast;
-}
-
-async function openRequests(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
-  await fx.app.open(`/u/${owner.username}/requests`);
 }
 
 async function openBlockedList(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {

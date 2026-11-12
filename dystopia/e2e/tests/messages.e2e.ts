@@ -3,9 +3,9 @@ import { expect } from 'e2e';
 import { RECORDING_TIMEOUT_MS, changeBlock, follow } from './support/act.ts';
 import type { BrowserActFixtures } from './support/act.ts';
 import { BLOCKED_NOTICE, FOLLOW_REQUIRED_NOTICE, messageInput, openThread, replyInThread, sendFromProfile } from './support/messages.ts';
-import { openProfile, text } from './support/screen.ts';
+import { handle, openProfile, text } from './support/screen.ts';
 import { createAccount, switchToCreated } from './support/session.ts';
-import { decideRequest, requireApproval } from './support/social.ts';
+import { EMPTY_REQUESTS_MESSAGE, decideRequest, openRequests, requireApproval } from './support/social.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 // The notice and the input are alternatives, so the notice settles first and only then the input is checked to be gone.
@@ -53,6 +53,8 @@ describe('messages.md / 送信条件', () => {
 
     await switchToCreated(fx, cast);
     await decideRequest(fx, '承認', cast, guest);
+    await openRequests(fx, cast);
+    await expectHiddenAfter(text(fx, EMPTY_REQUESTS_MESSAGE), handle(fx, guest));
 
     await switchToCreated(fx, guest);
     await openThread(fx, cast);
