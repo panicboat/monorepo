@@ -9,8 +9,9 @@ import { openReviewsTab, reviewCards, writeReview } from './support/reviews.ts';
 import { createAccount, signIn, switchToCreated, switchUser } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
-// Anchoring on a reviewer's name would pass before the list loads, so the settled locked notice marks the loaded tab.
+// A locked tab has no reviewer name to wait for, so the settled locked notice marks the loaded tab.
 const LOCKED_MESSAGE = 'フォローすると見られます';
+const PROFILE_NOT_FOUND_MESSAGE = 'プロフィールが見つかりませんでした。';
 
 const LOCK_WITHOUT_APPROVAL = `${SIGNED_IN_AS}open the menu, choose プロフィール, tap プロフィールを編集, turn on プロフィールに鍵をかける, turn off フォローを承認制にする, tap 保存, then reopen プロフィールを編集 and check that プロフィールに鍵をかける is on and フォローを承認制にする is off`;
 
@@ -63,5 +64,13 @@ describe('profiles.md / 鍵とフォローの承認制', () => {
     await openReviewsTab(fx, cast.username);
     await expect(fx.screen.getByRole('button', 'メッセージ')).toBeVisible();
     await expect(text(fx, note)).toBeVisible();
+  });
+});
+
+describe('profiles.md / 他人から見えるか', () => {
+  test('a profile whose account is withdrawn is not shown to others', async (fx) => {
+    await signIn(fx, SEED.accounts.jiro.phone);
+    await openProfile(fx, SEED.accounts.goro.username);
+    await expectHiddenAfter(text(fx, PROFILE_NOT_FOUND_MESSAGE), text(fx, SEED.accounts.goro.displayName));
   });
 });

@@ -15,7 +15,7 @@ const WRITE_REVIEW_BUTTON = 'このキャストのクチコミを書く';
 
 const LOCK_PROFILE = `${SIGNED_IN_AS}open the menu, choose プロフィール, tap プロフィールを編集, turn on プロフィールに鍵をかける, tap 保存, then reopen プロフィールを編集 and check that プロフィールに鍵をかける is on`;
 
-// Anchoring on a note would pass before the list loads, so the seed review marks the loaded tab.
+// The item under test is the absent one, so the seed review marks the loaded tab.
 function seedReviewCard(fx: ActFixtures): Locator {
   return reviewCards(fx).filter({ hasText: SEED.accounts.shiro.displayName });
 }
