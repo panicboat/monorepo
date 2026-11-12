@@ -1,5 +1,7 @@
 # Dystopia E2E Test Design
 
+Issue: #1992
+
 ## Intent
 
 dystopia はある程度の機能がそろい、これからも機能の追加と画面の作り替えが続く。
