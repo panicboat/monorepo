@@ -11,16 +11,16 @@ export interface SessionFixtures {
 export type AccountRole = 'cast' | 'guest';
 
 const SEED_PASSWORD = 'password';
-const NEW_ACCOUNT_PASSWORD = 'E2e-Password-1';
+export const NEW_ACCOUNT_PASSWORD = 'E2e-Password-1';
 const CONFIRMATION_CODE = '000000';
 const ROLE_LABELS: Record<AccountRole, string> = { cast: 'キャスト', guest: 'ゲスト' };
 const FEATURE_TOUR_WAIT_MS = 2_000;
 
-export async function signIn(fx: SessionFixtures, phone: string): Promise<void> {
+export async function signIn(fx: SessionFixtures, phone: string, password = SEED_PASSWORD): Promise<void> {
   const { app, screen } = fx;
   await app.open('/login');
   await screen.getByLabel('電話番号').fill(phone);
-  await screen.getByLabel('パスワード').fill(SEED_PASSWORD);
+  await screen.getByLabel('パスワード').fill(password);
   await screen.getByRole('button', 'ログイン').click();
 
   const picker = screen.getByRole('heading', 'プロフィールを選択');
@@ -32,9 +32,9 @@ export async function signIn(fx: SessionFixtures, phone: string): Promise<void> 
   await enterHome(screen);
 }
 
-export async function switchUser(fx: SessionFixtures, phone: string): Promise<void> {
+export async function switchUser(fx: SessionFixtures, phone: string, password = SEED_PASSWORD): Promise<void> {
   await fx.app.clearState();
-  await signIn(fx, phone);
+  await signIn(fx, phone, password);
 }
 
 export async function createAccount(fx: SessionFixtures, role: AccountRole): Promise<SeedAccount> {
