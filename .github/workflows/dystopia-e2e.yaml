@@ -64,6 +64,14 @@ jobs:
       - name: Install Chromium
         run: pnpm exec e2e-web install chromium --with-deps
 
+      # The preinstalled psql 16 fails on \list against PostgreSQL 18, which hanami db uses to check that a database exists.
+      - name: Install PostgreSQL 18 client
+        run: |
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-18
+          # pg_wrapper would pick the preinstalled 16 cluster's version, so the 18 binaries go first on PATH.
+          echo /usr/lib/postgresql/18/bin >> "$GITHUB_PATH"
+
       - name: Start the stack
         run: bin/stack up
 
@@ -81,7 +89,9 @@ jobs:
           key: dystopia-e2e-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: dystopia-e2e-
 
+      # Stays below the job timeout so a hang still leaves time for the cache save and the artifact upload.
       - name: Run e2e
+        timeout-minutes: 45
         run: pnpm exec e2e run --reporter list,junit
         env:
           CI: '1'
