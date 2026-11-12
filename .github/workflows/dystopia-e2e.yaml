@@ -73,6 +73,7 @@ jobs:
           echo /usr/lib/postgresql/18/bin >> "$GITHUB_PATH"
 
       - name: Start the stack
+        timeout-minutes: 15
         run: bin/stack up
 
       - name: Configure AWS credentials

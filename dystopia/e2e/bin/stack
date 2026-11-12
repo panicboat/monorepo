@@ -132,7 +132,8 @@ start_frontend() {
 wait_until_ready() {
   local waited=0 status name
   while ((waited < READY_TIMEOUT_SECONDS)); do
-    status="$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d "$READY_BODY" "$READY_URL" || true)"
+    # SILENT: a refused or timed-out request means the stack is not ready yet, and the loop asks again.
+    status="$(curl -s --max-time 10 -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d "$READY_BODY" "$READY_URL" || true)"
     [[ "$status" == "200" ]] && return 0
     for name in monolith frontend; do
       if ! kill -0 "$(<"$STACK_DIR/$name.pid")" 2>/dev/null; then
