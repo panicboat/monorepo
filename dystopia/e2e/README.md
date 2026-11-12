@@ -32,16 +32,27 @@ e2e は `~/.aws` のプロファイルを読まず、環境変数の認証情報
 
 `bin/stack up` は次を行い、サインインが通るようになってから戻る。
 
+- aws-emulator と S3 の中継を起動し、メディア用のバケットを作る。
+  - monolith のメディアの保存先を、本物の S3 ではなくエミュレータにするため。
+  - monolith のプロセスには、`AWS_` と `AMAZON_` で始まる環境変数を引き継がず、emulator の使い捨ての認証情報だけを渡す。
+    - 手元のシェルに別の AWS の認証情報が入っていても、本物の S3 に署名・接続しないようにするため。
 - 使い捨ての DB を作り直し、migrate と seed を入れる。
 - monolith と、`next build` した frontend を固定のポートで起動する。
 - frontend は偽の Cognito を使う。
 
+aws-emulator は、Linux では `PATH` 上の `aws-emulator` コマンドで、それ以外では `emulator/Dockerfile` から作ったイメージを Docker で動かす。
+macOS では `up` の前に Docker を起動しておく。
+Linux では `bin/stack install-emulator` でパッケージを入れる。
+aws-emulator の版は `bin/stack` で固定し、Renovate で上げる。
+中継が要るのは、aws-emulator が `Origin` などブラウザ由来のヘッダーを持つリクエストを拒否するためである。
+ブラウザから署名付き URL に直接 PUT・GET するメディアの経路は、この中継を通して emulator に届ける。
+
 DB 名・ポート・ブラウザで開く URL は `bin/stack` と `e2e.config.ts` に書かれている。
 別の URL に向けるときは `APP_URL` を設定する。
 
-`bin/stack down` は `up` が起動したプロセスを止め、DB を消す。
+`bin/stack down` は `up` が起動したプロセスと aws-emulator を止め、DB と emulator の認証情報を消す。
 ログと PID は `.e2e/stack/` に書かれる。
-`up` が失敗したときは、両方のログの末尾を出したうえで `down` と同じ後片付けをする。
+`up` が失敗したときは、各ログの末尾を出したうえで `down` と同じ後片付けをする。
 
 ## Test Data
 
@@ -83,12 +94,16 @@ CI の記録は GitHub Actions の cache に置かれる。
 
 `.github/workflows/dystopia-e2e.yaml` が、毎日の定期実行と手動実行で e2e を回す。
 
+- 実行のたびに `bin/stack install-emulator` で aws-emulator のパッケージを入れる。
+  - runner は Linux で、`bin/stack up` が `PATH` 上の aws-emulator を使うため。
 - 実行のたびに `bin/stack up` で DB を作り直し、seed を入れ直す。
   - seed の投稿には seed 後 6 時間以内に期限が切れるものがあり、古い DB では閲覧の範囲のテストが崩れるため。
 - 定期実行が落ちたら、run の artifact `dystopia-e2e` を見る。
   - `report.json` には、テストごとの結果と act ごとの記録の扱いが入っている。
   - `results/*/trace.md` には、落ちたテストの手順ごとの経過・記録の扱い・失敗時の画面が入っている。
-  - `stack/*.log` には、monolith と frontend のログが入っている。
+  - `stack/*.log` には、monolith・frontend・aws-emulator・S3 の中継のログが入っている。
+  - `stack/emulator-home/` は artifact に入らない。
+    - emulator の認証情報が入っているため。
   - run のログの `Cache` の行で、再生・モデルへの引き継ぎ・外れの件数が分かる。
 - main 以外のブランチからの手動実行は、main の記録を読む。
   - そこで保存した記録は main からは読めないため、main の定期実行には引き継がれない。
