@@ -126,9 +126,13 @@ monolith・frontend・DB をつないだ状態でブラウザから操作し、�
 
 - `agent.act` は Bedrock の Claude を使う。
 - 認証は GitHub Actions の OIDC で master アカウントのロールを引き受ける。
-- 既存のロールは `environment:claude-code-action` の subject だけを信頼しているので、e2e 用の GitHub environment を新設し、その subject を platform リポジトリで追加する。
+- 既存のロールは `environment:claude-code-action` の subject だけを信頼しているので、e2e 用の GitHub environment（`dystopia-e2e`）を新設する。
   - `claude-code-action` の流用ではなく専用の environment にすると、ユーザーが選んだ。
+- その environment の subject だけを信頼する、Bedrock の呼び出しだけを許すロールを platform リポジトリで master アカウントに追加する。
+  - 既存の claude-code のロールは Claude の OAuth token の secret も読めるので、e2e の job には渡さない。
+  - 呼べるモデルは claude-code のロールと同じ一覧（global の推論プロファイル）にする。
   - platform の PR を先に出して apply し、それまで e2e の workflow は Bedrock の認証で落ちる。
+- モデル ID は `global.anthropic.claude-sonnet-4-6`、region は `us-east-1`。
 
 ### CI Workflow
 
