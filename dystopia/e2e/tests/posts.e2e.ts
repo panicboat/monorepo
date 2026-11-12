@@ -1,5 +1,7 @@
 import { describe, test } from '@e2e-dev/web';
 import { expect, unique } from 'e2e';
+import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams } from './support/act.ts';
+import { POST_FOR_EVERYONE, post } from './support/posts.ts';
 import { SEED } from './support/seed.ts';
 import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
 import { createAccount, signIn, switchUser } from './support/session.ts';
@@ -7,6 +9,8 @@ import { expectHiddenAfter } from './support/visibility.ts';
 
 // A fixed far-future instant keeps the instruction params stable, so the recording is reused across days.
 const SCHEDULED_START = '2099-12-31T12:00';
+
+const SCHEDULE_POST = `${SIGNED_IN_AS}open the compose menu, choose 投稿, write {body} as the post text, keep the audience as 全員, turn on 表示期間を指定, set 表示開始 to {startsAt}, post it, then open the menu, choose プロフィール, and check that {body} is listed`;
 
 describe('posts.md / 閲覧できる範囲', () => {
   test('a non-follower sees 全員 posts but not フォロワーのみ posts', async (fx) => {
@@ -42,24 +46,15 @@ describe('posts.md / 閲覧できる範囲', () => {
 });
 
 describe('posts.md / 時間限定投稿（表示期間）', () => {
-  test('a post scheduled to start later is visible only to its author', async (fx) => {
+  test('a post scheduled to start later is visible only to its author', { timeout: RECORDING_TIMEOUT_MS }, async (fx) => {
     const cast = await createAccount(fx, 'cast');
     const stamp = Date.now();
     const liveBody = `e2e live ${stamp}`;
     const scheduledBody = `e2e scheduled ${stamp}`;
 
-    await fx.agent.act('open the compose menu, choose 投稿, write {body} as the post text, keep the audience as 全員, and post it', {
-      params: { body: unique(liveBody) },
-    });
-    await openProfile(fx, cast.username);
-    await expect(text(fx, liveBody)).toBeVisible();
+    await post(fx, cast, POST_FOR_EVERYONE, liveBody);
 
-    // A recording that starts on a per-account profile path misses on every run.
-    await fx.app.open('/');
-    await fx.agent.act(
-      'open the compose menu, choose 投稿, write {body} as the post text, keep the audience as 全員, turn on 表示期間を指定, set 表示開始 to {startsAt}, and post it',
-      { params: { body: unique(scheduledBody), startsAt: SCHEDULED_START } },
-    );
+    await actFromHome(fx, SCHEDULE_POST, { params: { ...actorParams(cast), body: unique(scheduledBody), startsAt: SCHEDULED_START } });
     await openProfile(fx, cast.username);
     await expect(text(fx, scheduledBody)).toBeVisible();
     await expect(fx.screen.getByText(/予約 .* から/, { visible: true }).first()).toBeVisible();

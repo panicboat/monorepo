@@ -3,6 +3,7 @@ import { expect, unique } from 'e2e';
 import type { Locator } from 'e2e';
 import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams, changeBlock, follow, targetParams } from './support/act.ts';
 import type { BrowserActFixtures } from './support/act.ts';
+import { POST_FOR_EVERYONE, POST_FOR_FOLLOWERS, post } from './support/posts.ts';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
 import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
@@ -14,21 +15,12 @@ const EMPTY_FOLLOWING_MESSAGE = 'フォロー中のアカウントはまだい�
 const EMPTY_REQUESTS_MESSAGE = '申請はありません。';
 const EMPTY_BLOCKS_MESSAGE = 'ブロック中のアカウントはありません。';
 
-const POST_FOR_EVERYONE = `${SIGNED_IN_AS}open the compose menu, choose 投稿, write {body} as the post text, keep the audience as 全員, and post it`;
-const POST_FOR_FOLLOWERS = `${SIGNED_IN_AS}open the compose menu, choose 投稿, write {body} as the post text, turn on the フォロワーのみ switch, and post it`;
-
 function bystanderParams(account: SeedAccount) {
   return { otherName: unique(account.displayName), otherHandle: unique(account.username) };
 }
 
 function handle(fx: BrowserActFixtures, account: SeedAccount): Locator {
   return text(fx, `@${account.username}`);
-}
-
-async function post(fx: BrowserActFixtures, author: SeedAccount, instruction: string, body: string): Promise<void> {
-  await actFromHome(fx, instruction, { params: { ...actorParams(author), body: unique(body) } });
-  await openProfile(fx, author.username);
-  await expect(text(fx, body)).toBeVisible();
 }
 
 async function createApprovalCast(fx: BrowserActFixtures, body: string): Promise<SeedAccount> {
