@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+E2E_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MONOLITH_DIR="$(cd "$E2E_DIR/../monolith" && pwd)"
+FRONTEND_DIR="$(cd "$E2E_DIR/../frontend" && pwd)"
+STACK_DIR="$E2E_DIR/.e2e/stack"
+
+# Hanami appends _test to the database name of this URL under HANAMI_ENV=test.
+DB_URL="postgres://postgres:password@localhost:5432/monolith_e2e"
+MONOLITH_DB_URL="${DB_URL}_test"
+MONOLITH_HOST="127.0.0.1"
+MONOLITH_PORT="9055"
+MONOLITH_ADDRESS="${MONOLITH_HOST}:${MONOLITH_PORT}"
+FRONTEND_PORT="3055"
+READY_URL="http://127.0.0.1:${FRONTEND_PORT}/api/identity/sign-in"
+READY_BODY='{"phoneNumber":"+819000000101","password":"password"}'
+READY_TIMEOUT_SECONDS=180
+READY_INTERVAL_SECONDS=2
+STOP_TIMEOUT_SECONDS=30
+
+usage() {
+  echo "usage: bin/stack up|down" >&2
+  exit 2
+}
+
+BUNDLE_EXEC=(bundle exec)
+if command -v rbenv >/dev/null 2>&1; then
+  BUNDLE_EXEC=(rbenv exec bundle exec)
+fi
+
+hanami_db() {
+  (cd "$MONOLITH_DIR" && HANAMI_ENV=test DATABASE_URL="$DB_URL" "${BUNDLE_EXEC[@]}" hanami db "$@")
+}
+
+port_in_use() {
+  (exec 3<>"/dev/tcp/$1/$2") 2>/dev/null
+}
+
+descendants() {
+  local child
+  for child in $(pgrep -P "$1" || true); do
+    descendants "$child"
+    echo "$child"
+  done
+}
+
+any_alive() {
+  local pid
+  for pid in "$@"; do
+    kill -0 "$pid" 2>/dev/null && return 0
+  done
+  return 1
+}
+
+# gruf rewrites its process title, so processes are found through the PID files instead of by name.
+stop_process() {
+  local pid_file="$STACK_DIR/$1.pid"
+  [[ -f "$pid_file" ]] || return 0
+  local pid
+  pid="$(<"$pid_file")"
+  if kill -0 "$pid" 2>/dev/null; then
+    local pids
+    read -r -a pids <<<"$(descendants "$pid" | tr '\n' ' ') $pid"
+    # SILENT: a process in the tree may exit on its own before it is signalled.
+    kill -TERM "${pids[@]}" 2>/dev/null || true
+    local waited=0
+    while any_alive "${pids[@]}" && ((waited < STOP_TIMEOUT_SECONDS)); do
+      sleep 1
+      waited=$((waited + 1))
+    done
+    # SILENT: the processes that exited after TERM are no longer there to kill.
+    kill -KILL "${pids[@]}" 2>/dev/null || true
+  fi
+  rm -f "$pid_file"
+}
+
+stop_processes() {
+  stop_process frontend
+  stop_process monolith
+}
+
+print_logs() {
+  local name
+  for name in monolith frontend; do
+    if [[ -f "$STACK_DIR/$name.log" ]]; then
+      echo "--- tail of $STACK_DIR/$name.log" >&2
+      tail -n 50 "$STACK_DIR/$name.log" >&2
+    fi
+  done
+}
+
+on_up_failure() {
+  echo "bin/stack up failed; stopping the stack" >&2
+  print_logs
+  down
+}
+
+prepare_database() {
+  hanami_db drop
+  hanami_db create
+  hanami_db migrate --no-dump
+  hanami_db seed
+}
+
+start_monolith() {
+  (
+    cd "$MONOLITH_DIR"
+    set -a
+    # bin/grpc forces HANAMI_ENV=production, so the test settings must come from the environment.
+    # shellcheck source=/dev/null
+    . ./.env
+    # shellcheck source=/dev/null
+    . ./.env.test
+    set +a
+    export DATABASE_URL="$MONOLITH_DB_URL" GRPC_BIND_ADDRESS="$MONOLITH_ADDRESS"
+    exec "${BUNDLE_EXEC[@]}" ruby bin/grpc
+  ) >"$STACK_DIR/monolith.log" 2>&1 &
+  echo $! >"$STACK_DIR/monolith.pid"
+}
+
+start_frontend() {
+  (cd "$FRONTEND_DIR" && env -u NODE_OPTIONS pnpm install --frozen-lockfile && env -u NODE_OPTIONS pnpm build)
+  (
+    cd "$FRONTEND_DIR"
+    export COGNITO_ADAPTER=fake MONOLITH_URL="http://${MONOLITH_ADDRESS}" INSECURE_COOKIES=true
+    exec env -u NODE_OPTIONS pnpm start --port "$FRONTEND_PORT"
+  ) >"$STACK_DIR/frontend.log" 2>&1 &
+  echo $! >"$STACK_DIR/frontend.pid"
+}
+
+wait_until_ready() {
+  local waited=0 status name
+  while ((waited < READY_TIMEOUT_SECONDS)); do
+    status="$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d "$READY_BODY" "$READY_URL" || true)"
+    [[ "$status" == "200" ]] && return 0
+    for name in monolith frontend; do
+      if ! kill -0 "$(<"$STACK_DIR/$name.pid")" 2>/dev/null; then
+        echo "$name exited before the stack became ready" >&2
+        return 1
+      fi
+    done
+    sleep "$READY_INTERVAL_SECONDS"
+    waited=$((waited + READY_INTERVAL_SECONDS))
+  done
+  echo "sign-in did not return 200 within ${READY_TIMEOUT_SECONDS}s (last status: ${status})" >&2
+  return 1
+}
+
+up() {
+  mkdir -p "$STACK_DIR"
+  stop_processes
+  if port_in_use "$MONOLITH_HOST" "$MONOLITH_PORT" || port_in_use 127.0.0.1 "$FRONTEND_PORT"; then
+    echo "port ${MONOLITH_PORT} or ${FRONTEND_PORT} is held by a process this script did not start" >&2
+    exit 1
+  fi
+  trap on_up_failure EXIT
+  prepare_database
+  start_monolith
+  start_frontend
+  wait_until_ready
+  trap - EXIT
+  echo "stack is ready at http://localhost:${FRONTEND_PORT}"
+}
+
+down() {
+  stop_processes
+  hanami_db drop
+}
+
+case "${1:-}" in
+  up) up ;;
+  down) down ;;
+  *) usage ;;
+esac
