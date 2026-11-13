@@ -6,6 +6,15 @@ import { POST_UNAVAILABLE_MESSAGE, openProfile, text } from './support/screen.ts
 import { createAccount } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
+describe('posts.md / 閲覧できる範囲', () => {
+  test('a visitor who is not signed in is sent to the sign-in page instead of a profile', async (fx) => {
+    await fx.app.open(`/u/${SEED.accounts.yuna.username}`);
+    await expect(fx.browser).toHaveURL('/login');
+    await expect(fx.screen.getByLabel('電話番号')).toBeVisible();
+    await expect(text(fx, SEED.posts.yunaPublic)).toHaveCount(0);
+  });
+});
+
 describe('posts.md / 引用', () => {
   test('a viewer who blocks the original author sees the quote frame as unavailable', { timeout: RECORDING_TIMEOUT_MS }, async (fx) => {
     const viewer = await createAccount(fx, 'guest');
