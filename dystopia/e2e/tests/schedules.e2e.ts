@@ -7,7 +7,6 @@ import type { SessionFixtures } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 const LOCKED_NOTICE = 'フォローすると見られます';
-const NO_SCHEDULES = '予定はありません';
 
 async function openScheduleTab(fx: SessionFixtures, username: string): Promise<void> {
   await fx.app.open(`/u/${username}?tab=schedule`);
@@ -18,32 +17,10 @@ async function openComposeMenu(fx: SessionFixtures): Promise<void> {
 }
 
 describe('schedules.md / 予定の見え方', () => {
-  test('a locked cast shows its schedules to an approved follower', async (fx) => {
-    await signIn(fx, SEED.accounts.taro.phone);
-    await openScheduleTab(fx, SEED.accounts.mio.username);
-    await expect(text(fx, SEED.schedules.mio)).toBeVisible();
-  });
-
-  test('a locked cast tells a viewer without a follow and a pending follower to follow instead of listing schedules', async (fx) => {
+  test('a non-follower sees the follow notice in place of the schedules of a locked cast', async (fx) => {
     await signIn(fx, SEED.accounts.jiro.phone);
     await openScheduleTab(fx, SEED.accounts.mio.username);
     await expectHiddenAfter(text(fx, LOCKED_NOTICE), text(fx, SEED.schedules.mio));
-
-    await switchUser(fx, SEED.accounts.saburo.phone);
-    await openScheduleTab(fx, SEED.accounts.mio.username);
-    await expectHiddenAfter(text(fx, LOCKED_NOTICE), text(fx, SEED.schedules.mio));
-  });
-
-  test('a block leaves the schedule tab empty without the follow notice', async (fx) => {
-    await signIn(fx, SEED.accounts.jiro.phone);
-    await openScheduleTab(fx, SEED.accounts.rin.username);
-    await expect(text(fx, SEED.schedules.rin)).toBeVisible();
-
-    await switchUser(fx, SEED.accounts.taro.phone);
-    await openScheduleTab(fx, SEED.accounts.rin.username);
-    await expect(text(fx, NO_SCHEDULES)).toBeVisible();
-    await expect(text(fx, SEED.schedules.rin)).toHaveCount(0);
-    await expect(text(fx, LOCKED_NOTICE)).toHaveCount(0);
   });
 });
 

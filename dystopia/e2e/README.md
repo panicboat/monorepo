@@ -1,7 +1,16 @@
 # dystopia e2e
 
-dystopia の monolith と frontend をつないだ状態で、ブラウザから仕様の線引きを確かめるテスト。
+dystopia の monolith と frontend をつないだ状態で、サーバーの判断がブラウザの画面まで届くかを確かめるテスト。
 テストは e2e-inc/e2e（`e2e` と `@e2e-dev/web`）で書く。
+
+## Scope
+
+- e2e は、サーバーの判断が本物のログインと通信を通って画面まで届くかと、外部のサービス（Cognito・S3）との接続だけを確かめる。
+  - monolith の rspec と frontend の vitest は相手の側を偽物に差し替えて確かめるので、つなぎ目のずれを見つけられないため。
+- 画面が受け取る判断の種類（拒否、鍵で隠したこと、名前を伏せたこと、送れないこと、見つからないこと）ごとに 1 本にする。
+  - 同じ種類の判断は、同じつなぎ目を通るため。
+- サーバーが一覧から行を除くだけの線引きは、e2e では確かめず、monolith の rspec で確かめる。
+  - e2e は 1 本ごとに時間がかかり、記録を作り直すたびに Bedrock の費用がかかるため。
 
 ## Prerequisites
 
@@ -68,7 +77,7 @@ CI の記録は GitHub Actions の cache に置かれる。
 
 ## Writing Tests
 
-- `describe` の名前は `<仕様書のファイル名> / <節の見出し>`（例: `posts.md / 閲覧できる範囲`）にする。
+- `describe` の名前は `<仕様書のファイル名> / <節の見出し>`（例: `profiles.md / 他人から見えるか`）にする。
   - 仕様を変えたときに、直すテストを見出しから探せるようにするため。
 - 「見えない」ことは `expectHiddenAfter` で、見えるはずのものが見えたあとに確かめる。
   - 読み込み前や表示の失敗で、ないことの確認が誤って通るのを防ぐため。
@@ -97,7 +106,7 @@ CI の記録は GitHub Actions の cache に置かれる。
 - 実行のたびに `bin/stack install-emulator` で aws-emulator のパッケージを入れる。
   - runner は Linux で、`bin/stack up` が `PATH` 上の aws-emulator を使うため。
 - 実行のたびに `bin/stack up` で DB を作り直し、seed を入れ直す。
-  - seed の投稿には seed 後 6 時間以内に期限が切れるものがあり、古い DB では閲覧の範囲のテストが崩れるため。
+  - テストが作るアカウントと投稿を、前の実行から持ち越さないため。
 - 定期実行が落ちたら、run の artifact `dystopia-e2e` を見る。
   - `report.json` には、テストごとの結果と act ごとの記録の扱いが入っている。
   - `results/*/trace.md` には、落ちたテストの手順ごとの経過・記録の扱い・失敗時の画面が入っている。
