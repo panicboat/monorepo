@@ -44,6 +44,15 @@ RSpec.describe "Follow and block requests the API must not carry out", type: :da
     expect([status_of(requester, owner), status_of(other, owner)]).to eq([nil, nil])
   end
 
+  it "approves only the named request and leaves the other requests pending" do
+    other = create_account_with_profile(username: "guard_other")
+    [requester, other].each { |id| follow_repo.follow(follower_profile_id: id, followee_profile_id: owner, status: "pending") }
+
+    uc("follows.approve_follow_request").call(target_profile_id: owner, requester_profile_id: requester)
+
+    expect([status_of(requester, owner), status_of(other, owner)]).to eq(%w[approved pending])
+  end
+
   it "does not approve a request left pending alongside a block in either direction" do
     blocking = create_account_with_profile(username: "guard_blocking")
     blocked = create_account_with_profile(username: "guard_blocked")

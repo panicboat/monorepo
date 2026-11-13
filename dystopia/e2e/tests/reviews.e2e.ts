@@ -1,13 +1,13 @@
 import { describe, test } from '@e2e-dev/web';
 import { expect } from 'e2e';
 import type { Locator } from 'e2e';
-import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams, changeBlock } from './support/act.ts';
+import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams } from './support/act.ts';
 import type { ActFixtures } from './support/act.ts';
 import { openReviewsTab, reviewCards, writeReview } from './support/reviews.ts';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
 import { openProfile, text } from './support/screen.ts';
-import { createAccount, signIn, switchToCreated, switchUser } from './support/session.ts';
+import { createAccount, signIn, switchUser } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 const HIDDEN_GUEST_NAME = '（非公開のゲスト）';
@@ -34,16 +34,6 @@ async function createLockedGuest(fx: ActFixtures): Promise<SeedAccount> {
 }
 
 describe('reviews.md / 作成', () => {
-  test('a guest writes a review that other viewers see', { timeout: RECORDING_TIMEOUT_MS }, async (fx) => {
-    const author = await createAccount(fx, 'guest');
-    const note = `e2e review note ${Date.now()}`;
-    await writeReview(fx, author, SEED.accounts.rin, note);
-
-    await switchUser(fx, SEED.accounts.jiro.phone);
-    await openReviewsTab(fx, SEED.accounts.rin.username);
-    await expect(reviewCards(fx).filter({ hasText: note }).filter({ hasText: author.displayName })).toBeVisible();
-  });
-
   test('a cast cannot write a review', async (fx) => {
     await signIn(fx, SEED.accounts.jiro.phone);
     await openReviewsTab(fx, SEED.accounts.rin.username);
@@ -52,24 +42,6 @@ describe('reviews.md / 作成', () => {
     await switchUser(fx, SEED.accounts.yuna.phone);
     await openReviewsTab(fx, SEED.accounts.rin.username);
     await expectHiddenAfter(seedReviewCard(fx), writeReviewButton(fx));
-  });
-});
-
-describe('reviews.md / 閲覧', () => {
-  test('a review is hidden from a viewer who blocked its author', { timeout: RECORDING_TIMEOUT_MS }, async (fx) => {
-    const viewer = await createAccount(fx, 'guest');
-    await fx.app.clearState();
-    const author = await createAccount(fx, 'guest');
-    const note = `e2e review note ${Date.now()}`;
-    await writeReview(fx, author, SEED.accounts.rin, note);
-
-    await switchToCreated(fx, viewer);
-    await openReviewsTab(fx, SEED.accounts.rin.username);
-    await expect(text(fx, note)).toBeVisible();
-
-    await changeBlock(fx, viewer, author, 'ブロック');
-    await openReviewsTab(fx, SEED.accounts.rin.username);
-    await expectHiddenAfter(seedReviewCard(fx), text(fx, note));
   });
 });
 

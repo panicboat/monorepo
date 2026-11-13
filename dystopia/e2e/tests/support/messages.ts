@@ -12,7 +12,6 @@ export const FOLLOW_REQUIRED_NOTICE = '相手をフォローするとメッセ�
 const THREAD_HREF_PREFIX = '/messages/';
 
 const SEND_FROM_PROFILE = `${SIGNED_IN_AS}open 検索, choose the ユーザー tab, search for {targetHandle}, open the profile of {targetName} (@{targetHandle}) from the result row, tap メッセージ, write {body} into メッセージ本文, tap 送信, and check that {body} is listed`;
-const REPLY_IN_THREAD = `${SIGNED_IN_AS}open メッセージ, open the thread with {targetName}, write {body} into メッセージ本文, tap 送信, and check that {body} is listed`;
 
 export function messageInput(fx: SessionFixtures): Locator {
   return fx.screen.getByLabel('メッセージ本文');
@@ -20,20 +19,6 @@ export function messageInput(fx: SessionFixtures): Locator {
 
 export async function sendFromProfile(fx: ActFixtures, sender: SeedAccount, recipient: SeedAccount, body: string): Promise<void> {
   await actFromHome(fx, SEND_FROM_PROFILE, { params: { ...actorParams(sender), ...targetParams(recipient), body: unique(body) } });
-  await expect(text(fx, body)).toBeVisible();
-}
-
-// The thread link is named by the last message, so it is a param too or the recording misses on every run.
-export async function replyInThread(
-  fx: ActFixtures,
-  sender: SeedAccount,
-  counterpart: SeedAccount,
-  body: string,
-  lastMessage: string,
-): Promise<void> {
-  await actFromHome(fx, REPLY_IN_THREAD, {
-    params: { ...actorParams(sender), ...targetParams(counterpart), body: unique(body), lastMessage: unique(lastMessage) },
-  });
   await expect(text(fx, body)).toBeVisible();
 }
 
