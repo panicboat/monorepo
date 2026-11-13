@@ -10,8 +10,9 @@ RSpec.describe "bin/grpc process environment" do
 
   def gruf_development?(inherited)
     script = "#{preamble}\nrequire 'bundler/setup'\nrequire 'gruf'\nprint Gruf.development?"
-    output, status = Open3.capture2e(inherited, RbConfig.ruby, "-e", script, chdir: root)
-    raise "the probe process failed: #{output}" unless status.success?
+    # Bundler can warn on stderr about constants the bundled RubyGems already defines, so only stdout carries the answer.
+    output, errors, status = Open3.capture3(inherited, RbConfig.ruby, "-e", script, chdir: root)
+    raise "the probe process failed: #{errors}" unless status.success?
 
     output
   end

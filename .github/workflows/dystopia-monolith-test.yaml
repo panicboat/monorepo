@@ -1,0 +1,65 @@
+name: 'Dystopia Monolith Test'
+
+on:
+  pull_request:
+    paths:
+      - 'dystopia/monolith/**'
+      - '.github/workflows/dystopia-monolith-test.yaml'
+
+permissions: {}
+
+concurrency:
+  group: dystopia-monolith-test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  rspec:
+    name: 'RSpec'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: dystopia/monolith
+    env:
+      HANAMI_ENV: test
+    services:
+      postgres:
+        image: postgres:18.6-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
+        with:
+          ruby-version: 4.0.9
+          working-directory: dystopia/monolith
+          bundler-cache: true
+
+      # The preinstalled psql 16 fails on \list against PostgreSQL 18, which hanami db uses to check that a database exists.
+      - name: Install PostgreSQL 18 client
+        run: |
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-18
+          # pg_wrapper would pick the preinstalled 16 cluster's version, so the 18 binaries go first on PATH.
+          echo /usr/lib/postgresql/18/bin >> "$GITHUB_PATH"
+
+      - name: Prepare database
+        run: |
+          bundle exec hanami db create
+          bundle exec hanami db migrate --no-dump
+
+      - name: Run rspec
+        run: bundle exec rspec
