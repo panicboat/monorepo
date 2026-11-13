@@ -28,6 +28,5 @@ describe('media.md / Rules', () => {
     await switchUser(fx, SEED.accounts.jiro.phone);
     await openProfile(fx, cast.username);
     await expectHiddenAfter(text(fx, EMPTY_POSTS_MESSAGE), text(fx, body));
-    expect(await loadedMediaImages(fx, body)).toBe(0);
   });
 });

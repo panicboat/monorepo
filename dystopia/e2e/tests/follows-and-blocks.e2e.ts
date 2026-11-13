@@ -7,7 +7,7 @@ import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
 import { EMPTY_POSTS_MESSAGE, handle, openProfile, text } from './support/screen.ts';
 import { createAccount, switchToCreated } from './support/session.ts';
-import { EMPTY_REQUESTS_MESSAGE, decideRequest, openRequests, requireApproval } from './support/social.ts';
+import { EMPTY_REQUESTS_MESSAGE, decideRequest, openBlockedList, openRequests, requireApproval } from './support/social.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 // Anchoring on a display name would pass before a list loads, so each list waits for its settled empty message.
@@ -19,11 +19,6 @@ async function createApprovalCast(fx: BrowserActFixtures, body: string): Promise
   await requireApproval(fx, cast);
   await post(fx, cast, POST_FOR_FOLLOWERS, body);
   return cast;
-}
-
-async function openBlockedList(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
-  await fx.app.open(`/u/${owner.username}/following`);
-  await fx.screen.getByRole('tab', 'ブロック中').click();
 }
 
 async function openFollowing(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {

@@ -1,6 +1,6 @@
 import { expect, unique } from 'e2e';
 import { SIGNED_IN_AS, actFromHome, actorParams, targetParams } from './act.ts';
-import type { ActFixtures } from './act.ts';
+import type { ActFixtures, BrowserActFixtures } from './act.ts';
 import type { SeedAccount } from './seed.ts';
 import { openProfile } from './screen.ts';
 import type { SessionFixtures } from './session.ts';
@@ -43,4 +43,9 @@ export async function decideRequest(
 
 export async function openRequests(fx: SessionFixtures, owner: SeedAccount): Promise<void> {
   await fx.app.open(`/u/${owner.username}/requests`);
+}
+
+export async function openBlockedList(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
+  await fx.app.open(`/u/${owner.username}/following`);
+  await fx.screen.getByRole('tab', 'ブロック中').click();
 }

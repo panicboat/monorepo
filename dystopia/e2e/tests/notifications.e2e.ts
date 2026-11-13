@@ -3,7 +3,9 @@ import { expect } from 'e2e';
 import { RECORDING_TIMEOUT_MS, changeBlock } from './support/act.ts';
 import { MENTIONED, commentWithMention, notificationRows, openNotifications } from './support/notifications.ts';
 import { POST_FOR_EVERYONE, POST_FOR_FOLLOWERS, post } from './support/posts.ts';
+import { handle } from './support/screen.ts';
 import { createAccount, switchToCreated } from './support/session.ts';
+import { openBlockedList } from './support/social.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 describe('notifications.md / 通知の種類', () => {
@@ -21,9 +23,13 @@ describe('notifications.md / 通知の種類', () => {
 
     await switchToCreated(fx, receiver);
     await changeBlock(fx, receiver, blocked, 'ブロック');
+    await openBlockedList(fx, receiver);
+    await expect(handle(fx, blocked)).toBeVisible();
 
     await switchToCreated(fx, blocker);
     await changeBlock(fx, blocker, receiver, 'ブロック');
+    await openBlockedList(fx, blocker);
+    await expect(handle(fx, receiver)).toBeVisible();
     // Commenting on a third party's post leaves the receiver's block as the only rule that can stop the notification.
     await commentWithMention(fx, blocker, author, authorBody, `e2e mention from blocker ${stamp} @${receiver.username}`);
 
@@ -32,7 +38,7 @@ describe('notifications.md / 通知の種類', () => {
 
     await switchToCreated(fx, receiver);
     await openNotifications(fx);
-    // The blocked actor fires last, so an aggregated row would show it as the latest actor if the block did not stop it.
+    // Mentions in comments target the comment, so each actor gets its own row.
     await expectHiddenAfter(notificationRows(fx, blocker, MENTIONED), notificationRows(fx, blocked, MENTIONED));
   });
 
