@@ -147,6 +147,16 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     expect(found).to all(be_a(::Profile::V1::ProfileSummary))
   end
 
+  it "finds profiles blocked in either direction" do
+    block_repo.block(blocker_profile_id: viewer, blocked_profile_id: public_cast)
+    block_repo.block(blocker_profile_id: locked_cast, blocked_profile_id: viewer)
+    act_as(viewer)
+
+    found = rpc(:search_users, Discovery::V1::SearchUsersRequest.new(query: "discovery_p")).profiles
+
+    expect(found.map(&:username)).to contain_exactly("discovery_public", "discovery_private")
+  end
+
   it "returns the avatar url of a found profile that has an icon" do
     media_id = SecureRandom.uuid_v7
     db = Hanami.app["db.gateway"].connection

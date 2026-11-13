@@ -142,7 +142,7 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
   end
 
   describe "block RPCs" do
-    it "blocks a profile, drops follows in both directions, and reports the block only to the blocker" do
+    it "blocks a profile, drops follows in both directions, reports the block only to the blocker, and leaves the follows dropped after unblocking" do
       follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_cast, status: "approved")
       follow_repo.follow(follower_profile_id: public_cast, followee_profile_id: viewer, status: "approved")
       act_as(viewer)
@@ -166,6 +166,7 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       act_as(viewer)
       rpc(Social::Grpc::BlockHandler, :unblock, Social::V1::UnblockRequest.new(target_profile_id: public_cast))
       expect(db[:social__blocks].count).to eq(0)
+      expect(db[:social__follows].count).to eq(0)
     end
   end
 
