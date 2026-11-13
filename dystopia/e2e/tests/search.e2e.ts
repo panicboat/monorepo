@@ -15,7 +15,7 @@ function businessDate(offsetDays: number): string {
   return new Date(shifted).toISOString().slice(0, 10);
 }
 
-// rin has seed schedules on business days 0, 1, 3, 4 and 5, and mio on 0, 2, 3 and 5, so day 3 has both and stays inside the search range at any hour.
+// Day 3 holds seed schedules of both rin and mio and stays inside the search range at any hour.
 const SCHEDULE_DAY = businessDate(3);
 
 // An empty prefecture is 全国; without it the viewer's own prefecture would hide the other casts by area.
