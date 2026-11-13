@@ -19,8 +19,29 @@ READY_TIMEOUT_SECONDS=180
 READY_INTERVAL_SECONDS=2
 STOP_TIMEOUT_SECONDS=30
 
+# Pinned rather than latest so that a new emulator release cannot fail a run whose code did not change.
+AWS_EMULATOR_VERSION="1.0.338"
+# The emulator always listens on 9297 because no port flag is passed to it.
+EMULATOR_PORT="9297"
+RELAY_PORT="9298"
+MEDIA_BUCKET="dystopia-media-e2e"
+MEDIA_REGION="us-east-1"
+EMULATOR_HOME="$STACK_DIR/emulator-home"
+EMULATOR_CONTAINER="dystopia-e2e-aws-emulator"
+EMULATOR_IMAGE="dystopia-e2e-aws-emulator:${AWS_EMULATOR_VERSION}"
+EMULATOR_PACKAGE_URL="https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS"
+EMULATOR_DIR="$EMULATOR_HOME/.aws/emulator/$EMULATOR_PORT"
+EMULATOR_CA="$EMULATOR_DIR/ca.pem"
+EMULATOR_CREDENTIALS="$EMULATOR_DIR/emulator_credentials"
+EMULATOR_TIMEOUT_SECONDS=60
+RELAY_TIMEOUT_SECONDS=10
+EMULATOR_MODE="docker"
+if [[ "$(uname -s)" == "Linux" ]]; then
+  EMULATOR_MODE="native"
+fi
+
 usage() {
-  echo "usage: bin/stack up|down" >&2
+  echo "usage: bin/stack up|down|install-emulator" >&2
   exit 2
 }
 
@@ -75,14 +96,27 @@ stop_process() {
   rm -f "$pid_file"
 }
 
+stop_emulator() {
+  if [[ "$EMULATOR_MODE" == "native" ]]; then
+    stop_process aws-emulator
+  else
+    # SILENT: the container is absent when it never started, and docker itself may be stopped.
+    docker rm -f "$EMULATOR_CONTAINER" >/dev/null 2>&1 || true
+  fi
+  # docker rm -f kills the emulator before it removes its keys, and the next run would read the stale ones.
+  rm -rf "$EMULATOR_HOME"
+}
+
 stop_processes() {
   stop_process frontend
   stop_process monolith
+  stop_process s3-relay
+  stop_emulator
 }
 
 print_logs() {
   local name
-  for name in monolith frontend; do
+  for name in aws-emulator s3-relay monolith frontend; do
     if [[ -f "$STACK_DIR/$name.log" ]]; then
       echo "--- tail of $STACK_DIR/$name.log" >&2
       tail -n 50 "$STACK_DIR/$name.log" >&2
@@ -103,6 +137,121 @@ prepare_database() {
   hanami_db seed
 }
 
+# The SDK takes endpoints and keys from many AWS_ and AMAZON_ variables, so all of them are dropped before the stack's own are set.
+run_with_s3_env() {
+  local name unset_args=()
+  for name in $(compgen -e); do
+    if [[ "$name" == AWS_* || "$name" == AMAZON_* ]]; then
+      unset_args+=(-u "$name")
+    fi
+  done
+  # The empty-array form keeps bash 3.2 (macOS) from failing under set -u when nothing is set.
+  env ${unset_args[@]+"${unset_args[@]}"} \
+    AWS_ENDPOINT_URL="http://127.0.0.1:${RELAY_PORT}" \
+    AWS_SHARED_CREDENTIALS_FILE="$EMULATOR_CREDENTIALS" \
+    AWS_CONFIG_FILE=/dev/null \
+    AWS_REGION="$MEDIA_REGION" \
+    MEDIA_BUCKET_NAME="$MEDIA_BUCKET" \
+    MEDIA_BUCKET_REGION="$MEDIA_REGION" \
+    "$@"
+}
+
+emulator_alive() {
+  if [[ "$EMULATOR_MODE" == "native" ]]; then
+    kill -0 "$(<"$STACK_DIR/aws-emulator.pid")" 2>/dev/null
+  else
+    # SILENT: a container that does not exist is not running.
+    [[ "$(docker inspect -f '{{.State.Running}}' "$EMULATOR_CONTAINER" 2>/dev/null || true)" == "true" ]]
+  fi
+}
+
+emulator_healthy() {
+  local status
+  # SILENT: a refused connection or a missing ca.pem means the emulator is not up yet, and the caller asks again.
+  status="$(curl -s --max-time 5 --cacert "$EMULATOR_CA" -o /dev/null -w '%{http_code}' "https://127.0.0.1:${EMULATOR_PORT}/__admin/health" || true)"
+  [[ "$status" == "200" ]]
+}
+
+relay_alive() {
+  kill -0 "$(<"$STACK_DIR/s3-relay.pid")" 2>/dev/null
+}
+
+relay_listening() {
+  port_in_use 127.0.0.1 "$RELAY_PORT"
+}
+
+wait_for() {
+  local name="$1" timeout="$2" is_ready="$3" is_alive="$4" waited=0
+  while ((waited < timeout)); do
+    "$is_ready" && return 0
+    if ! "$is_alive"; then
+      echo "$name exited before it became ready" >&2
+      return 1
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  echo "$name was not ready within ${timeout}s" >&2
+  return 1
+}
+
+check_emulator_prerequisites() {
+  if [[ "$EMULATOR_MODE" == "native" ]]; then
+    if ! command -v aws-emulator >/dev/null 2>&1; then
+      echo "aws-emulator is not on PATH; run bin/stack install-emulator first" >&2
+      exit 1
+    fi
+  elif ! docker info >/dev/null 2>&1; then
+    echo "docker is not running; outside Linux bin/stack runs aws-emulator in a container, so start Docker and retry" >&2
+    exit 1
+  fi
+}
+
+install_emulator() {
+  if [[ "$EMULATOR_MODE" != "native" ]]; then
+    echo "install-emulator is for Linux; elsewhere bin/stack up builds the image from emulator/Dockerfile" >&2
+    exit 1
+  fi
+  local arch file
+  arch="$(dpkg --print-architecture)"
+  file="aws-emulator_${AWS_EMULATOR_VERSION}-1_${arch}.deb"
+  (
+    tmp="$(mktemp -d)"
+    trap 'rm -rf "$tmp"' EXIT
+    cd "$tmp"
+    curl -fsSL -o "$file" "${EMULATOR_PACKAGE_URL}/${file}"
+    sudo apt-get install -y "./$file"
+  )
+}
+
+start_emulator() {
+  mkdir -p "$EMULATOR_HOME"
+  if [[ "$EMULATOR_MODE" == "native" ]]; then
+    (
+      export HOME="$EMULATOR_HOME"
+      exec aws-emulator -b 127.0.0.1 --telemetry off
+    ) >"$STACK_DIR/aws-emulator.log" 2>&1 &
+    echo $! >"$STACK_DIR/aws-emulator.pid"
+  else
+    docker build -q --build-arg "AWS_EMULATOR_VERSION=${AWS_EMULATOR_VERSION}" -t "$EMULATOR_IMAGE" "$E2E_DIR/emulator" >/dev/null
+    docker run -d --name "$EMULATOR_CONTAINER" -p "127.0.0.1:${EMULATOR_PORT}:${EMULATOR_PORT}" -v "$EMULATOR_HOME:/home/emulator" "$EMULATOR_IMAGE" >/dev/null
+    # The follower ends when the container is removed, so it needs no PID file.
+    docker logs -f "$EMULATOR_CONTAINER" >"$STACK_DIR/aws-emulator.log" 2>&1 &
+  fi
+}
+
+start_s3_relay() {
+  (
+    export RELAY_PORT EMULATOR_PORT EMULATOR_CA ALLOWED_ORIGIN="http://localhost:${FRONTEND_PORT}"
+    exec env -u NODE_OPTIONS node "$E2E_DIR/bin/s3-relay.mjs"
+  ) >"$STACK_DIR/s3-relay.log" 2>&1 &
+  echo $! >"$STACK_DIR/s3-relay.pid"
+}
+
+create_media_bucket() {
+  (cd "$MONOLITH_DIR" && run_with_s3_env "${BUNDLE_EXEC[@]}" ruby -e 'require "aws-sdk-s3"; Aws::S3::Client.new.create_bucket(bucket: ENV.fetch("MEDIA_BUCKET_NAME"))')
+}
+
 start_monolith() {
   (
     cd "$MONOLITH_DIR"
@@ -114,7 +263,7 @@ start_monolith() {
     . ./.env.test
     set +a
     export DATABASE_URL="$MONOLITH_DB_URL" GRPC_BIND_ADDRESS="$MONOLITH_ADDRESS"
-    exec "${BUNDLE_EXEC[@]}" ruby bin/grpc
+    run_with_s3_env "${BUNDLE_EXEC[@]}" ruby bin/grpc
   ) >"$STACK_DIR/monolith.log" 2>&1 &
   echo $! >"$STACK_DIR/monolith.pid"
 }
@@ -135,12 +284,16 @@ wait_until_ready() {
     # SILENT: a refused or timed-out request means the stack is not ready yet, and the loop asks again.
     status="$(curl -s --max-time 10 -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d "$READY_BODY" "$READY_URL" || true)"
     [[ "$status" == "200" ]] && return 0
-    for name in monolith frontend; do
+    for name in monolith frontend s3-relay; do
       if ! kill -0 "$(<"$STACK_DIR/$name.pid")" 2>/dev/null; then
         echo "$name exited before the stack became ready" >&2
         return 1
       fi
     done
+    if ! emulator_alive; then
+      echo "aws-emulator exited before the stack became ready" >&2
+      return 1
+    fi
     sleep "$READY_INTERVAL_SECONDS"
     waited=$((waited + READY_INTERVAL_SECONDS))
   done
@@ -151,11 +304,20 @@ wait_until_ready() {
 up() {
   mkdir -p "$STACK_DIR"
   stop_processes
-  if port_in_use "$MONOLITH_HOST" "$MONOLITH_PORT" || port_in_use 127.0.0.1 "$FRONTEND_PORT"; then
-    echo "port ${MONOLITH_PORT} or ${FRONTEND_PORT} is held by a process this script did not start" >&2
-    exit 1
-  fi
+  local port
+  for port in "$MONOLITH_PORT" "$FRONTEND_PORT" "$EMULATOR_PORT" "$RELAY_PORT"; do
+    if port_in_use 127.0.0.1 "$port"; then
+      echo "port ${port} is held by a process this script did not start" >&2
+      exit 1
+    fi
+  done
+  check_emulator_prerequisites
   trap on_up_failure EXIT
+  start_emulator
+  wait_for aws-emulator "$EMULATOR_TIMEOUT_SECONDS" emulator_healthy emulator_alive
+  start_s3_relay
+  wait_for s3-relay "$RELAY_TIMEOUT_SECONDS" relay_listening relay_alive
+  create_media_bucket
   prepare_database
   start_monolith
   start_frontend
@@ -172,5 +334,6 @@ down() {
 case "${1:-}" in
   up) up ;;
   down) down ;;
+  install-emulator) install_emulator ;;
   *) usage ;;
 esac

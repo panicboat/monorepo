@@ -23,4 +23,9 @@ export const SEED = {
     rinPublic: '[Rin/Public/Public] カフェでまったり',
     rinFollowers: '[Rin/Public/Private] フォロワーさん限定のオフショット',
   },
-} as const satisfies { accounts: Record<string, SeedAccount>; posts: Record<string, string> };
+  // The profile schedule tab spaces the times around U+301C, but the search result card does not, so these only match the tab.
+  schedules: {
+    mio: '20:00 〜 04:00',
+    rin: '15:00 〜 23:00',
+  },
+} as const satisfies { accounts: Record<string, SeedAccount>; posts: Record<string, string>; schedules: Record<string, string> };

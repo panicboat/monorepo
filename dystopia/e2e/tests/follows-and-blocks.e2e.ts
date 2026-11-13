@@ -1,67 +1,24 @@
 import { describe, test } from '@e2e-dev/web';
-import { expect, unique } from 'e2e';
-import type { Locator } from 'e2e';
-import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams, changeBlock, follow, targetParams } from './support/act.ts';
+import { expect } from 'e2e';
+import { RECORDING_TIMEOUT_MS, changeBlock, follow } from './support/act.ts';
 import type { BrowserActFixtures } from './support/act.ts';
 import { POST_FOR_EVERYONE, POST_FOR_FOLLOWERS, post } from './support/posts.ts';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
-import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
+import { EMPTY_POSTS_MESSAGE, handle, openProfile, text } from './support/screen.ts';
 import { createAccount, switchToCreated } from './support/session.ts';
+import { EMPTY_REQUESTS_MESSAGE, decideRequest, openBlockedList, openRequests, requireApproval } from './support/social.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 // Anchoring on a display name would pass before a list loads, so each list waits for its settled empty message.
 const EMPTY_FOLLOWING_MESSAGE = 'フォロー中のアカウントはまだいません。';
-const EMPTY_REQUESTS_MESSAGE = '申請はありません。';
 const EMPTY_BLOCKS_MESSAGE = 'ブロック中のアカウントはありません。';
-
-function bystanderParams(account: SeedAccount) {
-  return { otherName: unique(account.displayName), otherHandle: unique(account.username) };
-}
-
-function handle(fx: BrowserActFixtures, account: SeedAccount): Locator {
-  return text(fx, `@${account.username}`);
-}
 
 async function createApprovalCast(fx: BrowserActFixtures, body: string): Promise<SeedAccount> {
   const cast = await createAccount(fx, 'cast');
-  await actFromHome(
-    fx,
-    `${SIGNED_IN_AS}open the menu, choose プロフィール, tap プロフィールを編集, turn on フォローを承認制にする, tap 保存, then reopen プロフィールを編集 and check that フォローを承認制にする is on`,
-    { params: actorParams(cast) },
-  );
-  await openProfile(fx, cast.username);
-  await fx.screen.getByRole('button', 'プロフィールを編集').click();
-  await expect(fx.screen.getByRole('switch', 'フォローを承認制にする')).toBeChecked();
+  await requireApproval(fx, cast);
   await post(fx, cast, POST_FOR_FOLLOWERS, body);
   return cast;
-}
-
-async function decideRequest(
-  fx: BrowserActFixtures,
-  decision: '承認' | '拒否',
-  owner: SeedAccount,
-  requester: SeedAccount,
-  bystander?: SeedAccount,
-): Promise<void> {
-  const decide = `open the menu, choose プロフィール, tap the フォロー中 count, open the 申請 tab, and tap ${decision} on the row for {targetName} (@{targetHandle})`;
-  const params = { ...actorParams(owner), ...targetParams(requester) };
-  if (bystander === undefined) {
-    await actFromHome(fx, `${SIGNED_IN_AS}${decide}`, { params });
-    return;
-  }
-  await actFromHome(fx, `${SIGNED_IN_AS}${decide}, and leave the row for {otherName} (@{otherHandle}) as it is`, {
-    params: { ...params, ...bystanderParams(bystander) },
-  });
-}
-
-async function openRequests(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
-  await fx.app.open(`/u/${owner.username}/requests`);
-}
-
-async function openBlockedList(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
-  await fx.app.open(`/u/${owner.username}/following`);
-  await fx.screen.getByRole('tab', 'ブロック中').click();
 }
 
 async function openFollowing(fx: BrowserActFixtures, owner: SeedAccount): Promise<void> {
