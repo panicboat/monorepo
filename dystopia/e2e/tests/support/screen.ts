@@ -3,6 +3,7 @@ import type { SessionFixtures } from './session.ts';
 
 // Anchoring on the display name would pass before the post list loads, so wait for the settled empty list.
 export const EMPTY_POSTS_MESSAGE = 'まだ投稿はありません';
+export const POST_UNAVAILABLE_MESSAGE = 'この投稿は表示できません';
 
 export function text(fx: SessionFixtures, value: string): Locator {
   return fx.screen.getByText(value, { exact: false, visible: true }).first();

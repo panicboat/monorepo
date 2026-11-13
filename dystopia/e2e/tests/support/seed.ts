@@ -16,6 +16,7 @@ export const SEED = {
   },
   posts: {
     yunaPublic: '[Yuna/Public/Public] 新しいドレスを買いました',
+    rinQuote: '@yuna ちゃんの新衣装かわいい！私も今度見に行こうかな👗',
   },
   schedules: {
     mio: '20:00 〜 04:00',
