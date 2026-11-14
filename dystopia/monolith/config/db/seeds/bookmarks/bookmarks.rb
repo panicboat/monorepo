@@ -14,7 +14,9 @@ bookmarks = [
 
 count = 0
 bookmarks.each do |profile_id, author_profile_id, limit|
-  db[:post__posts].where(author_profile_id: author_profile_id, visibility: "public").order(Sequel.desc(:published_at)).limit(limit).each do |post|
+  now = Time.now
+  live = db[:post__posts].where(Sequel[:published_at] <= now).where(Sequel.|({ expires_at: nil }, Sequel[:expires_at] > now))
+  live.where(author_profile_id: author_profile_id, visibility: "public").order(Sequel.desc(:published_at)).limit(limit).each do |post|
     next if db[:bookmarks__bookmarks].where(profile_id: profile_id, post_id: post[:id]).first
 
     db[:bookmarks__bookmarks].insert(id: SecureRandom.uuid_v7, profile_id: profile_id, post_id: post[:id], created_at: Time.now)

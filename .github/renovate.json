@@ -17,19 +17,6 @@
       "packageNameTemplate": "golang",
       "datasourceTemplate": "docker",
       "versioningTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "description": "aws-emulator version pinned in the e2e stack script, from the aws/aws-emulator GitHub releases",
-      "managerFilePatterns": [
-        "/(^|/)dystopia/e2e/bin/stack$/"
-      ],
-      "matchStrings": [
-        "AWS_EMULATOR_VERSION=\"(?<currentValue>[^\"]+)\""
-      ],
-      "depNameTemplate": "aws/aws-emulator",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
   "packageRules": [
@@ -55,16 +42,6 @@
         "hashicorp/terraform"
       ],
       "overridePackageName": "opentofu/opentofu"
-    },
-    {
-      "description": "e2e does not run on pull requests, so automerging an emulator update would ship it untested, and frequent releases are batched into one weekly update",
-      "matchDepNames": [
-        "aws/aws-emulator"
-      ],
-      "automerge": false,
-      "schedule": [
-        "before 6am on monday"
-      ]
     }
   ]
 }

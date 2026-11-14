@@ -10,6 +10,8 @@ base_posts = {
     { content: "[Yuna/Public/Public] 今日も元気にお仕事中！✨ 皆さんのお越しをお待ちしています。", visibility: "public", hashtags: ["渋谷"], pinned: true },
     { content: "[Yuna/Public/Public] 新しいドレスを買いました👗 次回お会いできるのを楽しみにしています！", visibility: "public", hashtags: ["新衣装", "ファッション"] },
     { content: "[Yuna/Public/Private] フォロワー限定！来週のイベント情報お伝えします🎉", visibility: "private", hashtags: ["フォロワー限定", "イベント"] },
+    { content: "[Yuna/Public/Public/Scheduled] 来週のイベントの詳細はこちら📅", visibility: "public", hashtags: ["イベント"], publish_in: 7 * 86_400 },
+    { content: "[Yuna/Public/Public/Expired] 先週のイベントは終了しました🙏", visibility: "public", hashtags: ["イベント"], publish_in: -2 * 86_400, expires_in: 86_400 },
   ],
   1 => [
     { content: "[Mio/Private/Public] 今夜23時まで空いています！ラスト1枠、お待ちしています💕", visibility: "public", hashtags: ["Tonight", "空き枠あり"], expires_in: 6 * 3600 },
@@ -91,13 +93,14 @@ post_count = 0
   all_posts.each_with_index do |data, idx|
     post_id = SecureRandom.uuid_v7
     created_at = Time.now - (idx * 3600)
+    published_at = data[:publish_in] ? Time.now + data[:publish_in] : created_at
     db[:"post__posts"].insert(
       id: post_id,
       author_profile_id: author_profile_id,
       content: data[:content],
       visibility: data[:visibility],
-      published_at: created_at,
-      expires_at: data[:expires_in] && created_at + data[:expires_in],
+      published_at: published_at,
+      expires_at: data[:expires_in] && published_at + data[:expires_in],
       pinned_at: data[:pinned] ? created_at : nil,
       created_at: created_at,
       updated_at: created_at,

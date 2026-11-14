@@ -50,10 +50,14 @@ describe('reviews.md / 鍵付きのゲストの名前', () => {
     const author = await createLockedGuest(fx);
     const note = `e2e review note ${Date.now()}`;
     await writeReview(fx, author, SEED.accounts.rin, note);
+    const review = reviewCards(fx).filter({ hasText: note });
+
+    await switchUser(fx, SEED.accounts.rin.phone);
+    await openReviewsTab(fx, SEED.accounts.rin.username);
+    await expect(review.filter({ hasText: author.displayName })).toBeVisible();
 
     await switchUser(fx, SEED.accounts.jiro.phone);
     await openReviewsTab(fx, SEED.accounts.rin.username);
-    const review = reviewCards(fx).filter({ hasText: note });
     await expectHiddenAfter(review.filter({ hasText: HIDDEN_GUEST_NAME }), text(fx, author.displayName));
   });
 });
