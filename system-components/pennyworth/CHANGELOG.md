@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.3.0](https://github.com/panicboat/monorepo/compare/pennyworth-v1.2.2...pennyworth-v1.3.0) (2026-11-14)
+
+
+### Features
+
+* **dystopia:** split infrastructure into platform, data and runtime layers ([#1930](https://github.com/panicboat/monorepo/issues/1930)) ([e84bf07](https://github.com/panicboat/monorepo/commit/e84bf0746489c5908a28b091a008c583aa9e8017))
+
+
+### Bug Fixes
+
+* **pennyworth:** read alert text in thread history ([#1881](https://github.com/panicboat/monorepo/issues/1881)) ([c47a82b](https://github.com/panicboat/monorepo/commit/c47a82b01cca33afbfbc1ca12279d3f5c9f75ca0))
+
+
+### Code Refactoring
+
+* **aws:** build common tags only in root.hcl and drop undeclared inputs ([#1940](https://github.com/panicboat/monorepo/issues/1940)) ([b8a07a8](https://github.com/panicboat/monorepo/commit/b8a07a816c22f750df9520c62cb1d5e730cbafd4))
+
+
+### Miscellaneous Chores
+
+* **system-components/pennyworth/aws/modules:** update terraform aws to v6.72.0 ([#1975](https://github.com/panicboat/monorepo/issues/1975)) ([4523367](https://github.com/panicboat/monorepo/commit/4523367ba9cf751ebcd1f17c5c1f26f379be16a0))
+* **system-components/pennyworth/aws/modules:** update terraform hashicorp/terraform to v1.13.8 ([#1954](https://github.com/panicboat/monorepo/issues/1954)) ([1743753](https://github.com/panicboat/monorepo/commit/17437532e7a05950bd52ce716b5f6417775626c1))
+* **system-components/pennyworth/aws/modules:** update terraform hashicorp/terraform to v1.13.9 ([#1969](https://github.com/panicboat/monorepo/issues/1969)) ([9f4b065](https://github.com/panicboat/monorepo/commit/9f4b065d8ce7bf6e420011dba6d8705ae6d89268))
+* **system-components/pennyworth/infrastructure/aws/modules:** update terraform aws to v6.71.0 ([#1907](https://github.com/panicboat/monorepo/issues/1907)) ([6c67ea8](https://github.com/panicboat/monorepo/commit/6c67ea872abde913da24496c730d7064b0b0afbf))
+* **system-components/pennyworth:** update golang docker tag to v1.27.4 ([#1999](https://github.com/panicboat/monorepo/issues/1999)) ([6e63839](https://github.com/panicboat/monorepo/commit/6e638390b81bba89d2e7c6c52d631cce758f6aa9))
+
 ## [1.2.2](https://github.com/panicboat/monorepo/compare/pennyworth-v1.2.1...pennyworth-v1.2.2) (2026-10-29)
 
 
