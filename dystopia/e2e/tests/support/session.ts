@@ -17,6 +17,14 @@ const ROLE_LABELS: Record<AccountRole, string> = { cast: 'キャスト', guest: 
 const FEATURE_TOUR_WAIT_MS = 2_000;
 
 export async function signIn(fx: SessionFixtures, phone: string, password = SEED_PASSWORD): Promise<void> {
+  await signInPicking(fx, phone, password, () => primaryUsername(phone));
+}
+
+export async function signInToProfile(fx: SessionFixtures, account: SeedAccount): Promise<void> {
+  await signInPicking(fx, account.phone, SEED_PASSWORD, () => account.username);
+}
+
+async function signInPicking(fx: SessionFixtures, phone: string, password: string, pickUsername: () => string): Promise<void> {
   const { app, screen } = fx;
   await app.open('/login');
   await screen.getByLabel('電話番号').fill(phone);
@@ -26,7 +34,7 @@ export async function signIn(fx: SessionFixtures, phone: string, password = SEED
   const picker = screen.getByRole('heading', 'プロフィールを選択');
   await expect(picker.or(featureTour(screen)).or(shellMenu(screen)).first()).toBeVisible();
   if (await picker.isVisible()) {
-    const username = primaryUsername(phone);
+    const username = pickUsername();
     await screen.getByRole('button').filter({ hasText: new RegExp(`@${username}$`) }).click();
   }
   await enterHome(screen);

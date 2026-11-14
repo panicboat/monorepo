@@ -4,8 +4,11 @@ import { RECORDING_TIMEOUT_MS, changeBlock } from './support/act.ts';
 import type { BrowserActFixtures } from './support/act.ts';
 import { BLOCKED_NOTICE, FOLLOW_REQUIRED_NOTICE, messageInput, openThread, sendFromProfile } from './support/messages.ts';
 import { text } from './support/screen.ts';
-import { createAccount, switchToCreated } from './support/session.ts';
+import { SEED } from './support/seed.ts';
+import { createAccount, signIn, switchToCreated, switchUser } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
+
+const NO_MESSAGES_MESSAGE = 'メッセージはまだありません';
 
 // The notice and the input are alternatives, so the notice settles first and only then the input is checked to be gone.
 async function expectCannotSend(fx: BrowserActFixtures, notice: string, body: string): Promise<void> {
@@ -36,5 +39,18 @@ describe('messages.md / 送信条件', () => {
     await switchToCreated(fx, guest);
     await openThread(fx, cast);
     await expectCannotSend(fx, FOLLOW_REQUIRED_NOTICE, body);
+  });
+});
+
+describe('messages.md / スレッド', () => {
+  test('a profile outside a thread cannot read its messages', async (fx) => {
+    await signIn(fx, SEED.accounts.taro.phone);
+    await openThread(fx, SEED.accounts.yuna);
+    await expect(text(fx, SEED.messages.taroToYuna)).toBeVisible();
+    const threadPath = new URL(await fx.browser.url()).pathname;
+
+    await switchUser(fx, SEED.accounts.jiro.phone);
+    await fx.app.open(threadPath);
+    await expectHiddenAfter(text(fx, NO_MESSAGES_MESSAGE), text(fx, SEED.messages.taroToYuna));
   });
 });

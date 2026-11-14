@@ -4,7 +4,7 @@ import type { Locator } from 'e2e';
 import type { ActFixtures } from './support/act.ts';
 import { SEED } from './support/seed.ts';
 import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
-import { signIn } from './support/session.ts';
+import { signIn, switchUser } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 function karteCards(fx: ActFixtures): Locator {
@@ -13,7 +13,11 @@ function karteCards(fx: ActFixtures): Locator {
 
 describe('karte.md / Rules', () => {
   test('a guest sees neither the karte tab nor karte contents', async (fx) => {
-    await signIn(fx, SEED.accounts.jiro.phone);
+    await signIn(fx, SEED.accounts.yuna.phone);
+    await fx.app.open(`/u/${SEED.accounts.shiro.username}?tab=karte`);
+    await expect(karteCards(fx).filter({ hasText: SEED.accounts.rin.displayName })).toBeVisible();
+
+    await switchUser(fx, SEED.accounts.jiro.phone);
     await openProfile(fx, SEED.accounts.shiro.username);
 
     await expectHiddenAfter(fx.screen.getByRole('tab', 'クチコミ'), fx.screen.getByRole('tab', 'カルテ'));

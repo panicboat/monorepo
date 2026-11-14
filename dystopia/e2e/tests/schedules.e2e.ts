@@ -7,6 +7,7 @@ import type { SessionFixtures } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 const LOCKED_NOTICE = 'フォローすると見られます';
+const NO_SCHEDULES_MESSAGE = '予定はありません';
 
 async function openScheduleTab(fx: SessionFixtures, username: string): Promise<void> {
   await fx.app.open(`/u/${username}?tab=schedule`);
@@ -18,9 +19,23 @@ async function openComposeMenu(fx: SessionFixtures): Promise<void> {
 
 describe('schedules.md / 予定の見え方', () => {
   test('a non-follower sees the follow notice in place of the schedules of a locked cast', async (fx) => {
-    await signIn(fx, SEED.accounts.jiro.phone);
+    await signIn(fx, SEED.accounts.taro.phone);
+    await openScheduleTab(fx, SEED.accounts.mio.username);
+    await expect(text(fx, SEED.schedules.mio)).toBeVisible();
+
+    await switchUser(fx, SEED.accounts.jiro.phone);
     await openScheduleTab(fx, SEED.accounts.mio.username);
     await expectHiddenAfter(text(fx, LOCKED_NOTICE), text(fx, SEED.schedules.mio));
+  });
+
+  test('a guest blocked by a cast sees none of her schedules', async (fx) => {
+    await signIn(fx, SEED.accounts.jiro.phone);
+    await openScheduleTab(fx, SEED.accounts.rin.username);
+    await expect(text(fx, SEED.schedules.rin)).toBeVisible();
+
+    await switchUser(fx, SEED.accounts.taro.phone);
+    await openScheduleTab(fx, SEED.accounts.rin.username);
+    await expectHiddenAfter(text(fx, NO_SCHEDULES_MESSAGE), text(fx, SEED.schedules.rin));
   });
 });
 
