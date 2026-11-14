@@ -72,9 +72,6 @@ jobs:
           # pg_wrapper would pick the preinstalled 16 cluster's version, so the 18 binaries go first on PATH.
           echo /usr/lib/postgresql/18/bin >> "$GITHUB_PATH"
 
-      - name: Install aws-emulator
-        run: bin/stack install-emulator
-
       - name: Start the stack
         timeout-minutes: 15
         run: bin/stack up
@@ -121,7 +118,6 @@ jobs:
             dystopia/e2e/.e2e/junit.xml
             dystopia/e2e/.e2e/results/
             dystopia/e2e/.e2e/stack/
-            !dystopia/e2e/.e2e/stack/emulator-home/**
           # The report directory is hidden, and hidden files are excluded by default.
           include-hidden-files: true
           retention-days: 7
