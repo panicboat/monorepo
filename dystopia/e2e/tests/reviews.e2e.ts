@@ -1,35 +1,38 @@
 import { describe, test } from '@e2e-dev/web';
 import { expect } from 'e2e';
 import type { Locator } from 'e2e';
-import { RECORDING_TIMEOUT_MS, SIGNED_IN_AS, actFromHome, actorParams } from './support/act.ts';
-import type { ActFixtures } from './support/act.ts';
 import { openReviewsTab, reviewCards, writeReview } from './support/reviews.ts';
 import { SEED } from './support/seed.ts';
 import type { SeedAccount } from './support/seed.ts';
 import { openProfile, text } from './support/screen.ts';
 import { createAccount, signIn, switchUser } from './support/session.ts';
+import type { SessionFixtures } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 const HIDDEN_GUEST_NAME = '（非公開のゲスト）';
 const WRITE_REVIEW_BUTTON = 'このキャストのクチコミを書く';
 
-const LOCK_PROFILE = `${SIGNED_IN_AS}open the menu, choose プロフィール, tap プロフィールを編集, turn on プロフィールに鍵をかける, tap 保存, then reopen プロフィールを編集 and check that プロフィールに鍵をかける is on`;
-
 // The item under test is the absent one, so the seed review marks the loaded tab.
-function seedReviewCard(fx: ActFixtures): Locator {
+function seedReviewCard(fx: SessionFixtures): Locator {
   return reviewCards(fx).filter({ hasText: SEED.accounts.shiro.displayName });
 }
 
-function writeReviewButton(fx: ActFixtures): Locator {
+function writeReviewButton(fx: SessionFixtures): Locator {
   return fx.screen.getByRole('button', WRITE_REVIEW_BUTTON);
 }
 
-async function createLockedGuest(fx: ActFixtures): Promise<SeedAccount> {
+async function createLockedGuest(fx: SessionFixtures): Promise<SeedAccount> {
   const guest = await createAccount(fx, 'guest');
-  await actFromHome(fx, LOCK_PROFILE, { params: actorParams(guest) });
+  const edit = fx.screen.getByRole('button', 'プロフィールを編集');
+  const lock = fx.screen.getByRole('switch', 'プロフィールに鍵をかける');
   await openProfile(fx, guest.username);
-  await fx.screen.getByRole('button', 'プロフィールを編集').click();
-  await expect(fx.screen.getByRole('switch', 'プロフィールに鍵をかける')).toBeChecked();
+  await edit.click();
+  await lock.click();
+  await fx.screen.getByRole('button', '保存').click();
+  await expect(lock).toHaveCount(0);
+  await openProfile(fx, guest.username);
+  await edit.click();
+  await expect(lock).toBeChecked();
   return guest;
 }
 
@@ -46,10 +49,10 @@ describe('reviews.md / 作成', () => {
 });
 
 describe('reviews.md / 鍵付きのゲストの名前', () => {
-  test("a locked guest's review shows the body but hides the name from non-followers", { timeout: RECORDING_TIMEOUT_MS }, async (fx) => {
+  test("a locked guest's review shows the body but hides the name from non-followers", async (fx) => {
     const author = await createLockedGuest(fx);
     const note = `e2e review note ${Date.now()}`;
-    await writeReview(fx, author, SEED.accounts.rin, note);
+    await writeReview(fx, SEED.accounts.rin, note);
     const review = reviewCards(fx).filter({ hasText: note });
 
     await switchUser(fx, SEED.accounts.rin.phone);

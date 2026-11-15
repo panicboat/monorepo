@@ -1,6 +1,5 @@
 import { describe, test } from '@e2e-dev/web';
 import { expect } from 'e2e';
-import { RECORDING_TIMEOUT_MS } from './support/act.ts';
 import { openReviewsTab, reviewCards, writeReview } from './support/reviews.ts';
 import { SEED } from './support/seed.ts';
 import { PROFILE_NOT_FOUND_MESSAGE, openProfile, text } from './support/screen.ts';
@@ -35,10 +34,10 @@ describe('account.md / 登録', () => {
 });
 
 describe('account.md / 退会', () => {
-  test('a withdrawn guest is signed out, hidden from others with its review kept under a masked name, and restored by signing in', { timeout: RECORDING_TIMEOUT_MS }, async (fx) => {
+  test('a withdrawn guest is signed out, hidden from others with its review kept under a masked name, and restored by signing in', async (fx) => {
     const guest = await createAccount(fx, 'guest');
     const note = `e2e review note ${Date.now()}`;
-    await writeReview(fx, guest, SEED.accounts.rin, note);
+    await writeReview(fx, SEED.accounts.rin, note);
 
     await fx.app.open('/settings');
     await fx.screen.getByRole('button', '退会する').click();

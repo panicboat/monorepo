@@ -1,13 +1,13 @@
 import { describe, test } from '@e2e-dev/web';
 import { expect } from 'e2e';
 import type { Locator } from 'e2e';
-import type { ActFixtures } from './support/act.ts';
 import { SEED } from './support/seed.ts';
 import { EMPTY_POSTS_MESSAGE, openProfile, text } from './support/screen.ts';
 import { signIn, switchUser } from './support/session.ts';
+import type { SessionFixtures } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
-function karteCards(fx: ActFixtures): Locator {
+function karteCards(fx: SessionFixtures): Locator {
   return fx.screen.getByRole('article');
 }
 

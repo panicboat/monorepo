@@ -1,10 +1,10 @@
 import { describe, test } from '@e2e-dev/web';
 import { expect } from 'e2e';
-import type { BrowserActFixtures } from './support/act.ts';
 import { SEED } from './support/seed.ts';
 import { PROFILE_NOT_FOUND_MESSAGE, openProfile, text } from './support/screen.ts';
 import { openReviewsTab, reviewCards } from './support/reviews.ts';
 import { signIn, signInToProfile, switchUser } from './support/session.ts';
+import type { BrowserFixtures } from './support/session.ts';
 import { expectHiddenAfter } from './support/visibility.ts';
 
 const LOCKED_MESSAGE = 'フォローすると見られます';
@@ -13,7 +13,7 @@ const NO_THREADS_MESSAGE = 'メッセージはまだありません';
 const PROFILE_NOT_PERMITTED = 'profile_not_permitted';
 
 // The screen never sends another account's profile, so the request is made from the signed-in page as a tampered client would.
-async function getOwnProfileAs(fx: BrowserActFixtures, profileId: string): Promise<{ status: number; body: string }> {
+async function getOwnProfileAs(fx: BrowserFixtures, profileId: string): Promise<{ status: number; body: string }> {
   return fx.browser.evaluate(async (id: string) => {
     const res = await fetch('/api/profile', { headers: { 'x-profile-id': id } });
     return { status: res.status, body: await res.text() };

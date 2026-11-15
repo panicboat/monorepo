@@ -1,3 +1,4 @@
+import type { Browser } from '@e2e-dev/web';
 import { expect } from 'e2e';
 import type { App, Locator, Screen } from 'e2e';
 import { SEED } from './seed.ts';
@@ -6,6 +7,10 @@ import type { SeedAccount } from './seed.ts';
 export interface SessionFixtures {
   app: App;
   screen: Screen;
+}
+
+export interface BrowserFixtures extends SessionFixtures {
+  browser: Browser;
 }
 
 export type AccountRole = 'cast' | 'guest';
