@@ -1,7 +1,7 @@
 {
   "name": "dystopia-e2e",
   "private": true,
-  "packageManager": "pnpm@12.18.0",
+  "packageManager": "pnpm@12.21.0",
   "type": "module",
   "scripts": {
     "test": "e2e run",
