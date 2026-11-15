@@ -1,9 +1,7 @@
-import { expect, unique } from 'e2e';
+import { expect } from 'e2e';
 import type { Locator } from 'e2e';
-import { SIGNED_IN_AS, actFromHome, actorParams, targetParams } from './act.ts';
-import type { ActFixtures } from './act.ts';
 import type { SeedAccount } from './seed.ts';
-import { text } from './screen.ts';
+import { openProfile, text } from './screen.ts';
 import type { SessionFixtures } from './session.ts';
 
 export const BLOCKED_NOTICE = 'この相手とはメッセージを送受信できません';
@@ -11,14 +9,15 @@ export const FOLLOW_REQUIRED_NOTICE = '相手をフォローするとメッセ�
 
 const THREAD_HREF_PREFIX = '/messages/';
 
-const SEND_FROM_PROFILE = `${SIGNED_IN_AS}open 検索, choose the ユーザー tab, search for {targetHandle}, open the profile of {targetName} (@{targetHandle}) from the result row, tap メッセージ, write {body} into メッセージ本文, tap 送信, and check that {body} is listed`;
-
 export function messageInput(fx: SessionFixtures): Locator {
   return fx.screen.getByLabel('メッセージ本文');
 }
 
-export async function sendFromProfile(fx: ActFixtures, sender: SeedAccount, recipient: SeedAccount, body: string): Promise<void> {
-  await actFromHome(fx, SEND_FROM_PROFILE, { params: { ...actorParams(sender), ...targetParams(recipient), body: unique(body) } });
+export async function sendFromProfile(fx: SessionFixtures, recipient: SeedAccount, body: string): Promise<void> {
+  await openProfile(fx, recipient.username);
+  await fx.screen.getByRole('button', 'メッセージ').click();
+  await messageInput(fx).fill(body);
+  await fx.screen.getByRole('button', '送信').click();
   await expect(text(fx, body)).toBeVisible();
 }
 
