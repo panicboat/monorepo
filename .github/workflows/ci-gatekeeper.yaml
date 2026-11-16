@@ -11,7 +11,7 @@ jobs:
   ci-gatekeeper:
     permissions:
       actions: read
-    uses: panicboat/.github/.github/workflows/reusable--ci-gatekeeper.yaml@8b7584f3294fd588e49f7f652cfb1b09a3aa6611 # v0.3.3
+    uses: panicboat/.github/.github/workflows/reusable--ci-gatekeeper.yaml@5cdc9877edabfc6f69bf8c8a339ac8f2f57a7cc3 # v0.3.4
     with:
       # A failed judge would keep the Gatekeeper red even after the approval label, so the verdict lives in its own commit status.
       exclude-workflow-names: Docs Sync Check
