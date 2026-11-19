@@ -668,7 +668,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk-cognitoidentityprovider (~> 1.166)
-  aws-sdk-s3 (~> 1.243)
+  aws-sdk-s3 (~> 1.244)
   capybara
   database_cleaner-sequel
   dotenv
