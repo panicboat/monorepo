@@ -93,7 +93,7 @@ GEM
       concurrent-ruby (~> 1.0)
       dry-core (~> 1.1)
       zeitwerk (~> 2.6)
-    dry-monads (1.9.0)
+    dry-monads (1.11.1)
       concurrent-ruby (~> 1.0)
       dry-core (~> 1.1)
       zeitwerk (~> 2.6)
@@ -101,8 +101,8 @@ GEM
       dry-configurable (~> 1.0, < 2)
       dry-core (~> 1.0, < 2)
       dry-events (~> 1.0, < 2)
-    dry-operation (1.1.0)
-      dry-monads (~> 1.6)
+    dry-operation (1.2.0)
+      dry-monads (~> 1.10)
       zeitwerk (~> 2.6)
     dry-schema (1.14.1)
       concurrent-ruby (~> 1.0)
@@ -652,7 +652,7 @@ GEM
       openssl (>= 3.0)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    zeitwerk (2.7.5)
+    zeitwerk (2.8.3)
 
 PLATFORMS
   aarch64-linux-gnu
@@ -672,7 +672,7 @@ DEPENDENCIES
   capybara
   database_cleaner-sequel
   dotenv
-  dry-operation (>= 1.1.0)
+  dry-operation (>= 1.2.0)
   dry-types (~> 1.9, >= 1.9.2)
   dry-validation
   faker (~> 3.8)
