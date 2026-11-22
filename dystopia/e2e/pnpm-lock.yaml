@@ -176,8 +176,8 @@ importers:
   .:
     dependencies:
       '@e2e-dev/web':
-        specifier: ^0.16.0
-        version: 0.16.0(e2e@0.23.1(@ai-sdk/anthropic@4.0.105(zod@4.6.7))(@ai-sdk/openai@4.0.118(zod@4.6.7))(ai@7.0.173(zod@4.6.7)))
+        specifier: ^0.16.1
+        version: 0.16.1(@e2e-dev/core@0.24.0(ai@7.0.173(zod@4.6.7)))(e2e@0.23.1(@ai-sdk/anthropic@4.0.105(zod@4.6.7))(@ai-sdk/openai@4.0.118(zod@4.6.7))(ai@7.0.173(zod@4.6.7)))
       e2e:
         specifier: ^0.23.1
         version: 0.23.1(@ai-sdk/anthropic@4.0.105(zod@4.6.7))(@ai-sdk/openai@4.0.118(zod@4.6.7))(ai@7.0.173(zod@4.6.7))
@@ -228,12 +228,25 @@ packages:
     resolution: {integrity: sha512-tEj8X2No2A1c9NDnZECxiiJ8TP3vmFlN9tLlLeSaMqVW4tUmVG2R4qpv/eP4zymWxnymYLkLcIYVV0VcWj3RCQ==}
     engines: {node: '>= 20.12.0'}
 
-  '@e2e-dev/web@0.16.0':
-    resolution: {integrity: sha512-qA6Ixdh4oJq3Ccdc1W6OKT5dlwmALuScr6EV6Mic4UUcgQK+B1ReG1rOsw/VqTjqClRN4maWWUYU+OUcKzJwQQ==}
+  '@e2e-dev/core@0.24.0':
+    resolution: {integrity: sha512-RSPX0RRiN8VFg3l34wN1gv12FIMoNTZ+YUAkW5SH1vUWwYdoo/8F2TtjqdffgdaGLH38yAuH11BPdmqHHiWuBA==}
+    engines: {node: ^22.22.3 || >=24.8.0}
+    peerDependencies:
+      ai: ^7.0.0
+    peerDependenciesMeta:
+      ai:
+        optional: true
+
+  '@e2e-dev/web@0.16.1':
+    resolution: {integrity: sha512-mWSzyWSNcoqOiy6BEaXOTe8rufCz6T+NyYkJej5JOz6yy3vcnG13wEwHgl7Kdw5rv8yUbSLqbuDBRVBBtkvqIA==}
     engines: {node: ^22.22.3 || >=24.8.0}
     hasBin: true
     peerDependencies:
-      e2e: '>=0.23.1 <1'
+      '@e2e-dev/core': '>=0.23.2 <1'
+      e2e: '>=0.23.2 <1'
+    peerDependenciesMeta:
+      e2e:
+        optional: true
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -822,8 +835,8 @@ packages:
     resolution: {integrity: sha512-cIqOLfh5k52us715qf3B3+kTOxZv+WDv77HN7xokLScYQGYQHi4m/ynoDIPpvF2LvCyUJGyvzY64i0QCXtzu1g==}
     hasBin: true
 
-  playwright-core@1.65.0:
-    resolution: {integrity: sha512-vNSKgH6YqtN7cdT/L334zo0a+YwkrpicyrHJlWWPIm/Q+Nn2SWInil01oT0mbu96U4GgoRtCYQD9CzJQgju+lA==}
+  playwright-core@1.65.1:
+    resolution: {integrity: sha512-hqPpz7blSMPxWVdoeE1yiBSzXsKiVOd2k+kjCvmUywD2GPO2Dd9HfcWnq9NN0GHbNZDFgZ9JfBFr+X5/BLo0qw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -909,10 +922,20 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 2.0.0
 
-  '@e2e-dev/web@0.16.0(e2e@0.23.1(@ai-sdk/anthropic@4.0.105(zod@4.6.7))(@ai-sdk/openai@4.0.118(zod@4.6.7))(ai@7.0.173(zod@4.6.7)))':
+  '@e2e-dev/core@0.24.0(ai@7.0.173(zod@4.6.7))':
     dependencies:
+      '@napi-rs/image': 1.16.0
+      pixelmatch: 8.0.0
+      zod: 4.6.7
+    optionalDependencies:
+      ai: 7.0.173(zod@4.6.7)
+
+  '@e2e-dev/web@0.16.1(@e2e-dev/core@0.24.0(ai@7.0.173(zod@4.6.7)))(e2e@0.23.1(@ai-sdk/anthropic@4.0.105(zod@4.6.7))(@ai-sdk/openai@4.0.118(zod@4.6.7))(ai@7.0.173(zod@4.6.7)))':
+    dependencies:
+      '@e2e-dev/core': 0.24.0(ai@7.0.173(zod@4.6.7))
+      playwright-core: 1.65.1
+    optionalDependencies:
       e2e: 0.23.1(@ai-sdk/anthropic@4.0.105(zod@4.6.7))(@ai-sdk/openai@4.0.118(zod@4.6.7))(ai@7.0.173(zod@4.6.7))
-      playwright-core: 1.65.0
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -1318,7 +1341,7 @@ snapshots:
     dependencies:
       pngjs: 7.0.0
 
-  playwright-core@1.65.0: {}
+  playwright-core@1.65.1: {}
 
   pngjs@7.0.0: {}
 
