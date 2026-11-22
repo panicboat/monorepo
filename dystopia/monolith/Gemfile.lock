@@ -17,11 +17,11 @@ GEM
     addressable (2.8.8)
       public_suffix (>= 2.0.2, < 8.0)
     aws-eventstream (1.4.1)
-    aws-partitions (1.1308.0)
+    aws-partitions (1.1310.0)
     aws-sdk-cognitoidentityprovider (1.166.0)
       aws-sdk-core (~> 3, >= 3.269.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-core (3.270.0)
+    aws-sdk-core (3.271.1)
       aws-eventstream (~> 1, >= 1.4.1)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
@@ -33,7 +33,7 @@ GEM
     aws-sdk-kms (1.145.0)
       aws-sdk-core (~> 3, >= 3.270.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.244.0)
+    aws-sdk-s3 (1.245.1)
       aws-sdk-core (~> 3, >= 3.269.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -668,7 +668,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk-cognitoidentityprovider (~> 1.166)
-  aws-sdk-s3 (~> 1.244)
+  aws-sdk-s3 (~> 1.245, >= 1.245.1)
   capybara
   database_cleaner-sequel
   dotenv
