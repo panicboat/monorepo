@@ -18,7 +18,7 @@ gem "web-push", "~> 3.1"
 
 gem "pg"
 
-gem "dry-types", "~> 1.9", ">= 1.9.1"
+gem "dry-types", "~> 1.9", ">= 1.9.2"
 # Keep dry-validation because hanami-validations was retired in Hanami 3.
 gem "dry-validation"
 gem "dry-operation", ">= 1.1.0"

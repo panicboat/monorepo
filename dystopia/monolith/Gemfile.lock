@@ -125,7 +125,7 @@ GEM
     dry-transformer (1.1.0)
       bigdecimal
       zeitwerk (~> 2.6)
-    dry-types (1.9.1)
+    dry-types (1.9.2)
       bigdecimal (>= 3.0)
       concurrent-ruby (~> 1.0)
       dry-core (~> 1.0)
@@ -673,7 +673,7 @@ DEPENDENCIES
   database_cleaner-sequel
   dotenv
   dry-operation (>= 1.1.0)
-  dry-types (~> 1.9, >= 1.9.1)
+  dry-types (~> 1.9, >= 1.9.2)
   dry-validation
   faker (~> 3.8)
   grpc
