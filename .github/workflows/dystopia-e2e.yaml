@@ -19,7 +19,7 @@ jobs:
         working-directory: dystopia/e2e
     services:
       postgres:
-        image: postgres:18.7-alpine
+        image: postgres:19.0-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
