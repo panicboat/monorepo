@@ -248,7 +248,7 @@ GEM
       json (>= 2.7.2)
       rack-session
       zeitwerk (~> 2.6)
-    hanami-action (3.0.1)
+    hanami-action (3.0.3)
       dry-configurable (~> 1.4)
       dry-core (~> 1.0)
       hanami-utils (~> 3.0.0.rc)
@@ -560,7 +560,7 @@ GEM
     puma (7.2.1)
       nio4r (~> 2.0)
     racc (1.8.1)
-    rack (3.2.7)
+    rack (3.2.9)
     rack-session (2.1.2)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -680,7 +680,7 @@ DEPENDENCIES
   grpc-tools (= 1.85.4)
   gruf
   hanami (~> 3.0, >= 3.0.2)
-  hanami-action (~> 3.0, >= 3.0.1)
+  hanami-action (~> 3.0, >= 3.0.2)
   hanami-assets (~> 3.0)
   hanami-db (~> 3.0)
   hanami-reloader (~> 3.0)
