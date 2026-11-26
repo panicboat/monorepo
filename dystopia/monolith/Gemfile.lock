@@ -680,7 +680,7 @@ DEPENDENCIES
   grpc-tools (= 1.85.4)
   gruf
   hanami (~> 3.0, >= 3.0.3)
-  hanami-action (~> 3.0, >= 3.0.2)
+  hanami-action (~> 3.0, >= 3.0.3)
   hanami-assets (~> 3.0)
   hanami-db (~> 3.0)
   hanami-reloader (~> 3.0)
