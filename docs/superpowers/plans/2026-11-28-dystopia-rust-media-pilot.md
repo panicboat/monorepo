@@ -22,7 +22,7 @@
 - タグの名前は `owner-account-id`。
 - DB の接続数の上限は 2。
 - SQL は `sqlx::query`・`sqlx::query_as` の実行時の照合だけを使い、`query!` マクロは使わない（CI で DB や `.sqlx` を要らなくするため）。
-- crate を Cargo.toml に足す前と、負荷ツール（ghz）を入れる前に、ユーザーの承認を得る。
+- Task 1 Step 1 の crate の一覧と、ghz を Homebrew で手元に入れることは、ユーザーが承認済み（2026-11-28）。一覧に無い crate を足す前は、ユーザーの承認を得る。
 - コミットは `git commit -s`、`Co-Authored-By` を付けない。type は `feat(dystopia/server)` のように付ける。
 - コードコメントは英語 1 行で、Why not だけを書く。タスクや修正への言及を書かない。
 
@@ -69,11 +69,11 @@
   - `impl Config { pub fn from_vars(get: impl Fn(&str) -> Option<String>) -> Result<Config, ConfigError> }`（`main` は `std::env::var(..).ok()` を渡す）
   - 生成された stub のモジュール `dystopia_server::stub::media::v1`（`MediaService` trait・`MediaServiceServer`・各 message）
 
-- [ ] **Step 1: crate の一覧をユーザーに示して承認を得る**
+- [ ] **Step 1: crate を確かめる（ユーザーが承認済み）**
 
 一覧: `tokio`・`tonic`・`prost`・`sqlx`（features: `postgres`・`runtime-tokio`・`tls-rustls`・`uuid`・`chrono`）・`aws-config`・`aws-sdk-s3`・`uuid`（`v4`・`v7`）・`chrono`・`regex`・`serde`・`serde_json`・`url`・`thiserror`・`async-trait`。
 版は `cargo add` で入る最新を使い、tonic・prost の版に合う buf の remote plugin（`buf.build/community/neoeinstein-prost`・`neoeinstein-tonic`）の版を buf.build の plugin ページで確かめて `buf.gen.yaml` に固定する。
-完了条件: ユーザーの承認。
+完了条件: `buf.gen.yaml` に固定する plugin の版が決まっている。
 
 - [ ] **Step 2: `rust-toolchain.toml` を `channel = "1.100.0"`、components `rustfmt`・`clippy` で作り、`cargo init --bin --name dystopia-server` と crate の追加を行う**
 
@@ -468,7 +468,7 @@ git commit -s -m "test(dystopia/e2e): start the Rust media server in the stack"
 
 - [ ] **Step 2: ローカルの負荷比較の準備**
 
-ghz を入れる前にユーザーの承認を得る。
+`brew install ghz` で手元に入れる（ユーザーが承認済み）。
 Ruby（`bin/grpc`、9001）と Rust（9002）を、同じ dev DB、`MEDIA_STORAGE=s3`・`MEDIA_BUCKET_NAME=bench`・`AWS_ACCESS_KEY_ID=bench`・`AWS_SECRET_ACCESS_KEY=bench` で起動する（両方とも通信せずに presign する）。
 
 - [ ] **Step 3: `GetUploadUrl` に同じ条件で負荷をかける**
