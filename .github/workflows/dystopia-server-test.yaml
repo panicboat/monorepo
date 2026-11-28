@@ -1,0 +1,75 @@
+name: 'Dystopia Server Test'
+
+on:
+  pull_request:
+    paths:
+      - 'dystopia/server/**'
+      - '.github/workflows/dystopia-server-test.yaml'
+
+permissions: {}
+
+concurrency:
+  group: dystopia-server-test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  cargo:
+    name: 'Cargo'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:19.0-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@be3c7df29b3349ec6bcfc6b4792f1cf9f5237d18 # v1.343.0
+        with:
+          ruby-version: 4.0.10
+          working-directory: dystopia/monolith
+          bundler-cache: true
+
+      # The preinstalled psql 16 fails on \list against PostgreSQL 18, which hanami db uses to check that a database exists.
+      - name: Install PostgreSQL 18 client
+        run: |
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-18
+          # pg_wrapper would pick the preinstalled 16 cluster's version, so the 18 binaries go first on PATH.
+          echo /usr/lib/postgresql/18/bin >> "$GITHUB_PATH"
+
+      # The server owns no migrations, so its tests run against the schema the monolith migrations create.
+      - name: Prepare database
+        working-directory: dystopia/monolith
+        env:
+          HANAMI_ENV: test
+        run: |
+          bundle exec hanami db create
+          bundle exec hanami db migrate --no-dump
+
+      - name: Check format
+        working-directory: dystopia/server
+        run: cargo fmt --check
+
+      - name: Run clippy
+        working-directory: dystopia/server
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Run tests
+        working-directory: dystopia/server
+        env:
+          TEST_DATABASE_URL: postgres://postgres:password@localhost:5432/monolith_test
+        run: cargo test

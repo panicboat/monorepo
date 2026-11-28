@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+buf generate ../../proto/dystopia --template buf.gen.yaml --path ../../proto/dystopia/media
