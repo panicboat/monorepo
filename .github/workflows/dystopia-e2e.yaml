@@ -65,6 +65,17 @@ jobs:
           # pg_wrapper would pick the preinstalled 16 cluster's version, so the 18 binaries go first on PATH.
           echo /usr/lib/postgresql/18/bin >> "$GITHUB_PATH"
 
+      # An explicit install keeps the build independent of whether rustup installs the toolchain that rust-toolchain.toml pins on first use.
+      - name: Install Rust toolchain
+        working-directory: dystopia/server
+        run: rustup toolchain install
+
+      # Built before the stack so that the stack step's timeout does not have to cover a release build.
+      - name: Build the Rust server
+        timeout-minutes: 15
+        working-directory: dystopia/server
+        run: cargo build --release
+
       - name: Start the stack
         timeout-minutes: 15
         run: bin/stack up

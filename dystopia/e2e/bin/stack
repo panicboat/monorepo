@@ -4,6 +4,7 @@ set -euo pipefail
 E2E_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MONOLITH_DIR="$(cd "$E2E_DIR/../monolith" && pwd)"
 FRONTEND_DIR="$(cd "$E2E_DIR/../frontend" && pwd)"
+SERVER_DIR="$(cd "$E2E_DIR/../server" && pwd)"
 STACK_DIR="$E2E_DIR/.e2e/stack"
 
 # Hanami appends _test to the database name of this URL under HANAMI_ENV=test.
@@ -12,6 +13,9 @@ MONOLITH_DB_URL="${DB_URL}_test"
 MONOLITH_HOST="127.0.0.1"
 MONOLITH_PORT="9055"
 MONOLITH_ADDRESS="${MONOLITH_HOST}:${MONOLITH_PORT}"
+SERVER_HOST="127.0.0.1"
+SERVER_PORT="9056"
+SERVER_ADDRESS="${SERVER_HOST}:${SERVER_PORT}"
 FRONTEND_PORT="3055"
 READY_URL="http://127.0.0.1:${FRONTEND_PORT}/api/identity/sign-in"
 READY_BODY='{"phoneNumber":"+819000000101","password":"password"}'
@@ -77,12 +81,13 @@ stop_process() {
 
 stop_processes() {
   stop_process frontend
+  stop_process server
   stop_process monolith
 }
 
 print_logs() {
   local name
-  for name in monolith frontend; do
+  for name in monolith server frontend; do
     if [[ -f "$STACK_DIR/$name.log" ]]; then
       echo "--- tail of $STACK_DIR/$name.log" >&2
       tail -n 50 "$STACK_DIR/$name.log" >&2
@@ -119,11 +124,22 @@ start_monolith() {
   echo $! >"$STACK_DIR/monolith.pid"
 }
 
+start_server() {
+  (cd "$SERVER_DIR" && cargo build --release)
+  (
+    cd "$SERVER_DIR"
+    # S3 would need AWS settings, so storage stays local and APP_URL is the frontend that the browser opens the storage URLs on.
+    export SERVER_BIND_ADDRESS="$SERVER_ADDRESS" DATABASE_URL="$MONOLITH_DB_URL" MEDIA_STORAGE=local APP_URL="http://127.0.0.1:${FRONTEND_PORT}"
+    exec target/release/dystopia-server
+  ) >"$STACK_DIR/server.log" 2>&1 &
+  echo $! >"$STACK_DIR/server.pid"
+}
+
 start_frontend() {
   (cd "$FRONTEND_DIR" && env -u NODE_OPTIONS pnpm install --frozen-lockfile && env -u NODE_OPTIONS pnpm build)
   (
     cd "$FRONTEND_DIR"
-    export COGNITO_ADAPTER=fake MONOLITH_URL="http://${MONOLITH_ADDRESS}" INSECURE_COOKIES=true
+    export COGNITO_ADAPTER=fake MONOLITH_URL="http://${MONOLITH_ADDRESS}" MEDIA_SERVICE_URL="http://${SERVER_ADDRESS}" INSECURE_COOKIES=true
     exec env -u NODE_OPTIONS pnpm start --port "$FRONTEND_PORT"
   ) >"$STACK_DIR/frontend.log" 2>&1 &
   echo $! >"$STACK_DIR/frontend.pid"
@@ -135,7 +151,7 @@ wait_until_ready() {
     # SILENT: a refused or timed-out request means the stack is not ready yet, and the loop asks again.
     status="$(curl -s --max-time 10 -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d "$READY_BODY" "$READY_URL" || true)"
     [[ "$status" == "200" ]] && return 0
-    for name in monolith frontend; do
+    for name in monolith server frontend; do
       if ! kill -0 "$(<"$STACK_DIR/$name.pid")" 2>/dev/null; then
         echo "$name exited before the stack became ready" >&2
         return 1
@@ -151,13 +167,14 @@ wait_until_ready() {
 up() {
   mkdir -p "$STACK_DIR"
   stop_processes
-  if port_in_use "$MONOLITH_HOST" "$MONOLITH_PORT" || port_in_use 127.0.0.1 "$FRONTEND_PORT"; then
-    echo "port ${MONOLITH_PORT} or ${FRONTEND_PORT} is held by a process this script did not start" >&2
+  if port_in_use "$MONOLITH_HOST" "$MONOLITH_PORT" || port_in_use "$SERVER_HOST" "$SERVER_PORT" || port_in_use 127.0.0.1 "$FRONTEND_PORT"; then
+    echo "port ${MONOLITH_PORT}, ${SERVER_PORT} or ${FRONTEND_PORT} is held by a process this script did not start" >&2
     exit 1
   fi
   trap on_up_failure EXIT
   prepare_database
   start_monolith
+  start_server
   start_frontend
   wait_until_ready
   trap - EXIT
