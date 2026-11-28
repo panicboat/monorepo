@@ -11,6 +11,9 @@ locals {
   # Avoid 9001 because the Lambda Runtime API listens on 127.0.0.1:9001.
   grpc_port = 50051
 
+  # Avoid 50051 and 9001 because the monolith gRPC server and the Lambda Runtime API already listen on them.
+  server_port = 50052
+
   database_url = "postgres://${var.database_username}:${var.database_password}@${var.database_host}:${var.database_port}/${var.database_name}"
 
   # Stripe is unreachable without IPv4 egress, but the monolith refuses to boot unless these settings are present.
@@ -131,6 +134,9 @@ resource "aws_lambda_function" "app" {
     variables = merge(local.shared_environment, {
       GRPC_BIND_ADDRESS                = "0.0.0.0:${local.grpc_port}"
       MONOLITH_URL                     = "http://127.0.0.1:${local.grpc_port}"
+      SERVER_BIND_ADDRESS              = "127.0.0.1:${local.server_port}"
+      MEDIA_SERVICE_URL                = "http://127.0.0.1:${local.server_port}"
+      MEDIA_STORAGE                    = "s3"
       COGNITO_ADAPTER                  = "aws"
       OTEL_SDK_DISABLED                = "true"
       AWS_LWA_PORT                     = "3000"

@@ -141,6 +141,33 @@ run "grpc_port_avoids_the_lambda_runtime_api" {
   }
 }
 
+run "media_server_settings" {
+  command = plan
+
+  assert {
+    condition     = aws_lambda_function.app.environment[0].variables["SERVER_BIND_ADDRESS"] == "127.0.0.1:50052"
+    error_message = "The Rust server must bind to loopback on port 50052."
+  }
+
+  assert {
+    condition     = aws_lambda_function.app.environment[0].variables["MEDIA_SERVICE_URL"] == "http://127.0.0.1:50052"
+    error_message = "The frontend must call the Rust server on the same port it binds."
+  }
+
+  assert {
+    condition     = aws_lambda_function.app.environment[0].variables["MEDIA_STORAGE"] == "s3"
+    error_message = "The Rust server must store media in S3."
+  }
+
+  assert {
+    condition = alltrue([
+      for key in ["SERVER_BIND_ADDRESS", "MEDIA_SERVICE_URL", "MEDIA_STORAGE"] :
+      !contains(keys(aws_lambda_function.task.environment[0].variables), key)
+    ])
+    error_message = "The task function must not receive the Rust server settings."
+  }
+}
+
 run "application_function_settings" {
   command = plan
 

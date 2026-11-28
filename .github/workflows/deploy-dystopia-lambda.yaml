@@ -12,6 +12,7 @@ on:
     paths:
       - 'dystopia/frontend/**'
       - 'dystopia/monolith/**'
+      - 'dystopia/server/**'
       - 'dystopia/lambda/**'
       - '.github/workflows/deploy-dystopia-lambda.yaml'
       - '!dystopia/**/*.md'

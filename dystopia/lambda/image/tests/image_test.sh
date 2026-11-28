@@ -90,6 +90,24 @@ running() {
   docker inspect -f '{{.State.Running}}' "$1"
 }
 
+listening() {
+  docker exec "$app" node -e '
+    require("net")
+      .connect({ host: "127.0.0.1", port: Number(process.argv[1]) })
+      .on("connect", () => process.exit(0))
+      .on("error", () => process.exit(1));
+  ' "$1"
+}
+
+wait_for_listening() {
+  local port=$1
+  for _ in $(seq 1 60); do
+    listening "$port" && return 0
+    sleep 1
+  done
+  fail "nothing listens on 127.0.0.1:$port within 60 seconds"
+}
+
 child_pid() {
   docker exec "$app" bash -c '
     for directory in /proc/[0-9]*; do
@@ -121,7 +139,7 @@ expect_exit_after_killing() {
 
 echo "== build"
 # Export tracked and untracked-but-not-ignored files so local node_modules and build output stay out of the image.
-(cd "$dystopia_dir" && git ls-files -co --exclude-standard -z -- frontend monolith lambda/image | tar --null -T - -cf - | tar -xf - -C "$context")
+(cd "$dystopia_dir" && git ls-files -co --exclude-standard -z -- frontend monolith server lambda/image | tar --null -T - -cf - | tar -xf - -C "$context")
 docker build -q -f "$context/lambda/image/Dockerfile" -t "$image" "$context" >/dev/null
 pass "image builds"
 
@@ -172,18 +190,26 @@ expect_status 200 "$response" "psql can write"
 
 echo "== application function"
 docker run -d --name "$app" --network "$network" --read-only --tmpfs /tmp \
-  -e GRPC_BIND_ADDRESS=0.0.0.0:50051 -e MONOLITH_URL=http://127.0.0.1:50051 "${settings[@]}" \
+  -e GRPC_BIND_ADDRESS=0.0.0.0:50051 -e MONOLITH_URL=http://127.0.0.1:50051 \
+  -e SERVER_BIND_ADDRESS=127.0.0.1:50052 -e MEDIA_STORAGE=local "${settings[@]}" \
   "$image" >/dev/null
 
 response=$(wait_for_sign_in)
 [[ "$response" == *"$seed_account_id"* ]] || fail "sign-in response does not contain the seeded account: $response"
 pass "sign-in reaches the database through Next.js and gRPC on a read-only filesystem"
 
+wait_for_listening 50052
+pass "the Rust server listens on 127.0.0.1:50052 on a read-only filesystem"
+
 expect_exit_after_killing ruby
 
 docker start "$app" >/dev/null
 wait_for_sign_in >/dev/null
 expect_exit_after_killing node
+
+docker start "$app" >/dev/null
+wait_for_sign_in >/dev/null
+expect_exit_after_killing dystopia-server
 
 docker start "$app" >/dev/null
 wait_for_sign_in >/dev/null

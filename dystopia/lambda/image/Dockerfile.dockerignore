@@ -25,3 +25,5 @@ monolith/public/uploads/
 monolith/CHANGELOG.md
 monolith/README.md
 monolith/README-ja.md
+
+server/target/
