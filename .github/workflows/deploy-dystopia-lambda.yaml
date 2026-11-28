@@ -18,6 +18,7 @@ on:
       - '!dystopia/**/*.md'
       - '!dystopia/**/kubernetes/**'
       - '!dystopia/lambda/**/tests/**'
+      - '!dystopia/server/tests/**'
   workflow_dispatch: {}
 
 concurrency:

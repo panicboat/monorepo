@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'dystopia/server/**'
+      - 'dystopia/monolith/config/db/migrate/**'
+      - 'proto/dystopia/media/**'
       - '.github/workflows/dystopia-server-test.yaml'
 
 permissions: {}
@@ -60,16 +62,21 @@ jobs:
           bundle exec hanami db create
           bundle exec hanami db migrate --no-dump
 
+      # An explicit install keeps the build independent of whether rustup installs the toolchain that rust-toolchain.toml pins on first use.
+      - name: Install Rust toolchain
+        working-directory: dystopia/server
+        run: rustup toolchain install
+
       - name: Check format
         working-directory: dystopia/server
         run: cargo fmt --check
 
       - name: Run clippy
         working-directory: dystopia/server
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --locked --all-targets -- -D warnings
 
       - name: Run tests
         working-directory: dystopia/server
         env:
           TEST_DATABASE_URL: postgres://postgres:password@localhost:5432/monolith_test
-        run: cargo test
+        run: cargo test --locked

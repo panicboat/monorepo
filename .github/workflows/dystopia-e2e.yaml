@@ -74,7 +74,7 @@ jobs:
       - name: Build the Rust server
         timeout-minutes: 15
         working-directory: dystopia/server
-        run: cargo build --release
+        run: cargo build --release --locked
 
       - name: Start the stack
         timeout-minutes: 15
