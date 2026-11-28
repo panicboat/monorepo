@@ -3,7 +3,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use async_trait::async_trait;
 use aws_sdk_s3::Client;
-use aws_sdk_s3::error::DisplayErrorContext;
+use aws_sdk_s3::error::{DisplayErrorContext, SdkError};
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::types::{Tag, Tagging};
 
@@ -15,14 +15,16 @@ const SIGNING_WINDOW_SECS: u64 = 3600;
 pub enum StorageError {
     #[error("failed to presign the request: {0}")]
     Presign(String),
+    #[error("the storage request failed: {0}")]
+    Request(String),
 }
 
 #[async_trait]
 pub trait Storage: Send + Sync {
     async fn upload_url(&self, key: &str, content_type: &str) -> Result<String, StorageError>;
     async fn download_url(&self, key: &str, now: SystemTime) -> Result<String, StorageError>;
-    async fn delete(&self, key: &str) -> bool;
-    async fn tag(&self, key: &str, tags: &[(&str, &str)]) -> bool;
+    async fn delete(&self, key: &str) -> Result<bool, StorageError>;
+    async fn tag(&self, key: &str, tags: &[(&str, &str)]) -> Result<bool, StorageError>;
 }
 
 pub fn signing_time(now: SystemTime) -> SystemTime {
@@ -71,27 +73,27 @@ impl Storage for LocalStorage {
         Ok(format!("{}/uploads/{key}", self.app_url))
     }
 
-    async fn delete(&self, key: &str) -> bool {
+    async fn delete(&self, key: &str) -> Result<bool, StorageError> {
         if key.is_empty() {
-            return false;
+            return Ok(false);
         }
         let path = self.path_of(key);
         if !path.exists() {
-            return true;
+            return Ok(true);
         }
         match std::fs::remove_file(&path) {
-            Ok(()) => true,
+            Ok(()) => Ok(true),
             Err(error) => {
                 eprintln!("[Storage::LocalStorage] Failed to delete {key}: {error}");
                 // FALLBACK: Return false when deletion fails.
-                false
+                Ok(false)
             }
         }
     }
 
     // Local files carry no tags, so the owner is kept in the database row alone.
-    async fn tag(&self, key: &str, _tags: &[(&str, &str)]) -> bool {
-        self.path_of(key).exists()
+    async fn tag(&self, key: &str, _tags: &[(&str, &str)]) -> Result<bool, StorageError> {
+        Ok(self.path_of(key).exists())
     }
 }
 
@@ -116,6 +118,10 @@ impl S3Storage {
 
 fn presign_error(error: impl std::error::Error) -> StorageError {
     StorageError::Presign(DisplayErrorContext(error).to_string())
+}
+
+fn request_error(error: impl std::error::Error) -> StorageError {
+    StorageError::Request(DisplayErrorContext(error).to_string())
 }
 
 #[async_trait]
@@ -155,9 +161,9 @@ impl Storage for S3Storage {
         Ok(request.uri().to_string())
     }
 
-    async fn delete(&self, key: &str) -> bool {
+    async fn delete(&self, key: &str) -> Result<bool, StorageError> {
         if key.is_empty() {
-            return false;
+            return Ok(false);
         }
         match self
             .client
@@ -167,56 +173,55 @@ impl Storage for S3Storage {
             .send()
             .await
         {
-            Ok(_) => true,
-            Err(error) => {
+            Ok(_) => Ok(true),
+            // Only a ServiceError is swallowed: Ruby rescues only Aws::S3::Errors::ServiceError, so other failures stay errors.
+            Err(error @ SdkError::ServiceError(_)) => {
                 eprintln!(
                     "[Storage::S3Storage] Failed to delete {key}: {}",
                     DisplayErrorContext(&error)
                 );
                 // FALLBACK: Return false when deletion fails.
-                false
+                Ok(false)
             }
+            Err(error) => Err(request_error(error)),
         }
     }
 
-    async fn tag(&self, key: &str, tags: &[(&str, &str)]) -> bool {
+    async fn tag(&self, key: &str, tags: &[(&str, &str)]) -> Result<bool, StorageError> {
         if key.is_empty() {
-            return false;
+            return Ok(false);
         }
-        match self.put_tagging(key, tags).await {
-            Ok(()) => true,
-            Err(message) => {
-                eprintln!("[Storage::S3Storage] Failed to tag {key}: {message}");
-                // FALLBACK: Return false when the object is missing or cannot be tagged.
-                false
-            }
-        }
-    }
-}
-
-impl S3Storage {
-    async fn put_tagging(&self, key: &str, tags: &[(&str, &str)]) -> Result<(), String> {
         let tag_set = tags
             .iter()
             .map(|(name, value)| Tag::builder().key(*name).value(*value).build())
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|error| error.to_string())?;
+            .map_err(request_error)?;
         let tagging = Tagging::builder()
             .set_tag_set(Some(tag_set))
             .build()
-            .map_err(|error| error.to_string())?;
-        self.client
+            .map_err(request_error)?;
+        match self
+            .client
             .put_object_tagging()
             .bucket(&self.bucket)
             .key(key)
             .tagging(tagging)
             .send()
             .await
-            .map_err(|error| DisplayErrorContext(&error).to_string())?;
-        Ok(())
+        {
+            Ok(_) => Ok(true),
+            Err(error @ SdkError::ServiceError(_)) => {
+                eprintln!(
+                    "[Storage::S3Storage] Failed to tag {key}: {}",
+                    DisplayErrorContext(&error)
+                );
+                // FALLBACK: Return false when the object is missing or cannot be tagged.
+                Ok(false)
+            }
+            Err(error) => Err(request_error(error)),
+        }
     }
 }
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -304,6 +309,13 @@ mod tests {
         (endpoint, receiver)
     }
 
+    fn closing_s3() -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let endpoint = format!("http://{}", listener.local_addr().unwrap());
+        std::thread::spawn(move || drop(listener.accept()));
+        endpoint
+    }
+
     fn uploads_dir() -> PathBuf {
         let dir = std::env::temp_dir().join(format!("dystopia-storage-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
@@ -364,9 +376,9 @@ mod tests {
         std::fs::create_dir_all(dir.join("media/p")).unwrap();
         std::fs::write(dir.join("media/p/m.png"), b"x").unwrap();
         let storage = local(&dir);
-        assert!(storage.delete("media/p/m.png").await);
+        assert!(storage.delete("media/p/m.png").await.unwrap());
         assert!(!dir.join("media/p/m.png").exists());
-        assert!(storage.delete("media/p/m.png").await);
+        assert!(storage.delete("media/p/m.png").await.unwrap());
     }
 
     #[tokio::test]
@@ -374,9 +386,9 @@ mod tests {
         let dir = uploads_dir();
         std::fs::create_dir_all(dir.join("media")).unwrap();
         let storage = local(&dir);
-        assert!(!storage.delete("").await);
+        assert!(!storage.delete("").await.unwrap());
         assert!(
-            !storage.delete("media").await,
+            !storage.delete("media").await.unwrap(),
             "a directory cannot be removed as a file"
         );
         assert!(dir.join("media").exists());
@@ -388,7 +400,7 @@ mod tests {
         let outside = uploads_dir().join("outside.png");
         std::fs::write(&outside, b"x").unwrap();
         let storage = local(&dir);
-        assert!(storage.delete(outside.to_str().unwrap()).await);
+        assert!(storage.delete(outside.to_str().unwrap()).await.unwrap());
         assert!(outside.exists());
     }
 
@@ -397,11 +409,17 @@ mod tests {
         let dir = uploads_dir();
         std::fs::write(dir.join("m.png"), b"x").unwrap();
         let storage = local(&dir);
-        assert!(storage.tag("m.png", &[("owner-account-id", "a")]).await);
+        assert!(
+            storage
+                .tag("m.png", &[("owner-account-id", "a")])
+                .await
+                .unwrap()
+        );
         assert!(
             !storage
                 .tag("missing.png", &[("owner-account-id", "a")])
                 .await
+                .unwrap()
         );
     }
 
@@ -462,19 +480,18 @@ mod tests {
 
     #[tokio::test]
     async fn s3_delete_and_tag_refuse_an_empty_key_without_calling_s3() {
-        let storage = S3Storage::with_client(
-            client(Some("http://127.0.0.1:1")),
-            "media-bucket".to_string(),
-        );
-        assert!(!storage.delete("").await);
-        assert!(!storage.tag("", &[("owner-account-id", "a")]).await);
+        let (endpoint, requests) = fake_s3("200 OK", "");
+        let storage = S3Storage::with_client(client(Some(&endpoint)), "media-bucket".to_string());
+        assert!(!storage.delete("").await.unwrap());
+        assert!(!storage.tag("", &[("owner-account-id", "a")]).await.unwrap());
+        assert!(requests.try_recv().is_err());
     }
 
     #[tokio::test]
     async fn s3_delete_succeeds_on_a_successful_response() {
         let (endpoint, requests) = fake_s3("204 No Content", "");
         let storage = S3Storage::with_client(client(Some(&endpoint)), "media-bucket".to_string());
-        assert!(storage.delete("media/p/m.png").await);
+        assert!(storage.delete("media/p/m.png").await.unwrap());
         let request = requests.recv().unwrap();
         assert!(
             request.starts_with("DELETE /media-bucket/media/p/m.png"),
@@ -489,7 +506,15 @@ mod tests {
             "<Error><Code>AccessDenied</Code><Message>no</Message></Error>",
         );
         let storage = S3Storage::with_client(client(Some(&endpoint)), "media-bucket".to_string());
-        assert!(!storage.delete("media/p/m.png").await);
+        assert!(!storage.delete("media/p/m.png").await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn s3_delete_fails_when_the_connection_closes() {
+        let endpoint = closing_s3();
+        let storage = S3Storage::with_client(client(Some(&endpoint)), "media-bucket".to_string());
+        let error = storage.delete("media/p/m.png").await.unwrap_err();
+        assert!(matches!(error, StorageError::Request(_)), "{error}");
     }
 
     #[tokio::test]
@@ -500,6 +525,7 @@ mod tests {
             storage
                 .tag("media/p/m.png", &[("owner-account-id", "acc-1")])
                 .await
+                .unwrap()
         );
         let request = requests.recv().unwrap();
         assert!(
@@ -521,6 +547,18 @@ mod tests {
             !storage
                 .tag("media/p/m.png", &[("owner-account-id", "acc-1")])
                 .await
+                .unwrap()
         );
+    }
+
+    #[tokio::test]
+    async fn s3_tag_fails_when_the_connection_closes() {
+        let endpoint = closing_s3();
+        let storage = S3Storage::with_client(client(Some(&endpoint)), "media-bucket".to_string());
+        let error = storage
+            .tag("media/p/m.png", &[("owner-account-id", "acc-1")])
+            .await
+            .unwrap_err();
+        assert!(matches!(error, StorageError::Request(_)), "{error}");
     }
 }

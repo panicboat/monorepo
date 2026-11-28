@@ -126,6 +126,7 @@ impl MediaHandler {
             .storage
             .tag(&message.media_key, &[(OWNER_TAG, &account_id)])
             .await
+            .map_err(unexpected)?
         {
             return Err(Status::failed_precondition(
                 "The file has not been uploaded",
@@ -168,14 +169,14 @@ impl MediaHandler {
         if row.uploader_profile_id != Some(profile_id) {
             return not_deleted;
         }
-        // Not short-circuited: every key is tried, so one failure does not strand the other file.
+        // A refused delete does not short-circuit: every key is tried, so it does not strand the other file.
         let mut all_deleted = true;
         for key in [&row.media_key, &row.thumbnail_key]
             .into_iter()
             .flatten()
             .filter(|key| !key.is_empty())
         {
-            all_deleted &= self.storage.delete(key).await;
+            all_deleted &= self.storage.delete(key).await.map_err(unexpected)?;
         }
         if !all_deleted {
             return not_deleted;

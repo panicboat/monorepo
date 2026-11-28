@@ -32,12 +32,12 @@ impl Storage for RecordingStorage {
         self.inner.download_url(key, now).await
     }
 
-    async fn delete(&self, key: &str) -> bool {
+    async fn delete(&self, key: &str) -> Result<bool, StorageError> {
         self.deleted.lock().unwrap().push(key.to_string());
         self.inner.delete(key).await
     }
 
-    async fn tag(&self, key: &str, tags: &[(&str, &str)]) -> bool {
+    async fn tag(&self, key: &str, tags: &[(&str, &str)]) -> Result<bool, StorageError> {
         self.inner.tag(key, tags).await
     }
 }
@@ -466,6 +466,27 @@ async fn refuses_a_file_that_was_never_uploaded() {
 }
 
 #[tokio::test]
+async fn answers_internal_when_the_storage_fails_to_tag() {
+    let fx = Fixture::new().await;
+    let uploader = fx.actor().await;
+    let media_id = fx.media_id();
+    fx.fake
+        .erroring_tags
+        .store(true, std::sync::atomic::Ordering::SeqCst);
+
+    let message = register_request(
+        &media_id.to_string(),
+        &key_for(uploader.profile, media_id, ".png"),
+        IMAGE,
+        "",
+    );
+    let status = fx.try_register(uploader, message).await.unwrap_err();
+
+    assert_status(&status, Code::Internal, "Internal error");
+    assert!(fx.row(media_id).await.is_none());
+}
+
+#[tokio::test]
 async fn lets_the_uploader_delete() {
     let fx = Fixture::new().await;
     let uploader = fx.actor().await;
@@ -497,6 +518,29 @@ async fn keeps_the_row_when_a_file_cannot_be_deleted() {
 
     assert!(fx.row(media_id).await.is_some());
     assert_eq!(fx.storage.deleted.lock().unwrap().len(), 2);
+}
+
+#[tokio::test]
+async fn answers_internal_when_the_storage_fails_to_delete() {
+    let fx = Fixture::new().await;
+    let uploader = fx.actor().await;
+    let media_id = fx.media_id();
+    let thumbnail = key_for(uploader.profile, Uuid::now_v7(), ".jpg");
+    fx.register_as(uploader, IMAGE, media_id, &thumbnail).await;
+    fx.fake
+        .erroring_deletes
+        .store(true, std::sync::atomic::Ordering::SeqCst);
+
+    let status = fx
+        .handler
+        .delete_media(uploader.request(pb::DeleteMediaRequest {
+            id: media_id.to_string(),
+        }))
+        .await
+        .unwrap_err();
+
+    assert_status(&status, Code::Internal, "Internal error");
+    assert!(fx.row(media_id).await.is_some());
 }
 
 #[tokio::test]

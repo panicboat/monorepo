@@ -145,6 +145,8 @@ pub struct FakeStorage {
     pub tagged: Mutex<HashMap<String, Vec<(String, String)>>>,
     pub missing_keys: Mutex<Vec<String>>,
     pub failing_deletes: AtomicBool,
+    pub erroring_deletes: AtomicBool,
+    pub erroring_tags: AtomicBool,
 }
 
 impl FakeStorage {
@@ -171,11 +173,17 @@ impl Storage for FakeStorage {
         FakeStorage::urls().download_url(key, now).await
     }
 
-    async fn delete(&self, key: &str) -> bool {
-        !key.is_empty() && !self.failing_deletes.load(Ordering::SeqCst)
+    async fn delete(&self, key: &str) -> Result<bool, StorageError> {
+        if self.erroring_deletes.load(Ordering::SeqCst) {
+            return Err(StorageError::Request("the connection closed".to_string()));
+        }
+        Ok(!key.is_empty() && !self.failing_deletes.load(Ordering::SeqCst))
     }
 
-    async fn tag(&self, key: &str, tags: &[(&str, &str)]) -> bool {
+    async fn tag(&self, key: &str, tags: &[(&str, &str)]) -> Result<bool, StorageError> {
+        if self.erroring_tags.load(Ordering::SeqCst) {
+            return Err(StorageError::Request("the connection closed".to_string()));
+        }
         if key.is_empty()
             || self
                 .missing_keys
@@ -184,7 +192,7 @@ impl Storage for FakeStorage {
                 .iter()
                 .any(|missing| missing == key)
         {
-            return false;
+            return Ok(false);
         }
         self.tagged.lock().unwrap().insert(
             key.to_string(),
@@ -192,6 +200,6 @@ impl Storage for FakeStorage {
                 .map(|(name, value)| (name.to_string(), value.to_string()))
                 .collect(),
         );
-        true
+        Ok(true)
     }
 }
