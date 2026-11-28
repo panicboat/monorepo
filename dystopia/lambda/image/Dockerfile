@@ -26,6 +26,12 @@ ENV BUNDLE_PATH=/usr/local/bundle \
 RUN bundle config set --local frozen true && \
     bundle install
 
+# Match the Debian release of the runner's ruby image so the binary links against the same glibc.
+FROM rust:1.100.0-slim-trixie AS server-builder
+WORKDIR /app/server
+COPY server/ .
+RUN cargo build --release --locked
+
 FROM ruby:4.0.10-slim AS runner
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends libpq5 postgresql-client-17 libstdc++6 libatomic1 && \
@@ -52,6 +58,8 @@ WORKDIR /app/frontend
 COPY --from=frontend-builder /app/.next/standalone ./
 COPY --from=frontend-builder /app/.next/static ./.next/static
 COPY --from=frontend-builder /app/public ./public
+
+COPY --from=server-builder /app/server/target/release/dystopia-server /app/server/dystopia-server
 
 COPY lambda/image/start lambda/image/task.mjs /app/lambda/
 RUN chmod 755 /app/lambda/start

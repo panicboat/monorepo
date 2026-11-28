@@ -1,5 +1,6 @@
 import { createClient } from "@connectrpc/connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
+import { mediaServiceUrl, monolithUrl } from "@/lib/grpc-endpoints";
 import { traceContextInterceptor } from "@/lib/otel-interceptor";
 import { IdentityService } from "@/stub/identity/v1/service_pb";
 import { MediaService } from "@/stub/media/v1/media_service_pb";
@@ -20,15 +21,19 @@ import { MessagingService } from "@/stub/messaging/v1/messaging_service_pb";
 import { FootprintsService } from "@/stub/footprints/v1/footprints_service_pb";
 import { ScheduleService } from "@/stub/schedule/v1/schedule_service_pb";
 
-const baseUrl = process.env.MONOLITH_URL || "http://localhost:9001";
 const transport = createGrpcTransport({
-  baseUrl,
+  baseUrl: monolithUrl(process.env),
+  interceptors: [traceContextInterceptor],
+});
+
+const mediaTransport = createGrpcTransport({
+  baseUrl: mediaServiceUrl(process.env),
   interceptors: [traceContextInterceptor],
 });
 
 export const identityClient = createClient(IdentityService, transport);
 
-export const mediaClient = createClient(MediaService, transport);
+export const mediaClient = createClient(MediaService, mediaTransport);
 
 export const postClient = createClient(PostService, transport);
 export const likeClient = createClient(LikeService, transport);

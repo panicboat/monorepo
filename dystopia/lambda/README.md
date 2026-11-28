@@ -2,12 +2,17 @@
 
 ## What
 
-dystopia を AWS Lambda で動かすための構成。常時稼働のクラスタを持たずに固定費を抑えるため、frontend（Next.js）と monolith（gRPC）を 1 つのコンテナイメージに同居させ、CloudFront と Lambda Function URL の後ろで動かす。
+dystopia を AWS Lambda で動かすための構成。常時稼働のクラスタを持たずに固定費を抑えるため、frontend（Next.js）・monolith（gRPC）・media の gRPC を提供する Rust のサーバーを 1 つのコンテナイメージに同居させ、CloudFront と Lambda Function URL の後ろで動かす。
 
 ```
 Browser → CloudFront → Lambda Function URL → Lambda Web Adapter → Next.js :3000
-                                                                    └→ gRPC 127.0.0.1:50051 → RDS
+                                                                    ├→ gRPC 127.0.0.1:50051 → RDS
+                                                                    └→ media の gRPC（Rust） 127.0.0.1:50052 → RDS・S3
 ```
+
+frontend の media の client は、`MEDIA_SERVICE_URL` で Rust のサーバーの `127.0.0.1:50052` に向く。
+それ以外の client は monolith の `127.0.0.1:50051` に向く。
+Rust のサーバーは [dystopia/server](../server/README.md) にある。
 
 アプリの機能と slice の構成は [dystopia/docs](../docs/README.md) にある。
 
@@ -15,7 +20,7 @@ Browser → CloudFront → Lambda Function URL → Lambda Web Adapter → Next.j
 
 | 論点 | 決定 | 理由 |
 |---|---|---|
-| 実行形態 | frontend と monolith を 1 つの Lambda コンテナに同居 | Lambda Web Adapter は HTTP/1.1 しか中継できず、gRPC サーバーを単体の Lambda として公開できない。同居なら Next.js から `127.0.0.1` の gRPC に届き、アプリのコード変更が要らない |
+| 実行形態 | frontend・monolith・Rust のサーバーを 1 つの Lambda コンテナに同居 | Lambda Web Adapter は HTTP/1.1 しか中継できず、gRPC サーバーを単体の Lambda として公開できない。同居なら Next.js から `127.0.0.1` の gRPC に届き、アプリのコード変更が要らない |
 | cold start | 約 5 秒を受け入れる | 追加費用なしで始められる。Provisioned Concurrency は Fargate の最小構成と同水準の費用になる |
 | 外向き通信 | IPv6 の egress-only internet gateway のみ | 固定費ゼロで RDS を private に保てる。NAT instance・NAT Gateway は固定費がかかる |
 | S3 への経路 | gateway endpoint | 無料。SDK の dualstack 設定はコード変更が要り、環境変数で一括指定すると Cognito が DNS に存在しない dualstack ホスト名を引く |
@@ -39,7 +44,7 @@ Browser → CloudFront → Lambda Function URL → Lambda Web Adapter → Next.j
 | パス | 内容 |
 |---|---|
 | `image/Dockerfile` | 統合イメージ。ビルドコンテキストは `dystopia/` |
-| `image/start` | アプリ用関数の起動スクリプト。gRPC と Next.js を起動し、片方が終了したら全体を終了する |
+| `image/start` | アプリ用関数の起動スクリプト。gRPC（Ruby）・Rust の media サーバー・Next.js を起動し、どれか 1 つが終了したら全体を終了する |
 | `image/task.mjs` | task 用関数の HTTP サーバー。migration、SQL、退会したアカウントの削除処理の実行を受ける |
 | `aws/modules` | Terraform。ECR、Lambda、CloudFront、EventBridge Scheduler |
 | `aws/production` | Terragrunt の production 設定 |
@@ -51,6 +56,10 @@ VPC・private subnet・security group `internal` は、platform の `aws/vpc` �
 ## Constraints
 
 - gRPC のポートは 50051。Lambda の Runtime API が `127.0.0.1:9001` を使うため、monolith の既定値 9001 は使えない
+- Rust の gRPC のポートは 50052。
+  - 50051 は monolith が、9001 は Runtime API が使っている。
+- Lambda Web Adapter の起動確認が待つのは 50051 だけで、Rust のサーバーの待ち受けは個別に待たない。
+  - Rust のサーバーは DB に接続した直後に待ち受けを始め、monolith の起動が済むまでには待ち受けが済んでいる前提にしている。
 - migration は起動時に実行しない。Lambda の初期化は 10 秒で打ち切られる
 - 外向き通信は IPv6 と S3 gateway endpoint だけ。どちらも platform の `aws/vpc` が持つ
 - IPv4 でしか到達できない Stripe には届かないため、課金は動かない

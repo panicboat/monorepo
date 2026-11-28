@@ -1,0 +1,21 @@
+[package]
+name = "dystopia-server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-trait = "0.1.92"
+aws-config = "1.13.4"
+aws-sdk-s3 = "1.162.0"
+chrono = "0.4.45"
+prost = "0.14.6"
+regex = "1.13.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sqlx = { version = "0.9.1", features = ["postgres", "runtime-tokio", "tls-rustls", "uuid", "chrono"] }
+thiserror = "2.0.21"
+tokio = { version = "1.54.1", features = ["macros", "net", "rt-multi-thread"] }
+tonic = "0.14.9"
+tonic-prost = "0.14.9"
+url = "2.5.9"
+uuid = { version = "1.29.3", features = ["v4", "v7"] }

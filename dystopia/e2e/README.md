@@ -24,6 +24,7 @@ dystopia の monolith と frontend をつないだ状態で、サーバーの判
 
 - PostgreSQL が `localhost:5432` で動いていて、ユーザー `postgres`・パスワード `password` で接続できること。
 - rbenv の Ruby で、`dystopia/monolith` の `bundle install` が済んでいること。
+- rustup が使え、`dystopia/server/rust-toolchain.toml` の版の Rust を入れられること。
 - Node.js と pnpm が `package.json` の `packageManager` の版で使えること。
 
 ## Running Locally
@@ -46,15 +47,16 @@ bin/stack down
 `bin/stack up` は次を行い、サインインが通るようになってから戻る。
 
 - 使い捨ての DB を作り直し、migrate と seed を入れる。
-- monolith と、`next build` した frontend を固定のポートで起動する。
+- monolith・`cargo build --release` した Rust の server・`next build` した frontend を固定のポートで起動する。
 - frontend は偽の Cognito を使う。
+- frontend は media の gRPC を server に向ける。
 
 DB 名・ポート・ブラウザで開く URL は `bin/stack` と `e2e.config.ts` に書かれている。
 別の URL に向けるときは `APP_URL` を設定する。
 
 `bin/stack down` は `up` が起動したプロセスを止め、DB を消す。
 ログと PID は `.e2e/stack/` に書かれる。
-`up` が失敗したときは、両方のログの末尾を出したうえで `down` と同じ後片付けをする。
+`up` が失敗したときは、各プロセスのログの末尾を出したうえで `down` と同じ後片付けをする。
 
 ## Test Data
 
@@ -86,5 +88,5 @@ DB 名・ポート・ブラウザで開く URL は `bin/stack` と `e2e.config.t
 - 定期実行が落ちたら、run の artifact `dystopia-e2e` を見る。
   - `report.json` には、テストごとの結果が入っている。
   - `results/*/trace.md` には、落ちたテストの手順ごとの経過と失敗時の画面が入っている。
-  - `stack/*.log` には、monolith と frontend のログが入っている。
+  - `stack/*.log` には、monolith・server・frontend のログが入っている。
 - CI では e2e の既定どおり、落ちたテストを 1 回だけやり直す。

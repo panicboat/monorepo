@@ -12,11 +12,13 @@ on:
     paths:
       - 'dystopia/frontend/**'
       - 'dystopia/monolith/**'
+      - 'dystopia/server/**'
       - 'dystopia/lambda/**'
       - '.github/workflows/deploy-dystopia-lambda.yaml'
       - '!dystopia/**/*.md'
       - '!dystopia/**/kubernetes/**'
       - '!dystopia/lambda/**/tests/**'
+      - '!dystopia/server/tests/**'
   workflow_dispatch: {}
 
 concurrency:
