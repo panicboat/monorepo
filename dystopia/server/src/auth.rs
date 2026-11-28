@@ -44,9 +44,12 @@ pub struct Caller {
     pub profile_denied: bool,
 }
 
+pub fn request_id(metadata: &MetadataMap) -> String {
+    header(metadata, REQUEST_ID_HEADER).unwrap_or_else(|| Uuid::new_v4().to_string())
+}
+
 pub async fn resolve_caller(pool: &PgPool, metadata: &MetadataMap) -> sqlx::Result<Caller> {
-    let request_id =
-        header(metadata, REQUEST_ID_HEADER).unwrap_or_else(|| Uuid::new_v4().to_string());
+    let request_id = request_id(metadata);
     let Some(account_id) = header(metadata, USER_ID_HEADER) else {
         return Ok(Caller {
             request_id,
@@ -107,7 +110,7 @@ fn header(metadata: &MetadataMap, name: &str) -> Option<String> {
         .map(|value| String::from_utf8_lossy(value.as_bytes()).into_owned())
 }
 
-fn parse_uuid(value: &str) -> Option<Uuid> {
+pub fn parse_uuid(value: &str) -> Option<Uuid> {
     if UUID_FORMAT.is_match(value) {
         Uuid::parse_str(value).ok()
     } else {

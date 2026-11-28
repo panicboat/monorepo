@@ -1,14 +1,50 @@
 use std::process::ExitCode;
+use std::sync::Arc;
 
-use dystopia_server::config::Config;
+use dystopia_server::config::{Config, StorageKind};
+use dystopia_server::media::service::MediaHandler;
+use dystopia_server::media::storage::{LocalStorage, S3Storage, Storage};
+use dystopia_server::stub::media::v1::media_service_server::MediaServiceServer;
+use sqlx::postgres::PgPoolOptions;
+use tonic::transport::Server;
 
-fn main() -> ExitCode {
-    // TODO: serve MediaService on `config.bind_address`; tonic cannot serve a Router with no service.
-    match Config::from_vars(|key| std::env::var(key).ok()) {
-        Ok(_config) => ExitCode::SUCCESS,
-        Err(error) => {
-            eprintln!("invalid configuration: {error}");
+#[tokio::main]
+async fn main() -> ExitCode {
+    match run().await {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(message) => {
+            eprintln!("{message}");
             ExitCode::FAILURE
         }
     }
+}
+
+// Errors carry no Config: its Debug output contains DATABASE_URL with the password.
+async fn run() -> Result<(), String> {
+    let config = Config::from_vars(|key| std::env::var(key).ok())
+        .map_err(|error| format!("invalid configuration: {error}"))?;
+    let pool = PgPoolOptions::new()
+        .max_connections(2)
+        .connect(&config.database_url)
+        .await
+        .map_err(|error| format!("failed to connect to the database: {error}"))?;
+    let storage: Arc<dyn Storage> = match config.storage {
+        StorageKind::Local => Arc::new(LocalStorage {
+            app_url: config.app_url,
+            uploads_dir: config.local_uploads_dir,
+        }),
+        StorageKind::S3 => {
+            let bucket = config
+                .media_bucket_name
+                .ok_or("invalid configuration: MEDIA_BUCKET_NAME is required")?;
+            Arc::new(S3Storage::new(bucket, config.media_bucket_region).await)
+        }
+    };
+
+    eprintln!("serving on {}", config.bind_address);
+    Server::builder()
+        .add_service(MediaServiceServer::new(MediaHandler::new(pool, storage)))
+        .serve(config.bind_address)
+        .await
+        .map_err(|error| format!("server failed: {error}"))
 }
