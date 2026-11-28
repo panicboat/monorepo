@@ -50,7 +50,30 @@ async fn run() -> Result<(), String> {
     eprintln!("serving on {}", config.bind_address);
     Server::builder()
         .add_service(MediaServiceServer::new(MediaHandler::new(pool, storage)))
-        .serve_with_incoming(TcpIncoming::from(listener))
+        .serve_with_incoming(incoming(listener))
         .await
         .map_err(|error| format!("server failed: {error}"))
+}
+
+// From<TcpListener> leaves TCP_NODELAY unset, which Server::serve would set; keepalive stays off in both.
+fn incoming(listener: TcpListener) -> TcpIncoming {
+    TcpIncoming::from(listener).with_nodelay(Some(true))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tonic::codegen::tokio_stream::StreamExt;
+
+    #[tokio::test]
+    async fn accepted_connections_have_tcp_nodelay() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let mut incoming = incoming(listener);
+        let _client = std::net::TcpStream::connect(address).unwrap();
+
+        let accepted = incoming.next().await.unwrap().unwrap();
+
+        assert!(accepted.nodelay().unwrap());
+    }
 }
