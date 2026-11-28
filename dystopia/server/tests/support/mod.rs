@@ -14,7 +14,7 @@ use uuid::Uuid;
 
 const DEFAULT_TEST_DATABASE_URL: &str = "postgres://postgres:password@localhost:5432/monolith_test";
 
-fn database_url() -> String {
+pub fn database_url() -> String {
     std::env::var("TEST_DATABASE_URL").unwrap_or(DEFAULT_TEST_DATABASE_URL.to_string())
 }
 

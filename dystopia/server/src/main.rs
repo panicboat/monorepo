@@ -6,7 +6,9 @@ use dystopia_server::media::service::MediaHandler;
 use dystopia_server::media::storage::{LocalStorage, S3Storage, Storage};
 use dystopia_server::stub::media::v1::media_service_server::MediaServiceServer;
 use sqlx::postgres::PgPoolOptions;
+use tokio::net::TcpListener;
 use tonic::transport::Server;
+use tonic::transport::server::TcpIncoming;
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -41,10 +43,14 @@ async fn run() -> Result<(), String> {
         }
     };
 
+    // Not Server::serve: it binds inside its future, so a taken port would be reported after "serving on".
+    let listener = TcpListener::bind(config.bind_address)
+        .await
+        .map_err(|error| format!("failed to bind {}: {error}", config.bind_address))?;
     eprintln!("serving on {}", config.bind_address);
     Server::builder()
         .add_service(MediaServiceServer::new(MediaHandler::new(pool, storage)))
-        .serve(config.bind_address)
+        .serve_with_incoming(TcpIncoming::from(listener))
         .await
         .map_err(|error| format!("server failed: {error}"))
 }
