@@ -26,10 +26,6 @@ pub async fn pool() -> PgPool {
         .expect("the test database is reachable")
 }
 
-pub async fn create_profile(pool: &PgPool) -> (Uuid, Uuid) {
-    insert_profile(pool, Uuid::now_v7(), Uuid::now_v7()).await
-}
-
 async fn insert_profile(pool: &PgPool, account_id: Uuid, profile_id: Uuid) -> (Uuid, Uuid) {
     sqlx::query("INSERT INTO identity.accounts (id, role) VALUES ($1, 1)")
         .bind(account_id)
