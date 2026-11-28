@@ -36,6 +36,11 @@ async fn insert_profile(pool: &PgPool, account_id: Uuid, profile_id: Uuid) -> (U
         .execute(pool)
         .await
         .expect("an account is inserted");
+    insert_profile_row(pool, account_id, profile_id).await;
+    (account_id, profile_id)
+}
+
+async fn insert_profile_row(pool: &PgPool, account_id: Uuid, profile_id: Uuid) {
     sqlx::query(
         "INSERT INTO profile.profiles (id, account_id, display_name) VALUES ($1, $2, 'User')",
     )
@@ -44,7 +49,6 @@ async fn insert_profile(pool: &PgPool, account_id: Uuid, profile_id: Uuid) -> (U
     .execute(pool)
     .await
     .expect("a profile is inserted");
-    (account_id, profile_id)
 }
 
 // Removal runs in Drop, not at the end of a test, so a failing test leaves no row for Ruby's count specs.
@@ -72,6 +76,29 @@ impl Cleanup {
         self.track_account(account_id);
         insert_profile(pool, account_id, Uuid::now_v7()).await
     }
+
+    // The account must come from create_profile, which tracks it, so Drop removes the added profile too.
+    pub async fn add_profile(&self, pool: &PgPool, account_id: Uuid) -> Uuid {
+        let profile_id = Uuid::now_v7();
+        insert_profile_row(pool, account_id, profile_id).await;
+        profile_id
+    }
+}
+
+pub async fn disable_profile(pool: &PgPool, profile_id: Uuid) {
+    sqlx::query("UPDATE profile.profiles SET disabled_at = now() WHERE id = $1")
+        .bind(profile_id)
+        .execute(pool)
+        .await
+        .expect("a profile is disabled");
+}
+
+pub async fn deactivate_account(pool: &PgPool, account_id: Uuid) {
+    sqlx::query("UPDATE identity.accounts SET deactivated_at = now() WHERE id = $1")
+        .bind(account_id)
+        .execute(pool)
+        .await
+        .expect("an account is deactivated");
 }
 
 async fn remove_rows(media_ids: Vec<Uuid>, account_ids: Vec<Uuid>) -> sqlx::Result<()> {
