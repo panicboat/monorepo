@@ -21,26 +21,33 @@ flowchart LR
   Browser -->|HTTPS| CloudFront
   CloudFront --> Frontend["frontend<br>Next.js（画面 + API route）"]
   Frontend -->|gRPC| Monolith["monolith<br>Hanami（slice ごとの gRPC サービス）"]
+  Frontend -->|media の gRPC| Server["server<br>Rust（media の gRPC）"]
   Monolith --> DB[(PostgreSQL<br>slice ごとの schema)]
+  Server --> DB
   Frontend --> Cognito[Cognito]
   Monolith --> Cognito
   Monolith --> S3[(S3 media)]
+  Server --> S3
   Browser -->|署名付き URL で直接| S3
   Monolith -->|Web Push| PushService[ブラウザの push サービス]
 ```
 
 - frontend は画面と API route を持つ。
   - ブラウザは API route を呼び、API route が monolith の gRPC を呼ぶ
-    - メディアの本体とサムネイルは、monolith が発行して API route が返す署名付き URL で S3 に直接アップロードし、S3 から直接読み込む
+    - メディアの本体とサムネイルは、monolith または server が発行して API route が返す署名付き URL で S3 に直接アップロードし、S3 から直接読み込む
 - monolith は 1 プロセスで全 slice の gRPC サービスを提供する。
   - slice ごとに proto のパッケージを持つ
   - アプリのテーブルは slice ごとの schema に置く
     - feed と discovery はテーブルを持たず、schema も作らない
+- server は media の gRPC サービス（`media.v1.MediaService`）だけを Rust で提供する。
+  - frontend の `MEDIA_SERVICE_URL` が server を指すときは、media のアップロード URL と配信 URL を server が発行し、指さないときは monolith が発行する。
+  - server と monolith の media slice は同じ `media.files` の行を読み書きする。
+  - monolith の各 slice は、同じプロセス内で自分の media slice を呼ぶ。
 - slice 間の連携は同じプロセス内の呼び出しで行う。
   - 呼び出し先は相手 slice の use case または repository。
     - 例外として、プロフィールの要約表示は相手 slice の ProfileSummaryPresenter を直接呼ぶ。
 - DB の外部キーは slice をまたがない（[データモデル](data-model.md)）
-- 本番は frontend と monolith を 1 つの Lambda コンテナに同居させて動かしている。
+- 本番は frontend・monolith・server を 1 つの Lambda コンテナに同居させて動かしている。
   - 構成と理由は [dystopia/lambda](../lambda/README.md) にある
 
 ## Glossary
