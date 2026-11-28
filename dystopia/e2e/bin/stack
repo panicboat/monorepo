@@ -128,7 +128,7 @@ start_server() {
   (cd "$SERVER_DIR" && cargo build --release)
   (
     cd "$SERVER_DIR"
-    # S3 would need AWS settings, so storage stays local and APP_URL is the frontend that the browser opens the storage URLs on.
+    # S3 would need AWS settings, so storage stays local.
     export SERVER_BIND_ADDRESS="$SERVER_ADDRESS" DATABASE_URL="$MONOLITH_DB_URL" MEDIA_STORAGE=local APP_URL="http://127.0.0.1:${FRONTEND_PORT}"
     exec target/release/dystopia-server
   ) >"$STACK_DIR/server.log" 2>&1 &
