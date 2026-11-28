@@ -58,8 +58,8 @@ VPC・private subnet・security group `internal` は、platform の `aws/vpc` �
 - gRPC のポートは 50051。Lambda の Runtime API が `127.0.0.1:9001` を使うため、monolith の既定値 9001 は使えない
 - Rust の gRPC のポートは 50052。
   - 50051 は monolith が、9001 は Runtime API が使っている。
-- Lambda Web Adapter の起動確認が待つのは 50051 だけで、Rust のサーバーの待ち受けは待たない。
-  - Rust のサーバーは DB に接続した直後に待ち受けを始め、monolith の起動が済むより先に待ち受けが済む前提で、個別には待たない。
+- Lambda Web Adapter の起動確認が待つのは 50051 だけで、Rust のサーバーの待ち受けは個別に待たない。
+  - Rust のサーバーは DB に接続した直後に待ち受けを始め、monolith の起動が済むまでには待ち受けが済んでいる前提にしている。
 - migration は起動時に実行しない。Lambda の初期化は 10 秒で打ち切られる
 - 外向き通信は IPv6 と S3 gateway endpoint だけ。どちらも platform の `aws/vpc` が持つ
 - IPv4 でしか到達できない Stripe には届かないため、課金は動かない

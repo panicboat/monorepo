@@ -5,8 +5,8 @@
 `media.v1.MediaService` を提供する Rust の gRPC サーバー。
 利用者から見た挙動は monolith の media slice と同じで、`media.files` の表と S3 バケットを共有する。
 
-- monolith は media slice を残している。
-  - post・profile・review の各 slice とアカウントの削除処理は、今までどおり同じプロセスの中で media slice を呼ぶ。
+- monolith も media slice を持つ。
+  - post・profile・review の各 slice とアカウントの削除処理は、同じプロセスの中で media slice を呼ぶ。
 - frontend は `MEDIA_SERVICE_URL` で media の向き先を選ぶ。
   - 設定すればこのサーバーに向き、無ければ monolith に向く。
 - DB の migration はこのサーバーが持たない。

@@ -42,7 +42,7 @@ flowchart LR
 - server は media の gRPC サービス（`media.v1.MediaService`）だけを Rust で提供する。
   - frontend の `MEDIA_SERVICE_URL` が server を指すときは、media のアップロード URL と配信 URL を server が発行し、指さないときは monolith が発行する。
   - server と monolith の media slice は同じ `media.files` の行を読み書きする。
-  - monolith の各 slice は、同じプロセス内で自分の media slice を呼ぶ。
+- monolith の各 slice は、同じプロセス内で media slice を呼ぶ。
 - slice 間の連携は同じプロセス内の呼び出しで行う。
   - 呼び出し先は相手 slice の use case または repository。
     - 例外として、プロフィールの要約表示は相手 slice の ProfileSummaryPresenter を直接呼ぶ。
