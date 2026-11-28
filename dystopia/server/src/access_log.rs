@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, SecondsFormat, Utc};
 use serde::Serialize;
 
 use crate::media::presenter::format_created_at;
@@ -16,7 +16,15 @@ pub struct AccessLogEntry {
     pub error: Option<(String, String)>,
 }
 
-// A struct, not a serde_json map: the map sorts keys, Ruby writes them in insertion order.
+// Structs, not a serde_json map: the map sorts keys, Ruby writes them in insertion order.
+#[derive(Serialize)]
+struct Envelope<'a> {
+    progname: &'a str,
+    severity: &'a str,
+    time: String,
+    message: &'a str,
+}
+
 #[derive(Serialize)]
 struct Line<'a> {
     time: String,
@@ -34,7 +42,23 @@ struct Line<'a> {
 }
 
 impl AccessLogEntry {
-    pub fn to_json_line(&self) -> String {
+    // Not a bare JSON line: the CloudWatch query shared with the monolith reads the logger envelope.
+    pub fn to_json_line(&self, logged_at: DateTime<Utc>) -> String {
+        let message = self.message_json();
+        let envelope = Envelope {
+            progname: "dystopia-server",
+            severity: if self.error.is_some() {
+                "ERROR"
+            } else {
+                "INFO"
+            },
+            time: logged_at.to_rfc3339_opts(SecondsFormat::Secs, true),
+            message: &message,
+        };
+        serde_json::to_string(&envelope).expect("an access log envelope serializes")
+    }
+
+    fn message_json(&self) -> String {
         let line = Line {
             time: format_created_at(self.time),
             request_id: &self.request_id,
@@ -51,7 +75,7 @@ impl AccessLogEntry {
     }
 
     pub fn emit(&self) {
-        let line = self.to_json_line();
+        let line = self.to_json_line(Utc::now());
         // SILENT: a closed stdout must not fail the request being logged.
         let _ = writeln!(std::io::stdout().lock(), "{line}");
     }
@@ -77,10 +101,48 @@ mod tests {
         }
     }
 
+    fn logged_at() -> DateTime<Utc> {
+        DateTime::parse_from_rfc3339("2026-11-28T01:02:04.789Z")
+            .unwrap()
+            .with_timezone(&Utc)
+    }
+
+    fn envelope_of(entry: &AccessLogEntry) -> Value {
+        serde_json::from_str(&entry.to_json_line(logged_at())).unwrap()
+    }
+
+    fn message_of(entry: &AccessLogEntry) -> String {
+        envelope_of(entry)["message"].as_str().unwrap().to_string()
+    }
+
+    #[test]
+    fn wraps_the_line_in_the_envelope_the_ruby_logger_writes() {
+        let line = entry(None).to_json_line(logged_at());
+
+        assert!(
+            line.starts_with(concat!(
+                r#"{"progname":"dystopia-server","severity":"INFO","#,
+                r#""time":"2026-11-28T01:02:04Z","message":"{\"time\":"#
+            )),
+            "{line}"
+        );
+        let envelope = envelope_of(&entry(None));
+        assert_eq!(envelope.as_object().unwrap().len(), 4);
+        assert!(envelope["message"].is_string());
+    }
+
+    #[test]
+    fn logs_an_error_with_the_error_severity() {
+        let envelope = envelope_of(&entry(Some(("Invalid input", "InvalidArgument"))));
+
+        assert_eq!(envelope["severity"], json!("ERROR"));
+        assert_eq!(envelope["progname"], json!("dystopia-server"));
+    }
+
     #[test]
     fn writes_the_access_log_fields_ruby_writes() {
         assert_eq!(
-            entry(None).to_json_line(),
+            message_of(&entry(None)),
             concat!(
                 r#"{"time":"2026-11-28T01:02:03+00:00","request_id":"req-1","method":"register_media","#,
                 r#""service":"media.v1.media_service","account_id":"0190a000-0000-7000-8000-000000000001","#,
@@ -88,9 +150,11 @@ mod tests {
             )
         );
 
-        let failed: Value =
-            serde_json::from_str(&entry(Some(("Invalid input", "InvalidArgument"))).to_json_line())
-                .unwrap();
+        let failed: Value = serde_json::from_str(&message_of(&entry(Some((
+            "Invalid input",
+            "InvalidArgument",
+        )))))
+        .unwrap();
         assert_eq!(failed["status"], json!("ERROR"));
         assert_eq!(failed["error"], json!("Invalid input"));
         assert_eq!(failed["error_class"], json!("InvalidArgument"));
@@ -103,9 +167,9 @@ mod tests {
             duration_ms: 3.0,
             ..entry(None)
         };
-        let line = anonymous.to_json_line();
-        assert!(line.contains(r#""account_id":null,"profile_id":null,"duration_ms":3.0,"#));
-        let anonymous: Value = serde_json::from_str(&line).unwrap();
+        let message = message_of(&anonymous);
+        assert!(message.contains(r#""account_id":null,"profile_id":null,"duration_ms":3.0,"#));
+        let anonymous: Value = serde_json::from_str(&message).unwrap();
         assert!(anonymous.get("error").is_none());
         assert!(anonymous.get("error_class").is_none());
     }
