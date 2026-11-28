@@ -26,7 +26,7 @@ ENV BUNDLE_PATH=/usr/local/bundle \
 RUN bundle config set --local frozen true && \
     bundle install
 
-# Match the Debian release of the runner's ruby:4.0.10-slim so the binary links against the same glibc.
+# Match the Debian release of the runner's ruby image so the binary links against the same glibc.
 FROM rust:1.100.0-slim-trixie AS server-builder
 WORKDIR /app/server
 COPY server/ .
