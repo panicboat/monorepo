@@ -162,6 +162,10 @@ dystopia の monolith（Hanami 3 + gruf、Ruby 約 19,000 行・16 slice）を R
 - Rust のサーバーも、Ruby の access log と同じ項目の JSON を 1 RPC 1 行で標準出力に出す。
   - `time`・`request_id`・`method`・`service`・`account_id`・`profile_id`・`duration_ms`・`status`。
   - CloudWatch Logs で Ruby と同じ問い合わせで比べられるようにするため。
+  - 行は Ruby の production の logger（dry-logger の JSON）と同じ形で包み、`progname` を `dystopia-server` にする。
+    - Ruby の access log は `message` の中に JSON の文字列として入っているため。
+  - `error` と `error_class` の値は Ruby と揃えない（私の判断）。
+    - Rust は status の message と code の名前を出す。
 
 ### Local and CI
 
