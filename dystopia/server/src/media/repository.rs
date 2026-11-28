@@ -29,6 +29,23 @@ pub struct NewMedia {
     pub owner_account_id: Uuid,
 }
 
+// sqlx 0.9 accepts only 'static SQL, so the column list is shared through concat! instead of format!.
+macro_rules! columns {
+    () => {
+        "id, media_type, filename, content_type, size_bytes, media_key, \
+         thumbnail_key, created_at, uploader_profile_id, owner_account_id"
+    };
+}
+
+const FIND_BY_ID: &str = concat!("SELECT ", columns!(), " FROM media.files WHERE id = $1");
+
+const INSERT: &str = concat!(
+    "INSERT INTO media.files (id, media_type, filename, content_type, size_bytes, media_key, \
+     thumbnail_key, uploader_profile_id, owner_account_id) \
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ",
+    columns!()
+);
+
 pub struct MediaRepository {
     pool: PgPool,
 }
@@ -39,32 +56,25 @@ impl MediaRepository {
     }
 
     pub async fn find_by_id(&self, id: Uuid) -> sqlx::Result<Option<MediaRow>> {
-        sqlx::query_as(
-            "SELECT id, media_type, filename, content_type, size_bytes, media_key, thumbnail_key, created_at, uploader_profile_id, owner_account_id \
-             FROM media.files WHERE id = $1",
-        )
-        .bind(id)
+        sqlx::query_as(FIND_BY_ID)
+            .bind(id)
             .fetch_optional(&self.pool)
             .await
     }
 
     pub async fn create(&self, new: &NewMedia) -> sqlx::Result<MediaRow> {
-        sqlx::query_as(
-            "INSERT INTO media.files (id, media_type, filename, content_type, size_bytes, media_key, thumbnail_key, uploader_profile_id, owner_account_id) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) \
-             RETURNING id, media_type, filename, content_type, size_bytes, media_key, thumbnail_key, created_at, uploader_profile_id, owner_account_id",
-        )
-        .bind(new.id)
-        .bind(&new.media_type)
-        .bind(&new.filename)
-        .bind(&new.content_type)
-        .bind(new.size_bytes)
-        .bind(&new.media_key)
-        .bind(&new.thumbnail_key)
-        .bind(new.uploader_profile_id)
-        .bind(new.owner_account_id)
-        .fetch_one(&self.pool)
-        .await
+        sqlx::query_as(INSERT)
+            .bind(new.id)
+            .bind(&new.media_type)
+            .bind(&new.filename)
+            .bind(&new.content_type)
+            .bind(new.size_bytes)
+            .bind(&new.media_key)
+            .bind(&new.thumbnail_key)
+            .bind(new.uploader_profile_id)
+            .bind(new.owner_account_id)
+            .fetch_one(&self.pool)
+            .await
     }
 
     pub async fn delete(&self, id: Uuid) -> sqlx::Result<()> {

@@ -7,15 +7,15 @@ use dystopia_server::media::presenter::to_proto;
 use dystopia_server::media::repository::{MediaRepository, MediaRow, NewMedia};
 use dystopia_server::stub::media::v1::MediaType;
 use sqlx::PgPool;
-use support::{FakeStorage, create_profile, pool};
+use support::{Cleanup, FakeStorage, pool};
 use uuid::Uuid;
 
-async fn purge(pool: &PgPool, id: Uuid) {
-    sqlx::query("DELETE FROM media.files WHERE id = $1")
+async fn count(pool: &PgPool, sql: &'static str, id: Uuid) -> i64 {
+    sqlx::query_scalar(sql)
         .bind(id)
-        .execute(pool)
+        .fetch_one(pool)
         .await
-        .unwrap();
+        .unwrap()
 }
 
 fn row_with_nulls(id: Uuid) -> MediaRow {
@@ -36,9 +36,11 @@ fn row_with_nulls(id: Uuid) -> MediaRow {
 #[tokio::test]
 async fn creates_and_reads_back_a_row() {
     let pool = pool().await;
-    let (account_id, profile_id) = create_profile(&pool).await;
+    let cleanup = Cleanup::new();
+    let (account_id, profile_id) = cleanup.create_profile(&pool).await;
     let repository = MediaRepository::new(pool.clone());
     let id = Uuid::now_v7();
+    cleanup.track_media(id);
     let new = NewMedia {
         id,
         media_type: "video".to_string(),
@@ -71,14 +73,15 @@ async fn creates_and_reads_back_a_row() {
             .abs()
             < 60
     );
-    purge(&pool, id).await;
 }
 
 #[tokio::test]
 async fn reads_a_row_ruby_wrote_with_nulls() {
     let pool = pool().await;
+    let cleanup = Cleanup::new();
     let repository = MediaRepository::new(pool.clone());
     let id = Uuid::now_v7();
+    cleanup.track_media(id);
     sqlx::query("INSERT INTO media.files (id, media_type, media_key) VALUES ($1, 'image', $2)")
         .bind(id)
         .bind(format!("media/image/{id}.png"))
@@ -96,15 +99,16 @@ async fn reads_a_row_ruby_wrote_with_nulls() {
     assert_eq!(found.thumbnail_key, None);
     assert_eq!(found.uploader_profile_id, None);
     assert_eq!(found.owner_account_id, None);
-    purge(&pool, id).await;
 }
 
 #[tokio::test]
 async fn deletes_a_row() {
     let pool = pool().await;
-    let (account_id, profile_id) = create_profile(&pool).await;
+    let cleanup = Cleanup::new();
+    let (account_id, profile_id) = cleanup.create_profile(&pool).await;
     let repository = MediaRepository::new(pool.clone());
     let id = Uuid::now_v7();
+    cleanup.track_media(id);
     repository
         .create(&NewMedia {
             id,
@@ -170,4 +174,37 @@ async fn presents_urls_and_columns_of_a_full_row() {
     assert_eq!(media.filename, "clip.mp4");
     assert_eq!(media.content_type, "video/mp4");
     assert_eq!(media.size_bytes, 4096);
+}
+
+#[tokio::test]
+async fn cleanup_removes_the_rows_it_tracked_when_dropped() {
+    let pool = pool().await;
+    let repository = MediaRepository::new(pool.clone());
+    let media_id = Uuid::now_v7();
+    let (account_id, profile_id) = {
+        let cleanup = Cleanup::new();
+        let (account_id, profile_id) = cleanup.create_profile(&pool).await;
+        cleanup.track_media(media_id);
+        repository
+            .create(&NewMedia {
+                id: media_id,
+                media_type: "image".to_string(),
+                filename: "a.png".to_string(),
+                content_type: "image/png".to_string(),
+                size_bytes: 1,
+                media_key: format!("media/{profile_id}/{media_id}.png"),
+                thumbnail_key: None,
+                uploader_profile_id: profile_id,
+                owner_account_id: account_id,
+            })
+            .await
+            .unwrap();
+        (account_id, profile_id)
+    };
+
+    assert!(repository.find_by_id(media_id).await.unwrap().is_none());
+    let profiles = "SELECT count(*) FROM profile.profiles WHERE id = $1";
+    let accounts = "SELECT count(*) FROM identity.accounts WHERE id = $1";
+    assert_eq!(count(&pool, profiles, profile_id).await, 0);
+    assert_eq!(count(&pool, accounts, account_id).await, 0);
 }

@@ -10,6 +10,7 @@ pub fn media_type_name(value: i32) -> &'static str {
     match pb::MediaType::try_from(value) {
         Ok(pb::MediaType::Image) => "image",
         Ok(pb::MediaType::Video) => "video",
+        // FALLBACK: Map unspecified and out-of-range values to "unknown".
         _ => "unknown",
     }
 }
